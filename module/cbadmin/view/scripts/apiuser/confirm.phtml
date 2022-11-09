@@ -1,0 +1,108 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$currentTitle = $this->mode == 'edit' ? 'APIユーザー変更' : 'APIユーザー登録';
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/apiuser/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3><?php echo $currentTitle; ?></h3>
+
+<form id="edit_form" action="apiuser/save" method="post">
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザー情報－基本情報】</td>
+    </tr>
+    <?php if(isset($this->apiUser["OemId"]) &&!is_null($this->apiUser["OemId"]) && $this->apiUser["OemId"]  != 0) { ?>
+        <tr>
+            <td class="label">OEM先名</td>
+            <td class="data" ><?php echo f_e($this->oemName); ?></td>
+        </tr>
+    <?php } ?>
+    <tr>
+      <td class="r_label" style="width: 200px;">APIユーザーID</td>
+      <td class="l_data"><?php echo ($this->apiUser['ApiUserId']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">APIユーザー名</td>
+      <td class="l_data"><?php echo escape($this->apiUser['ApiUserNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">APIユーザー名カナ</td>
+      <td class="l_data"><?php echo escape($this->apiUser['ApiUserNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label" title="<?php echo $this->apiUser['ValidFlg']; ?>">状態</td>
+      <td class="l_data"><?php echo ($this->apiUser['ValidFlg'] == '1' ? '有効' : '無効'); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザー情報－ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名</td>
+      <td class="l_data"><?php echo escape($this->apiUser['CpNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名カナ</td>
+      <td class="l_data"><?php echo escape($this->apiUser['CpNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">部署名</td>
+      <td class="l_data"><?php echo escape($this->apiUser['DivisionName']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data"><?php echo escape($this->apiUser['MailAddress']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先電話番号</td>
+      <td class="l_data"><?php echo escape($this->apiUser['ContactPhoneNumber']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先FAX番号</td>
+      <td class="l_data"><?php echo escape($this->apiUser['ContactFaxNumber']); ?></td>
+    </tr>
+
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザーその他の情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label" style="vertical-align: top;">接続IPアドレス</td>
+      <td class="l_data">
+		<?php $ipList = join("\n", explode(';', $this->apiUser['ConnectIpAddressList'])); ?>
+		<?php echo f_br($ipList); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label" style="vertical-align: top;">備考</td>
+      <td class="l_data" style="vertical-align: top; height: 150px; overflow: auto;">
+		<?php echo f_br($this->apiUser['Note']); ?>
+	  </td>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+		<a href="apiuser/save">確　認</a>　　　　　
+		<a href="apiuser/back">戻　る</a>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

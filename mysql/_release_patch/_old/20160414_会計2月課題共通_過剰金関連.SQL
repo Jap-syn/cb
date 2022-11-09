@@ -1,0 +1,19 @@
+/* [請求管理.最終入金SEQ]と[入金管理]のﾘﾚｰｼｮﾝ不整合修正 */
+UPDATE T_ClaimControl SET LastProcessDate = '2015-12-16', LastReceiptSeq = 4318262 WHERE ClaimId = 21428918;
+UPDATE T_ClaimControl SET LastProcessDate = '2015-12-24', LastReceiptSeq = 4398474 WHERE ClaimId = 22556461;
+UPDATE T_ClaimControl SET LastProcessDate = '2015-12-20', LastReceiptSeq = 4345960 WHERE ClaimId = 22748619;
+UPDATE T_ClaimControl SET LastProcessDate = '2016-01-10', LastReceiptSeq = 4560957 WHERE ClaimId = 22823240;
+UPDATE T_ClaimControl SET LastProcessDate = '2016-02-07', LastReceiptSeq = 4785973 WHERE ClaimId = 22850549;
+UPDATE T_ClaimControl SET LastProcessDate = '2016-01-16', LastReceiptSeq = 4597614 WHERE ClaimId = 22876762;
+UPDATE T_ClaimControl SET LastProcessDate = '2015-12-09', LastReceiptSeq = 4259059 WHERE ClaimId = 22938325;
+
+/* [請求管理]、[消込情報][残高情報]の値不整合修正 ※[ClaimedBalance <> BalanceClaimAmount 且つ ClaimedBalance < 0]のﾃﾞｰﾀに限定 */
+UPDATE T_ClaimControl SET CheckingClaimAmount = 10261, CheckingUseAmount = 9654, CheckingClaimFee = 600, CheckingDamageInterestAmount = 7, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -4827, BalanceUseAmount = -4827, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 21428918;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 6740, CheckingUseAmount = 4940, CheckingClaimFee = 1800, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -3220, BalanceUseAmount = -3220, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 22572000;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 6146, CheckingUseAmount = 5546, CheckingClaimFee = 600, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -2623, BalanceUseAmount = -2623, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 22938325;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 6408, CheckingUseAmount = 5808, CheckingClaimFee = 600, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -2904, BalanceUseAmount = -2904, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23201445;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 16440, CheckingUseAmount = 16140, CheckingClaimFee = 300, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -8070, BalanceUseAmount = -8070, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23234940;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 6900, CheckingUseAmount = 6600, CheckingClaimFee = 300, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -3300, BalanceUseAmount = -3300, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23259505;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 4732, CheckingUseAmount = 4432, CheckingClaimFee = 300, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -2216, BalanceUseAmount = -2216, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23288945;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 3940, CheckingUseAmount = 3640, CheckingClaimFee = 300, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -1820, BalanceUseAmount = -1820, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23379094;
+UPDATE T_ClaimControl SET CheckingClaimAmount = 14524, CheckingUseAmount = 14224, CheckingClaimFee = 300, CheckingDamageInterestAmount = 0, CheckingAdditionalClaimFee = 0, BalanceClaimAmount = -7112, BalanceUseAmount = -7112, BalanceClaimFee = 0, BalanceDamageInterestAmount = 0, BalanceAdditionalClaimFee = 0 WHERE ClaimId = 23399285;

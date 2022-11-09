@@ -1,0 +1,232 @@
+.main_contents {
+	height: auto;
+}
+
+div.layout_container {
+	padding-top: 2px;
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
+div.submit_area {
+	padding-top: 8px;
+	padding-left: 40px;
+	padding-bottom: 2px;
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
+div.submit_area,
+div.submit_area select,
+div.submit_area button {
+	font-size: 11pt;
+}
+
+/* 印刷用の見出し */
+.print_title {
+	display: none;
+}
+
+/* 結果テーブル */
+table.claim_result {
+	margin-top: 0px;
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+	
+	width: 70%;
+	margin-right: 2%;
+	float: left;
+}
+
+/* デフォルトのth, td */
+table.claim_result th,
+table.claim_result td {
+/*	white-space: nowrap;*/
+	font-size: 9pt;
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+	padding: 2px 6px;
+}
+
+/* カラムヘッダ */
+table.claim_result th {
+	background-color: #7F9E40;
+	color: white;
+}
+
+
+/* 行番号 */
+table.claim_result td.seq_col {
+	text-align: right;
+}
+
+/* 日付カラム */
+/* 取引IDカラム */
+table.claim_result td.date_col,
+table.claim_result td.id_col {
+	text-align: center;
+}
+
+/* 金額カラム */
+table.claim_result td.money_col {
+	text-align: right;
+}
+
+/* マイナス金額カラム */
+table.claim_result th.minus_col,
+table.claim_result td.minus_col {
+/*
+	width: 80px;
+	white-space: normal;
+*/
+}
+table.claim_result th.minus_col {
+	background-color: olivedrab;
+}
+table.claim_result td.minus_col {
+	color: darkolivegreen;
+}
+
+
+/* ラベル項目 */
+table.claim_result td.seq_col,
+table.claim_result td.label_col {
+	background-color: #D7E4BC;
+}
+
+/* 合計カラム */
+table.claim_result td.total_col {
+	background-color: khaki;
+	color: firebrick;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+/* お知らせ */
+.information_message {
+	width: 27%;
+	float: left;
+	overflow: auto;
+}
+
+.dummy {
+	clear: both;
+}
+
+table.claim_result tr.summary td {
+	font-size: 11pt;
+	padding: 6px 3px;
+	white-space: nowrap;
+}
+
+table.claim_result tr.summary td.total_col {
+	font-size: 12pt;
+}
+
+table.claim_result tr.summary td.claim_label_col,
+table.claim_result tr.summary td.claim_col {
+	background-color: #E8FFF0;
+	color: darkolivegreen;
+}
+table.claim_result tr.summary td.claim_col {
+	color: gray;
+}
+
+table.claim_result tr.last_summary_item td {
+	border-bottom: none 0px;
+}
+
+table.claim_result tr#grand_total_row td {
+	border-top: double 3px dimgray;
+	font-weight: bold;
+	font-size: 14pt;
+}
+
+table.claim_result tr#grand_total_row td.label_col {
+	background-color: #D7E4BC;
+	color: blue;
+}
+
+table.claim_result tr#grand_total_row td.total_col {
+	background-color: white;
+	color: blue;
+}
+
+table.claim_result td a:link,
+table.claim_result td a:hover,
+table.claim_result td a:visited,
+table.claim_result td a:active {
+	text-decoration: none;
+	color: blue;
+}
+
+table.claim_result td a:hover {
+	color: royalblue;
+	text-decoration: underline;
+}
+
+div.note {
+	width: 70%;
+	margin-top: 16px;
+	margin-right: 2%;
+	font-size: 10pt;
+	padding: 4px;
+	border: solid 1px dimgray;
+	background-color: #e0e0e0;
+	color: crimson;
+	clear: both;
+}
+
+div.note ul li {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+
+@media print {
+	* {
+		background-color: white !important;
+		color: black !important;
+	}
+	
+	.application_header,
+	.application_header a,
+	.application_header img,
+	.command_bar,
+	#header_menu,
+	#application_footer,
+	.submenu_container,
+	.footer_menu,
+	.page_title,
+	form {
+		display: none !important;
+	}
+	
+	#application_footer {
+		border: none 0px !important;
+		background-color: transparent !important;
+		color: black !;
+		text-align: right;
+	}
+	
+	/* 印刷用の見出し */
+	.print_title {
+		display: block;
+	}
+
+	table.claim_result {
+		width: 99%;
+		margin-right: 0%;
+		float: none;
+	}
+	
+	/* デフォルトのth, td */
+	table.claim_result th,
+	table.claim_result td {
+		font-size: 9pt;
+	}
+	
+	div.note {
+		width: 99%;
+	}
+}

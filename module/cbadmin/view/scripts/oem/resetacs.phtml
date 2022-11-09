@@ -1,0 +1,180 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#contents table {
+    margin: 0px;
+    padding: 0px;
+}
+
+td.l_label {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #eeeeee;
+}
+
+td.r_label {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #eeeeee;
+    white-space: nowrap;
+}
+
+td.c_label {
+    text-align: center;
+    /*padding: 2px 10px 2px 0px;*/
+    background-color: #eeeeee;
+}
+
+td.l_data {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #ffffff;
+}
+
+td.l_data span.wrap_container {
+    /*width: 398px;*/
+    overflow: hidden;
+    float: left;
+}
+
+td.r_data {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #ffffff;
+}
+
+td.c_data {
+    text-align: center;
+    padding: 2px 0px 2px 0px;
+    background-color: #ffffff;
+}
+
+div {
+    margin: 0px;
+    padding: 0px;
+    font-size: 12px;
+    font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+
+div.block_container {
+    margin: 10px 25px;
+}
+div.block_container table.datatable {
+    width: 750px;
+}
+form button {
+    padding: 2px 12px;
+}
+form .submit_parts {
+    line-height: 18px;
+    margin: 4px 10px;
+}
+.reset_info {
+    margin: 12px 0;
+}
+.reset_info .info {
+    font-size: 16px;
+    text-align: center;
+    color: #666;
+}
+.reset_info.can_reset .info {
+    font-weight: bold;
+    color: crimson;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>請求ストップ解除処理</h3>
+    <div class="block_container">
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td width="250" class="r_label">事業者ID</td>
+            <td class="l_data"><?php echo f_e($this->data["EnterpriseId"]); ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">事業者名</td>
+            <td class="l_data"><?php echo f_e($this->data["EnterpriseNameKj"]); ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">ログインID</td>
+            <td class="l_data"><?php echo f_e($this->data["LoginId"]); ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">請求自動ストップ</td>
+            <td class="l_data" style="padding: 4px;">
+        <form name="update_form" method="post" action="enterprise/acsupdate" id="acs-update">
+                <input type="hidden" name="form[eid]" value="<?php echo f_e($this->data['EnterpriseId']); ?>" />
+            <?php foreach($this->master_map['AutoClaimStopFlg'] as $value => $caption) { ?>
+                <label for="AutoClaimStopFlg<?php echo f_e($value); ?>">
+                <?php $checked = nvl($this->data['AutoClaimStopFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                    <input name="form[AutoClaimStopFlg]" id="AutoClaimStopFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                <?php echo f_e($caption); ?>
+                </label>
+            <?php } ?>
+                <button type="submit" style="margin-left: 12px">更新</button>
+        </form>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="c_data">
+              <div class="reset_info<?php if($this->can_reset) echo ' can_reset'; ?>">
+                <form id="searcho-form" name="sform" method="post" action="searcho/search" target="_blank">
+                <?php foreach($this->targets as $target) { ?>
+                  <input type="hidden" name="seqs[]" value="<?php echo f_e($target['OrderSeq']); ?>" />
+                <?php } ?>
+                <span class="info">
+                    解除対象件数（入金確認待ち件数）：
+                  <?php 
+                    // count関数対策
+                    $targetsCount = 0;
+                    if (!empty($this->targets)){
+                        $targetsCount = count($this->targets);
+                    }
+                    if($this->can_reset) { ?>
+                    <a href="javascript:void(0)" onclick="$('searcho-form').submit(); return false" style="padding: 0 4px" title="詳細を別ウィンドウで表示"><!--
+                    --><?php echo f_nf($targetsCount), '#,##0'); ?><!--
+                    --></a>
+                  <?php } else { ?>
+                        <?php echo f_nf($targetsCount), '#,##0'); ?>
+                  <?php } ?> 件
+                </span>
+                </form>
+              </div>
+              <div>
+              </div>
+      <form name="form" method="post" action="enterprise/resetacsdone" id="acs-reset">
+              <input type="hidden" name="eid" value="<?php echo f_e($this->data["EnterpriseId"]); ?>" />
+              <button id="exec-reset" class="submit_parts" type="submit"<?php if(!$this->can_reset) echo ' disabled="disabled"'; ?>>解除を実行</button>
+              <a id="cancel-reset" class="submit_parts" href="enterprise/detail/eid/<?php echo f_e($this->data['EnterpriseId']); ?>">事業者詳細に戻る</a>
+      </form>
+            </td>
+          </tr>
+        </table>
+    </div>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+    Event.observe($('acs-reset'), 'submit', function(evt) {
+        Event.stop(evt);
+        ($('exec-reset') || { disabled : false } ).disabled = true;
+        ($('cancel-reset') || { style : { visibility : null } }).style.visibility = 'hidden';
+        setTimeout(function() {
+            $('acs-reset').submit();
+        }, 0);
+    }.bindAsEventListener($('acs-reset')));
+});
+</script>
+</div>
+</body>
+</html>

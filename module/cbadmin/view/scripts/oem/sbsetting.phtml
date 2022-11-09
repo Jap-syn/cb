@@ -1,0 +1,300 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+form.self_billing_form .radio_label,
+form.self_billing_form .check_label {
+    margin: 0 10px;
+}
+form.self_billing_form .check_label {
+    margin-left: -5px;
+}
+.access_key {
+    margin: 0 10px 0 4px;
+    border: solid 1px silver;
+    width: 300px;
+}
+form.self_billing_form button {
+    width: 150px;
+    padding: 2px;
+    margin: 0 5px;
+}
+.update_error {
+    margin: 5px 25px;
+    padding: 5px 15px;
+    background-color: lavenderblush;
+    border: solid 1px pink;
+    color: gray;
+}
+.update_error .update_error_message {
+    margin-left: 20px;
+    color: orangered;
+    font-weight: bold;
+}
+.printable_info {
+    width: auto;
+    min-width: 100px;
+    float: right;
+    text-align: right;
+    margin-right: 4px;
+}
+#printable_count_all {
+    font-weight: bold;
+    color: red;
+}
+</style>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+    window.printable_count = 0;
+
+    ['mode_disabled', 'mode_enabled', 'mode_pending', 'generate_access_key'].each(function(id) {
+        if(!$(id) || $(id).type == 'hidden') throw $continue;
+        Event.observe($(id), 'click', function(evt) {
+            setTimeout(updateUI, 0);
+        }.bindAsEventListener($(id)));
+    });
+
+    // サブミット前
+    Event.observe($('sbsetting_form'), 'submit', function(evt) {
+        if(!window.printable_count) return;
+
+        var msg = '', cannot_update = false;
+        if(($('mode_disabled') || { checked : false }).checked) {
+            msg = [
+                   '未印刷のデータがあるため、同梱ツールの利用を「利用しない」に設定できません。',
+                   'すべてのデータの印刷が完了してからやり直してください。'
+                ].join('\n');
+            alert(msg);
+            cannot_update = true;
+        } else
+        if(($('mode_pending') || { checked : false }).checked) {
+            msg = [
+                   '同梱ツールの利用を一時停止にしようとしています。',
+                   'この設定を行うと、利用を再開するまで未印刷データの印刷ができなくなります。',
+                   'このまま続けますか？'
+                ].join('\n');
+        }
+        if(!msg.length) return;
+        if(cannot_update || !window.confirm(msg)) {
+            // サブミットをキャンセル
+            evt.preventDefault ? evt.preventDefault() : evt.returnValue = false;
+        }
+    }.bindAsEventListener($('sbsetting_form')));
+
+    // 詳細画面へ戻る
+    Event.observe($('cancel_submit'), 'click', function(evt) {
+        var parts = [
+            (document.getElementsByTagName('base')[0] || { href : '/' }).href,
+            'enterprise/detail/eid',
+            ($('enterprise_id') || { value : '-1' }).value
+        ].map(function(part) {
+            return (part || '').replace(/(^\/+)|(\/+$)/, '');
+        });
+        window.location.href = parts.join('/');
+    }.bindAsEventListener($('cancel_submit')));
+
+    updateUI();
+
+    // 未印刷件数のポーリング
+    var
+        ent_id = ($('enterprise_id') || { value : -1 }).value,
+        interval = 15 * 1000,
+        base_url = (function() {
+            return (document.getElementsByTagName("base")[0] || { href : '' }).href;
+        })(),
+        url = (function(a, b) {
+            return [a.replace(/\/+$/, ''), b.replace(/^\/+/, '')].join('/');
+        })(base_url, 'enterprise/sbprintablecount/eid/' + ent_id);
+    setTimeout(function () {
+        var
+            f = arguments.callee,
+            next = function() { setTimeout(f, interval); },
+            err = function() { next(); };
+        new Ajax.Request(url, {
+            onComplete : function(xhr) {
+                try {
+                    var data = xhr.responseText.parseJSON();
+                    if(data && data.success) {
+                        var total = 0;
+                        data.list.each(function(item) {
+                            total += parseInt(item.count);
+                            var target = $('printable_count_' + item.key);
+                            if(target) {
+                                target.innerHTML = item.count ?
+                                    ['(未印刷：', item.count, ' 件)'].join('').escapeHTML() :
+                                    '';
+                            }
+                        });
+                        ($('printable_count_all') || { innerHTML : '' }).innerHTML = total ?
+                            ['未印刷：', total, ' 件'].join('').escapeHTML() : '';
+                        window.printable_count = total;
+                    }
+                } catch(e) {}
+                next();
+            },
+            onFailure : err,
+            onException : err
+        });
+    }, 0);
+});
+function updateUI() {
+    var mode_status = $('mode_enabled').checked;
+
+    // 「同梱ツールの利用」 - 「一時保留」
+    // → 「利用する」チェックなら有効、それ以外は無効
+    $('mode_pending').disabled = !mode_status;
+    if($('mode_pending').disabled) $('mode_pending').checked = false;
+
+    // 「同梱ツールのアクセスキー」 - 「新しいキーを追加する」 / 「請求書発行後の伝票番号更新機能」 - 「更新を許可する」
+    // 、「CSV出力機能」 - 「利用を許可する」
+    // → 「利用する」チェック且つ「一時保留」でないなら有効、それ以外は無効
+    ['generate_access_key', 'allow_update_journal', 'allow_export'].each(function(id) {
+        if(!$(id) || $(id).type == 'hidden') throw $continue;
+        $(id).disabled = !(mode_status && !$('mode_pending').checked);
+
+        // 「新しいキーを追加する」は、「利用しない」または「一時保留」の場合はチェックを無条件にはずす
+        if(id == 'generate_access_key' && $(id).disabled) {
+            $(id).checked = false;
+        }
+    });
+
+    // 「同梱ツール出力時の請求手数料」
+    // → 「利用する」チェックなら有効、それ以外は無効
+    $('claim_fee').disabled = !mode_status;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+  <?php $data = $this->data; ?>
+<!-- start contents -->
+<div id="contents">
+
+<?php if(isset($this->update_error)) { ?>
+<div class="update_error">
+    以下の理由で更新できませんでした：
+    <div class="update_error_message">
+    <?php echo f_e($this->update_error); ?>
+    </div>
+</div>
+<?php } ?>
+
+<h3>請求書同梱ツール設定</h3>
+<form id="sbsetting_form" action="enterprise/sbsettingup" method="post" class="self_billing_form">
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">事業者ID</td>
+    <td class="data" colspan="2"><?php echo f_e($data["EnterpriseId"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">ログインID</td>
+    <td class="data" colspan="2"><?php echo f_e($data["LoginId"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">事業者名</td>
+    <td class="data" colspan="2"><?php echo f_e($data["EnterpriseNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">同梱ツールの利用</td>
+    <td class="data" colspan="2">
+      <label for="mode_disabled" class="radio_label">
+        <input id="mode_disabled" name="form[mode]" type="radio" value="0"<?php if(!$data['SelfBillingMode']) echo ' checked="checked"'; ?> />
+        利用しない
+      </label>
+      <label for="mode_enabled" class="radio_label">
+        <input id="mode_enabled" name="form[mode]" type="radio" value="1"<?php if($data['SelfBillingMode']) echo ' checked="checked"'; ?> />
+        利用する
+      </label>
+      <label for="mode_pending" class="check_label">
+        <input id="mode_pending" name="form[mode_pending]" type="checkbox" value="1"<?php if($data['SelfBillingMode'] < 0) echo ' checked="checked"'; ?><?php if(!$data['SelfBillingMode']) echo ' disabled="disabled"'; ?> />
+        一時保留
+      </label>
+      <?php /* この事業者の未印刷件数 */ ?>
+      <span id="printable_count_all" class="printable_info"></span>
+    </td>
+  </tr>
+  <tr>
+    <td class="label">請求書発行後の伝票番号更新機能</td>
+    <td class="data" colspan="2">
+      <label for="allow_update_journal" class="check_label">
+        <input id="allow_update_journal" name="form[allow_update_journal]" type="checkbox" value="1"<?php if($data['SelfBillingMode'] > 10) echo ' checked="checked"'; ?><?php if(!$data['SelfBillingMode']) echo ' disabled="disabled"'; ?> />
+        更新を許可する
+      </label>
+    </td>
+  </tr>
+  <tr>
+    <td class="label">CSV出力機能</td>
+    <td class="data" colspan="2">
+      <label for="allow_export" class="check_label">
+        <input id="allow_export" name="form[allow_export]" type="checkbox" value="1"<?php if($data['SelfBillingExportAllow']) echo ' checked="checked"'; ?><?php if(!$data['SelfBillingMode']) echo ' disabled="disabled"'; ?> />
+        利用を許可する
+      </label>
+    </td>
+  </tr>
+  <tr>
+<?php 
+    // count関数対策
+    $sb_count = 0;
+    if (!empty($this->sbprops)){
+        $sb_count = count($this->sbprops);
+    } ?>
+<?php if($sb_count == 0) { ?>
+    <td class="label">同梱ツールアクセスキー</td>
+    <td class="data" colspan="2">
+        ※ [更新]時に新しいキーが生成されます
+        <input type="hidden" name="form[generate_access_key]" value="1" />
+    </td>
+  </tr>
+<?php } else { ?>
+  <?php foreach($this->sbprops as $i => $row) { ?>
+  <tr>
+    <?php if($i == 0) { ?>
+    <td class="label" rowspan="<?php echo f_e($sb_count + 1); ?>">同梱ツールアクセスキー</td>
+    <?php } ?>
+    <td class="data" style="text-align: right; width: 20px"><?php echo f_e($i + 1); ?></td>
+    <td class="data">
+      <input type="text" class="access_key" value="<?php echo f_e($row['AccessKey']); ?>" readonly="readonly" />
+      <label for="delete_access_key_<?php echo f_e($i); ?>" style="display: none">
+        <input id="delete_access_key_<?php echo f_e($i); ?>" class="delete_access_key" name="form[delete_access_key][]" type="checkbox" value="<?php echo f_e(nvl($row['Seq'], '-1')); ?>" />
+        このキーを削除
+      </label>
+      <?php /* このキーの未印刷件数 */ ?>
+      <span id="printable_count_<?php echo f_e($row['AccessKey']); ?>" class="printable_info"></span>
+    </td>
+  </tr>
+  <?php } ?>
+  <tr>
+    <td class="data" colspan="2">
+      <label for="generate_access_key">
+        <input id="generate_access_key" name="form[generate_access_key]" type="checkbox" value="1" />
+        新しいキーを追加する
+      </label>
+    </td>
+  </tr>
+<?php } ?>
+  <tr>
+    <td class="label">同梱ツール出力時の請求手数料</td>
+    <td class="data" colspan="2">
+      <label for="claim_fee">
+        <input id="claim_fee" name="form[claim_fee]" type="text" size="5" maxlength="4" value="<?php echo f_e(nvl($data['SelfBillingClaimFee'], $data['ClaimFee'])); ?>" />
+        円
+      </label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" class="c_data">
+      <button id="do_submit" type="submit">更新</button>
+      <button id="cancel_submit" type="button">詳細画面へ戻る</button>
+      <input type="hidden" id="enterprise_id" name="form[eid]" value="<?php echo f_e($this->eid); ?>" />
+    </td>
+  </tr>
+</table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

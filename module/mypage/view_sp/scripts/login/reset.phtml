@@ -1,0 +1,105 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<style>
+#inputarea {
+    font-size: 14px;
+    font-weight: bold;
+    float: left;
+    margin: 5px 20px 0px 20px;
+    width: 100%;
+}
+#inputarea1 {
+    float: left;
+    margin: 0px 20px 0px 20px;
+    width: 100%;
+}
+</style>
+<script>
+/* パスワードを表示するチェックイベント */
+function syncPassword(id, sync) {
+    var objpwd = (id == 0) ? 'pwdpwd' : 'pwd2pwd';
+    var objtxt = (id == 0) ? 'pwdtxt' : 'pwd2txt';
+    document.getElementById(objpwd).value = sync.value;
+    document.getElementById(objtxt).value = sync.value;
+}
+function toggleInputType(id, chk, objchk) {
+    var objpwd = (id == 0) ? 'pwdpwd' : 'pwd2pwd';
+    var objtxt = (id == 0) ? 'pwdtxt' : 'pwd2txt';
+    if (chk) {
+        document.getElementById(objpwd).style.display = "none";
+        document.getElementById(objtxt).style.display = "inline-block";
+    }
+    else {
+        document.getElementById(objpwd).style.display = "inline-block";
+        document.getElementById(objtxt).style.display = "none";
+    }
+    objchk.blur();
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再設定</h5>
+    <div id="d_01" style="margin-left: 20px;">
+        <span style="font-weight: normal;">新しいパスワードをご入力ください。<br />パスワードの変更後は、新しいパスワードでログインしていただけます。</span><br /><br />
+    </div>
+
+    <?php if (isset($this->errors)) { ?>
+    <div class="alertbox" style="display:block;" >
+    <?php     foreach ($this->errors as $error) { ?>
+    <p class="error"><?php echo $error; ?></p>
+    <?php     } ?>
+    </div>
+    <?php } ?>
+
+    <form name="form" method="post" action="login/resetcomplete">
+        <input type="hidden" name="customerid" value="<?php echo f_e($this->customerid); ?>" />
+        <div id="inputarea">新しいパスワード<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1">
+        <input type="password" size="35px" style="height: 25px;word-break:break-all;" name="form[pwd]" id="pwdpwd" onblur="syncPassword(0, this)" value="<?php echo f_e($this->formdata['pwd']); ?>" />
+        <input type="text" size="35px" style="height: 25px;word-break:break-all;display: none;" name="form[pwd]" id="pwdtxt" onblur="syncPassword(0, this)" value="<?php echo f_e($this->formdata['pwd']); ?>" />
+        </div>
+        <div id="inputarea1" style="margin-top:5px;"><input type="checkbox" id="chk" onClick="toggleInputType(0, this.checked, this)" />パスワードを表示する</div>
+        <div id="inputarea1">※パスワードは半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上(英数記号混合)でご入力ください</div>
+
+        <div id="inputarea" style="margin-top:10px;">新しいパスワード（確認用）<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1">
+        <input type="password" size="35px" style="height: 25px;word-break:break-all;" name="form[pwd2]" id="pwd2pwd" onblur="syncPassword(1, this)" value="<?php echo f_e($this->formdata['pwd2']); ?>" />
+        <input type="text" size="35px" style="height: 25px;word-break:break-all;display: none;" name="form[pwd2]" id="pwd2txt" onblur="syncPassword(1, this)" value="<?php echo f_e($this->formdata['pwd2']); ?>" />
+        </div>
+        <div id="inputarea1" style="margin-top:5px;"><input type="checkbox" id="chk" onClick="toggleInputType(1, this.checked, this)" />パスワードを表示する</div>
+        <div id="inputarea1">※パスワードは半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上(英数記号混合)でご入力ください</div>
+
+        <table width="300px">
+            <tr class="data">
+                <td align="center"><br /><input id="goto_button" type="submit" value="設定する" /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>

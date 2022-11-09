@@ -1,0 +1,44 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+
+body.atpaycb #wrapper,
+body.atpaycb #wrapper > div {
+/*    background-color: #C1E4E9;*/
+/*    background-color: #DBD0E6;*/
+/*    background-color: #BBC8E6;*/
+    background-color: #C0A2C7;
+}
+
+-->
+</style>
+</head>
+<body class="atpaycb">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">＠ペイメントインポート</h3>
+    <form name="form" enctype="multipart/form-data" method="post" action="rwrcptcfm/impatpaycb">
+      <div id="formdiv">
+      ＠ペイメントファイル　
+        <input type="file" name="cres" size="80" />
+        <p><button type="submit">　　インポート　　</button></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

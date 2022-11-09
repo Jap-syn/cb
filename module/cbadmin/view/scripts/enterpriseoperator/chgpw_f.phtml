@@ -1,0 +1,50 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseoperator/page_menu2.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>パスワード変更</h3>
+<form id="login_form" name="form" method="POST" action="operator/chgpw/cmd/e">
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td width="400" class="r_label">現在のパスワード</td>
+    <td class="l_data"><input type="password" id="opw" name="opw" value="<?php echo $this->error['opw']; ?>" />　<?php echo $this->error['eopw']; ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">新しいパスワード</td>
+    <td class="l_data"><input type="password" id="npw1" name="npw1" value="<?php echo $this->error['npw1']; ?>" />  <?php echo $this->error['enpw1']; ?></td>
+  </tr>  <tr>
+    <td class="r_label">確認</td>
+    <td class="l_data"><input type="password" id="npw2" name="npw2" value="<?php echo $this->error['npw2']; ?>" />　<?php echo $this->error['enpw2']; ?></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="data">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><button type="submit">　　O　K　　</button></td>
+  </tr>
+</table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe( window, "load", function(evt) {
+  Event.observe( $("login_form"), "submit", function(evt) {
+    if( $("npw1").value.trim().length == 0 ) {
+      alert( "パスワードを空にすることはできません。" );
+      Event.stop( evt );
+      return;
+    }
+  }.bindAsEventListener( $("login_form") ) );
+}.bindAsEventListener( window ) );
+</script>
+</html>

@@ -1,0 +1,30 @@
+<?php
+use models\Logic\Haipon\Exporter\LogicHaiponExporterFormatter;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<?php echo $this->render('cbadmin/haipon/styles.php'); ?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/haipon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">インポート完了</h3>
+    <div style="margin: 5px 25px">
+        インポートが完了しました。<br />
+        <?php if(is_array($this->info)) { ?>
+        (<?php echo f_nf($this->info['imported'], '#,##0'); ?> / <?php echo f_e(f_nf($this->info['processed'], '#,##0')); ?> 件)<br />
+        <?php } ?>
+        <br />
+        <a href="haipon/index">&laquo; 戻る</a>
+    </div>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+diff a/module/cbadmin/view/scripts/calendar/index.phtml b/module/cbadmin/view/scripts/calendar/index.phtml	(rejected hunks)
+@@ -17,8 +17,8 @@
+ <body>
+ <div id="wrapper">
+   <?php echo $this->render('page_header.php'); ?>
+-  <?php echo $this->render('page_menu.php'); ?>
+-  
++  <?php echo $this->render('calendar/page_menu.php'); ?>
++
+   <!-- start contents -->
+   <div id="contents">
+     <h3 class="contents_title">カレンダーメンテナンス　</h3>

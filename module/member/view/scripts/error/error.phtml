@@ -1,0 +1,52 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'system_message.php' );
+
+// ページタイトル
+echo $this->render( 'page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+/***** コマンドバー *****/
+// ヒットがあったか
+$hasResults = !empty( $this->searchResult ) ? true : false;
+
+// コマンドバー使用
+require_once 'Coral/View/CommandBar.php';
+$commandBar = new Coral_View_CommandBar(
+	// title
+	'エラーが発生しました。エラーが頻発する場合は、システム管理者へご連絡ください'
+);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+?>
+	<ul class="errorInfo">
+<?php
+foreach($this->errorList as $error) {
+	$e = new Exception();
+?>
+		<li><?php echo f_e($error->getMessage()); ?><pre><?php echo f_e($error->getTraceAsString()); ?></pre></li>
+<?php
+}
+?>
+	</ul>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,60 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterprise/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>事業者登録完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <?php if(!is_null($this->data["OemId"]) && $this->data["OemId"] != 0) { ?>
+  <tr>
+   <td class="label">OEMID</td>
+    <td class="data" ><?php echo f_e($this->data["OemId"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">OEM先名</td>
+    <td class="data" ><?php echo f_e($this->data["OemNameKj"]); ?></td>
+  </tr>
+  <?php } ?>
+  <tr>
+    <td class="label">事業者名</td>
+    <td class="data"><?php echo escape($this->data["EnterpriseNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">事業者名カナ</td>
+    <td class="data"><?php echo escape($this->data["EnterpriseNameKn"]); ?></td>
+  </tr>  <tr>
+    <td class="label">ログインID</td>
+    <td class="data"><?php echo $this->data["LoginId"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">パスワード</td>
+    <td class="data"><?php
+    if(isset($this->data['GeneratedPassword'])) {
+      echo escape($this->data["GeneratedPassword"]);
+    } else {
+      echo '(暗号化済み)';
+    }
+    ?></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="c_data">
+      <a href="site/list/eid/<?php echo $this->eid; ?>">サイト登録へ</a>
+      ｜
+      <a href="enterprise/detail/eid/<?php echo $this->eid; ?>">詳細画面へ</a>
+      ｜
+      <a href="enterprise/edit/eid/<?php echo $this->eid; ?>">編集画面へ</a>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

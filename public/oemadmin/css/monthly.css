@@ -1,0 +1,104 @@
+.print_header {
+    width: 900px !important;
+}
+.print_header_left {
+    float: left;
+    width: 49%;
+    font-size: 10pt;
+}
+.print_header_right {
+    float: right;
+    width: 49%;
+    font-size: 10pt;
+    text-align: right;
+}
+#summary_issue_date {
+    text-align: right;
+    margin-bottom: 8px;
+}
+.enterprise_name {
+    font-size: 12pt;
+    margin-left: 8px;
+}
+#address_data {
+    margin-left: 60px;
+}
+#stamp_image {
+    position: absolute;
+    left: 820px;
+    display: none;
+    width: 0px;
+    height: 0px;
+}
+#issue_message {
+    float: left;
+    width: 49%;
+    font-size: 9pt;
+    margin: 20px 8px 10px 8px;
+}
+.float_clear {
+    font-size: 0px !important;
+    float: none !important;
+    clear: both !important;
+}
+.summary_title,
+.list_summary {
+    width: 900px !important;
+    margin-bottom: 14px;
+}
+.summary_title {
+    text-align: center;
+}
+#stamp_image {
+    position: absolute;
+    left: 870px;
+    display: none;
+    width: 0px;
+    height: 0px;
+}
+.printer_visible {
+    display: none;
+}
+div.note {
+    width: 872px !important;
+    margin-top: 16px;
+    font-size: 10pt;
+    padding: 6px;
+    padding-left: 20px;
+    border: 1px solid lightgray;
+    background-color: #E0E0E0;
+    border-radius: 3px;
+    color: #DC143C;
+    clear: both;
+}
+
+/* printing headers */
+@media print {
+	* {
+            background-color: white !important;
+            color: black !important;
+	}
+        
+        #contents {
+            border: none;
+        }
+        
+        form, #header, #navigation, .title, #footer {
+            display: none;
+        }
+
+        .summary_title {
+            margin-top: 15px;
+        }
+        
+	#stamp_image {
+		display: inline;
+		width: auto;
+		height: auto;
+	}
+	
+	.printer_visible {
+		display: block;
+	}
+}
+

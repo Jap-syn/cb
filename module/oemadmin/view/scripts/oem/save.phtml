@@ -1,0 +1,50 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style>
+#saveinfo {
+    margin: 10px;
+    border: 1px grey solid;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: lightyellow;
+}
+#completion_form {
+	margin: 5px 25px;
+}
+#completion_form button {
+	border: none 0px;
+	background-color: white;
+	color: blue;
+	cursor: pointer;
+	font-size: 12px;
+}
+#completion_form button:hover {
+    text-decoration: underline;
+}
+
+</style>
+</head>
+<body>
+	<!-- start contents -->
+	<div id="contents">
+            <?php echo $this->render('oemadmin/page_header.php'); ?>
+		<p id="saveinfo">
+			保存内容を確定させています。少しお待ちください...
+		</p>
+		<form id="completion_form" action="oem/completion" method="post">
+			<input name="hash" value="<?php echo f_e($this->data); ?>" type="hidden" />
+			<button type="submit">しばらくたっても画面が移動しない場合はここをクリックしてください</button>
+		</form>
+	<?php echo $this->render('oemadmin/page_footer.php'); ?>
+        </div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	setTimeout(function() {
+		$("completion_form").submit();
+	}, 2000);
+});
+</script>
+</html>

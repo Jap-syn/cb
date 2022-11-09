@@ -1,0 +1,89 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->data;
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>雑損失雑収入等登録</h3>
+<form name="form" method="post" action="rwsprcpt/losssave">
+
+  <!-- 雑損失雑収入等登録 -->
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <th>項目</th>
+      <th>指定値</th>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【過不足状況】</td>
+    </tr>
+    <tr>
+      <td class="label">種類<font color="red">*</font></td>
+      <td class="data"><?php echo $this->losstypeTag; ?>
+      <?php show_error_message($this->error['losstype']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">発生日時<font color="red">*</font></td>
+      <td class="data"><input name="ProcessDate" type="text" id="ProcessDate" value="<?php echo f_e($this->ProcessDate); ?>" />　※YYYY-MM-DD形式で入力します
+      <?php show_error_message($this->error['ProcessDate']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">金額<font color="red">*</font></td>
+      <td class="data"><input name="SundryAmount" type="text" id="SundryAmount" value="<?php echo f_e($this->SundryAmount); ?>" />　※雑損失･雑収入金額を入力します
+      <?php show_error_message($this->error['SundryAmount']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">科目<font color="red">*</font></td>
+      <td class="data"><?php echo $this->sundrytypeTag; ?>
+      <?php show_error_message($this->error['sundrytype']); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【注文状況】</td>
+    </tr>
+    <tr>
+      <td class="label">注文ID</td>
+      <td class="data"><input name="OrderId" type="text" id="OrderId" value="<?php echo f_e($this->OrderId); ?>" />　※雑損失の場合必須
+      <?php show_error_message($this->error['OrderId']); ?></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td style="padding: 2px 0px">
+        <input type="submit" id="btnSave" value="　登　録　" />
+		&nbsp;
+		<input type="button" id="btnClose" value="　　閉じる　　" onclick="window.close();" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

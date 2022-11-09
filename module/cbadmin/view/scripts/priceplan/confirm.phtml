@@ -1,0 +1,98 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/priceplan/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>加盟店料金プラン登録内容確認</h3>
+<form id="saveForm" method="post" action="priceplan/save">
+<?php if(isset($this->data['PricePlanId'])) { ?><input name="data[PricePlanId]" type="hidden" value="<?php echo f_e($this->data['PricePlanId']); ?>" /><?php } ?>
+<?php // var_dump($this->data); ?>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">料金プラン名</td>
+    <td class="data">
+      <?php echo f_e($this->data["PricePlanName"]); ?>
+      <input name="data[PricePlanName]" type="hidden" value="<?php echo f_e($this->data['PricePlanName']); ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">月額固定費(税抜)</td>
+    <td class="data">
+      <?php echo $this->data["MonthlyFee"]; ?>円
+      <input name="data[MonthlyFee]" type="hidden" value="<?php echo $this->data['MonthlyFee']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">決済上限額</td>
+    <td class="data">
+      <?php echo $this->data["SettlementAmountLimit"]; ?>円
+      <input name="data[SettlementAmountLimit]" type="hidden" value="<?php echo $this->data['SettlementAmountLimit']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">決済手数料率</td>
+    <td class="data">
+      <?php echo f_e($this->data["SettlementFeeRate"]); ?>％
+      <input name="data[SettlementFeeRate]" type="hidden" value="<?php echo doubleval($this->data['SettlementFeeRate']); ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">請求手数料（別送）(税抜)</td>
+    <td class="data">
+      <?php echo $this->data["ClaimFeeBS"]; ?>円
+      <input name="data[ClaimFeeBS]" type="hidden" value="<?php echo $this->data['ClaimFeeBS']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">請求手数料（同梱）(税抜)</td>
+    <td class="data">
+      <?php echo $this->data["ClaimFeeDK"]; ?>円
+      <input name="data[ClaimFeeDK]" type="hidden" value="<?php echo $this->data['ClaimFeeDK']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">再請求手数料(税抜)</td>
+    <td class="data">
+      <?php echo $this->data["ReClaimFee"]; ?>円
+      <input name="data[ReClaimFee]" type="hidden" value="<?php echo $this->data['ReClaimFee']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">有効設定</td>
+    <td class="data">
+      <?php if ($this->data['ValidFlg'] == 1 or $this->data['ValidFlg'] == 'on') echo '有効'; else echo '無効'; ?>
+      <input name="data[ValidFlg]" type="hidden" value="<?php echo ($this->data['ValidFlg'] == 1 or $this->data['ValidFlg'] == 'on') ? 1 : 0; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <button type="submit">確　認</button>　　　　　<button type="button" id="goBack">戻　る</button>
+    </td>
+  </tr>
+
+</table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("goBack"), "click", function() {
+    <?php if(isset($this->data['PricePlanId'])) { ?>
+    $("saveForm").action = "priceplan/edit/ppid/<?php echo f_e($this->data['PricePlanId']); ?>";
+    <?php } else { ?>
+    $("saveForm").action = "priceplan/form";
+    <?php } ?>
+    $("saveForm").submit();
+  });
+});
+</script>
+</html>

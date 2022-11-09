@@ -1,0 +1,106 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/creditsettlement/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message_sp.php' );
+?>
+<!-- start contents -->
+<div id="contents">
+  <div id="Tcreditsettlement_area">
+    <img src="../../images/navi02.png" alt="navi02" width="270px" height="38px" style="margin-left: 14px" />
+    <h5 style="line-height:30px;">カード支払い（確認）</h5>
+    <table width="300px">
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご注文番号 : <?php echo f_e($this->orderId); ?></td>
+      </tr>
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご請求金額 : <?php echo f_nf($this->claimedBalance, '#,##0'); ?> 円</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="creditsettlement_area">
+    <form name="creditsettlement_form" id="creditsettlement_form" method="post">
+      <input type="hidden" name="card_no" value="<?php echo f_e($this->data['card_no']);?>" />
+      <input type="hidden" name="period_month" value="<?php echo f_e($this->data['period_month']);?>" />
+      <input type="hidden" name="period_year" value="<?php echo f_e($this->data['period_year']);?>" />
+      <input type="hidden" name="cvc" value="<?php echo f_e($this->data['cvc']);?>" />
+      <input type="hidden" name="token" value="<?php echo f_e($this->data['token']);?>" />
+      <input type="hidden" name="tokenKey" value="<?php echo f_e($this->data['tokenKey']);?>" />
+      <input type="hidden" name="oseq"  value="<?php echo f_e($this->oseq); ?>" />
+        <input type="hidden" id="cb_token" name="cb_token" value="<?php echo $this->cb_token; ?>" />
+      <table width="300px">
+        <tr>
+          <td class="l_area">カード番号</td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 14px; font-weight: normal"><?php echo f_e($this->card_no_view);?></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:10px">有効期限</td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 14px; font-weight: normal"><?php echo f_e($this->period_view);?></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:10px">セキュリティコード</td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 14px; font-weight: normal"><?php echo f_e($this->cvc_view);?></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:30px; font-size: 12px; font-weight: normal">※内容の一部は[*]で隠して表示しています。</br>上記内容でよろしければ確定ボタンを、内容を修正する場合は修正ボタンを押してください。</td>
+          <td ></td>
+        </tr>
+      </table>
+
+      <table width="300px">
+        <tr>
+          <td align="left" ><input name="cancel_button" id="cancel_button" type="button" value="修正" /></td>
+          <td align="right"><input name="submit_button" id="submit_button" type="button" value="確定" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/creditsettlement/page_footer_sp.php' );
+?>
+</div>
+<script>
+    Event.observe(window, "load", function() {
+        Event.observe($("cancel_button"), "click", function() {
+            $("creditsettlement_form").action = "creditsettlement/input";
+            $("creditsettlement_form").submit();
+            return false;
+        });
+        Event.observe($("submit_button"), "click", function() {
+            document.getElementById('submit_button').disabled = true;
+            $("creditsettlement_form").action = "creditsettlement/complete";
+            $("creditsettlement_form").submit();
+            return false;
+        });
+    });
+</script>
+</body>
+</html>
+

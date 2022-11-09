@@ -1,0 +1,158 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/cancel/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">キャンセル確認</h3>
+    <form name="form" method="post" action="cancel/done">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="5" style="background-color: #ffffff; border-right-color: white;">
+              <a href="sbpscancelapierror/list<?php echo $this->cancelErrListPrm ?>">　SB連携エラー確認（<?php echo $this->sbpsErrCnt ?>件）</a>
+            </td>
+            <td colspan="10" style="text-align: right; background-color: #ffffff; border-left-color: white;">
+              <input style="font-size: 10px; width: 40px;" type="button" onclick="allChecked(true,this.form);" value="全選択"><br />
+              <input style="font-size: 10px; width: 40px;" type="button" onclick="allChecked(false,this.form);" value="全解除">
+            </td>
+          </tr>
+        <?php for ($phase = 0, $idx = 0 ; $phase < 4 ; $phase++) { ?>
+          <tr>
+            <td height="10" class="c_data" colspan="15">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="15" class="l_label"><span style="margin: 5px 0px 0px 25px;"><?php echo $this->caption[$phase]; ?></span></td>
+          </tr>
+          <tr>
+          	<th>注文<br />SEQ</th>
+          	<th>注文ID</th>
+          	<th>事業者名</th>
+          	<th>請求先氏名</th>
+          	<th>請求額</th>
+          	<th>伝票</th>
+          	<th>請求</th>
+          	<th>着荷</th>
+          	<th>立替</th>
+          	<th>入金</th>
+          	<th>CNL日</th>
+          	<th>区分</th>
+          	<th>キャンセル理由</th>
+          	<th>精算額</th>
+          	<th>確認</th>
+          </tr>
+          <?php
+            // count関数対策
+            $phaseCount = 0;
+            if (!empty($this->list[$phase])) {
+                $phaseCount = count($this->list[$phase]);
+            }
+            for ($i = 0 ; $i < $phaseCount ; $i++) { ?>
+          <tr>
+            <td class="r_data">
+              <input type="hidden" name="phase<?php echo $idx; ?>" id="phase<?php echo $idx; ?>" value="<?php echo $phase; ?>" />
+              <input type="hidden" name="P_OrderSeq<?php echo $idx; ?>" id="P_OrderSeq<?php echo $idx; ?>" value="<?php echo $this->list[$phase][$i]["P_OrderSeq"]; ?>" />
+              <input type="hidden" name="OrderSeq<?php echo $idx; ?>" id="OrderSeq<?php echo $idx; ?>" value="<?php echo $this->list[$phase][$i]["OrderSeq"]; ?>" />
+              <?php echo $this->list[$phase][$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden" name="OrderId<?php echo $idx; ?>" id="OrderId<?php echo $idx; ?>" value="<?php echo $this->list[$phase][$i]["OrderId"]; ?>" />
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$phase][$i]["OrderSeq"]; ?>"><?php echo $this->list[$phase][$i]["OrderId"]; ?></a>
+            </td>
+            <td class="l_data">
+			  <a href="enterprise/detail/eid/<?php echo f_e($this->list[$phase][$i]['EnterpriseId']); ?>" target="_blank">
+				<?php echo f_e($this->list[$phase][$i]["EnterpriseNameKj"]); ?>
+			  </a>
+			</td>
+            <td class="l_data"><a target="_blank" href="customerinquiry/detail/custid/<?php echo $this->list[$phase][$i]["CustomerId"]; ?>"><?php echo $this->list[$phase][$i]["NameKj"]; ?></a></td>
+            <td class="r_data"><?php echo $this->list[$phase][$i]["ClaimAmount"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["Deli_JournalIncDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["F_ClaimDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["Deli_ConfirmArrivalDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["Chg_ExecDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["ReceiptDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$phase][$i]["CancelDate"]; ?></td>
+            <td class="l_data" style="width: 25px; padding: 2px 1px"><?php echo $this->list[$phase][$i]["Cnl_ReturnSaikenCancelFlg"]; ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$phase][$i]["CancelReason"]); ?></td>
+            <td class="r_data"><?php echo $this->list[$phase][$i]["RepayTotal"]; ?></td>
+            <td class="c_data" style="width: 40px;">
+                <input type="checkbox" name="ApprovalFlg<?php echo $idx; ?>" id="ApprovalFlg<?php echo $idx; ?>" />
+                <?php if ($phase == 0 && $this->list[$phase][$i]["DataStatus"] >= 51) { ?>
+                <input type="hidden" name="StatusCheck" id="StatusCheck<?php echo $idx; ?>" value="<?php echo $idx; ?>" />
+                <?php } ?>
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="15">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php $idx++; } ?>
+          <?php if (empty($this->list[$phase])) { ?>
+          <tr>
+            <td class="c_data" colspan="15">
+              該当なし
+            </td>
+          </tr>
+          <?php } ?>
+        <?php } ?>
+        </tbody>
+      </table>
+
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="15" class="c_data">
+              <input type="submit" value="　　キャンセル確定　　"  onclick="return checkDataStatus();"/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+<script type="text/javascript">
+//チェックボックス全件選択
+function allChecked(check,targetForm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        if(targetForm.elements[j].type == "checkbox"){
+        targetForm.elements[j].checked = check;
+        }
+    }
+}
+
+//請求書発行済みのデータが対象かチェック
+function checkDataStatus(){
+    //請求書発行済みデータのインデックスのリスト
+    var chklist = document.getElementsByName("StatusCheck");
+
+    var chkFlg = false;
+    for (var i = 0; i < chklist.length; i++) {
+        //チェックボックス取得
+        var chk = document.getElementById("ApprovalFlg" + chklist[i].value);
+
+        //チェック状態の判定
+        if (chk.checked) {
+            chkFlg = true;
+            break;
+        }
+    }
+
+    //チェックオンのデータがある場合、確認メッセージ表示
+    //ない場合はそのまま確定
+    if (chkFlg) return confirm("請求書発行済みのデータが選択されています。実行してもよろしいですか？");
+    else        return true;
+}
+</script>
+
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

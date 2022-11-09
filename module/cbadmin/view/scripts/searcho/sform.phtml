@@ -1,0 +1,199 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#contents .expressions-container {
+  width: 860px;
+  border: solid silver;
+  border-width: 1px 0 0 1px;
+  padding: 0;
+  margin: 10px 0px 10px 25px;
+}
+
+#contents .expressions-container .expression-item {
+  width: 429px;
+  border: solid silver;
+  border-width: 0 1px 1px 0;
+  padding: 0;
+  margin: 0;
+  float: left;
+}
+
+#contents .expression-item h4.title {
+  margin: 4px 6px 10px 6px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.05;
+}
+
+#contents .expression-item .desc {
+  margin: 2px;
+  margin-left: 24px;
+  line-height: 1.03;
+  color: #666;
+  font-size: 13px;
+  height: 45px;
+  overflow: auto;
+}
+
+#contents .expression-item .date-info {
+  margin: 2px;
+  margin-left: 24px;
+  color: #32a032;
+}
+
+#contents .expression-item select {
+  margin-left: 24px;
+}
+
+#contents .expression-item label.open-new-window-label {
+  font-size: 11px;
+  padding: 0;
+  margin: 0;
+  margin-left: 8px;
+  line-height: 1.01;
+}
+
+#contents .expression-item .button-container {
+  margin: 0 0 4px 24px;
+}
+
+#contents .expression-item form {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+#contents .expression-item button.exec-button {
+  width: 150px;
+  margin-right: 8px;
+  padding: 4px;
+}
+
+#contents .expressions-container .clear-float {
+  display: block;
+  font-size: 0;
+  line-height: 0;
+  height: 0;
+  border: none 0;
+  margin: 0;
+  padding: 0;
+  float: none;
+  clear: both;
+}
+.no-params-error-message {
+	border: solid 1px firebrick;
+	color: maroon;
+	background-color: mistyrose;
+	width: 862px;
+	margin: 5px 25px;
+	padding: 8px;
+	font-size: 16px;
+	font-weight: bold;
+}
+</style>
+<script type="text/javascript">
+function update_date_info(type) {
+  var
+	sel = $('target_month_{0}'.format(type)),
+	info = $('date-info_{0}'.format(type));
+  if(!sel || !info) return;
+
+  var
+	d = Date.parseExact(sel.options[sel.selectedIndex].value, 'yyyy-MM-dd'),
+	start = d.getFirstDate(),
+	end = d.getLastDate();
+  info.innerHTML = '対象期間： {0:M月 d日} ～ {1:M月 d日}'.format(start, end);
+}
+
+function do_submit(button) {
+  var
+	type = button.id.replace(/^exec-[^\-_]+_/, ''),
+	sel = $('target_month_{0}'.format(type));
+
+  if(button.form && button.form.month) {
+	button.form.month.value = sel.options[sel.selectedIndex].value;
+	button.form.submit();
+  }
+}
+
+Event.observe(window, 'load', function() {
+  document.getElementsByClassName('exec-button').each(function(btn) {
+	btn.disabled = false;
+  });
+
+  document.getElementsByClassName('expression-item').each(function(item) {
+	var type = item.id.replace(/^expression_item_/, '');
+	update_date_info(type);
+
+	// 指定月の選択
+	Event.observe($('target_month_{0}'.format(type)), 'change', function(evt) {
+	  var target_type = this.id.replace(/^target_month_/, '');
+	  update_date_info(target_type);
+	  ( $('exec-download_{0}'.format(target_type)) || { disabled : false } ).disabled = false;
+	}.bindAsEventListener($('target_month_{0}'.format(type))));
+
+	// 検索実行ボタンクリック
+	Event.observe($('exec-search_{0}'.format(type)), 'click', function(evt) {
+	  do_submit(this);
+	}.bindAsEventListener($('exec-search_{0}'.format(type))));
+  });
+});
+
+//URLジャンプ
+function jumpUrl(n) {
+	if      (n == 1) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/qform";}
+	else if (n == 2) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/form" ;}
+	else if (n == 3) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/sform";}
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searcho/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+	<h3 class="contents_title">
+    <input type="radio" name="rbtnsrch" onClick="jumpUrl(1)">簡易注文検索　
+    <input type="radio" name="rbtnsrch" onClick="jumpUrl(2)">注文検索　
+    <input type="radio" name="rbtnsrch" checked>定型注文検索　
+	</h3>
+<?php if($this->noParamsError) { ?>
+	<div class="no-params-error-message"><?php echo f_e(SearchoController::ERR_NO_PARAMS); ?></div>
+<?php } ?>
+	<div class="expressions-container">
+	<?php foreach($this->search_config as $config) { ?>
+
+	  <div class="expression-item" id="expression_item_<?php echo f_e($config['type']); ?>">
+		<h4 class="title"><?php echo f_e($config['title']); ?> 検索</h4>
+		<div class="desc"><?php echo f_e($config['desc']); ?></div>
+		<select id="target_month_<?php echo f_e($config['type']); ?>" class="target-month">
+		<?php foreach($config['dates'] as $date) { ?>
+
+		  <option value="<?php echo f_df($date, 'Y-m-d'); ?>"><?php echo f_df($date, 'Y年 m月'); ?></option>
+		<?php } ?>
+
+		</select>
+        <form action="searcho/ssearch" method="post">
+        <?php echo $config['entListTag']; ?>
+		<div class="button-container">
+			<button type="button" class="exec-search-button exec-button" id="exec-search_<?php echo f_e($config['type']); ?>" disabled="disabled">検索実行</button>
+			<input type="hidden" name="month" />
+			<input type="hidden" name="type" value="<?php echo f_e($config['type']); ?>" />
+		</div>
+        </form>
+	  <div class="date-info" id="date-info_<?php echo f_e($config['type']); ?>">対象期間：</div>
+	  </div><!-- end .expression-item -->
+	<?php } ?>
+
+	<div class="clear-float">&nbsp;</div>
+	</div><!-- end .expressions-container -->
+  </div><!-- end #contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div><!-- end #wrapper -->
+</body>
+</html>

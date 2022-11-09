@@ -1,0 +1,374 @@
+<?php
+use Zend\Zend\Json;
+use Coral\Coral\CoralOrderUtility;
+use Coral\Coral\View\CoralViewModel;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+use cbadmin\classes\SearchfCache;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+  .search_expressions {
+    border : solid 2px silver;
+    background-color : ghostwhite;
+    padding: 0px;
+  }
+  .search_expressions .search_summaries,
+  .search_expressions .search_expression {
+    padding: 2px 4px;
+  }
+  .search_expressions .search_summaries {
+    border : solid 0px silver;
+    border-bottom-width: 1px;
+    font-size: 11pt;
+    font-weight: bold;
+    color: navy;
+  }
+  .search_expressions .search_expression {
+    border : none 0px;
+    border-bottom : dotted 1px silver;
+  }
+  .search_expression .expression_header {
+    font-weight: bold;
+    padding: 0px;
+    padding-right: 8px;
+  }
+  .search_expression select {
+    /*text-align: right;*/
+  }
+  .search_expression select option {
+    padding: 0px 2px;
+  }
+  #filter_form {
+    display : inline;
+  }
+  .page_nav {
+    margin: 0px;
+    padding-right: 6px;
+    width: 826px;
+  }
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+  /* [paging] */
+  #bottom_page_nav {
+      margin-bottom: 25px;
+  }
+
+  #bottom_page_nav .page_nav {
+      float: none;
+      clear: both;
+      border-bottom-width: 1px;
+  }
+  table.datatable td.l_data { padding-left: 2px; }
+  table.datatable td.r_data { padding-right: 2px; }
+  table.datatable td .clip-box {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  table.datatable td .clip-box .clip-content {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  #cmd1 {
+    width: 140px;
+    height: 16px;
+    font-size: 12px;
+    text-align: center;
+    padding: 5px;
+    border: solid 1px silver;
+    margin: 5px;
+    margin-right: 5px;
+    float: right;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+  }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searchf/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">不払データ検索</h3>
+    <div style="margin: 5px 25px;">
+    <?php
+    if( $this->invalid_cache_id ) {
+      // キャッシュIDの不一致
+    ?>
+    <div style="color: red; font-size: 14pt; font-weight: bold;">
+      検索結果は破棄されています。<a href="searchf/form">もう一度検索</a>を実行してください。
+    </div>
+    <?php
+    } else {
+      // 検索サマリと追加条件/フィルタ
+    ?>
+    <table style="margin: 0px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="l_data" style="width: 720px">
+          <div class="search_expressions">
+            <div class="search_summaries">
+          <?php
+            $viewHelper = new CoralViewHelperValueFormat();
+            $outputs = array();
+             foreach( array(
+               SearchfCache::SUMMARY_KEY_TOTALCOUNT,
+               SearchfCache::SUMMARY_KEY_TOTALUSEAMOUNT,
+               SearchfCache::SUMMARY_KEY_TOTALRECEIPTAMOUNT,
+               SearchfCache::SUMMARY_KEY_TOTALNORECEIPTAMOUNT
+             ) as $key ) {
+               $outputs[] = $key
+                 . '　'
+                 . ( $key != SearchfCache::SUMMARY_KEY_TOTALCOUNT ? '\ ' : '' )
+                 . $viewHelper->ValueFormat( $this->summaries[$key], 'number', '#,##0' )
+                 . ( $key == SearchfCache::SUMMARY_KEY_TOTALCOUNT ? ' 件' : '' );
+             }
+            echo join( ' / ', $outputs );
+          ?><br /><?php echo f_e(sprintf('%s \ %s', SearchfCache::SUMMARY_KEY_TOTALAMOUNT, f_nf($this->summaries[SearchfCache::SUMMARY_KEY_TOTALAMOUNT], '#,##0'))); ?>
+            </div>
+            <div class="search_expression">
+              <span class="expression_header">ソート</span>
+              <?php
+              $links = array();
+              // count関数対策
+              $l = 0;
+              if (!empty($this->sort_keys)){
+                  $l = count($this->sort_keys);
+              }
+              for($i = 0; $i < $l; $i++) {
+                if( $i == 0 ) {
+                  $links[] = $this->sort_keys[$i]['label'];
+                } else {
+                  $links[] = '<a href="searchf/search/sort/'
+                    . $this->sort_keys[$i]['key']
+                    . '/cache_id/'
+                    . $this->cache_id
+                    . '">'
+                    . $this->sort_keys[$i]['label']
+                    . '</a>';
+                }
+              }
+              echo join(' ／ ', $links);
+              ?>
+            </div>
+            <div class="search_expression">
+              <span class="expression_header">再検索</span>
+              <?php
+              $links = array();
+               $redo_labels = array(
+                 SearchfCache::REDO_EXPRESSIONS_ALL => '全件',
+                 SearchfCache::REDO_EXPRESSIONS_EXCLUDE => '支払意思あり除く',
+                 SearchfCache::REDO_EXPRESSIONS_INCLUDE => '支払意思ありのみ'
+               );
+               foreach( $redo_labels as $pattern => $label ) {
+                 if(
+                   ( $pattern == SearchfCache::REDO_EXPRESSIONS_ALL && empty( $this->redo_expression ) ) ||
+                   $this->redo_expression == $pattern ) {
+                   // 現在の設定はテキストのみ
+                   $links[] = $label;
+                 } else {
+                   $links[] = '<a href="searchf/search/will/' . $pattern . '/cache_id/' . $this->cache_id . '">' . $label . '</a>';
+                 }
+               }
+              echo join( ' ／ ', $links );
+              ?>
+            </div>
+            <div class="search_expression">
+              <span class="expression_header">絞込み</span>
+              <form id="filter_form" action="searchf/search" method="post">
+                <input name="cache_id" type="hidden" value="<?php echo $this->cache_id; ?>" />
+                <?php
+                $month_filter_id = SearchfCache::FILTER_TARGET_MONTH;
+                $class_filter_id = SearchfCache::FILTER_TARGET_REMIND_CLASS;
+                ?>
+                <label for="<?php echo $month_filter_id; ?>">
+                  <select id="<?php echo $month_filter_id; ?>" name="<?php echo $month_filter_id; ?>">
+                    <option value="">（指定なし）</option>
+                    <?php
+                     foreach( $this->filter_month_list as $data ) {
+                       $selected = $this->filters[$month_filter_id] == $data['value'] ? ' selected="selected"' : '';
+                       echo '<option value="' . $data['value'] . '"' . $selected . '>' . $data['label'] . '</option>';
+                     }
+                    ?>
+                  </select>
+                  （月を表示）
+                </label>
+                <label for="<?php echo $class_filter_id; ?>">
+                  <select id="<?php echo $class_filter_id; ?>" name="<?php echo $class_filter_id; ?>">
+                    <option value="">（指定なし）</option>
+                    <?php
+                    foreach( $this->filter_classes as $value => $label ) {
+                      if( $value === '' || $value === null ) continue;
+                      $selected = $this->filters[$class_filter_id] === (string)$value ? ' selected="selected"' : '';
+                      echo '<option value="' . $value . '"' . $selected . '>' . $label . '</option>';
+                    }
+                    ?>
+                  </select>
+                  （督促分類）
+                </label>
+                <button type="submit">絞込み</button>
+              </form>
+            </div>
+          </div>
+        </td>
+        <td class="r_data" style="text-align: center; padding: 0px;">
+          <div id="cmd1"><a href="searchf/export/cache_id/<?php echo $this->cache_id; ?>">ｵｰﾄｺｰﾙ･ｴｸｽﾎﾟｰﾄ</a></div>
+          <div id="cmd1"><a href="searchf/import">ｵｰﾄｺｰﾙ･ｲﾝﾎﾟｰﾄ</a></div>
+          <div id="cmd1"><a href="searchf/exportremind/cache_id/<?php echo $this->cache_id; ?>">外部督促･ｴｸｽﾎﾟｰﾄ</a></div>
+          <div id="cmd1"><a href="searchf/dcsv/cache_id/<?php echo $this->cache_id; ?>">CSVダウンロード</a></div>
+        </td>
+      </tr>
+    </table>
+    <?php
+    // ページングナビゲーション
+    echo $this->render( 'cbadmin/page_navigation.php' );
+    ?>
+    <div style="margin: 0px; border: 1px solid gray; overflow: auto; width: 860px;">
+    <table id="search_result" style="margin: 0px; clear:both; width: 860px; table-layout: fixed" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th style="width: 29px">超過<br />日数</th>
+          <th style="width: 65px">初回期限</th>
+          <th style="width: 65px">最終督促</th>
+          <th style="width: 38px">金額</th>
+          <th style="width: 38px">不払<br />残金額</th>
+          <th style="width:112px">ID / 氏名</th>
+          <th style="width:110px">住所</th>
+          <th style="width: 75px">分類</th>
+          <th style="width: 17px">Ｅ電</th>
+          <th style="width: 17px">タ履歴</th>
+          <th style="width: 17px">ＴＥＬ</th>
+          <th style="width: 17px">住所</th>
+          <th style="width: 17px">メール</th>
+          <th style="width: 17px">訪問</th>
+          <th style="width: 17px">住民票</th>
+          <th style="width: 100px">店舗名</th>
+          <th style="width: 45px">備考</th>
+          <th style="width: 43px">ｵｰﾄｺｰﾙ<br />結果</th>
+        </tr>
+      </thead>
+      <tbody>
+<?php
+$captionMap = CoralOrderUtility::getStatusCaptions();
+    // count関数対策
+    $listCount = 0;
+    if (!empty($this->list)) {
+    $listCount = count($this->list);
+    }
+    for ($i = 0 ; $i < $listCount ; $i++) {
+    $rowClass = CoralOrderUtility::getOrderRowClass( $this->list[$i] );
+    $className = "orderstatus_$rowClass";
+    $caption = $captionMap[ $rowClass ];
+?>
+
+        <tr class="<?php echo f_e($className); ?>" title="<?php echo f_e($caption); ?>">
+          <td nowrap class="r_data"><?php echo f_e($this->list[$i]["PastDays"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["F_LimitDate"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["FinalityRemindDate"]); ?></td>
+          <td nowrap class="r_data"><?php echo f_nf($this->list[$i]["UseAmount"], '#,##0'); ?></td>
+          <td nowrap class="r_data"><?php echo f_nf($this->list[$i]["ClaimedBalance"], '#,##0'); ?></td>
+          <td nowrap class="l_data">
+            <?php
+            $link = sprintf('rworder/detail/oseq/%s/content_hash/%s/idx/%s', $this->list[$i]['OrderSeq'], $this->hash, $this->list[$i]['index_in_cache']);
+            $link_title = sprintf('%s：%s', $this->list[$i]['OrderId'], $this->list[$i]['NameKj']);
+            ?>
+            <div class="clip-box">
+              <a class="clip-content" target="_blank" href="<?php echo f_e($link); ?>" title="<?php echo f_e($link_title); ?>">
+                <?php echo f_e($link_title); ?>
+              </a>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box">
+              <span class="clip-content" title="住所：<?php echo f_e($this->list[$i]['UnitingAddress']); ?>">
+                <?php echo f_e($this->list[$i]["UnitingAddress"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box">
+              <span class="clip-content" title="分類：<?php echo f_e($this->list[$i]['RemindClass']); ?>">
+                <?php echo f_e($this->list[$i]["RemindClass"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["eDen"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["TouchHistoryFlg"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["ValidTel"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["ValidAddress"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["ValidMail"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["VisitFlg"]); ?></td>
+          <td nowrap class="c_data"><?php echo f_e($this->list[$i]["ResidentCard"]); ?></td>
+          <td nowrap class="l_data">
+            <div class="clip-box">
+              <span class="clip-content" title="店舗名：<?php echo f_e($this->list[$i]['SiteNameKj']); ?>">
+                <?php echo f_e($this->list[$i]["SiteNameKj"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box">
+              <span class="clip-content" title="備考：<?php echo f_e($this->list[$i]['BriefNote']); ?>">
+                <?php echo f_e($this->list[$i]["BriefNote"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box">
+              <span class="clip-content" title="ｵｰﾄｺｰﾙ結果：<?php echo f_e($this->list[$i]['RemindResult']); ?>">
+                <?php echo f_e($this->list[$i]["RemindResult"]); ?>
+              </span>
+            </div>
+          </td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+    </div>
+    <div id="bottom_page_nav">
+    <?php
+//$this->assign( 'droplist_id', 'page_nav_page_list_2' );
+$this->droplist_id = 'page_nav_page_list_2';
+echo $this->render('cbadmin/page_navigation.php');
+?>    </div>
+    <?php } // 'if( $this->invalid_cache_id )' 終了 ?>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+//new NetB.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+</script>
+</html>

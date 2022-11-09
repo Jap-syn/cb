@@ -1,0 +1,35 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">エラー</div>
+        <?php
+        echo $this->render( 'mypage/menu.php' );
+        ?>
+        <div id="d_01">エラーが発生しました。</div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

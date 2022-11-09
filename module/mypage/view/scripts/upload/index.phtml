@@ -1,0 +1,63 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+    <div style="clear: both;" id="my_title">身分証明書ご登録</div>
+    <?php
+    echo $this->render( 'mypage/menu.php' );
+    ?>
+    <?php if( !empty( $this->error ) ) { ?>
+    <div id="errmsg">
+        ※：入力に不備があります。登録内容を見直してください。
+        <?php foreach( $this->error as $error ) { echo $error; } ?>
+    </div>
+    <?php } ?>
+    <div id="d_01">
+        <span style="font-weight: normal">身分証明書をご登録いただくことで、<br />後払い利用審査が通りやすくなります。</span><br /><br />
+        <span>ご利用可能な身分証明証は次の通りです。（有効期限内のもの）</span>
+        <div id="lable_03" class="mr_50"><a href="xx/xx" style="display: none;">詳しくはこちら</a></div>
+        <span class="ml_10">■&nbsp;運転免許証（推奨）</span><br />
+        <span class="ml_10" style="font-weight: normal;">■&nbsp;被保険者証（国民健康保険、健康保険）</span><br />
+        <span class="ml_10" style="font-weight: normal;">■&nbsp;日本国パスポート</span><br /><br />
+        <div id="explain"><span class="c_red">氏名、住所、生年月日の記載</span>があり、<span class="c_red">後払い.com会員ご登録情報と一致している書類</span>が必要です。<br /></div>
+        <div id="explain"><span class="c_red">住所等の記載が裏面</span>にある場合、<span class="c_red">裏面の画像</span>も必要です。<br /></div>
+        <div id="explain">撮影時に<span class="c_red">照明等</span>の光が映り込むと、<span class="c_red">正しく認識</span>できない場合があります。</span><br /></div>
+        <div id="objexp">
+            アップロード対象の説明<br />
+            <span>&nbsp;&nbsp;ファイル形式：JPEG形式（.jpg、.jpeg）、BMP形式（.bmp）</span>
+        </div>
+    </div>
+    <div id="des_info">
+        <form name="form" method="post" action="upload/completion" enctype="multipart/form-data">
+            <div id="des">表面</div><input name="frontimg" id="up" type="file" />
+            <div id="des">裏面<br />（住所等の記載がある場合）</div><input id="up" name="backimg" type="file" />
+            <div id="d_btn_info"><input id="red_btn" type="submit" value="アップロード" /></div>
+        </form>
+    </div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,796 @@
+<?php
+use models\Logic\LogicOemClaimAccount;
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+if( ! isset($this->error) || ! is_array($this->error) ) $this->error = array();
+
+function show_error_message($messages) {
+    if( !isset($messages) ) return;
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+
+$data = $this->data;
+?>
+<style type="text/css">
+<!--
+.input_error_message {
+    color: red;
+}
+#contents table.datatable {
+  width: 862px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+#contents h4.category-title {
+  width: 840px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  padding-right: 0;
+  border: solid 1px #ddd;
+  border-bottom-width: 0;
+}
+#contents div.submit-area {
+  width: 842px;
+  margin: 10px 25px 20px 25px;
+  padding: 5px 10px;
+  border: none 0;
+  text-align: center;
+}
+
+.submit-area button,
+.submit-area input[type=button],
+.submit-area input[type=submit],
+.submit-area a {
+  padding: 4px 25px;
+}
+
+#contents td {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+td.l_label {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #eeeeee;
+    width: 180px;
+    white-space: nowrap;
+}
+
+td.r_label {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #eeeeee;
+    width: 180px;
+    white-space: nowrap;
+}
+
+td.c_label {
+    text-align: center;
+    /*padding: 2px 10px 2px 0px;*/
+    background-color: #eeeeee;
+}
+
+td.l_data {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #ffffff;
+}
+
+td.l_data span.wrap_container {
+    width: 398px;
+    overflow: hidden;
+    float: left;
+}
+
+td.r_data {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #ffffff;
+}
+
+td.c_data {
+    text-align: center;
+    padding: 2px 0px 2px 0px;
+    background-color: #ffffff;
+}
+
+div {
+    margin: 0px;
+    padding: 0px;
+    font-size: 12px;
+    font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+
+.detail-tools {
+  margin: 5px 25px;
+  font-size: 16px;
+  text-align: right;
+}
+
+.detail-tools a,
+.detail-tools span.dummy-link {
+    margin: 0 0 0 12px;
+}
+
+form input[type=text],
+form textarea {
+  width: 300px;
+  font-size: 12px;
+}
+form input[type=text].large {
+  width: 500px;
+}
+form label {
+  margin: 0 10px;
+}
+span.require {
+  font-size: 13px;
+  font-weight: bold;
+  color: red;
+}
+#cv-subscribername {
+  height: 30px;
+}
+#contents .warning {
+  width: 842px;
+  margin: 5px 25px;
+  font-size: 1em;
+  font-weight: bold;
+  color: red;
+  border: solid 1px firebrick;
+  background-color: mistyrose;
+  padding: 8px 12px;
+}
+-->
+</style>
+<script type="text/javascript">
+<?php
+$logic_name_map = array();
+foreach($this->agents as $agent) {
+  $logic_name_map[$agent['ReceiptAgentId']] = array(
+                                                    'name' => $agent['BarcodeLogicName'],
+                                                    'code' => $agent['ReceiptAgentCode']);
+}
+?>
+Event.observe(window, 'load', function() {
+  var
+    logicNameMap = <?php echo Json::encode($logic_name_map); ?>,
+
+        // コンビニ収納代行会社選択変更時の処理
+    updateLogicName = function() {
+      var agentId = ($('cv-receipt-agent').options[$('cv-receipt-agent').selectedIndex] || { value : '' }).value;
+      $('cv-barcode-logic-name').innerHTML = (logicNameMap[agentId] || { name : '(未設定)' }).name.escapeHTML();
+      $('cv-receipt-agent-code').innerHTML = (logicNameMap[agentId] || { code : '-' }).code.escapeHTML();
+    },
+
+        // 口座サービス種別変更時の処理
+        toggleExternalServiceInfo = function() {
+            $A(document.getElementsByName('form[Bk_ServiceKind]')).each(function(radio) {
+                switch(radio.value) {
+                case '1':
+                    Element[radio.checked ? 'show' : 'hide']($('smbc-account-wrapper'));
+                    break;
+                }
+            });
+        },
+
+        // SMBC決済ステーション払込票発行区分変更時の処理
+        toggleSmbcYuusousakiKbnRequired = function() {
+            $A(document.getElementsByName('form[Smbc_HakkouKbn]')).each(function(radio) {
+                switch(radio.value) {
+                    case '2':
+                        Element[radio.checked ? 'show' : 'hide']($('smbc-yuusousaki-kbn-require'));
+                }
+            });
+        };
+
+    // コンビニ収納代行会社の選択変更イベント
+  Event.observe($('cv-receipt-agent'), 'change', updateLogicName);
+  setTimeout(updateLogicName, 0);
+
+    // 口座サービス種別の選択変更イベント
+    $A(document.getElementsByName('form[Bk_ServiceKind]')).each(function(radio) {
+        Event.observe(radio, 'click', toggleExternalServiceInfo);
+    });
+    setTimeout(toggleExternalServiceInfo, 0);
+
+    // SMBC決済ステーション払込票発行区分の選択変更イベント
+    $A(document.getElementsByName('form[Smbc_HakkouKbn]')).each(function(radio) {
+        Event.observe(radio, 'click', toggleSmbcYuusousakiKbnRequired);
+    });
+    setTimeout(toggleSmbcYuusousakiKbnRequired, 0);
+
+
+    // submitをハンドルする
+  Event.observe($('submit-button'), 'click', function() {
+    $('main-form').submit();
+  });
+});
+</script>
+</head>
+<body>
+<div id="wrapper"><!-- start #wrapper -->
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/claimaccount/page_menu.php'); ?>
+
+<!-- start #contents -->
+<div id="contents">
+  <h3>請求口座登録 - <?php echo f_e($this->oname); ?></h3>
+
+<?php if($this->hisCount) { ?>
+  <div class="warning">
+    ※：未印刷の請求が <?php echo f_nf($this->hisCount, '#,##0'); ?> 件あります。これらの請求情報に設定内容の変更は反映されません。
+  </div>
+<?php } ?>
+
+<form id="main-form" action="claimaccount/confirm" method="post">
+  <input name="form[OemId]" value="<?php echo f_e($this->oid); ?>" type="hidden" />
+  <h4 class="category-title">銀行口座</h4>
+  <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+
+    <tr>
+      <td class="r_label">
+        口座サービス区分
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <?php
+        $map = $this->master_map[LogicOemClaimAccount::MAPKEY_BK_SERVICE_KIND];
+        foreach($map as $val => $label) {
+//          $is_current = isset($data['Bk_ServiceKind']) && ($val == $data['Bk_ServiceKind']);
+          $is_current = 0;
+          if(isset($data['Bk_ServiceKind'])){
+              if($val == $data['Bk_ServiceKind']){
+                $is_current = 1;
+              }
+          }
+          ?>
+          <label>
+            <input name="form[Bk_ServiceKind]" value="<?php echo f_e($val); ?>" type="radio"<?php echo $is_current ? ' checked="checked"' : ''; ?> />
+            <?php echo f_e($label); ?>
+          </label>
+        <?php } ?>
+        <?php if(isset($this->error['Bk_ServiceKind'])){ show_error_message($this->error['Bk_ServiceKind']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        銀行名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_BankName]" value="<?php echo f_e($data['Bk_BankName']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_BankName'])){ show_error_message($this->error['Bk_BankName']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        銀行コード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_BankCode]" value="<?php echo f_e($data['Bk_BankCode']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_BankCode'])){ show_error_message($this->error['Bk_BankCode']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        支店名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_BranchName]" value="<?php echo f_e($data['Bk_BranchName']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_BranchName'])){ show_error_message($this->error['Bk_BranchName']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        支店コード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_BranchCode]" value="<?php echo f_e($data['Bk_BranchCode']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_BranchCode'])){ show_error_message($this->error['Bk_BranchCode']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        口座種別
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <?php
+        $map = $this->master_map[LogicOemClaimAccount::MAPKEY_BK_DEPOSIT_CLASS];
+        foreach($map as $val => $label) {
+          $is_current = isset($data['Bk_DepositClass']) && ($val == $data['Bk_DepositClass']);
+        ?>
+          <label>
+            <input name="form[Bk_DepositClass]" value="<?php echo f_e($val); ?>" type="radio"<?php echo $is_current ? ' checked="checked"' : ''; ?> />
+            <?php echo f_e($label); ?>
+          </label>
+        <?php } ?>
+        <?php if(isset($this->error['Bk_DepositClass'])){ show_error_message($this->error['Bk_DepositClass']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        口座番号
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_AccountNumber]" value="<?php echo f_e($data['Bk_AccountNumber']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_AccountNumber'])){ show_error_message($this->error['Bk_AccountNumber']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        口座名義
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_AccountHolder]" value="<?php echo f_e($data['Bk_AccountHolder']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_AccountHolder'])){ show_error_message($this->error['Bk_AccountHolder']); } ?>
+      </td>
+    </tr>
+        <tr>
+      <td class="r_label">
+        口座名義カナ
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Bk_AccountHolderKn]" value="<?php echo f_e($data['Bk_AccountHolderKn']); ?>" type="text" />
+        <?php if(isset($this->error['Bk_AccountHolderKn'])){ show_error_message($this->error['Bk_AccountHolderKn']); } ?>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h4 class="category-title">ゆうちょ口座</h4>
+  <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+
+    <tr>
+      <td class="r_label">
+        加入者名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Yu_SubscriberName]" value="<?php echo f_e($data['Yu_SubscriberName']); ?>" type="text" />
+        <?php if(isset($this->error['Yu_SubscriberName'])){ show_error_message($this->error['Yu_SubscriberName']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        口座番号
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Yu_AccountNumber]" value="<?php echo f_e($data['Yu_AccountNumber']); ?>" type="text" />
+        <?php if(isset($this->error['Yu_AccountNumber'])){ show_error_message($this->error['Yu_AccountNumber']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        払込負担区分
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <?php
+        $map = $this->master_map[LogicOemClaimAccount::MAPKEY_YU_CHARGE_CLASS];
+        foreach($map as $val => $label) {
+          $is_current = isset($data['Yu_ChargeClass']) && ($val == $data['Yu_ChargeClass']);
+        ?>
+          <label>
+            <input name="form[Yu_ChargeClass]" value="<?php echo f_e($val); ?>" type="radio"<?php echo $is_current ? ' checked="checked"' : ''; ?> />
+            <?php echo f_e($label); ?>
+          </label>
+        <?php } ?>
+        <?php if(isset($this->error['Yu_ChargeClass'])){ show_error_message($this->error['Yu_ChargeClass']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        加入者固有データ
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Yu_SubscriberData]" value="<?php echo f_e($data['Yu_SubscriberData']); ?>" type="text" />
+        <?php if(isset($this->error['Yu_SubscriberData'])){ show_error_message($this->error['Yu_SubscriberData']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション1</td>
+      <td class="l_data">
+        <input name="form[Yu_Option1]" value="<?php echo f_e($data['Yu_Option1']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Yu_Option1'])){ show_error_message($this->error['Yu_Option1']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション2</td>
+      <td class="l_data">
+        <input name="form[Yu_Option2]" value="<?php echo f_e($data['Yu_Option2']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Yu_Option2'])){ show_error_message($this->error['Yu_Option2']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション3</td>
+      <td class="l_data">
+        <input name="form[Yu_Option3]" value="<?php echo f_e($data['Yu_Option3']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Yu_Option3'])){ show_error_message($this->error['Yu_Option3']); } ?>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h4 class="category-title">コンビニ収納代行</h4>
+  <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+
+    <tr>
+      <td class="r_label" rowspan="3">
+        収納代行会社
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <select id="cv-receipt-agent" name="form[Cv_ReceiptAgentId]">
+          <option value="">(選択してください)</option>
+        <?php foreach($this->agents as $agent_row) { ?>
+        <?php if($agent_row['InvalidFlg']) continue; ?>
+        <?php $is_current = $agent_row['ReceiptAgentId'] == $data['Cv_ReceiptAgentId']; ?>
+          <option value="<?php echo f_e($agent_row['ReceiptAgentId']); ?>"<?php echo $is_current ? ' selected="selected"' : ''; ?>>
+            <?php echo f_e(sprintf('%s：%s', $agent_row['ReceiptAgentId'], $agent_row['ReceiptAgentName'])); ?>
+          </option>
+        <?php } ?>
+        </select>
+        <?php if(isset($this->error['Cv_ReceiptAgentId'])){ show_error_message($this->error['Cv_ReceiptAgentId']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="l_data" style="padding-left: 20px">
+        バーコード生成ロジック： <span id="cv-barcode-logic-name"><?php echo f_e($data['Cv_BarcodeLogicName']); ?></span>
+      </td>
+        </tr>
+    <tr>
+      <td class="l_data" style="padding-left: 20px">
+        収納代行会社固有コード： <span id="cv-receipt-agent-code"><?php echo f_e($data['Cv_ReceiptAgentCode']); ?>"</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        加入者固有コード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Cv_SubscriberCode]" value="<?php echo f_e($data['Cv_SubscriberCode']); ?>" type="text" />
+        <?php if(isset($this->error['Cv_SubscriberCode'])){ show_error_message($this->error['Cv_SubscriberCode']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        加入者名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <textarea name="form[Cv_SubscriberName]" id="cv-subscribername"><?php echo f_e($data['Cv_SubscriberName']); ?></textarea>
+        <?php if(isset($this->error['Cv_SubscriberName'])){ show_error_message($this->error['Cv_SubscriberName']); }  ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション1</td>
+      <td class="l_data">
+        <input name="form[Cv_Option1]" value="<?php echo f_e($data['Cv_Option1']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Cv_Option1'])){ show_error_message($this->error['Cv_Option1']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション2</td>
+      <td class="l_data">
+        <input name="form[Cv_Option2]" value="<?php echo f_e($data['Cv_Option2']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Cv_Option2'])){ show_error_message($this->error['Cv_Option2']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">オプション3</td>
+      <td class="l_data">
+        <input name="form[Cv_Option3]" value="<?php echo f_e($data['Cv_Option3']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Cv_Option3'])){ show_error_message($this->error['Cv_Option3']); } ?>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+<div id="smbc-account-wrapper"<?php echo $data['Bk_ServiceKind'] == LogicOemClaimAccount::SERVICE_KIND_SMBC ? '' : ' style="display:none"'; ?>>
+  <h4 class="category-title">SMBC決済ステーション</h4>
+  <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+
+    <tr>
+      <td class="r_label">
+        連携アカウント名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_DisplayName]" value="<?php echo f_e($data['Smbc_DisplayName']); ?>" type="text" class="large" />
+        <?php if(isset($this->error['Smbc_DisplayName'])){ show_error_message($this->error['Smbc_DisplayName']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        APIバージョン
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ApiVersion]" value="<?php echo f_e($data['Smbc_ApiVersion']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_ApiVersion'])){ show_error_message($this->error['Smbc_ApiVersion']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        決済手段区分
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_BillMethod]" value="<?php echo f_e($data['Smbc_BillMethod']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_BillMethod'])){ show_error_message($this->error['Smbc_BillMethod']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        決済種別コード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_KessaiId]" value="<?php echo f_e($data['Smbc_KessaiId']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_KessaiId'])){ show_error_message($this->error['Smbc_KessaiId']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        契約コード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopCd]" value="<?php echo f_e($data['Smbc_ShopCd']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_ShopCd'])){ show_error_message($this->error['Smbc_ShopCd']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード1（圧着用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd1]" value="<?php echo f_e($data['Smbc_SyunoCoCd1']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd1']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード2（封書用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd2]" value="<?php echo f_e($data['Smbc_SyunoCoCd2']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd2']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード3（同梱用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd3]" value="<?php echo f_e($data['Smbc_SyunoCoCd3']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd3']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード4（LINE Pay圧着用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd4]" value="<?php echo f_e($data['Smbc_SyunoCoCd4']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd4']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード5（LINE Pay封書用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd5]" value="<?php echo f_e($data['Smbc_SyunoCoCd5']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd5']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        収納企業コード6（LINE Pay同梱用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SyunoCoCd6]" value="<?php echo f_e($data['Smbc_SyunoCoCd6']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SyunoCoCd6']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード1（圧着用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd1]" value="<?php echo f_e($data['Smbc_ShopPwd1']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd1']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード2（封書用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd2]" value="<?php echo f_e($data['Smbc_ShopPwd2']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd2']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード3（同梱用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd3]" value="<?php echo f_e($data['Smbc_ShopPwd3']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd3']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード4（LINE Pay圧着用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd4]" value="<?php echo f_e($data['Smbc_ShopPwd4']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd4']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード5（LINE Pay封書用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd5]" value="<?php echo f_e($data['Smbc_ShopPwd5']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd5']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        アクセスパスワード6（LINE Pay同梱用）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_ShopPwd6]" value="<?php echo f_e($data['Smbc_ShopPwd6']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_ShopPwd6']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        請求内容
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SeikyuuName]" value="<?php echo f_e($data['Smbc_SeikyuuName']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SeikyuuName']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        請求内容（カナ）
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_SeikyuuKana]" value="<?php echo f_e($data['Smbc_SeikyuuKana']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_SeikyuuKana']); ?>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="r_label">
+        ゆうちょ加入者名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_Yu_SubscriberName]" value="<?php echo f_e($data['Smbc_Yu_SubscriberName']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_Yu_SubscriberName'])){ show_error_message($this->error['Smbc_Yu_SubscriberName']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        ゆうちょ口座番号
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_Yu_AccountNumber]" value="<?php echo f_e($data['Smbc_Yu_AccountNumber']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_Yu_AccountNumber'])){ show_error_message($this->error['Smbc_Yu_AccountNumber']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        ゆうちょ払込負担区分
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <?php
+        $map = $this->master_map[LogicOemClaimAccount::MAPKEY_YU_CHARGE_CLASS];
+        foreach($map as $val => $label) {
+          $is_current = isset($data['Smbc_Yu_ChargeClass']) && ($val == $data['Smbc_Yu_ChargeClass']);
+        ?>
+          <label>
+            <input name="form[Smbc_Yu_ChargeClass]" value="<?php echo f_e($val); ?>" type="radio"<?php echo $is_current ? ' checked="checked"' : ''; ?> />
+            <?php echo f_e($label); ?>
+          </label>
+        <?php } ?>
+        <?php if(isset($this->error['Smbc_Yu_ChargeClass'])){ show_error_message($this->error['Smbc_Yu_ChargeClass']); } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        コンビニ収納代行会社名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_Cv_ReceiptAgentName]" value="<?php echo f_e($data['Smbc_Cv_ReceiptAgentName']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_Cv_ReceiptAgentName']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        コンビニ収納ファイナンスコード
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_Cv_ReceiptAgentCode]" value="<?php echo f_e($data['Smbc_Cv_ReceiptAgentCode']); ?>" type="text" />
+        <?php show_error_message($this->error['Smbc_Cv_ReceiptAgentCode']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">
+        コンビニ収納代行加入者名
+        <span class="require">*</span>
+      </td>
+      <td class="l_data">
+        <input name="form[Smbc_Cv_SubscriberName]" value="<?php echo f_e($data['Smbc_Cv_SubscriberName']); ?>" type="text" />
+        <?php if(isset($this->error['Smbc_Cv_SubscriberName'])){ show_error_message($this->error['Smbc_Cv_SubscriberName']); } ?>
+      </td>
+    </tr>
+
+    </tbody>
+    </table>
+
+</div>
+
+  <div class="submit-area">
+    <button id="submit-button" type="button">登録</button>
+    <a href="claimaccount/detail/oid/<?php echo f_e($this->oid); ?>">キャンセル</a>
+  </div>
+
+</form>
+
+</div><!-- end #contents -->
+
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div><!-- end #wrapper -->
+</body>
+</html>

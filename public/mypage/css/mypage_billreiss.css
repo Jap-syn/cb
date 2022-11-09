@@ -1,0 +1,78 @@
+@CHARSET "UTF-8";
+
+#bank_info {
+    font-weight: normal;
+    font-size: 14px;
+    padding-left: 25px;
+    margin: 5px;
+}
+#notice_bill {
+    font-size: 14px;
+    color: red;
+    margin: 0px 5px 10px -15px;
+}
+#notice_bill li {
+    list-style-type: none;
+    margin-left: 14px;
+}
+li:before {
+    content: '●';
+    margin-left: -14px;
+}
+#d_note {
+    color: red;
+    font-size: 20px;
+}
+
+#d_note_info {
+    float: left;
+    font-size: 14px;
+    font-weight: bold;
+    width: 480px;
+    border: solid 1px #DB9C9B;
+    margin: 0px 5px 5px 60px;
+    padding: 10px 20px;
+}
+
+#d_bank {
+    float: left;
+    font-size: 14px;
+    font-weight: bold;
+    width: 480px;
+    border: solid 1px #1E90FF;
+    margin: 0px 5px 5px 60px;
+    padding: 10px 20px;
+}
+
+#d_bank_head {
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+#d_confirm {
+    clear: both;
+    float: right;
+    width: 565px;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#d_btn_info {
+    float: left;
+    width: 565px;
+    text-align: left;
+    margin-left: 55px;
+}
+/*確認画面*/
+#d_request_amount {
+border-radius: 1px;
+    border: 2px #005638 solid;
+    background-color: #FFFFFF;
+    width: 220px;
+    text-align: left;
+    margin-top: 15px;
+    margin-right: 5px;
+    float: right;
+    font-weight: bold;
+}

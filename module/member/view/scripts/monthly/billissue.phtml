@@ -1,0 +1,838 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title><?php echo $this->title; ?></title>
+  <style>
+* {
+	margin: 0px;
+	margin-left: 0px;
+}
+
+/* general */
+body {
+    width: 100%;
+	height: 100%;
+	font-size: 16px;
+	font-family: IPAPGothic;
+}
+
+/* header */
+#header {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+#header1 {
+	display: inline-block;
+	margin-top: 20px;
+	font-size: 12px;
+}
+
+#header2 {
+	display: inline-block;
+	margin-top: 10px;
+	text-align: right;
+	font-size: 10px;
+}
+
+#greet {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+	font-size: 10px;
+}
+
+#title {
+	font-size: 18px;
+	text-align: center;
+}
+
+#datatable {
+	margin-right: auto;
+	margin-left: auto;
+	font-size: 12px;
+}
+
+th {
+	text-align: center;
+	padding: 0px 0px 0px 0px;
+	border: solid 1px;
+	background-color: #CC99FF;
+}
+
+table {
+	page-break-inside: auto;
+}
+
+tr {
+	page-break-inside: avoid;
+	page-break-after: auto;
+}
+
+td.r_data {
+	text-align: right;
+	padding: 0px 5px 0px 0px;
+	border: solid 1px;
+}
+
+td.r_data2 {
+	text-align: right;
+	padding: 0px 5px 0px 0px;
+	border-top: double 3px;
+	border-right: solid 1px;
+	border-left: solid 1px;
+	border-bottom: solid 1px;
+}
+
+td.c_data {
+	text-align: center;
+	padding: 0px 0px 0px 0px;
+	border: solid 1px;
+}
+
+td.c_data2 {
+	text-align: center;
+	padding: 0px 0px 0px 0px;
+	border-top: double 3px;
+	border-right: solid 1px;
+	border-left: solid 1px;
+	border-bottom: solid 1px;
+}
+
+td.l_data {
+	text-align: left;
+	padding: 0px 0px 0px 5px;
+	border: solid 1px;
+}
+
+td.l_data2 {
+	text-align: left;
+	padding: 0px 0px 0px 5px;
+	border-top: double 3px;
+	border-right: solid 1px;
+	border-left: solid 1px;
+	border-bottom: solid 1px;
+}
+
+td.sitename {
+	background-color: #E9E64A;
+}
+
+td.r_sum {
+	text-align: right;
+	padding: 0px 5px 0px 0px;
+	border: solid 1px;
+	background-color: #D8E4BC;
+}
+
+td.r_sum2 {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    border: solid 1px;
+    background-color: #B7DEE8;
+}
+
+#footer {
+	display: block;
+	margin-top: 40px;
+	margin-left: 250px;
+	font-size: 10px;
+}
+  </style>
+</head>
+<body>
+<!-- 請求書兼領収書 -->
+<div id="header" style="width: 900px;">
+<div id="header1" style="width: 450px;">
+ご請求先　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様<br />
+　　　　　<span style="font-size: 10px"><?php echo f_e( $this->datas['PostalCode'] ); ?></span><br />
+　　　　　<?php echo f_e( $this->datas['Address'] ); ?>
+</div>
+<div id="header2"  style="width: 440px;">
+<span style="font-size: 12px;">発行日：<?php echo f_df( $this->issueDate, 'Y.m.d' ); ?></span><br /><br />
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br />
+株式会社キャッチボール<br />
+〒140-0002　東京都品川区東品川2-2-24<br />
+天王洲セントラルタワー 12F
+</div>
+</div>
+<div style="display: block; width: 850px; height: 70px; margin-right: auto; margin-left: 50px;">
+<div style="display: inline-block; width: 810px;">
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下の通りです。</div>
+<div style="display: inline-block; width: 35px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/member/cb_stamp" width="64" height="66" /></span></div>
+</div>
+<div id="title">【ご請求内容】</div>
+<div style="margin-top: 20px;">
+<table width="700px" cellpadding="1" cellspacing=0" id="datatable">
+<tr><td class="r_data" width="50%">対象期間</td>
+<td class="c_data" width="50%"><?php echo f_df( $this->datas['SpanFrom'], 'Y.m.d' ); ?>～<?php echo f_df( $this->datas['SpanTo'], 'Y.m.d' ); ?></td></tr>
+<?php if ($this->datas['ChargeCountExtraPay1DK'] > 0 || $this->datas['ChargeCountExtraPay1BS'] > 0 ) { ?>
+<tr>
+<td class="r_data" width="50%">お取引件数<?php if ($this->datas['ChargeCountExtraPay1DK'] > 0) { ?><br />（内 届いてから払い件数（同梱））<?php } ?><?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（内 届いてから払い件数（別送））<?php } ?></td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['OrderCount'], 0 ), '#,##0' ); ?>　件<?php if ($this->datas['ChargeCountExtraPay1DK'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['ChargeCountExtraPay1DK'], 0 ), '#,##0' ); ?>　件）<?php } ?><?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['ChargeCountExtraPay1BS'], 0 ), '#,##0' ); ?>　件）<?php } ?></td>
+</tr>
+<?php } else { ?>
+<tr><td class="r_data" width="50%">お取引件数</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['OrderCount'], 0 ), '#,##0' ); ?>　件</td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%">ご利用総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['OrderAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php if ($this->datas['ChargeCountExtraPay1DK'] > 0 || $this->datas['ChargeCountExtraPay1BS'] > 0 ) { ?>
+<tr>
+<td class="r_data" width="50%">決済手数料合計<br />（内 届いてから払い合計）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['SettlementFee'], 0 ), '￥ #,##0' ); ?><br />（<?php echo f_nf( nvl( $this->datas['SettlementFeeExtraPay1'], 0 ), '￥ #,##0' ); ?>）</td></tr>
+<?php } else { ?>
+<tr><td class="r_data" width="50%">決済手数料合計</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['SettlementFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php } ?>
+<?php if($this->selfBillingInfo['HasInfo']) { ?>
+<?php   if($this->PaymentAfterArrivalFlg == 0) {?>
+<tr><td class="r_data" width="50%">請求手数料合計<br />（内 自社印刷分）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['ClaimFee'], 0 ), '￥ #,##0' ); ?><br />
+（<?php echo f_nf( nvl( $this->selfBillingInfo['ClaimFee'], 0 ), '￥ #,##0' ); ?>）</td></tr>
+<?php   } else {?>
+<?php
+$ClaimFeeDK = ((-1) * $this->selfBillingInfo['ClaimFee']) - ((-1) *$this->datas['ClaimFeeExtraPay1DK']);
+$ClaimFeeBS = ((-1) * $this->datas['ClaimFee']) - ((-1) *$this->selfBillingInfo['ClaimFee']) - ((-1) * $this->datas['ClaimFeeExtraPay1BS']);
+?>
+<tr>
+<td class="r_data" width="50%">請求手数料合計<?php if ($this->datas['ChargeCountExtraPay1DK'] > 0) { ?><br />（内 届いてから払い合計（同梱））<?php } ?><?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（内 届いてから払い合計（別送））<?php } ?><?php //if ($ClaimFeeDK > 0) { ?><!-- <br />（内 届いてから以外決済合計（同梱）） --><?php //} ?><?php //if ($ClaimFeeBS > 0) { ?><!-- <br />（内 届いてから以外決済合計（別送）） --><?php //} ?></td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['ClaimFee'], 0 ), '￥ #,##0' ); ?><?php if ($this->datas['ChargeCountExtraPay1DK'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['ClaimFeeExtraPay1DK'], 0 ), '￥ #,##0' ); ?>）<?php } ?><?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['ClaimFeeExtraPay1BS'], 0 ), '￥ #,##0' ); ?>）<?php } ?><?php //if ($ClaimFeeDK > 0) { ?><!-- <br />（<?php //echo nvl(f_nf(-1 * (int)$ClaimFeeDK, '￥ #,##0'), '￥ 0'); ?>）--><?php //} ?><?php //if ($ClaimFeeBS > 0) { ?><!-- <br />（<?php //echo nvl(f_nf(-1 * (int)$ClaimFeeBS, '￥ #,##0'), '￥ 0'); ?>）--><?php //} ?></td></tr>
+<?php   }?>
+<?php } else { ?>
+<tr>
+<td class="r_data" width="50%">請求手数料合計<?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（内 届いてから払い合計（別送））<?php } ?></td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['ClaimFee'], 0 ), '￥ #,##0' ); ?><?php if ($this->datas['ChargeCountExtraPay1BS'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['ClaimFeeExtraPay1BS'], 0 ), '￥ #,##0' ); ?>）<?php } ?></td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%">印紙代合計（※）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['StampFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">月額固定費</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['MonthlyFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">前回持越し分（固定費）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['CarryOverMonthlyFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">キャンセル返金分<?php if ($this->datas['CalcelAmountExtraPay1DK'] > 0 && $this->datas['CancelRepaymentAmount'] > 0) { ?><br />（内 届いてから払い合計（同梱））<?php } ?><?php if ($this->datas['CalcelAmountExtraPay1BS'] > 0 && $this->datas['CancelRepaymentAmount'] > 0) { ?><br />（内 届いてから払い合計（別送））<?php } ?></td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['CancelRepaymentAmount'], 0 ), '￥ #,##0' ); ?><?php if ($this->datas['CalcelAmountExtraPay1DK'] > 0 && $this->datas['CancelRepaymentAmount'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['CalcelAmountExtraPay1DK'], 0 ), '￥ #,##0' ); ?>）<?php } ?><?php if ($this->datas['CalcelAmountExtraPay1BS'] > 0 && $this->datas['CancelRepaymentAmount'] > 0) { ?><br />（<?php echo f_nf( nvl( $this->datas['CalcelAmountExtraPay1BS'], 0 ), '￥ #,##0' ); ?>）<?php } ?></td></tr>
+<tr><td class="r_data" width="50%">口座振込手数料</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['FfTransferFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php if (false) { ?>
+<tr><td class="r_data" width="50%">立替精算戻し額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['PayBackAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%">精算調整額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['AdjustmentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data2" width="50%">ご請求総額</td>
+<td class="r_data2" width="50%"><?php echo f_nf( nvl( $this->datas['ClaimAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">お支払総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['PaymentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+</table>
+</div>
+<div style="display: block; width: 900px; margin-top: 40px; margin-left: 70px; font-size: 13px;">
+※　「印紙代合計」とは、購入者様のコンビニ決済によるお支払金額が2014年4月1日から2019年9月30日までに発行された請求書は税込で<br />
+　　￥54,000以上、2019年10月1日以降に発行された請求書は税抜で￥50,000以上の場合に発生する印紙代金の合計金額です。<br /><br />
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+
+<!-- お取引明細 -->
+<div id="header" style="width: 900px; page-break-before: always;">
+<div id="header1" style="width: 450px;">
+貴社名　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様
+</div>
+<div id="header2"  style="width: 440px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br /><br />
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下となります。
+</div>
+</div>
+<div style="margin-top: 20px;">
+<table width="700px" cellpadding="1" cellspacing=0" id="datatable">
+<tr><td class="r_data" width="50%">印紙代合計（過去取引分含む）※</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['StampFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">月額固定費（<?php echo f_e($this->planName); ?> プラン）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['MonthlyFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">前回持越し分</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['CarryOverMonthlyFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">キャンセル返金分</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['CancelRepaymentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">口座振込手数料</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['FfTransferFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php if (false) { ?>
+<tr><td class="r_data" width="50%">立替精算戻し額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['PayBackAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%">精算調整額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->datas['AdjustmentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data2" width="50%">お支払総額</td>
+<td class="r_data2" width="50%"><?php echo f_nf( nvl( $this->datas['PaymentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+</table>
+</div>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 150px; font-size: 13px;">
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php
+$item_count = 0;
+foreach($this->datas2 as $key => $value) {
+    if(!empty($value)){
+        $item_count += count($value);
+    }
+};
+?>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+お取引件数：<?php echo f_nf( nvl( $item_count, 0 ), '#,##0' ); ?>件
+</div>
+
+<?php if (empty($this->datas2)) { ?>
+<div id="title">【お取引明細】</div>
+<div style="margin-left: 40px;">明細はありません。</div>
+<?php } else {
+$summary_templates = array(
+        'UseAmount' => 0,
+        'SettlementFee' => 0,
+        'ClaimFee' => 0,
+        'ChargeAmount' => 0
+);
+$summaries = array_merge(array(), $summary_templates);
+$last_sitename = array_pop(array_keys($this->datas2));
+$i = 0;
+?>
+<div>
+<table width="900px" cellpadding="1" cellspacing=0" id="datatable">
+<thead style="display: table-header-group;">
+<tr><td colspan="11"><div id="title">【お取引明細】</div></td></tr>
+<tr>
+<td colspan = "6"><?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>分</td>
+<td colspan = "6" align="right">明細発行日：<?php echo f_df( $this->issueDate, 'Y/m/d' ); ?></td>
+</tr>
+<tr>
+<th>No.</th>
+<th>注文ID</th>
+<th>任意<br />注文番号</th>
+<th>購入者</th>
+<th>注文日</th>
+<th>伝登日</th>
+<th>立替締</th>
+<th>請求額</th>
+<th>決済<br />手数料</th>
+<th>請求<br />手数料</th>
+<th>差引後<br />金額</th>
+</tr>
+</thead>
+<?php
+foreach($this->datas2 as $sitename => $rows) {
+    $_summaries = array_merge(array(), $summary_templates);
+?>
+<tr>
+<td colspan="11" class="l_data sitename" >サイト：<?php echo f_e($sitename); ?></td>
+</tr>
+<tbody>
+<?php foreach($rows as $row) { ?>
+<tr>
+<td class="c_data"><?php echo (++$i); ?></td>
+<td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+<td class="l_data"><?php echo f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+<td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+<td class="c_data"><?php echo f_df($row['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['Deli_JournalIncDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['FixedDate'], 'Y/m/d'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['UseAmount'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['SettlementFee'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['ClaimFee'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['ChargeAmount'], '#,##0'), '0'); ?></td>
+</tr>
+<?php
+    foreach( array_keys( $summaries ) as $key ) {
+        $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+        $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+    }
+}
+$style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+<tr>
+<td class="r_sum" colspan="7"<?php echo $style; ?>>サイト計</td>
+<?php
+foreach( array_keys( $_summaries ) as $key ) {
+    $value = ((int)$_summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"<?php echo $style; ?>><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php if( $sitename == $last_sitename ) { ?>
+<tr>
+<td class="r_sum2" colspan="7">お取引合計</td>
+<?php
+foreach( array_keys( $summaries ) as $key ) {
+    $value = ((int)$summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php } ?>
+</tbody>
+<?php
+}
+?>
+</table>
+</div>
+<?php
+}
+?>
+
+<!-- 印紙代明細 -->
+<div id="header" style="width: 900px; page-break-before: always;">
+<div id="header1" style="width: 450px;">
+貴社名　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様
+</div>
+<div id="header2"  style="width: 440px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br /><br />
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下となります。
+</div>
+</div>
+<?php
+$item_count = 0;
+foreach($this->datas3 as $key => $value) {
+    if(!empty($value)){
+        $item_count += count($value);
+    }
+};
+?>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+お取引件数：<?php echo f_nf( nvl( $item_count, 0 ), '#,##0' ); ?>件
+</div>
+
+<?php if (empty($this->datas3)) { ?>
+<div id="title">【印紙代明細】</div>
+<div style="margin-left: 40px;">明細はありません。</div>
+<?php } else {
+$summary_templates = array(
+        'StampFee' => 0,
+);
+$summaries = array_merge(array(), $summary_templates);
+$last_sitename = array_pop(array_keys($this->datas3));
+$i = 0;
+?>
+<div>
+<table width="900px" cellpadding="1" cellspacing=0" id="datatable">
+<thead style="display: table-header-group;">
+<tr><td colspan="8"><div id="title">【印紙代明細】</div></td></tr>
+<tr>
+<td colspan = "4"><?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>分</td>
+<td colspan = "4" align="right">明細発行日：<?php echo f_df( $this->issueDate, 'Y/m/d' ); ?></td>
+</tr>
+<tr>
+<th>No.</th>
+<th>注文ID</th>
+<th>任意注文番号</th>
+<th>購入者</th>
+<th>注文日</th>
+<th>立替締め日</th>
+<th>顧客請求額</th>
+<th>印紙代金</th>
+</tr>
+</thead>
+<?php
+foreach($this->datas3 as $sitename => $rows) {
+    $_summaries = array_merge(array(), $summary_templates);
+?>
+<tr>
+<td colspan="8" class="l_data sitename">サイト：<?php echo f_e($sitename); ?></td>
+</tr>
+<tbody>
+<?php foreach($rows as $row) { ?>
+<tr>
+<td class="r_data"><?php echo (++$i); ?></td>
+<td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+<td class="l_data"><?php echo f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+<td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+<td class="c_data"><?php echo f_df($row['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['FixedDate2'], 'Y/m/d'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['UseAmount'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['StampFee'], '#,##0'), '0'); ?></td>
+</tr>
+<?php
+    foreach( array_keys( $summaries ) as $key ) {
+        $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+        $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+    }
+}
+$style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+<tr>
+<td class="r_sum" colspan="7"<?php echo $style; ?>>サイト計</td>
+<?php
+foreach( array_keys( $_summaries ) as $key ) {
+    $value = ((int)$_summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"<?php echo $style; ?>><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php if( $sitename == $last_sitename ) { ?>
+<tr>
+<td class="r_sum2" colspan="7">お取引合計</td>
+<?php
+foreach( array_keys( $summaries ) as $key ) {
+    $value = ((int)$summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php } ?>
+</tbody>
+<?php
+}
+?>
+</table>
+</div>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php
+}
+?>
+
+<!-- キャンセル明細 -->
+<div id="header" style="width: 900px; page-break-before: always;">
+<div id="header1" style="width: 450px;">
+貴社名　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様
+</div>
+<div id="header2"  style="width: 440px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br /><br />
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下となります。
+</div>
+</div>
+<?php
+$item_count = 0;
+foreach($this->datas4 as $key => $value) {
+    if(!empty($value)){
+        $item_count += count($value);
+    }
+};
+?>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+お取引件数：<?php echo f_nf( nvl( $item_count, 0 ), '#,##0' ); ?>件
+</div>
+
+<?php if (empty($this->datas4)) { ?>
+<div id="title">【キャンセル明細】</div>
+<div style="margin-left: 40px;">明細はありません。</div>
+<?php } else {
+$summary_templates = array(
+        'RepayTotal' => 0,
+);
+$summaries = array_merge(array(), $summary_templates);
+$last_sitename = array_pop(array_keys($this->datas4));
+$i = 0;
+?>
+<div>
+<table width="900px" cellpadding="1" cellspacing=0" id="datatable">
+<thead style="display: table-header-group;">
+<tr><td colspan="9"><div id="title">【キャンセル明細】</div></td></tr>
+<tr>
+<td colspan = "5"><?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>分</td>
+<td colspan = "4" align="right">明細発行日：<?php echo f_df( $this->issueDate, 'Y/m/d' ); ?></td>
+</tr>
+<tr>
+<th>No.</th>
+<th>注文ID</th>
+<th>任意注文番号</th>
+<th>購入者</th>
+<th>注文日</th>
+<th>立替締め日</th>
+<th>ｷｬﾝｾﾙ日</th>
+<th>顧客請求額</th>
+<th>ｷｬﾝｾﾙ返金額</th>
+</tr>
+</thead>
+<?php
+foreach($this->datas4 as $sitename => $rows) {
+    $_summaries = array_merge(array(), $summary_templates);
+?>
+<tr>
+<td colspan="9" class="l_data sitename">サイト：<?php echo f_e($sitename); ?></td>
+</tr>
+<tbody>
+<?php foreach($rows as $row) { ?>
+<tr>
+<td class="c_data"><?php echo (++$i); ?></td>
+<td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+<td class="l_data"><?php echo f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+<td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+<td class="c_data"><?php echo f_df($row['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['FixedDate2'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['CancelDate'], 'Y/m/d'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['UseAmount'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['RepayTotal'], '#,##0'), '0'); ?></td>
+</tr>
+<?php
+    foreach( array_keys( $summaries ) as $key ) {
+        $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+        $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+    }
+}
+$style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+<tr>
+<td class="r_sum" colspan="8"<?php echo $style; ?>>サイト計</td>
+<?php
+foreach( array_keys( $_summaries ) as $key ) {
+    $value = ((int)$_summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"<?php echo $style; ?>><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php if( $sitename == $last_sitename ) { ?>
+<tr>
+<td class="r_sum2" colspan="8">お取引合計</td>
+<?php
+foreach( array_keys( $summaries ) as $key ) {
+    $value = ((int)$summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php } ?>
+</tbody>
+<?php
+}
+?>
+</table>
+</div>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php
+}
+?>
+
+<!-- 調整額内訳明細 -->
+<div id="header" style="width: 900px; page-break-before: always;">
+<div id="header1" style="width: 450px;">
+貴社名　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様
+</div>
+<div id="header2"  style="width: 440px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br /><br />
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下となります。
+</div>
+</div>
+<?php
+$item_count = 0;
+if(!empty($this->datas5)){
+    $item_count = count($this->datas5);
+}
+?>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+お取引件数：<?php echo f_nf( nvl( $item_count, 0 ), '#,##0' ); ?>件
+</div>
+
+<?php if (empty($this->datas5)) { ?>
+<div id="title">【調整額内訳明細】</div>
+<div style="margin-left: 40px;">明細はありません。</div>
+<?php } else {
+$i = 0;
+$totalAdjustmentAmount = 0;
+?>
+<div>
+<table width="900px" cellpadding="1" cellspacing=0" id="datatable">
+<thead style="display: table-header-group;">
+<tr><td colspan="7"><div id="title">【調整額内訳明細】</div></td></tr>
+<tr>
+<td colspan = "4"><?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>分</td>
+<td colspan = "3" align="right">明細発行日：<?php echo f_df( $this->issueDate, 'Y/m/d' ); ?></td>
+</tr>
+<tr>
+<th>No.</th>
+<th>注文ID</th>
+<th>任意注文番号</th>
+<th>購入者</th>
+<th>注文日</th>
+<th>科目</th>
+<th>立替調整額</th>
+</tr>
+</thead>
+<tbody>
+<?php foreach($this->datas5 as $row) { ?>
+<tr>
+<td class="c_data"><?php echo (++$i); ?></td>
+<td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+<td class="l_data"><?php echo is_null($row['OrderId']) ? '&nbsp;': f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+<td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+<td class="c_data"><?php echo f_df($row['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+<td class="l_data"><?php echo f_e($row['ItemCodeName']); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['AdjustmentAmount'], '#,##0'), '0'); ?></td>
+</tr>
+<?php
+$totalAdjustmentAmount += (int)$row['AdjustmentAmount'];
+}
+?>
+<tr>
+<td class="r_sum2" colspan="6">お取引合計</td>
+<td class="r_data"><?php echo f_nf($totalAdjustmentAmount, '#,##0'); ?></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php
+}
+?>
+<!-- 2015/10/29 立替精算戻し明細は印刷しない -->
+<?php if (false) { ?>
+<!-- 立替精算戻し明細 -->
+<div id="header" style="width: 900px; page-break-before: always;">
+<div id="header1" style="width: 450px;">
+貴社名　<?php echo f_e( $this->datas['EnterpriseNameKj'] ); ?>　様
+</div>
+<div id="header2"  style="width: 440px;">
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br /><br />
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>のご利用明細は以下となります。
+</div>
+</div>
+<?php
+$item_count = 0;
+foreach($this->datas6 as $key => $value) {
+    if(empty($value)) {
+        $item_count += count($value);
+    }
+};
+?>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+お取引件数：<?php echo f_nf( nvl( $item_count, 0 ), '#,##0' ); ?>件
+</div>
+
+<?php if (empty($this->datas6)) { ?>
+<div id="title">【立替精算戻し明細】</div>
+<div style="margin-left: 40px;">明細はありません。</div>
+<?php } else {
+$summary_templates = array(
+        'UseAmount' => 0,
+        'ReceiptAmountTotal' => 0,
+        'PayBackAmount' => 0,
+);
+$summaries = array_merge(array(), $summary_templates);
+$last_sitename = array_pop(array_keys($this->datas6));
+$i = 0;
+?>
+<div>
+<table width="900px" cellpadding="1" cellspacing=0" id="datatable">
+<thead style="display: table-header-group;">
+<tr><td colspan="10"><div id="title">【立替精算戻し明細】</div></td></tr>
+<tr>
+<td colspan = "5"><?php echo f_df( $this->datas['FixedMonth'], 'Y年 n月' ); ?>分</td>
+<td colspan = "5" align="right">明細発行日：<?php echo f_df( $this->issueDate, 'Y/m/d' ); ?></td>
+</tr>
+<tr>
+<th>No.</th>
+<th>注文ID</th>
+<th>任意注文番号</th>
+<th>購入者</th>
+<th>注文日</th>
+<th>伝登日</th>
+<th>立替締</th>
+<th>請求額</th>
+<th>入金額</th>
+<th>立替戻し金額</th>
+</tr>
+</thead>
+<?php
+foreach($this->datas6 as $sitename => $rows) {
+    $_summaries = array_merge(array(), $summary_templates);
+?>
+<tr>
+<td colspan="10" class="l_data sitename">サイト：<?php echo f_e($sitename); ?></td>
+</tr>
+<tbody>
+<?php foreach($rows as $row) { ?>
+<tr>
+<td class="c_data"><?php echo (++$i); ?></td>
+<td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+<td class="l_data"><?php echo f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+<td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+<td class="c_data"><?php echo f_df($row['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['Deli_JournalIncDate'], 'Y/m/d'); ?></td>
+<td class="c_data"><?php echo f_df($row['FixedDate2'], 'Y/m/d'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['UseAmount'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['ReceiptAmountTotal'], '#,##0'), '0'); ?></td>
+<td class="r_data"><?php echo nvl(f_nf($row['PayBackAmount'], '#,##0'), '0'); ?></td>
+</tr>
+<?php
+    foreach( array_keys( $summaries ) as $key ) {
+        $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+        $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+    }
+}
+$style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+<tr>
+<td class="r_sum" colspan="7"<?php echo $style; ?>>サイト計</td>
+<?php
+foreach( array_keys( $_summaries ) as $key ) {
+    $value = ((int)$_summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"<?php echo $style; ?>><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php if( $sitename == $last_sitename ) { ?>
+<tr>
+<td class="r_sum2" colspan="7">お取引合計</td>
+<?php
+foreach( array_keys( $summaries ) as $key ) {
+    $value = ((int)$summaries[ $key ]);
+    $classes = array('r_data');
+?>
+<td class="<?php echo join(' ', $classes); ?>"><?php echo f_nf($value, '#,##0'); ?></td>
+<?php
+}
+?>
+</tr>
+<?php } ?>
+</tbody>
+<?php
+}
+?>
+</table>
+</div>
+<div style="display: block; width: 700px; margin-top: 40px; margin-left: 40px; font-size: 13px;">
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php
+}
+?>
+<?php } ?>
+</html>

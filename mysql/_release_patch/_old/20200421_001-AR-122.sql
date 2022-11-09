@@ -1,0 +1,1 @@
+ALTER TABLE T_ClaimHistory ADD COLUMN `CreditTransferRequestStatus` INT  NULL AFTER `MailRetryCount`;

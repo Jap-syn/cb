@@ -1,0 +1,176 @@
+<?php
+require_once 'Coral/Validate/Utility.php';
+
+// HTMLヘッダ
+echo $this->render( 'document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<script type="text/javascript">
+var CountInfo = Class.create();
+Object.extend(CountInfo.prototype, {
+	initialize : function(date) {
+		this.target_date = date;
+		this.data = (function() {
+			var ele = $('count_prop_{0}'.format(date));
+			var result = (ele && ele.value && ele.value.length) ?
+				ele.value.parseJSON() : { sb : 0, all : 0 };
+			return result || { sb : 0, all : 0 };
+		})();
+		this.topElement = 'count_info_{0}'.format(date);
+		this.countContainer = 'count_detail_{0}'.format(date);
+		this.linkContainer = 'show_detail_{0}'.format(date);
+		this.button = 'download_{0}'.format(date);
+		this.checkBox = 'chk_{0}'.format(date);
+		
+		var _self = this;
+		Event.observe($(this.button), 'click', function(evt) {
+			// ダウンロードボタンクリック
+			var include_all = $(_self.checkBox).checked;
+			var count = include_all ? _self.data.all : _self.data.sb;
+			if(!count) return;
+			
+			$('download_date').value = _self.target_date;
+			$('download_include_all').value = include_all ? '1' : '0';
+			$('download_form').submit();
+			setTimeout(function() {
+				$('download_date').value = '';
+				$('download_include_all').value = '0';
+			}, 500);
+		}.bindAsEventListener($(this.button)));
+		
+		Event.observe($(this.checkBox), 'click', function(evt) {
+			// チェックボックスクリック
+			setTimeout(_self.updateUI.bind(_self), 0);
+		}.bindAsEventListener($(this.checkBox)));
+		
+		this.updateUI();
+	},
+	updateUI : function() {
+		var include_all = $(this.checkBox).checked;
+		var buttonEnabled = include_all ? this.data.all > 0 : this.data.sb > 0;
+		
+		$(this.button).disabled = !buttonEnabled;
+		$(this.linkContainer).innerHTML = buttonEnabled ?
+			'<a href="shippingsp/detail/date/{0}{1}">&raquo; 詳細</a>'.format(this.target_date, include_all ? '/include_all/true' : '') :
+			'<span class="dummy_link">&raquo; 詳細</span>';
+		
+		if(include_all) {
+			$(this.countContainer).innerHTML =
+				'自社分：{0} 件／<b>全件：{1} 件</b>'.format(this.data.sb, this.data.all);
+		} else {
+			$(this.countContainer).innerHTML =
+				'<b>自社分：{0} 件</b>／全件：{1} 件'.format(this.data.sb, this.data.all);
+		}
+	}
+});
+Event.observe(window, "load", function() {
+	document.getElementsByClassName('count_info').map(function(ele) {
+		var date = ele.id.replace(/^.+_(\d{4}-\d{2}-\d{2})$/, '$1');
+		return date && date.length ? date : null;
+	}).compact().each(function(date) {
+		new CountInfo(date);
+	});
+});
+</script>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'system_message.php' );
+
+// ページタイトル
+echo $this->render( 'page_title.php' );
+?>
+
+<div class="main_contents">
+	<div class="command_bar">
+		<div class="title">伝票番号更新用のCSVファイルをアップロードします</div>
+	</div>
+	<div class="part_container">
+	<center>
+		<form id="csv_form" method="post" action="shippingsp/confirmCsv" enctype="multipart/form-data">
+			<table class="regist_table" id="csv_form_table" border="yes" cellpadding="0" cellspacing="0">
+				<thead>
+					<tr>
+						<th>CSVファイルの登録</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="file_item">
+							<input id="csv_file" name="<?php echo $this->field_name; ?>" type="file" size="60" />
+						</td>
+					</tr>
+					<tr>
+						<td class="submit_item">
+							<button id="csv_submit" type="submit">登録実行</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</center>
+	</div>
+	
+	<div class="command_bar">
+		<div class="title">伝票番号更新用のテンプレートCSVをダウンロードします (<?php echo f_nf($this->limitDaySpan, '#,##0日前まで'); ?>)</div>
+	</div>
+	<div class="part_container">
+		<dl class="count_list">
+	<?php $has_enable_info = false; ?>
+	<?php foreach($this->count_list as $date => $count_info) { ?>
+		<?php if($count_info['all']) { ?>
+		<?php $has_enable_info = true; ?>
+		<dt><?php echo f_df($date, 'yyyy年M月d日'); ?> 転送分</dt>
+		<dd class="count_info" id="count_info_<?php echo f_df($date, 'yyyy-MM-dd'); ?>">
+			<input class="count_props" id="count_prop_<?php echo f_df($date, 'yyyy-MM-dd'); ?>" type="hidden" value="<?php echo f_e(Zend_Json::encode($count_info)); ?>" />
+			<table class="count_prop_detail" id="count_prop_detail_<?php echo f_df($date, 'yyyy-MM-dd'); ?>">
+				<tr>
+					<td class="count_detail" id="count_detail_<?php echo f_df($date, 'yyyy-MM-dd'); ?>">
+						<?php echo sprintf('自社分：%s 件／全件：%s 件', f_e($count_info['sb']), f_e($count_info['all'])); ?>
+					</td>
+					<td class="submit_container">
+						<label for="chk_<?php echo f_df($date, 'yyyy-MM-dd'); ?>">
+							<input id="chk_<?php echo f_df($date, 'yyyy-MM-dd'); ?>" class="toggle_mode" type="checkbox" />自社印刷以外も含める
+						</label>
+					</td>
+					<td class="link_container" id="show_detail_<?php echo f_df($date, 'yyyy-MM-dd'); ?>"></td>
+					<td class="submit_container">
+						<button id="download_<?php echo f_df($date, 'yyyy-MM-dd'); ?>" class="exec_download" type="button" disabled="disabled">テンプレートCSVをダウンロード</button>
+					</td>
+				</tr>
+			</table>
+		</dd>
+		<?php } ?>
+	<?php } ?>
+		</dl>
+	<?php if($has_enable_info) { ?>
+	<form id="download_form" method="post" action="shippingsp/downloadCsv" target="_blank">
+		<input id="download_date" name="form[date]" type="hidden" />
+		<input id="download_include_all" name="form[include_all]" type="hidden" value="0" />
+	</form>
+	<?php } else { ?>
+		<p style="margin-left: 40px">転送実績がありません</p>
+	<?php } ?>
+	</div>
+
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'page_footer.php' );
+?>
+</body>
+</html>
+

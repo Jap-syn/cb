@@ -1,0 +1,173 @@
+.main_contents {
+	height: auto;"member/css/order_form.css"
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.main_contents ul {
+	margin-bottom: 20px;
+	font-size: 12pt;
+}
+
+.main_contents ul li {
+	list-style: none;
+	font-weight: bold;
+}
+
+.main_contents ul li ul,
+.main_contents ul li ul li {
+	font-size: 10pt;
+	font-weight: normal;
+	list-style-type: disc;
+}
+
+.order_items {
+	color: blue;
+	margin-bottom: 8px;
+}
+
+.header_row {
+	color: dimgray;
+}
+
+.error_row {
+	background-color: pink;
+	color: black;
+}
+
+th, td {
+	padding: 1px 3px;
+	font-size: 9pt;
+}
+
+th.line_number,
+td.line_number {
+	text-align: right;
+	width: 40px;
+}
+
+th.type_name,
+td.type_name {
+	text-align: center;
+	width: 90px;
+}
+
+.csv_result th,
+.csv_result td {
+	font-size: 10pt;
+	padding: 3px 8px;
+}
+"member/application/views/scripts/order/confirm.phtml"
+/* submitボタンのコンテナ領域 */
+.csv_result .submit_area {
+	text-align: center;"member/css/order_form.css"
+}
+
+.csv_result .submit_area,
+.csv_result .submit_area * {
+	font-size: 14pt;
+}
+
+.csv_result .submit_area {
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+
+.csv_result tr.odd,
+.csv_result tr.odd td {
+	background-color: white;
+}
+
+.csv_result tr.even,
+.csv_result tr.even td {
+	background-color: white;
+}
+
+.csv_result tr.top,
+.csv_result tr.top td {
+	/*border-top: solid 1px silver;*/
+}
+
+.csv_result tr.caution,
+.csv_result tr.caution td {
+	background-color: lavenderblush;
+}
+
+.csv_result tr.csv_caution,
+.csv_result tr.csv_caution td {
+	background-color: lavenderblush;
+}
+
+.caution_area {
+	background-color: lavenderblush;
+}
+
+.error_cancel_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_cancel_container h4,
+ul.error_cancel_table {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: yellow;
+}
+
+.error_cancel_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: black;
+}
+
+ul.error_cancel_table {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: khaki;
+}
+
+ul.error_cancel_table li{
+	font-size: 12pt;
+	font-weight: normal;
+}
+
+/* 任意番号警告用のコンテナ領域 */
+.error_ent_check {
+	font-size: 12pt;
+	padding: 2px 8px;
+	margin-left:650px;
+}
+
+.error_ent_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_ent_container h4,
+ul.error_ent_table {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: yellow;
+}
+
+.error_ent_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: black;
+}
+
+ul.error_ent_table {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: khaki;
+}
+
+ul.error_ent_table li {
+	font-size: 12pt;
+	font-weight: normal;
+
+}

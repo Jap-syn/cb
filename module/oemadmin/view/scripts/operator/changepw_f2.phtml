@@ -1,0 +1,86 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+use oemadmin\Application;
+
+$oemInfo = Application::getInstance()->getCurrentOemData();
+
+?>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+            <div id="header">
+                <div id="header_left">
+                    <div id="header_logo">
+						<a href=".">
+                            <img src="resource/image/type/logo-l" alt="<?php echo f_e($oemInfo['ServiceName']); ?>" />
+						</a>
+					</div>
+                    <p>オペレータ管理画面[<?php echo f_e(Application::getInstance()->getOemAccessId()); ?>]</p>
+                </div>
+                <div id="header_right">
+                    <span id="current-user-info">ログイン中：<?php echo $this->userInfo->NameKj; ?></span>
+                    <a href="login/logout">ログアウト</a>
+                </div>
+            </div>
+			<div><?php echo $this->render('oemadmin/important_messages.php'); ?></div>
+
+    <div class="title"><span>パスワード変更</span></div>
+    <font color="red"><?php echo f_e($this->msg); ?></font>
+<form id="login_form" name="form" method="POST" action="operator/changepw/cmd/e">
+<table class="datatable">
+<?php if(!$this->altLogin) { ?>
+  <tr>
+    <td class="r_label width_300">現在のパスワード</td>
+    <td class="l_data">
+      <input type="password" id="opw" name="opw" value="<?php echo f_e($this->error['opw']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['eopw']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+<?php } ?>
+  <tr>
+    <td class="r_label">新しいパスワード</td>
+    <td class="l_data">
+      <input type="password" id="npw1" name="npw1" value="<?php echo f_e($this->error['npw1']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['enpw1']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>  <tr>
+    <td class="r_label">確認</td>
+    <td class="l_data">
+      <input type="password" id="npw2" name="npw2" value="<?php echo f_e($this->error['npw2']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['enpw2']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+</table>
+  <div class="btncontents">
+        <button class="default_btn" type="submit">　O　K　</button>
+        <?php  if ($this->mode == 2) {?>
+        <button class="default_btn" type="button" onclick="location.href='index/index'">キャンセル</button>
+        <?php } ?>
+  </div>
+</form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe( window, "load", function(evt) {
+  Event.observe( $("login_form"), "submit", function(evt) {
+    if( $("npw1").value.trim().length == 0 ) {
+      alert( "パスワードを空にすることはできません。" );
+      Event.stop( evt );
+      return;
+    }
+  }.bindAsEventListener( $("login_form") ) );
+	Event.observe($('current-user-info'), 'mousedown', function() {
+		new Element.ClassNames($('current-user-info')).add('rollovered');
+	});
+	Event.observe($('current-user-info'), 'mouseup', function() {
+		new Element.ClassNames($('current-user-info')).remove('rollovered');
+	});
+}.bindAsEventListener( window ) );
+</script>
+</html>

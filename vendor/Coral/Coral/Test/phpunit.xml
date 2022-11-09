@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit>
+    <php>
+        <var name="DB_DSN" value="mysql:host=localhost; dbname=coraldb_test03; charset=utf-8;" />
+        <var name="DB_USER" value="root" />
+        <var name="DB_PASSWD" value="" ></var>
+        <var name="DB_DBNAME" value="coraldb_test03" />
+    </php>
+</phpunit>

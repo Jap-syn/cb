@@ -1,0 +1,161 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$fd = $this->data;
+
+function show_error_message( $messages ) {
+  if( empty( $messages ) ) return;
+  if( ! is_array( $messages ) ) $messages = array( $messages );
+  $list = array();
+  foreach( $messages as $msg ) $list[] = f_e( $msg );
+  echo '<div class="input_error_message">';
+  echo join( '<br />', $list );
+  echo '</div>';
+}
+?>
+<style>
+  .input_error_message {
+    color: red;
+  }
+</style>
+</head>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/customer/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3>管理顧客<?php if( $fd['isNew'] ) { echo '登録'; } else { echo '編集'; } ?></h3>
+      <?php if( !empty( $this->error ) ) { ?>
+      <div style="border: double 3px firebrick; background-color: lemonchiffon; margin: 5px 25px; padding: 5px 10px; color: crimson">
+        ※：入力に不備があります。登録内容を見直してください。
+      </div>
+      <?php } ?>
+      <form name="form" id="form" method="post" action="customer/managementconfirm">
+        <input name="form[isNew]" id="isNew" value="<?php echo $fd['isNew'] ? 1 : 0; ?>" type="hidden" />
+        <input name="form[ManCustId]" id="ManCustId" type="hidden" value="<?php echo f_e( $fd['ManCustId'] ); ?>" />
+
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="2" class="l_data">【基本情報】</td>
+            </tr>
+            <?php if( !$fd['isNew'] ) { ?>
+            <tr>
+              <td class="r_label">管理顧客番号</td>
+              <td class="l_data"><?php echo f_e( $fd['ManCustId'] ); ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label">顧客名<font color="red">*</font></td>
+              <td class="l_data">
+                <input name="form[NameKj]" type="text" id="NameKj" value="<?php echo f_e( $fd['NameKj'] ); ?>" />
+                <?php show_error_message( $this->error['NameKj'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">顧客名カナ</td>
+              <td class="l_data">
+                <input name="form[NameKn]" type="text" id="NameKn" value="<?php echo f_e( $fd['NameKn'] ); ?>" />
+                <?php show_error_message( $this->error['NameKn'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">住所<font color="red">*</font></td>
+              <td class="l_data">〒
+                <input name="form[PostalCode]" type="text" id="PostalCode" value="<?php echo f_e( $fd['PostalCode'] ); ?>" />
+                <input type="button" id="postal_button" value="検索"  /><br />
+                <select id="PrefectureCode" name="form[PrefectureCode]" value="<?php echo f_e( $fd['PrefectureCode'] ); ?>">
+                <?php foreach( $this->prefecture as $value => $caption ) { ?>
+                  <?php $selected = $fd['PrefectureCode'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e( $value ); ?>"<?php echo $selected; ?>><?php echo f_e( $caption ); ?></option>
+                <?php } ?>
+                </select>
+                <input size="45" name="form[UnitingAddress]" type="text" id="UnitingAddress" value="<?php echo f_e( $fd['UnitingAddress'] ); ?>" />
+                <?php show_error_message( $this->error['PostalCode'] ); ?>
+                <?php show_error_message( $this->error['PrefectureCode'] ); ?>
+                <?php show_error_message( $this->error['UnitingAddress'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="l_data">【基本情報】</td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号<font color="red">*</font></td>
+              <td class="l_data">
+                <input size="40" name="form[Phone]" type="text" id="Phone" value="<?php echo f_e( $fd['Phone'] ); ?>" />
+                <?php show_error_message( $this->error['Phone'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">メールアドレス</td>
+              <td class="l_data"><input size="40" name="form[MailAddress]" type="text" id="MailAddress" value="<?php echo f_e( $fd['MailAddress'] ); ?>" /></td>
+            </tr>
+            <tr>
+              <td colspan="2" class="l_data">【その他】</td>
+            </tr>
+            <tr>
+              <td class="r_label">付帯情報</td>
+              <td class="l_data">
+                <input name="form[BlackFlg]" id="BlackFlg" type="checkbox" value="1"<?php if( $fd['BlackFlg'] == 1 ) echo ' checked="checked"'; ?> />ブラック顧客　
+                <input name="form[GoodFlg]" id="GoodFlg" type="checkbox" value="1"<?php if( $fd['GoodFlg'] == 1 ) echo ' checked="checked"'; ?> />優良顧客　
+                <input name="form[ClaimerFlg]" id="ClaimerFlg" type="checkbox" value="1"<?php if( $fd['ClaimerFlg'] == 1 ) echo ' checked="checked"'; ?> />クレーマー　
+                <input name="form[RemindStopFlg]" id="RemindStopFlg" type="checkbox" value="1"<?php if( $fd['RemindStopFlg'] == 1 ) echo ' checked="checked"'; ?> />督促ストップ　
+                <input name="form[IdentityDocumentFlg]" id="IdentityDocumentFlg" type="checkbox" value="1"<?php if( $fd['IdentityDocumentFlg'] == 1 ) echo ' checked="checked"'; ?> />身分証アップロード
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">メモ</td>
+              <td class="l_data">
+                <textarea name="form[Note]" id="Note" rows="3" cols="60"><?php echo f_e( $fd['Note'] ); ?></textarea>
+                <?php show_error_message( $this->error['Note'] ); ?>
+              </td>
+            </tr>
+            <tr align="center">
+              <td colspan="2" style="padding: 2px 0px">
+                <input type="submit" id="submit_button" value="　確　定　" />
+                &nbsp;
+                <input type="button" id="cancel_edit" value="キャンセル" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    function disable_buttons() {
+        ["submit_button", "cancel_edit"].each(function(id) {
+            $(id).disabled = true;
+        });
+    }
+
+    Event.observe($("cancel_edit"), "click", function() {
+        var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+        disable_buttons();
+        var url = [
+            base.replace(/\/$/, ""),
+            "<?php echo ( !$fd['isNew'] && $fd['ManCustId'] ) ? sprintf( 'customer/managementdetail/mcid/%s', $fd['ManCustId'] ) : 'customerinquiry/form'; ?>"
+        ].join("/");
+        window.location.href = url;
+    });
+    Event.observe($("submit_button"), "click", function() {
+        setTimeout(disable_buttons, 0);
+    });
+
+    Event.observe($("postal_button"), "click", function() {
+      var str = Form.serialize('form');   // フォーム内容をシリアライズ
+      var url = '<?php echo $this->baseUrl . '/customer/customersearchzip' ?>';
+      var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+      var res = eval('(' + ajax.transport.responseText + ')');
+      $("PrefectureCode").value = res['PrefectureCode'];
+      $("UnitingAddress").value = res['UnitingAddress'];
+    });
+  });
+</script>
+</html>

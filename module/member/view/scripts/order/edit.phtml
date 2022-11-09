@@ -1,0 +1,1737 @@
+<?php
+use Zend\Json\Json;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use member\classes\OrderEditor;
+use member\Application;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<?php
+use Coral\Coral\Validate\CoralValidateUtility;
+use member\classes\OrderInputInfo;
+?>
+<style type="text/css">
+  td.item_name {
+    text-align: left !important;
+  }
+  td.item_value {
+    width: auto !important;
+  }
+  .main_contents {
+    padding: 8px;
+  }
+
+  .help_info,
+  .help_alert {
+    color: crimson;
+  }
+  .help_alert {
+    font-weight: bold;
+  }
+  div.help_alert {
+    border: solid 1px gray;
+    background-color: white;
+    padding: 2px 4px;
+    margin: 2px 0px;
+  }
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+// 注文状況をハンドルするためのOrderEditor
+$editor = new OrderEditor(Application::getInstance()->dbAdapter);
+?>
+
+  <div class="main_contents">
+
+<?php
+  $data = $this->detailData;
+
+  // 分類ごとの修正可否判断をマップ
+  //$modifiability = $editor->judgeOrderModifiability($data['OrderSeq']);
+  $modifiability = $this->modifiability;
+
+  // ローカルパラメータの整備
+  $cancel_info = array(
+    'label' => '不可',
+    'can_cancel' => false
+  );
+
+  if( $data['Cnl_CantCancelFlg'] || $data['IncreStatus'] == -1 ) {
+    // nop
+  } else {
+    switch( $data['Cnl_Status'] ) {
+      case 1:
+          $cancel_info['label'] =
+              '申請中 (' .
+              valueFormat( $data['CancelDate'], 'date' ) .
+              ')' ;
+          break;
+      case 2:
+          $cancel_info['label'] =
+              "理由「{$data['CancelReason']}」によりキャンセル済み(" .
+              valueFormat( $data['ApprovalDate'], 'date' ) .
+              ')';
+          break;
+      default:
+          $cancel_info = array(
+              'label' => '可能',
+              'can_cancel' => true
+          );
+          break;
+    }
+  }
+
+  // コマンドバー使用
+  $commandBar = new CoralViewCommandBar(
+    // title
+    sprintf('注文ID：%s の登録内容修正  [注文状況：%s]', $data['OrderId'], $editor->getStatusLabel($data['OrderSeq'])),
+    // buttons
+    array(
+      new CoralViewCommandBarButton(
+        array(
+          CoralViewCommandBarButton::OPTION_ID => 'back_to_detail',
+          CoralViewCommandBarButton::OPTION_HREF => sprintf('search/detail/id/%s', $data['OrderId']),
+          CoralViewCommandBarButton::OPTION_TEXT => '修正を中止',
+          CoralViewCommandBarButton::OPTION_TITLE => '注文修正を中止して、注文詳細情報へ戻ります'
+        )
+      )
+    )
+  );
+
+  // コマンドバーのレンダリング
+  echo $commandBar->render();
+
+  setReplaceEmpty(true);
+
+  // 外税レコードを保持か？
+  $isHaveTaxRecord = false;
+  foreach ($this->itemList as $row) {
+      if ($row['DataClass'] == '4') {
+          $isHaveTaxRecord = true;
+          break;
+      }
+  }
+?>
+<?php if(isset($this->errors)) { ?>
+    <div class="error_info_container" id="validate_error_area">
+      <h4><?php echo f_nf(count($this->errors), '#,##0'); ?> 件の入力エラーがあります</h4>
+      <ul class="error_info_list">
+<?php   foreach($this->errors as $id => $errors) { ?>
+<?php     foreach($errors as $error) { ?>
+        <li onmousemove="new Element.ClassNames(this).add('hover')" onmouseout="new Element.ClassNames(this).remove('hover')" onclick="showError('<?php echo f_e($id); ?>')"><?php echo f_e($error); ?></li>
+<?php     } ?>
+<?php   } ?>
+      </ul>
+    </div>
+<?php } ?>
+
+<?php
+  // 現在の状態でメールアドレスが必須であるかを判断しておく
+  $mail_required = false;
+  foreach($this->site_list as $site_row) {
+    if($site_row['SiteId'] == $data['SiteId']) {
+      $mail_required = $site_row['ReqMailAddrFlg'];
+      break;
+    }
+  }
+?>
+
+      <form id="order_form" method="post" action="order/editconfirm">
+<?php /* 基本取引情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_ORDER; ?>
+        <h3>取引情報</h3>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="item_name">項目名</th>
+              <th class="item_value" style="width: 420px">入力</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="item_name">注文ID</td>
+              <td class="item_value">
+                <?php echo f_e($data['OrderId']); ?>
+                <input name="form[Order][OrderSeq]" type="hidden" value="<?php echo f_e($data['OrderSeq']); ?>" />
+                <input name="form[Order][OrderId]" type="hidden" value="<?php echo f_e($data['OrderId']); ?>" />
+              </td>
+              <td class="item_help">この注文情報を一意に識別するIDです。変更することはできません</td>
+            </tr>
+<?php if(! $modifiability[$group_key]) { // 取引情報編集不可 ?>
+            <tr>
+              <td class="item_name">注文日</td>
+              <td class="item_value"><?php echo nvl(f_df($data['ReceiptOrderDate'], 'Y/m/d', 'Y-m-d'), '-'); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr <?php if (is_null($data['ServiceExpectedDate'])) { echo ' style="display:none"';} ?>>
+              <td class="item_name">役務提供予定日</td>
+              <td class="item_value"><?php echo nvl(f_df($data['ServiceExpectedDate'], 'Y/m/d', 'Y-m-d'), '-'); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">受付サイト</td>
+              <td class="item_value"><?php echo f_e(nvl($this->site_list_array[$data['SiteId']], '-')); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">任意注文番号</td>
+              <td class="item_value"><?php echo f_e( nvl($data['Ent_OrderId'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">保留理由</td>
+              <td class="item_value"><?php echo f_e( nvl($data['PendingReason'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+            <tr>
+              <td class="item_name">与信返信時間</td>
+              <td class="item_value"><?php echo f_e( nvl($data['CreditReplyDate'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+            <tr>
+              <td class="item_name">備考</td>
+              <td class="pre item_value"><?php echo f_br( nvl($data['Ent_Note'], ' ') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">テスト注文</td>
+              <td class="item_value"><input style="display:none" id="T_OrderClass" value="<?php echo f_e($data['T_OrderClass']); ?>" /><?php echo f_e( nvl($data['OrderClassStr'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+<?php } else { // 取引情報編集可能 ?>
+            <tr>
+              <td class="item_name">注文日</td>
+              <td class="item_value">
+                <input id="Order.ReceiptOrderDate" name="form[Order][ReceiptOrderDate]" type="text" value="<?php echo f_df($data['ReceiptOrderDate'], 'Y/m/d'); ?>" size="12" />
+                <button id="selectDate" type="button">カレンダーで選択</button>
+                <button id="setToday" type="button">今日</button>
+                <div id="datePicker1" style="margin-bottom: 20px; position: absolute; left: 90px; top: 80px;"></div>
+              </td>
+              <td class="item_help">
+                [カレンダーで選択]で日付を選択するか、[今日]をクリックして入力してください。<br />
+                キーボードから入力する場合は、日付区切りにピリオド（「.」）やハイフン（「-」）、スラッシュ（「/」）を使用できます。
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">役務提供予定日</td>
+              <td class="item_value">
+<?php $isDisableServiceExpectedDate = (!empty($data['OrgServiceExpectedDate']) && (f_df($data['OrgServiceExpectedDate'], 'Y/m/d') < date('Y/m/d'))) ? true : false; ?>
+<?php   if ($isDisableServiceExpectedDate) { ?>
+                <input type="text" value="<?php echo f_df($data['ServiceExpectedDate'], 'Y/m/d'); ?>" size="12" disabled="disabled" />
+                <input type="hidden" id="Order.ServiceExpectedDate" name="form[Order][ServiceExpectedDate]" type="text" value="<?php echo f_df($data['ServiceExpectedDate'], 'Y/m/d'); ?>" size="12" />
+<?php   } else { ?>
+                <input id="Order.ServiceExpectedDate" name="form[Order][ServiceExpectedDate]" type="text" value="<?php echo f_df($data['ServiceExpectedDate'], 'Y/m/d'); ?>" size="12" />
+<?php   } ?>
+                <input type="hidden" id="Order.OrgServiceExpectedDate" name="form[Order][OrgServiceExpectedDate]" type="text" value="<?php echo f_df($data['OrgServiceExpectedDate'], 'Y/m/d'); ?>" size="12" />
+                <button id="selectDate3" type="button" <?php if ($isDisableServiceExpectedDate) { echo 'disabled="disabled"'; } ?>>カレンダーで選択</button>
+                <button id="setToday3" type="button" <?php if ($isDisableServiceExpectedDate) { echo 'disabled="disabled"'; } ?>>今日</button>
+                <div id="datePicker3" style="margin-bottom: 20px; position: absolute; left: 90px; top: 80px;"></div>
+              </td>
+              <td class="item_help">
+                [カレンダーで選択]で日付を選択するか、[今日]をクリックして入力してください。<br />
+                キーボードから入力する場合は、日付区切りにピリオド（「.」）やハイフン（「-」）、スラッシュ（「/」）を使用できます。
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">受付サイト</td>
+              <td class="item_value">
+                <select id="Order.SiteId" name="form[Order][SiteId]" onChange="onChangeSite()">
+<?php   foreach($this->site_list_array as $site_id => $site_name) { ?>
+                  <option value="<?php echo f_e($site_id); ?>"<?php echo $site_id == $data['SiteId'] ? ' selected="selected"' : ''; ?>><?php echo f_e($site_name); ?></option>
+<?php   } ?>
+                </select>
+<?php   if ($data['T_OrderClass'] == '1') { /* selectﾀｸﾞがdisableの時[通知]が行われない。本箇所はその対策(20150812_1140) */ ?>
+                <input type="hidden" name="form[Order][SiteId]" value="<?php echo f_e($data['SiteId']); ?>" />
+<?php   } ?>
+              </td>
+              <td class="item_help">この注文を受け付けたサイトを選択してください</td>
+            </tr>
+            <tr>
+              <td class="item_name">任意注文番号</td>
+              <td class="item_value">
+                <input id="Order.Ent_OrderId" name="form[Order][Ent_OrderId]" type="text" value="<?php echo f_e( $data['Ent_OrderId'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">この注文を識別する任意の文字や番号を入力してください</td>
+            </tr>
+            <tr>
+              <td class="item_name">保留理由</td>
+              <td class="item_value"><?php echo f_e( nvl($data['PendingReason'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+            <tr>
+              <td class="item_name">伝票登録日時</td>
+              <td class="item_value"><?php echo f_e( nvl($data['Deli_JournalIncDate'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+            <tr>
+              <td class="item_name">与信返信時間</td>
+              <td class="item_value"><?php echo f_e( nvl($data['CreditReplyDate'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+            <tr>
+              <td class="item_name">備考</td>
+              <td class="pre item_value">
+                <textarea id="Order.Ent_Note" name="form[Order][Ent_Note]" rows="3" style="width: 360px"><?php echo f_e($data['Ent_Note']); ?></textarea>
+              </td>
+              <td class="item_help">この注文情報の備考をメモできます</td>
+            </tr>
+            <tr>
+              <td class="item_name">テスト注文</td>
+              <td class="item_value"><input style="display:none" id="T_OrderClass" value="<?php echo f_e($data['T_OrderClass']); ?>" /><?php echo f_e( nvl($data['OrderClassStr'], '-') ); ?></td>
+              <td class="item_help"></td>
+            </tr>
+<?php } ?>
+          </tbody>
+        </table>
+
+ <?php /* 購入者情報 */ ?>
+ <?php $group_key = OrderEditor::GROUP_CUSTOMER; ?>
+        <h3>購入者情報</h3>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="item_name">項目名</th>
+              <th class="item_value" style="width: 420px">入力</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+<?php if(! $modifiability[$group_key]) { // 購入者情報編集不可 ?>
+            <tr>
+              <td class="item_name">氏名</td>
+              <td class="item_value"><?php echo f_e( nvl($data['NameKj'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">氏名カナ</td>
+              <td class="item_value"><?php echo f_e( nvl($data['NameKn'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">住所</td>
+              <td class="item_value">
+                <?php echo f_e( $data['PostalCode'] ); ?><br />
+                <?php echo f_e( nvl($data['UnitingAddress'], '-') ); ?>
+              </td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">電話番号</td>
+              <td class="item_value"><?php echo f_e( nvl($data['Phone'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">メールアドレス</td>
+              <td class="item_value"><?php echo f_e( nvl($data['MailAddress'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">加盟店顧客番号</td>
+              <td class="item_value"><?php echo f_e( nvl($data['EntCustId'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">職業</td>
+              <td class="item_value"><?php echo f_e( nvl($data['Occupation'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">法人名</td>
+              <td class="item_value"><?php echo f_e( nvl($data['CorporateName'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">部署名</td>
+              <td class="item_value"><?php echo f_e( nvl($data['DivisionName'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">担当者名</td>
+              <td class="item_value"><?php echo f_e( nvl($data['CpNameKj'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr <?php if (nvl($this->userInfo->SelfBillingMode, 0) == 0) { echo ' style="display: none;"'; }/* 加盟店の[SelfBillingMode]が[0orNull]の時は、[請求書別送]を表示しない */ ?>>
+              <td class="item_name">請求書別送</td>
+              <td class="item_value"><?php echo f_e( nvl($this->claimsendingclass_info[$data['ClaimSendingClass']], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr <?php if ((nvl($this->creditTransferFlg, 1) == 0) || (nvl($this->creditTransferFlg, 2) == 0) || (nvl($this->creditTransferFlg, 3) == 0)) { echo ' style="display: none;"'; }/* 加盟店の[creditTransferFlg]が[0orNull]の時は、[口座振替]を表示しない */ ?>>
+              <td class="item_name">口座振替</td>
+              <td class="item_value"><?php echo f_e( nvl($this->creditTransferRequestFlg_info[$data['CreditTransferRequestFlg']], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+<?php } else { // 購入者情報編集可能 ?>
+            <tr>
+              <td class="item_name">氏名</td>
+              <td class="item_value">
+                <input id="Customer.NameKj" name="form[Customer][NameKj]" type="text" value="<?php echo f_e( $data['NameKj'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                全角／半角のどちらでも入力できます。姓と名の間をスペースで区切ってください。<br />
+                例) 吉村　一郎<br />
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">氏名カナ</td>
+              <td class="item_value">
+                <input id="Customer.NameKn" name="form[Customer][NameKn]" type="text" value="<?php echo f_e( $data['NameKn'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                全角／半角のどちらでも入力できます。姓と名の間をスペースで区切ってください。<br />
+                例) ヨシムラ　イチロウ
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">住所</td>
+              <td class="item_value">
+                〒<input id="Customer.PostalCode" name="form[Customer][PostalCode]" type="text" value="<?php echo f_e($data['PostalCode']); ?>" size="10" />
+                <button id="address_from_postalcode_c" type="button">住所を自動入力</button><br />
+                <input id="Customer.UnitingAddress" name="form[Customer][UnitingAddress]" type="text" value="<?php echo f_e($data['UnitingAddress']); ?>" size="70" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                半角数字とハイフン（「-」）で入力してください。<br />
+                3桁以上入力すると、[住所を自動入力]による自動入力が使用できます。<br />
+                <span class="help_info">
+                  [住所を自動入力]を使用すると、番地やビル名などが上書きされます。ご注意ください
+                </span><br />
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">電話番号</td>
+              <td class="item_value">
+                <input id="Customer.Phone" name="form[Customer][Phone]" type="text" value="<?php echo f_e( $data['Phone'] ); ?>" size="20" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                市街局番、局番などをハイフン（「-」）で区切り、半角数字で入力してください。<br />
+                例) 03-3333-3333
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">メールアドレス</td>
+              <td class="item_value">
+                <input id="Customer.MailAddress" name="form[Customer][MailAddress]" type="text" value="<?php echo f_e( $data['MailAddress'] ); ?>" size="40" />
+              </td>
+              <td class="item_help">
+                <div id="alert_for_mail_req" class="help_alert"<?php if(!$mail_required) echo ' style="display:none"'; ?>>[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                半角英数字で入力してください。<br />
+                例) yoshimura@ato-barai.com
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">加盟店顧客番号</td>
+              <td class="item_value">
+                <input id="Customer.EntCustId" name="form[Customer][EntCustId]" type="text" value="<?php echo f_e( $data['EntCustId'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                任意でご入力ください。<br />
+                例) ECSTNO150001
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">職業</td>
+              <td class="item_value">
+                <input id="Customer.Occupation" name="form[Customer][Occupation]" type="text" value="<?php echo f_e( $data['Occupation'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                任意でご入力ください。<br />
+                例) 会社員, 学生, 自営業
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">法人名</td>
+              <td class="item_value">
+                <input id="Customer.CorporateName" name="form[Customer][CorporateName]" type="text" value="<?php echo f_e( $data['CorporateName'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                任意でご入力ください。<br />
+                例) エービーシー商事
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">部署名</td>
+              <td class="item_value">
+                <input id="Customer.DivisionName" name="form[Customer][DivisionName]" type="text" value="<?php echo f_e( $data['DivisionName'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                任意でご入力ください。<br />
+                例) 総務部, 営業部, 購買部
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">担当者名</td>
+              <td class="item_value">
+                <input id="Customer.CpNameKj" name="form[Customer][CpNameKj]" type="text" value="<?php echo f_e( $data['CpNameKj'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                任意でご入力ください。<br />
+                例) 山田　太郎
+              </td>
+            </tr>
+            <tr <?php if (nvl($this->userInfo->SelfBillingMode, 0) == 0) { echo ' style="display: none;"'; }/* 加盟店の[SelfBillingMode]が[0orNull]の時は、[請求書別送]を表示しない */ ?>>
+              <td class="item_name">請求書別送</td>
+              <td class="item_value">
+                <select id="Customer.ClaimSendingClass" name="form[Customer][ClaimSendingClass]">
+<?php   foreach($this->claimsendingclass_info as $id => $name) { ?>
+                  <option value="<?php echo f_e($id); ?>"<?php echo $id == $data['ClaimSendingClass'] ? ' selected="selected"' : ''; ?>><?php echo f_e($name); ?></option>
+<?php   } ?>
+                </select>
+              </td>
+              <td class="item_help">請求書別送を行うか選択してください</td>
+            </tr>
+            <tr <?php if ((nvl($this->creditTransferFlg, 1) == 0) || (nvl($this->creditTransferFlg, 2) == 0) || (nvl($this->creditTransferFlg, 3) == 0)) { echo ' style="display: none;"'; }/* 加盟店の[creditTransferFlg]が[0orNull]の時は、[口座振替]を表示しない */ ?>>
+              <td class="item_name">口座振替</td>
+              <td class="item_value">
+                <select id="Order.CreditTransferRequestFlg" name="form[Order][CreditTransferRequestFlg]">
+<?php   foreach($this->creditTransferRequestFlg_info as $id => $name) { ?>
+                  <option value="<?php echo f_e($id); ?>"<?php echo $id == $data['CreditTransferRequestFlg'] ? ' selected="selected"' : ''; ?>><?php echo f_e($name); ?></option>
+<?php   } ?>
+                </select>
+              </td>
+              <td class="item_help">口座振替の利用状況を選択してください。</td>
+            </tr>
+<?php } ?>
+          </tbody>
+        </table>
+
+<?php /* 配送先情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_DELIVERY; ?>
+        <h3>配送先情報
+<?php if($modifiability[$group_key]) { ?>
+          <input id="Order.AnotherDeliFlg" name="form[Order][AnotherDeliFlg]" type="checkbox" value="1"<?php if($data['AnotherDeliFlg'] == 1) echo ' checked="checked"'; ?> />
+          別配送先を指定する
+          <span style="font-weight: normal; font-size: 11pt; color: crimson; margin-left: 8px;">※請求書と商品を別のところに送る場合は左にあるチェックを必ず入れて下さい。</span>
+<?php } ?>
+        </h3>
+<?php if(! $modifiability[$group_key]) { // 配送先情報編集不可 ?>
+<?php /* 別配送先指定時 */ ?>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0"<?php if($data['AnotherDeliFlg'] != 1) echo ' style="display: none;"'; ?>>
+          <thead>
+            <tr>
+              <th class="item_name">項目名</th>
+              <th class="item_value" style="width: 420px">入力</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="item_name">氏名</td>
+              <td class="item_value"><?php echo f_e( nvl($data['DestNameKj'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">氏名カナ</td>
+              <td class="item_value"><?php echo f_e( nvl($data['DestNameKn'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">住所</td>
+              <td class="item_value">
+                  <?php echo f_e( $data['DestPostalCode'] ); ?><br />
+                  <?php echo f_e( nvl($data['DestUnitingAddress'], '-') ); ?>
+              </td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">電話番号</td>
+              <td class="item_value"><?php echo f_e( nvl($data['DestPhone'], '-') ); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+          </tbody>
+        </table>
+<?php /* 別配送先指定でない場合 */ ?>
+        <table id="<?php echo f_e($group_key . '_disable'); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0"<?php if($data['AnotherDeliFlg'] == 1) echo ' style="display: none;"'; ?>>
+          <tbody>
+            <tr>
+              <td class="no_display" colspan="4">（購入者に同じ）
+                <input id="Order.DisableAnotherDeli" name="form[meta][DisableAnotherDeli]" type="hidden" value="<?php echo $data['AnotherDeliFlg'] == 1 ? '0' : '1'; ?>" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+<?php } else { // 配送先情報編集可能 ?>
+<?php /* 別配送先指定指定チェック時 */ ?>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0"<?php if($data['AnotherDeliFlg'] != 1) echo ' style="display: none;"'; ?>>
+          <thead>
+            <tr>
+              <th class="item_name">項目名</th>
+              <th class="item_value" style="width: 420px">入力</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="item_name">氏名</td>
+              <td class="item_value">
+                <input id="Destination.DestNameKj" name="form[Destination][DestNameKj]" type="text" value="<?php echo f_e( $data['DestNameKj'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                全角／半角のどちらでも入力できます。姓と名の間をスペースで区切ってください。<br />
+                例) 吉村　一郎
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">氏名カナ</td>
+              <td class="item_value">
+                <input id="Destination.DestNameKn" name="form[Destination][DestNameKn]" type="text" value="<?php echo f_e( $data['DestNameKn'] ); ?>" size="30" />
+              </td>
+              <td class="item_help">
+                全角／半角のどちらでも入力できます。姓と名の間をスペースで区切ってください。<br />
+                例) ヨシムラ　イチロウ
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">住所</td>
+              <td class="item_value">
+                〒<input id="Destination.PostalCode" name="form[Destination][PostalCode]" type="text" value="<?php echo f_e($data['DestPostalCode']); ?>" size="10" />
+                <button id="address_from_postalcode_d" type="button">住所を自動入力</button><br />
+                <input id="Destination.UnitingAddress" name="form[Destination][UnitingAddress]" type="text" value="<?php echo f_e($data['DestUnitingAddress']); ?>" size="70" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                半角数字とハイフン（「-」）で入力してください。<br />
+                3桁以上入力すると、[住所を自動入力]による自動入力が使用できます。<br />
+                <span class="help_info">
+                  [住所を自動入力]を使用すると、番地やビル名などが上書きされます。ご注意ください
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td class="item_name">電話番号</td>
+              <td class="item_value">
+                <input id="Destination.Phone" name="form[Destination][Phone]" type="text" value="<?php echo f_e($data['DestPhone']); ?>" size="20" />
+              </td>
+              <td class="item_help">
+                <div class="help_alert">[注意！] この項目を変更すると、再度与信審査が行われます</div>
+                市街局番、局番などをハイフン（「-」）で区切り、半角数字で入力してください。<br />
+                例) 03-3333-3333
+              </td>
+            </tr>
+          </tbody>
+        </table>
+<?php /* 別配送先指定指定未チェック時 */ ?>
+        <table id="<?php echo f_e($group_key . '_disable'); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0"<?php if($data['AnotherDeliFlg']) echo ' style="display: none;"'; ?>>
+          <tbody>
+            <tr>
+              <td class="no_display" colspan="4">（購入者に同じ）
+                <input id="Order.DisableAnotherDeli" name="form[meta][DisableAnotherDeli]" type="hidden" value="<?php echo $data['AnotherDeliFlg'] ? '0' : '1'; ?>" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+<?php } ?>
+<?php /* 自由入力情報 */ ?>
+<?php if($this->billingAgentFlg == 1){ ?>
+    <?php $group_key = OrderEditor::GROUP_ADDINFO; ?>
+        <h3>
+    			【自由入力情報】
+    			<span style="font-size: 9pt; font-weight: normal;">⇒請求書の自由入力欄に表示されます。</span>
+    		</h3>
+    		<table class="order_items order_input_form" id="<?php echo f_e($groupName); ?>" border="yes" cellpadding="0" cellspacing="0">
+    			<thead>
+    				<tr>
+    					<th class="item_name">項目名</th>
+    					<th class="item_value" style="width: 420px">入力</th>
+    					<th class="item_help">ヘルプ</th>
+    				</tr>
+    			</thead>
+    			<tbody>
+    <?php if(!$modifiability[$group_key]) {?>
+    			<tr>
+    				<td class="item_name">１行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free1'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">２行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free2'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">３行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free3'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">４行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free4'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+          </tr>
+    			<tr>
+    				<td class="item_name">５行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free5'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">６行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free6'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">７行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free7'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">８行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free8'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">９行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free9'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１０行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free10'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１１行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free11'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１２行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free12'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１３行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free13'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１４行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free14'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１５行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free15'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１６行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free16'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１７行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free17'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１８行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free18'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１９行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free19'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">２０行目</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Free20'], '-') ); ?></td>
+            <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+    		  </tr>
+    <?php } else { ?>
+    			<tr>
+    				<td class="item_name">１行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free1]" id="OrderAddInfo.Free1" value="<?php echo f_e( $data['Free1'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">２行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free2]" id="OrderAddInfo.Free2" value="<?php echo f_e( $data['Free2'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">３行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free3]" id="OrderAddInfo.Free3" value="<?php echo f_e( $data['Free3'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">４行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free4]" id="OrderAddInfo.Free4" value="<?php echo f_e( $data['Free4'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">５行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free5]" id="OrderAddInfo.Free5" value="<?php echo f_e( $data['Free5'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">６行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free6]" id="OrderAddInfo.Free6" value="<?php echo f_e( $data['Free6'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">７行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free7]" id="OrderAddInfo.Free7" value="<?php echo f_e( $data['Free7'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">８行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free8]" id="OrderAddInfo.Free8" value="<?php echo f_e( $data['Free8'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">９行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free9]" id="OrderAddInfo.Free9" value="<?php echo f_e( $data['Free9'] ); ?>" ></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１０行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free10]" id="OrderAddInfo.Free10" value="<?php echo f_e( $data['Free10'] ); ?>"></td>
+    				<td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１１行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free11]" id="OrderAddInfo.Free11" value="<?php echo f_e( $data['Free11'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１２行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free12]" id="OrderAddInfo.Free12" value="<?php echo f_e( $data['Free12'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１３行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free13]" id="OrderAddInfo.Free13" value="<?php echo f_e( $data['Free13'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１４行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free14]" id="OrderAddInfo.Free14" value="<?php echo f_e( $data['Free14'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１５行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free15]" id="OrderAddInfo.Free15" value="<?php echo f_e( $data['Free15'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１６行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free16]" id="OrderAddInfo.Free16" value="<?php echo f_e( $data['Free16'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１７行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free17]" id="OrderAddInfo.Free17" value="<?php echo f_e( $data['Free17'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１８行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free18]" id="OrderAddInfo.Free18" value="<?php echo f_e( $data['Free18'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">１９行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free19]" id="OrderAddInfo.Free19" value="<?php echo f_e( $data['Free19'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    			<tr>
+    				<td class="item_name">２０行目</td>
+    				<td class="item_value"><input type="text" size="65" maxlength="60" name="form[OrderAddInfo][Free20]" id="OrderAddInfo.Free20" value="<?php echo f_e( $data['Free20'] ); ?>"></td>
+                    <td class="item_help">任意でご入力ください。半角50文字以内または全角25文字以内でご入力ください。</td>
+    			</tr>
+    <?php } ?>
+    			</tbody>
+    		</table>
+<?php } ?>
+<?php /* 配送伝票情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_JOURNAL; ?>
+        <h3>配送伝票</h3>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+          <thead>
+            <tr>
+              <th class="item_name">項目名</th>
+              <th class="item_value" style="width: 420px">入力</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+<?php if(! $modifiability[$group_key]) { // 配送伝票編集不可 ?>
+            <tr>
+              <td class="item_name">伝票登録日</td>
+              <td class="item_value"><?php echo nvl(f_df($data['Deli_JournalIncDate'], 'Y/m/d'), '-'); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">配送会社</td>
+              <td class="item_value"><?php echo f_e(nvl($this->deliv_masters[$data['Deli_DeliveryMethod']], '-')); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">伝票番号</td>
+              <td class="item_value"><?php echo f_e(nvl($data['Deli_JournalNumber'], '-')); ?></td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+<?php } else { // 配送伝票編集可能 ?>
+            <tr>
+              <td class="item_name">伝票登録日</td>
+              <td class="item_value"><?php echo nvl(f_df($data['Deli_JournalIncDate'], 'Y/m/d H:i:s'), '-'); ?>
+                <input type="hidden" id="Journal.Deli_JournalIncDate" name="form[Journal][Deli_JournalIncDate]" type="text" value="<?php echo f_e($data['Deli_JournalIncDate']); ?>" />
+              </td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+            <tr>
+              <td class="item_name">配送会社</td>
+              <td class="item_value">
+                <select id="Journal.Deli_DeliveryMethod" name="form[Journal][Deli_DeliveryMethod]">
+<?php   foreach($this->deliv_masters as $key => $value) { ?>
+                  <option value="<?php echo f_e($key); ?>"<?php if($key == $data['Deli_DeliveryMethod']) echo ' selected="selected"'; ?>><?php echo f_e($value); ?></option>
+<?php   } ?>
+                </select>
+              </td>
+              <td class="item_help">商品配送に利用する配送会社をリストから選択してください</td>
+            </tr>
+            <tr>
+              <td class="item_name">伝票番号</td>
+              <td class="item_value">
+                <input id="Journal.Deli_JournalNumber" name="form[Journal][Deli_JournalNumber]" type="text" value="<?php echo f_e($data['Deli_JournalNumber']); ?>" size="30" />
+              </td>
+              <td class="item_help">伝票番号を入力してください</td>
+            </tr>
+<?php } ?>
+          </tbody>
+        </table>
+
+<?php /* 商品明細 */ ?>
+<?php $group_key = OrderEditor::GROUP_ITEMS; ?>
+<?php
+  // 商品件数カウント
+  $countOfDataClass1 = 0;
+  $cntItemList = 0;
+  if (!empty($this->itemList)) {
+      $cntItemList =count($this->itemList);
+  }
+  for ($i=0; $i<$cntItemList; $i++) {
+      if ($this->itemList[$i]['DataClass'] == 1) $countOfDataClass1++;
+  }
+  // 「商品を追加」ボタンの表示位置取得用
+  $position = 0;
+?>
+        <h3>商品明細・送料等</h3>
+        <table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+          <thead>
+            <tr>
+            <?php if($modifiability[$group_key]) { ?>
+              <th class="item_name" style="width: 420px">項目の削除</th>
+              <th class="item_name" style="width: 420px">商品名/購入品目</th>
+            <?php } else { ?>
+              <th class="item_name" style="width: 420px">商品名/購入品目</th>
+            <?php } ?>
+              <th class="item_name" style="width: 90px">金額</th>
+              <th class="item_name" style="width: 130px">単価×数量</th>
+              <th class="item_name" style="width: 90px">消費税率</th>
+              <th class="item_help">ヘルプ</th>
+            </tr>
+          </thead>
+          <tbody>
+<?php   if(! $modifiability[$group_key]) { // 商品情報編集不可 ?>
+<?php     foreach( $this->itemList as $i => $item ) { ?>
+            <tr>
+              <td class="item_<?php echo $item['DataClass'] == 1 ? 'value' : 'name'; ?>">
+<?php       if      ($item['DataClass'] == 1) echo $item['ItemNameKj'];
+            else if ($item['DataClass'] == 2) echo '送料';
+            else if ($item['DataClass'] == 3) echo '手数料';
+            else if ($item['DataClass'] == 4) echo '外税額';
+            else '-';
+?>
+              </td>
+              <td class="item_value">\ <?php echo f_nf($item['SumMoney'], '#,##0'); ?></td>
+              <td class="item_value">
+<?php       if($item['DataClass'] == 1) { ?>
+                  (\ <?php echo f_nf($item['UnitPrice'], '#,##0'); ?>x<?php echo number_format($item['ItemNum'], $this->userInfo->DispDecimalPoint); ?>)
+<?php             if($item['TaxRate'] == NULL){
+                      $item['TaxRate'] = $this->taxRate; ?>
+<?php             } ?>
+                  <td class="item_value" > <?php echo $item['TaxRate'] ?>%</td>
+<?php      } else { ?>
+                  &nbsp;
+                  <td></td>
+<?php       } ?>
+              </td>
+              <td class="item_help"><span class="help_alert">この注文情報では変更できません</span></td>
+            </tr>
+<?php     }  ?>
+<?php   } else { // 商品情報編集可能 ?>
+            <!-- ■商品情報 -->
+<?php       foreach( $this->itemList as $i => $item ) { ?>
+<?php         if ($item['DataClass'] != 1) { continue; }  ?>
+              <tr>
+                  <button type="button" id="item_delete_button" class="item_delete_button" style="display: none;" onclick="deleteRow(this);">商品を削除</button>
+                  <td class="item_name" style="width: 10%">
+<?php         // if ($i == 0) { ?>
+<!--                   <font color="red">(削除不可)</font> -->
+<?php         /* } else */ if ($item['OrderItemId'] != 'a') { ?>
+                  <input type="checkbox" class="item_delete_chk" name="item_delete_chk_<?php echo f_e($item['OrderItemId']); ?>" id="item_delete_chk_<?php echo $i; ?>" <?php if (!empty($this->delList) && in_array($item['OrderItemId'], $this->delList)) echo 'checked="checked"'; ?>>
+<?php         } else { ?>
+                  <button type="button" id="item_delete_button" class="item_delete_button" onclick="deleteRow(this);">商品を削除</button>
+<?php         } ?>
+                </td>
+                <td class="item_value">
+                  <input id="Items.OrderItemId_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][OrderItemId]" type="hidden" value="<?php echo f_e($item['OrderItemId']); ?>" />
+                  <input id="Items.DataClass_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][DataClass]" type="hidden" value="<?php echo f_e($item['DataClass']); ?>" />
+                  <input class="item_namekj" id="Items.ItemNameKj_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][ItemNameKj]" type="text" value="<?php echo f_e($item['ItemNameKj']); ?>" style="width: 85%" />
+                </td>
+                <td class="item_value" style="width: 5%">
+                  \<span id="Items.SumMoney_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][SumMoney]"><?php echo f_nf($item['SumMoney'], '#,##0'); ?></span>
+                </td>
+                <td class="item_value" style="width: 10%">
+                  (
+                  \<input id="Items.UnitPrice_<?php echo f_e($i); ?>" class="items_field unit_price" name="form[Items][<?php echo f_e($i); ?>][UnitPrice]" type="text" value="<?php echo f_e($item['UnitPrice']); ?>" size="6" />
+                  x
+                  <input id="Items.ItemNum_<?php echo f_e($i); ?>" class="items_field item_num" name="form[Items][<?php echo f_e($i); ?>][ItemNum]" type="text" value="<?php echo f_e($item['ItemNum']); ?>" size="2" />)
+                </td>
+                <?php  $taxRate = $this->taxRate; ?>
+                <td class="item_value" ><select id="Items.TaxRate_<?php echo f_e($i); ?>" class="items_field item_taxrate" name="form[Items][<?php echo f_e($i); ?>][TaxRate]" >
+                                  <option value='0' <?php if($item['TaxRate'] == 0 || ($item['TaxRate'] == NULL && $taxRate == 0)) { echo "selected"; } ?>>0%</option>
+                  <option value='8' <?php if($item['TaxRate'] == 8 || ($item['TaxRate'] == NULL && $taxRate == 8)) { echo "selected"; } ?>>8%</option>
+				  <option value='10' <?php if($item['TaxRate'] == 10 || ($item['TaxRate'] == NULL && $taxRate == 10)) { echo "selected"; } ?>>10%</option>
+				</td>
+
+                <td class="item_help" id="item_help" style="width: 40%">単価、数量を入力してください。金額や合計は自動計算されます。</td>
+              </tr>
+<?php         $position++; ?>
+<?php       } ?>
+              <!-- ■追加ボタン -->
+              <tr>
+                <td colspan="6"><button id="item_add_button2" type="button" onclick="insertRow();">商品を追加</button></td>
+              </tr>
+              <!-- ■送料/手数料/外税 -->
+<?php       foreach( $this->itemList as $i => $item ) { ?>
+<?php         if ($item['DataClass'] == 1) { continue; }  ?>
+              <tr>
+                <td class="item_name" style="width: 10%"></td>
+                <td class="item_name"  style="width: 30%">
+                  <input id="Items.OrderItemId_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][OrderItemId]" type="hidden" value="<?php echo f_e($item['OrderItemId']); ?>" />
+                  <input id="Items.DataClass_<?php echo f_e($i); ?>" name="form[Items][<?php echo f_e($i); ?>][DataClass]" type="hidden" value="<?php echo f_e($item['DataClass']); ?>" />
+<?php         if      ($item['DataClass'] == 2) echo '送料';
+              else if ($item['DataClass'] == 3) echo '手数料';
+              else if ($item['DataClass'] == 4) echo '外税額'; ?>
+                </td>
+                <td class="item_value" style="width: 5%">
+                  <span id="Items.SumMoney_<?php echo f_e($i); ?>" style="display: none;"></span>
+                  \ <input id="Items.UnitPrice_<?php echo f_e($i); ?>" class="items_field unit_price non_item" name="form[Items][<?php echo f_e($i); ?>][UnitPrice]" type="text" value="<?php echo f_e($item['UnitPrice']); ?>" size="6" />
+                  <input id="Items.ItemNum_<?php echo f_e($i); ?>" class="items_field item_num non_item" name="form[Items][<?php echo f_e($i); ?>][ItemNum]" type="hidden" value="<?php echo f_e($item['ItemNum']); ?>" />
+                </td>
+                <td class="item_value">&nbsp;</td>
+                <td></td>
+                <td class="item_help" id="item_help" style="width: 40%">金額を入力してください。合計は自動再計算されます。</td>
+              </tr>
+<?php       } ?>
+<?php   } ?>
+              <tr class="total_row">
+<?php if ($modifiability[$group_key]) { ?>
+                <td class="item_name" style="width: 20px"></td>
+<?php } ?>
+                <td class="item_name" style="font-size: 11pt; width: 30px">請求金額合計</td>
+                <td class="item_value" colspan="3" style="font-size: 11pt;">\ <span id="Order.UseAmount"><?php echo f_nf($data['UseAmount'], '#,##0'); ?></span></td>
+                <td class="item_help" style="width: 300px">
+<?php if(! $modifiability[$group_key]) { ?>
+                  <span class="help_alert">この注文情報では変更できません</span>
+<?php } else { ?>
+                  <div class="help_alert">[注意！] 合計金額が3,000円以上増額すると、再度与信審査が行われます</div>
+<?php } ?>
+                </td>
+              </tr>
+            </tbody>
+        </table>
+        <center class="submit_area" style="width: 90%">
+          <button type="button" id="form_regist" onclick="isGoConfirm(<?php echo $data['DataStatus']?>)">この内容で登録</button><!-- type="submit" では処理が進んでしまうため、type="button" に変更 2015/09/18 Mod -->
+          <button type="button" id="form_cancel" onclick="window.location.href=$('back_to_detail').href">修正を中止</button>
+          <input type="hidden" name="verifyKey" value="<?php echo f_e($this->verifyKey); ?>" />
+        </center>
+      </form>
+
+      <div id="address_select_dialog" style="display:none">
+        <div>
+          <select id="address_list" size="10"></select>
+          <div class="info_container">
+            <div id="address_selection_info">
+            </div>
+          </div>
+          <div class="dlg_buttons">
+            <button id="dialog_ok" disabled="disabled">OK</button>
+            <button id="dialog_cancel">キャンセル</button>
+          </div>
+        </div>
+      </div>
+    </div>
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<script type="text/javascript">
+  // 住所検索結果モーダルダイアログ
+  var addrDlg = null;
+  function getAddressDialog() {
+      if( window.addrDlg == null ) {
+          window.addrDlg = new base.UI.ModalDialog(
+              "address_select_dialog",
+              {
+                  width: 360,
+                  height: 280,
+                  title: "住所の選択",
+                  draggable : false
+              }
+          );
+      }
+      Element.show( $("address_select_dialog") );
+      return window.addrDlg;
+  };
+  // 住所検索結果モーダルダイアログのボタンイベント
+  Event.observe( $("dialog_ok"), "click", function() {
+      getAddressDialog().close();
+  }, false );
+
+  Event.observe( $("dialog_cancel"), "click", function() {
+      $("address_list").selectedIndex = -1;
+      getAddressDialog().close();
+  }, false );
+
+  // 住所検索結果リストのイベント
+  with( { el : $("address_list") } ) {
+      if(el) {
+          Event.observe( el, "change", function(evt) {
+              $("dialog_ok").disabled = this.selectedIndex < 0;
+              $("address_selection_info").innerHTML = this.selectedIndex < 0 ?
+                  "" : this.options[ this.selectedIndex ].innerHTML.stripTags();
+          }.bindAsEventListener( el ), false );
+          Event.observe( el, "dblclick", function(evt) {
+              $("dialog_ok").click();
+          }.bindAsEventListener( el ), false );
+      }
+  };
+
+  // 住所補間ボタン
+  [
+      {
+          id : "address_from_postalcode_c",
+          parentField : "Customer.PostalCode",
+          targetField : "Customer.UnitingAddress"
+      },
+      {
+          id : "address_from_postalcode_d",
+          parentField : "Destination.PostalCode",
+          targetField : "Destination.UnitingAddress"
+      }
+  ].each( function(conf) {
+      if( !$(conf.id) ) throw $continue;
+
+      var applyAddress = function(p_id, t_id, data) {
+          if(! $(p_id) || !$(t_id)) return;
+          $(t_id).value = [
+              data.PrefectureKanji,
+              data.CityKanji,
+              data.TownKanji
+          ].join("").trim();
+          $(p_id).value = base.Utility.transPostalCode( data.PostalCode7 );
+      };
+
+      var target = $( conf.id );
+      var field = $( conf.parentField );
+
+      Event.observe( target, "click", function(evt) {
+          var PC_MIN_LEN = 3;
+          field.value = field.value.replace( /[^\d\-]/g, "" ).substr( 0, 8 );
+          if( field.value.length < PC_MIN_LEN ) {
+              alert( "最低 {0} 桁の郵便番号を指定してください。".format( PC_MIN_LEN ) );
+              return;
+          }
+          WindowCover.show();
+          var ajax = new Ajax.Request(
+              "<?php echo $this->baseUrl; ?>/ajax/getpostaldata",
+              {
+                  method : "post",
+                  postBody : $H( {
+                      "postalcode" : field.value.replace( /[^\d]/g, "").substr(0, 7)
+                  } ).toQueryString(),
+                  onException : function(xhr, err) {
+                      WindowCover.hide();
+                      throw err;
+                  },
+                  onComplete : function(xhr) {
+                      WindowCover.hide();
+                      try {
+                          var items = xhr.responseText.parseJSON();
+                          if( ! items ) {
+                              throw new Error( [
+                                  "JSON data parse error !",
+                                  "=====",
+                                  "url:",
+                                  ajax.url || "(n/a)",
+                                  "---",
+                                  "header:",
+                                  xhr.getAllResponseHeaders(),
+                                  "---",
+                                  "contents:",
+                                  xhr.responseText
+                              ].join( "\n" ) );
+                          }
+
+                          if( items.length == 0 ) {
+                              alert( "指定の郵便番号に一致するデータはありません。" );
+                          } else if( items.length == 1 ) {
+                              applyAddress( conf.parentField, conf.targetField, items[0] );
+                          } else {
+                              var dlg = getAddressDialog();
+                              // ダイアログイベントのクリア
+                              dlg.options.preClose = Prototype.emptyFunction;
+
+                              // 検索結果リストのクリア
+                              var list = $("address_list");
+                              list.options.length = 0;
+
+                              // 検索結果リストの構築
+                              items.each( function(item) {
+                                  var opt = document.createElement("option");
+                                  opt.value = item.toJSONString();
+                                  opt.innerHTML = [
+                                      item.PostalCode7,
+                                      item.PrefectureKanji,
+                                      item.CityKanji,
+                                      item.TownKanji
+                                  ].join(" ");
+                                  list.appendChild( opt );
+                              } );
+
+                              // ダイアログイベント（preClose）の設定
+                              dlg.options.preClose = function() {
+                                  try {
+                                      if( list.selectedIndex >= 0 ) {
+                                          var data = list.value.parseJSON();
+//                                           field.value = data.PostalCode;
+                                          applyAddress( conf.parentField, conf.targetField, data );
+                                      }
+                                  } finally {
+                                      $("address_list").selectedIndex = -1;
+                                      $("dialog_ok").disabled = true;
+                                      $("address_selection_info").innerHTML = "";
+                                      return true;
+                                  }
+                              }
+
+                              dlg.center().open();
+                          }
+                      } catch(e) {
+                          alert( e );
+                      }
+                  }
+              }
+          );
+      }, false );
+  } );
+
+  // 別配送先指定の変更
+  function changeAnotherDeliInfo(disabled) {
+      var base_key = "<?php echo f_e(OrderEditor::GROUP_DELIVERY); ?>";
+      Element[disabled ? "hide" : "show"]( $(base_key) );
+      Element[disabled ? "show" : "hide"]( $("{0}_disable".format(base_key)) );
+      $("Order.AnotherDeliFlg").checked = !disabled;
+      $("Order.DisableAnotherDeli").value = disabled ? 1 : 0;
+  }
+
+  // ページ初期化
+  Event.observe( window, "load", function() {
+      // 入力値の整形処理
+      with( {
+          blurHandler : function(evt) {
+              var transTargets = {
+                  "Order.ReceiptOrderDate" : "date",
+                  "Order.ServiceExpectedDate" : "date",
+                  "Customer.PostalCode" : "postalCode",
+                  "Destination.PostalCode" : "postalCode",
+                  "Journal.Deli_JournalIncDate" : "date"
+              };
+              var transFunctions  = {
+                  date : base.Utility.transDateString,
+                  postalCode : base.Utility.transPostalCode
+              };
+
+              this.value = ( this.value || "" ).trim();
+              var conf = transTargets[ this.id ];
+              if( conf ) this.value = transFunctions[ conf ]( this.value );
+          }
+      } ) {
+          Form.getElements($("order_form" )).each( function(field) {
+              field.preFormat = blurHandler.bind( field );
+              Event.observe( field, "blur", blurHandler.bindAsEventListener( field ) );
+          } );
+      }
+      // モーダルダイアログの初期化
+      getAddressDialog().close();
+
+  <?php if($modifiability[OrderEditor::GROUP_ORDER]) { // ------------------------------------------ 注文情報修正可能時 ?>
+      // 注文日用DatePickerの初期化
+      new base.UI.DatePicker(
+          "datePicker1",
+          "Order.ReceiptOrderDate",
+          "selectDate"
+      );
+
+      // 注文日用[今日]ボタン
+      Event.observe( $("setToday"), "click", function(evt) {
+          $("Order.ReceiptOrderDate").value = new Date().format( "yyyy/MM/dd" );
+      }.bindAsEventListener($("setToday")));
+
+      // 役務提供予定日用DatePickerの初期化
+      new base.UI.DatePicker(
+          "datePicker3",
+          "Order.ServiceExpectedDate",
+          "selectDate3"
+      );
+      // 役務提供予定日用[今日]ボタン
+      Event.observe( $("setToday3"), "click", function(evt) {
+          $("Order.ServiceExpectedDate").value = new Date().format( "yyyy/MM/dd" );
+      }.bindAsEventListener($("setToday3")));
+
+      <?php if($modifiability[OrderEditor::GROUP_DELIVERY]) { ?>
+      // 別配送先指定クリック
+      Event.observe( $("Order.AnotherDeliFlg"), "click", function(evt) {
+          changeAnotherDeliInfo(!this.checked);
+      }.bindAsEventListener($("Order.AnotherDeliFlg")));
+      <?php } ?>
+
+      <?php if($modifiability[OrderEditor::GROUP_CUSTOMER]) { ?>
+      // 登録サイト変更時の処理
+      Event.observe( $("Order.SiteId"), "change", function(evt) {
+          var req_mail_sites = <?php
+              $site_id_list = array();
+              foreach($this->site_list as $site_row) {
+                  if($site_row['ReqMailAddrFlg']) $site_id_list[] = (int)$site_row['SiteId'];
+              }
+              echo Json::encode($site_id_list);
+          ?>;
+          Element[req_mail_sites.include(this.options[this.selectedIndex].value) ? "show" : "hide"]($("alert_for_mail_req"));
+      }.bindAsEventListener($("Order.SiteId")));
+      <?php } ?>
+
+      // 受付サイト変更イベント
+      onChangeSite();
+
+  <?php } ?>
+  <?php if($modifiability[OrderEditor::GROUP_JOURNAL]) { // ------------------------------------------ 配送伝票修正可能時 ?>
+  <?php } ?>
+  <?php if($modifiability[OrderEditor::GROUP_ITEMS]) { // ------------------------------------------ 商品明細修正可能時 ?>
+      var recalc_total_sum = function() {
+          var vals = {};
+          document.getElementsByClassName("items_field").each(function(field) {
+              var cn = new Element.ClassNames(field);
+              var idx = field.id.replace(/^[^\d_]+_/, "");
+              var gkey = "items_{0}".format(idx);
+              if(!(cn.include("item_taxrate"))){
+              var key = cn.include("unit_price") ? "unit_price" : "item_num";
+              }
+              if(!vals[gkey]) {
+                  vals[gkey] = {};
+              }
+              var v = Number(field.value);
+              if(key == "item_num" && cn.include("non_item")) v = 1;
+              vals[gkey][key] = Number(v);
+          });
+          var total_sum = $H(vals).keys().inject(0, function(sum, key) {
+              var pair = vals[key];
+
+              // [項目の削除]がﾁｪｯｸｵﾝの時、合計金額に対象行値を加算しない
+              var indexNo = key.replace('items_', '')
+              var objChk = document.getElementById('item_delete_chk_' + indexNo);
+              if (objChk) {
+                  if (objChk.checked) {
+                      return sum;
+                  }
+              }
+
+              var dgtrate = Math.pow(10,<?php echo (int)$this->userInfo->DispDecimalPoint; ?>);
+              var lineSum = (pair.unit_price * (pair.item_num * dgtrate).toFixed(0));
+              lineSum /= dgtrate;
+              var retval = sum + lineSum;
+
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 0) { ?>retval = Math.floor( retval );<?php } ?>
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 1) { ?>retval = Math.round( retval );<?php } ?>
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 2) { ?>retval = Math.ceil(  retval );<?php } ?>
+              return retval;
+          });
+          $("Order.UseAmount").innerHTML = total_sum.format("0").escapeHTML();
+      }
+      document.getElementsByClassName("items_field").each(function(field) {
+          Event.observe(field, "blur", function(evt) {
+              setTimeout(function() {
+                  var v = this.value.toNarrowChar(), is_neg = false;
+                  if(/^\-/.test(v)) is_neg = true;
+                  var clsnm = new Element.ClassNames(field);
+                  v = (clsnm.include("unit_price")) ? v.replace(/[^\d]/g, "") : v.replace(/[^\d.]/g, "");
+
+                  if(is_neg) v = "-" + v;
+                  if(! v.length) v = 0;
+                  this.value = v;
+
+                  var idx = this.id.replace(/^[^\d_]+_/, "");
+                  var dgtrate = Math.pow(10,<?php echo (int)$this->userInfo->DispDecimalPoint; ?>);
+                  var lineSum = Number($("Items.UnitPrice_{0}".format(idx)).value) * Number($("Items.ItemNum_{0}".format(idx)).value * dgtrate).toFixed(0);
+                  lineSum /= dgtrate;
+
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 0) { ?>lineSum = Math.floor( lineSum );<?php } ?>
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 1) { ?>lineSum = Math.round( lineSum );<?php } ?>
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 2) { ?>lineSum = Math.ceil(  lineSum );<?php } ?>
+                  $("Items.SumMoney_{0}".format(idx)).innerHTML =
+                      (
+                          lineSum
+                      ).format("0").escapeHTML();
+                  recalc_total_sum();
+              }.bind(this), 100);
+          }.bindAsEventListener(field));
+      });
+
+      document.getElementsByClassName("item_delete_chk").each(function(field) {
+          Event.observe(field, "click", function(evt) {
+              setTimeout(function() {
+                  recalc_total_sum();
+              }.bind(this), 100);
+          }.bindAsEventListener(field));
+      });
+
+      setTimeout(recalc_total_sum, 0);
+  <?php } ?>
+  <?php if(isset($this->errors)) { // ------------------------------------------ 検証エラー発生時 ?>
+      var errors = <?php echo Json::encode($this->errors); ?>;
+      $H(errors).each(function(pair) {
+          var findParentCell = function(id) {
+              var target = $(id);
+              if(! target) return null;
+              while(true) {
+                  if(/td/i.test(target.tagName)) return target;
+                  target = target.parentNode;
+              }
+          };
+          var cell = findParentCell(pair.key);
+          if(cell) {
+              cell.style.backgroundColor = "pink";
+              cell.title = pair.value;
+          }
+      });
+  <?php } ?>
+  } );
+
+  // 入力エラーの強調
+  function showError(id) {
+      var target = $(id);
+      if(! target) return;
+
+      var cell = (function(ele) {
+          while(true) {
+              if(/td/i.test(ele.tagName)) return ele;
+              ele = ele.parentNode;
+          }
+      })(target);
+      var cellColor = null;
+      if(cell) cellColor = cell.style.backgroundColor;
+      bytefx.scroll(cell, 10, function() {
+          target.focus();
+      });
+      bytefx.color(cell, "backgroundColor", base.UI.namedColors["pink"], "#fff", 3, function() {
+          bytefx.color(cell, "backgroundColor", "#fff", base.UI.namedColors["pink"], 3, function() {
+              cell.style.backgroundColor = cellColor;
+          });
+      });
+  }
+
+  // 新規行追加
+  function insertRow() {
+      var table = document.getElementById( "<?php echo f_e($group_key); ?>" );
+      var rows = table.rows.length;
+
+      // 追加行のｵﾌｾｯﾄ決定※外税のみ考慮対象(20150819_1830)
+      var insertOffset = <?php echo ($isHaveTaxRecord) ? 5 : 4; ?>;
+
+      var row = table.insertRow(rows - insertOffset);
+      var cnt = rows - insertOffset;
+
+      // 削除ボタン
+      var button = document.getElementById("item_delete_button").cloneNode(true);
+      button.style.display = "block";
+      button.name = "item_delete_button_" + rows;
+      // 商品名
+      var text = document.getElementById("Items.ItemNameKj_0").cloneNode(true);
+      text.name = "form[Items][" + rows + "][ItemNameKj]";
+      text.id = "Items.ItemNameKj_" + rows;
+      text.value = "";
+      // 金額
+      var text5 = document.getElementById("Items.SumMoney_0").cloneNode(true);
+      var label2 = document.createTextNode("\\");
+      text5.name = "form[Items][" + rows + "][SumMoney]";
+      text5.id = "Items.SumMoney_" + rows;
+      text5.innerHTML = "0";
+      // 単価×数量
+      var text2 = document.getElementById("Items.UnitPrice_0").cloneNode(true);
+      var label3 = document.createTextNode("( \\");
+      var label4 = document.createTextNode(" x ");
+      var label5 = document.createTextNode(")");
+      text2.name = "form[Items][" + rows + "][UnitPrice]";
+      text2.id = "Items.UnitPrice_" + rows;
+      text2.value = "0";
+      var text3 = document.getElementById("Items.ItemNum_0").cloneNode(true);
+      text3.name = "form[Items][" + rows + "][ItemNum]";
+      text3.id = "Items.ItemNum_" + rows;
+      text3.value = "0";
+      // 消費税率
+      var pdList = document.getElementById("Items.TaxRate_0").cloneNode(true);
+      pdList.name = "form[Items][" + rows + "][TaxRate]";
+      pdList.id = "Items.TaxRate_" + rows;
+      <?php  $taxRate = $this->taxRate; ?>
+      pdList.value = <?php echo $taxRate ?>;
+      // OrderItemId
+      var text6 = document.getElementById("Items.OrderItemId_0").cloneNode(true);
+      text6.name = "form[Items][" + rows + "][OrderItemId]";
+      text6.id = "Items.OrderItemId_" + rows;
+      text6.value = 'a';
+      // DataClass
+      var text7 = document.getElementById("Items.DataClass_0").cloneNode(true);
+      text7.name = "form[Items][" + rows + "][DataClass]";
+      text7.id = "Items.DataClass_" + rows;
+      text7.value = "1";
+      // ヘルプ
+      var text4 = document.createTextNode("単価、数量を入力してください。金額や合計は自動計算されます。");
+
+      // 項目の削除
+      var cell0 = row.insertCell(0);
+      cell0.className = "item_name";
+      cell0.appendChild(button);
+
+      // 商品名／購入品目
+      var cell1 = row.insertCell(1);
+      cell1.className = "item_value";
+      cell1.appendChild(text6);
+      cell1.appendChild(text7);
+      cell1.appendChild(text);
+
+      // 金額
+      var cell2 = row.insertCell(2);
+      cell2.className = "item_value";
+      cell2.appendChild(label2);
+      cell2.appendChild(text5);
+
+      // 単価×数量
+      var cell3 = row.insertCell(3);
+      cell3.className = "item_value";
+      cell3.appendChild(label3);
+      cell3.appendChild(text2);
+      cell3.appendChild(label4);
+      cell3.appendChild(text3);
+      cell3.appendChild(label5);
+
+      // 消費税率
+      var cell4 = row.insertCell(4);
+      cell4.className = "item_value";
+      cell4.appendChild(pdList);
+
+      // ヘルプ
+      var cell5 = row.insertCell(5);
+      cell5.className = "item_help";
+      cell5.appendChild(text4);
+
+      // 新規行にイベントを紐付け
+      var recalc_total_sum = function() {
+          var vals = {};
+          document.getElementsByClassName("items_field").each(function(field) {
+              var cn = new Element.ClassNames(field);
+
+              var idx = field.id.replace(/^[^\d_]+_/, "");
+              var gkey = "items_{0}".format(idx);
+              if(!(cn.include("item_taxrate"))){
+              var key = cn.include("unit_price") ? "unit_price" : "item_num";
+              }
+              if(!vals[gkey]) {
+                  vals[gkey] = {};
+              }
+              var v = Number(field.value);
+              if(key == "item_num" && cn.include("non_item")) v = 1;
+              vals[gkey][key] = Number(v);
+          });
+          var total_sum = $H(vals).keys().inject(0, function(sum, key) {
+              var pair = vals[key];
+
+              // [項目の削除]がﾁｪｯｸｵﾝの時、合計金額に対象行値を加算しない
+              var indexNo = key.replace('items_', '')
+              var objChk = document.getElementById('item_delete_chk_' + indexNo);
+              if (objChk) {
+                  if (objChk.checked) {
+                      return sum;
+                  }
+              }
+
+              var dgtrate = Math.pow(10,<?php echo (int)$this->userInfo->DispDecimalPoint; ?>);
+              var lineSum = (pair.unit_price * (pair.item_num * dgtrate).toFixed(0));
+              lineSum /= dgtrate;
+              var retval = sum + lineSum;
+
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 0) { ?>retval = Math.floor( retval );<?php } ?>
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 1) { ?>retval = Math.round( retval );<?php } ?>
+              <?php if ((int)$this->userInfo->UseAmountFractionClass == 2) { ?>retval = Math.ceil(  retval );<?php } ?>
+              return retval;
+          });
+          $("Order.UseAmount").innerHTML = total_sum.format("0").escapeHTML();
+      }
+      document.getElementsByClassName("items_field").each(function(field) {
+          Event.observe(field, "blur", function(evt) {
+              setTimeout(function() {
+                  var v = this.value.toNarrowChar(), is_neg = false;
+                  if(/^\-/.test(v)) is_neg = true;
+                  var clsnm = new Element.ClassNames(field);
+                  v = (clsnm.include("unit_price")) ? v.replace(/[^\d]/g, "") : v.replace(/[^\d.]/g, "");
+
+                  if(is_neg) v = "-" + v;
+                  if(! v.length) v = 0;
+                  this.value = v;
+
+                  var idx = this.id.replace(/^[^\d_]+_/, "");
+                  var dgtrate = Math.pow(10,<?php echo (int)$this->userInfo->DispDecimalPoint; ?>);
+                  var lineSum = Number($("Items.UnitPrice_{0}".format(idx)).value) * Number($("Items.ItemNum_{0}".format(idx)).value * dgtrate).toFixed(0);
+                  lineSum /= dgtrate;
+
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 0) { ?>lineSum = Math.floor( lineSum );<?php } ?>
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 1) { ?>lineSum = Math.round( lineSum );<?php } ?>
+                  <?php if ((int)$this->userInfo->UseAmountFractionClass == 2) { ?>lineSum = Math.ceil(  lineSum );<?php } ?>
+                  $("Items.SumMoney_{0}".format(idx)).innerHTML =
+                      (
+                          lineSum
+                      ).format("0").escapeHTML();
+                  recalc_total_sum();
+              }.bind(this), 100);
+          }.bindAsEventListener(field));
+      });
+
+      document.getElementsByClassName("item_delete_button").each(function(field) {
+          Event.observe(field, "click", function(evt) {
+              setTimeout(function() {
+                  recalc_total_sum();
+              }.bind(this), 100);
+          }.bindAsEventListener(field));
+      });
+
+      setTimeout(recalc_total_sum, 0);
+  }
+
+  // 行削除
+  function deleteRow(obj) {
+      // 削除ボタンが押された行を取得
+      tr = obj.parentNode.parentNode;
+      // インデックスを取得して行を削除
+      tr.parentNode.deleteRow(tr.sectionRowIndex);
+
+  }
+
+  /*
+   * 受付サイト変更イベント
+   */
+  function onChangeSite() {
+      var siteid = document.getElementById('Order.SiteId').value;
+      var url = "<?php echo $this->baseUrl; ?>/order/enablesite/siteid/" + siteid;
+      var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+      var res = eval('(' + ajax.transport.responseText + ')');
+
+      if (res['status'] != 1) { return; }// 正しく結果を戻せない時は、何もしないで処理を抜ける
+
+      // 役務提供予定日
+      var obj = document.getElementById('Order.ServiceExpectedDate');
+      var objtr = obj.parentNode.parentNode;
+      objtr.style.display = (res['enableinfo']['isEnableServiceTargetClass'] == 1) ? "" : "none";
+
+      // テスト注文
+      // (テスト注文時のみ[取引情報.テスト注文]を表示)
+      obj = document.getElementById('T_OrderClass');
+      objtr = obj.parentNode.parentNode;
+      objtr.style.display = (obj.value == 1) ? "" : "none";
+      // (テスト注文時は[取引情報.受付サイト]の編集と許可しない)
+      if (document.getElementById('Order.SiteId')) {
+        document.getElementById('Order.SiteId').disabled = (obj.value != 1) ? false : true;
+      }
+
+      // 請求書別送
+      if (document.getElementById('Customer.ClaimSendingClass')) {
+          obj = document.getElementById('Customer.ClaimSendingClass');
+          objtr = obj.parentNode.parentNode;
+          objtr.style.display = (res['enableinfo']['isEnableSelfBillingFlg'] == 1) ? "" : "none";
+      }
+  }
+
+  /*
+   * 商品削除時のcheck処理
+   * 最低1件の明細入力を保証するため、削除対象の行数と既存の商品行数が同じ場合、エラーとする。
+   * 2015/09/18 Add
+   * データステータスの考慮追加。 2015/09/23 Mod
+   */
+  function isGoConfirm(sts) {
+      var sum = 0;
+      var table = document.getElementById( "<?php echo f_e($group_key); ?>" );
+      var rows = table.rows.length;
+
+      // 外税額が存在する／しないの考慮
+      var insertOffset = <?php echo ($isHaveTaxRecord) ? 5 : 4; ?>;
+
+      // データステータスにより行数の判定をする。
+      var cnt = 0
+      if (sts < 41) {
+          // 「商品を追加」ﾎﾞﾀﾝの1行分も引いておく → 商品分の行のカウントが取れる。
+          cnt = rows - insertOffset - 1;
+      } else {
+          // 「商品を追加」ﾎﾞﾀﾝは存在しないので、ﾎﾞﾀﾝの1行分は引く必要なし → 商品分の行のカウントが取れる。
+          cnt = rows - insertOffset;
+      }
+
+      document.getElementsByClassName("item_delete_chk").each(function(field) {
+          var idx = field.id.replace(/^[^\d_]+_/, "");
+          var objChk = document.getElementById('item_' + idx);
+
+          // 「項目の削除」がチェックオンの場合、カウントする。
+          if (objChk) {
+              if (objChk.checked) {
+                  sum = sum + 1;
+              }
+          }
+      });
+
+      // 削除対象の行数と既存の行数が同じ場合、ｴﾗｰとする。
+      if (cnt == sum) {
+          alert('注文商品は1明細以上登録してください。');
+          return false;
+      } else {
+          $("order_form").submit();
+          return false;
+      }
+  }
+</script>
+</html>
+

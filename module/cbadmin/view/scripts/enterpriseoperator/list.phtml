@@ -1,0 +1,58 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+table.datatable tr.disabled,
+table.datatable tr.disabled td {
+background-color: silver;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseoperator/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">加盟店オペレーター一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>ID</th>
+            <th>ログインID</th>
+            <th>氏名</th>
+            <th>氏名カナ</th>
+            <th>所属</th>
+            <th>権限</th>
+            <!-- <th>有効</th> -->
+            <th>&nbsp;</th>
+          </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <?php     $is_invalid = ($row['ValidFlg']) ? false : true; ?>
+          <tr class="data <?php if($is_invalid) echo ' disabled'; ?>">
+            <td class="r_data"><?php echo $row['EnterpriseOpId']; ?></td>
+            <td class="l_data"><?php echo $row['LoginId']; ?></td>
+            <td class="l_data"><?php echo $row['NameKj']; ?></td>
+            <td class="l_data"><?php echo $row['NameKn']; ?></td>
+            <td class="l_data"><?php echo $row['Division']; ?></td>
+            <td class="l_data"><?php echo $this->codeMaster->getRoleCodeCaption($row['RoleCode']); ?></td>
+            <!-- <td class="c_data"><?php //if ($row['ValidFlg'] == 1) echo '有効'; else echo '無効'; ?></td> -->
+            <td class="c_data"><a href="enterpriseoperator/edit/enterpriseopid/<?php echo $row['EnterpriseOpId']; ?>">編集</a></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+  <style>
+    tr.cyan,
+    tr.cyan td {
+      background-color: #00ffff;
+    }
+
+    tr.gray,
+    tr.gray td {
+      background-color: #cccccc;
+    }
+
+    tr.purple,
+    tr.purple td {
+      background-color: #a757a8;
+    }
+
+    tr.orange,
+    tr.orange td {
+      background-color: #fcd5b4;
+    }
+  </style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+?>
+
+<form id="edit_form" name="edit_form" action="merge/confirm" method="post">
+  <div id="wrapper">
+    <?php if( isset($this->error) ) {?>
+    <ul class="error_info_list">
+      <li><?php echo f_e($this->error); ?></li>
+    </ul>
+    <?php } ?>
+    <input type="radio" id ="combinedStatus0" name="combinedStatus" value="0" <?php if($this->combinedStatus == 0){echo "checked";} else {echo "";}?>>とりまとめ　
+    <input type="radio" id ="combinedStatus9" name="combinedStatus" value="1" <?php if($this->combinedStatus == 1){echo "checked";} else {echo "";}?>>とりまとめキャンセル　　
+    <button type="button" id="reSearch" name="reSearch">再検索</button>
+    <!-- start contents -->
+    <?php if ($this->combinedStatus == 0) { ?>
+    <div class="information_container">
+		<ul class="information">
+		ご注意事項
+			<li>請求先は「親」の住所となります。</li>
+			<li>氏名・お電話番号完全一致のものが取りまとまります。（全角・半角・スペース含め完全一致が条件となります。）</br>
+			上記が一致せず、取りまとめ対象にならなかった場合は、キャンセル→再登録をしていただく必要がございます。</li>
+			<li>保証外のご注文は取りまとまらず、個別で発送されます。</li>
+			<li>手動取りまとめの場合は「名前」のみの一致で取りまとめを行うことが可能となります。</br>
+			★ 取りまとめマニュアルは
+			<a target="_blank" href="<?php echo f_e($this->url) ?>" />コチラ</a>
+			★</li>
+		</ul>
+	</div>
+    <?php } ?>
+    <?php  if(!empty($this->sites)) {?>
+    <div class="tab_container" id="mainTab">
+      <div>
+        <ul class="tab_bar">
+    <?php for ($i = 0 ; $i < count($this->sites) ; $i++) { ?>
+    <li id="info_tab" class="tab_item <?php echo $this->sid == f_e($this->sites[$i]["SiteId"]) ? "selected" : "" ?>">
+      <a class="tab" href="merge/listbysite/eid/<?php echo f_e($this->eid); ?>/site/<?php echo f_e($this->sites[$i]["SiteId"]); ?>/mode/<?php echo f_e($this->mode); ?>/status/<?php if (isset($this->combinedStatus)) { echo f_e($this->combinedStatus);} else { echo 0;} ?>" /><?php echo f_e($this->sites[$i]["SiteNameKj"]); ?></a>
+    </li>
+    <?php }?>
+        </ul>
+      </div>
+    </div>
+    <?php }?>
+    <?php  if(!empty($this->sites)) {?>
+    <div class="tab_pages">
+      <div id="info_tab_page" type="tab_page" >
+    <?php }?>
+      <table width="1000" class="search_items" border="1" cellpadding="0" cellspacing="0">
+        <thead>
+          <tr>
+            <th class="column_header"></th>
+            <!-- 取りまとめモードのときのみ表示する。 -->
+          <?php if ($this->combinedStatus == 0) { ?>
+            <th class="column_header"></th>
+          <?php } ?>
+            <th class="column_header">注文ID</th>
+            <th class="column_header">注文日</th>
+            <th class="column_header">任意注文番号</th>
+            <th class="column_header">氏名</th>
+            <th class="column_header">住所</th>
+            <th class="column_header">電話番号</th>
+            <!-- 取りまとめキャンセルモードのときのみ表示する。 -->
+          <?php if (f_e($this->combinedStatus) == 1) { ?>
+            <th class="column_header">エラー理由</th>
+          <?php } ?>
+          </tr>
+        </thead>
+        <tbody>
+        <?php
+          // 取りまとめ番号バックアップ用変数
+          $combinedGpNoBack = "";
+          $cntList = 0;
+          if(!empty($this->list)){
+              $cntList = count($this->list) ;
+          }
+          for ($i = 0 ; $i < $cntList ; $i++) {
+            // 取りまとめキャンセルの場合
+            if (f_e($this->combinedStatus) == 1) {
+              // 現在の取りまとめGP番号を取得
+              $combinedGpNo = $this->list[$i]["CombinedDictateGroup"];
+              // 取りまとめGP番号は変わった場合、変数をインクリメントする。
+              if ($combinedGpNo != $combinedGpNoBack) {
+                if ($i == 0) {
+                  // 背景色設定用変数
+                  $nBkColorNo = 0;
+                } else {
+                  $nBkColorNo = $nBkColorNo + 1;
+                }
+              }
+              // 行の背景色を設定する
+              if ($nBkColorNo % 3 == 0){
+                $BackColor = 'cyan';
+              } else if ($nBkColorNo % 3 == 1) {
+                $BackColor = 'gray';
+              } else if ($nBkColorNo % 3 == 2) {
+                $BackColor = 'purple';
+              }
+              // ひとつ前の取りまとめ番号をバックアップ
+              $combinedGpNoBack = $combinedGpNo;
+            } else {
+              // 取りまとめの場合
+              if ( $i > 0 && $this->list[$i]["NameKj"] == $this->list[$i - 1]["NameKj"] && $this->list[$i]["Phone"] == $this->list[$i - 1]["Phone"] ) {
+                $BackColor = 'gray';
+                $oyako = '子';
+              } else {
+                $BackColor = 'orange';
+                $oyako = '親';
+              }
+            }
+        ?>
+        <tr class="<?php echo $BackColor ?>">
+        <?php if ($this->combinedStatus == 1) { ?>
+          <td class="column_data">
+        <?php } else { ?>
+          <td class="column_data" style="background-color:white" >
+        <?php } ?>
+            <input name="data[OrderSeq<?php echo $i; ?>]" id="OrderSeq<?php echo $i; ?>" type="checkbox" value="<?php echo f_e($this->list[$i]["OrderSeq"]); ?>" <?php if($this->list[$i]["OrderSeq"] == $this->data["OrderSeq".$i]) echo "checked"; ?> />
+          </td>
+          <!-- 取りまとめモードのときのみ表示する。 -->
+          <?php if ($this->combinedStatus == 0) { ?>
+          <td class="column_data" style="background-color:white" ><?php echo $oyako; ?></td>
+          <?php } ?>
+          <td class="column_data">
+            <a class="show_detail" target="_blank" href="search/detail/id/<?php echo f_e($this->list[$i]["OrderId"]); ?>" /><?php echo f_e($this->list[$i]["OrderId"]); ?></a>
+          </td>
+          <input type="hidden" name="data[OrderId<?php echo $i; ?>]" value="<?php echo f_e($this->list[$i]["OrderId"]); ?>">
+          <td class="column_data"><?php echo f_e($this->list[$i]["ReceiptOrderDate"]); ?></td>
+          <td class="column_data"><?php echo f_e($this->list[$i]["Ent_OrderId"]); ?></td>
+          <td class="column_data">
+            <a class="show_detail" target="_blank" href="search/detail/id/<?php echo f_e($this->list[$i]["OrderId"]); ?>" /><?php echo f_e($this->list[$i]["NameKj"]); ?></a>
+          </td>
+          <td class="column_data"><?php echo f_e($this->list[$i]["UnitingAddress"]); ?></td>
+          <td class="column_data"><?php echo f_e($this->list[$i]["Phone"]); ?></td>
+          <!-- 取りまとめキャンセルモードのときのみ表示する。 -->
+          <?php if (f_e($this->combinedStatus) == 1) { ?>
+          <td class="column_data"><?php echo f_e($this->list[$i]["ErrorMsg"]); ?></td>
+          <?php } ?>
+        </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    <?php if(!empty($this->list)) {?>
+        </div>
+      </div>
+    <?php } ?>
+      <table class="regist_button">
+        <tbody>
+          <tr align="center">
+            <td>
+              <button type="button" id="doSelect" name="doSelect" <?php if(f_e($this->combinedStatus) == 0){echo "";} else {echo "disabled";}?>>取りまとめ</button>
+              <button type="button" name="doAll" id="doAll" <?php if(f_e($this->combinedStatus) == 0){echo "";} else {echo "disabled";}?>>請求書個別発行</button>
+              <button type="button" name="doCancel" id="doCancel" <?php if(f_e($this->combinedStatus) == 0){echo "disabled";} else {echo "";}?>>取りまとめキャンセル</button>
+              <input type="hidden" name="data[mode]" value="<?php echo f_e($this->mode); ?>">
+              <input type="hidden" name="data[eid]"  value="<?php echo f_e($this->eid); ?>">
+              <input type="hidden" name="data[sid]"  value="<?php echo f_e($this->sid); ?>">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- end contents -->
+
+    <?php
+    // フッタメニュー
+    echo $this->render( 'member/footer_menu.php' );
+
+    // 共通ページフッタ
+    echo $this->render( 'member/page_footer.php' );
+    ?>
+    </div>
+</form>
+<script>
+  Event.observe(window, "load", function() {
+    Event.observe($("doSelect"), "click", function() {
+      $("edit_form").submit();
+      return false;
+    });
+    Event.observe($("doAll"), "click", function() {
+      $("edit_form").action = $("edit_form").action.replace(/\/confirm/, "/separateconfirm");
+      $("edit_form").submit();
+      return false;
+    });
+    Event.observe($("reSearch"), "click", function() {
+      $("edit_form").action = $("edit_form").action.replace(/\/confirm/, "/list");
+      $("edit_form").submit();
+      return false;
+    });
+    Event.observe($("doCancel"), "click", function() {
+      $("edit_form").submit();
+      return false;
+    });
+  });
+</script>
+</body>
+</html>

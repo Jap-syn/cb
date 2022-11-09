@@ -1,0 +1,43 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>エラー</h5>
+    <div id="d_01" style="margin-left: 20px;">
+        <span style="font-weight: normal;">入力されたURLに誤りがあります。</span><br /><br />
+    </div>
+
+    <form name="form" method="post" action="login/login">
+        <table width="300px">
+            <tr>
+                <td align="center"><input id="goto_button" type="submit" value="ログイン画面へ" /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer_sp.php' );
+?>
+
+</div></body>
+</html>

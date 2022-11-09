@@ -1,0 +1,39 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+ <?php $data = $this->expressions; ?>
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信条件新規登録完了</h3>
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信条件新規登録完了</h3>
+    <?php } ?>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+              <div align="center">正常に登録が完了しました。</div>
+
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr align="center">
+            <td clas="l_data">
+            <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+              <!-- <input type="button" value="　戻る　" onClick="javascript:location.href='.'; "/>-->
+              <a href="credit/pointform">戻　る</a>
+            <?php } ?>
+            </td>
+          </tr>
+        </table>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

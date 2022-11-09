@@ -1,0 +1,102 @@
+<?php
+require_once 'Zend/Json.php';
+require_once 'Zend/Locale.php';
+
+// HTMLヘッダ
+echo $this->render( 'document_header.php' );
+
+$hide_default = Application::getInstance()->appGlobalConfig->hide_unregisterable_orders;
+
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+	if($('error_table')) new NetB.UI.TableEx($('error_table'), { height : 300 });
+});
+</script>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'system_message.php' );
+
+// ページタイトル
+echo $this->render( 'page_title.php' );
+
+$result = $this->result;
+$colMap = $this->colMap;
+?>
+
+<div class="main_contents">
+	<div class="command_bar">
+		<div class="title">伝票番号の更新が完了しました。</div>
+	</div>
+	<div style="padding-left: 40px">
+	<?php if($result['successCount'] > 0) { ?>
+		<h4><?php echo f_nf($result['successCount'], '#,##0'); ?> 件のデータが更新されました</h4>
+	<?php } ?>
+	<?php if($result['errorCount'] > 0) { ?>
+		<h4>以下のデータはエラーにより更新できませんでした</h4>
+		<table id="error_table" class="csv_result" border="1" cellpadding="0" cellspacing="0">
+			<thead>
+				<tr>
+					<th style="width:150px">エラー内容</th>
+				<?php foreach($colMap as $col_name => $title) { ?>
+					<th><?php echo f_e($title); ?></th>
+				<?php } ?>
+				</tr>
+			</thead>
+			<tbody>
+			<?php
+			foreach($result['errorData'] as $index => $errorRow) {
+				$row = $errorRow['_raw_data'];
+				$errInfo = array();
+				foreach($errorRow as $i => $info) {
+					if(!is_int($i)) continue;
+					foreach($info as $key => $value) {
+						if(!is_array($errInfo[$key])) $errInfo[$key] = array();
+						$errInfo[$key][] = $value;
+					}
+				}
+			?>
+			<tr>
+				<td class="error_info" style="white-space:normal;width:150px">
+					<ul><?php foreach($errInfo as $key => $info) { ?>
+						<?php foreach($info as $i => $value) { echo sprintf('<li>%s</li>', f_e($value)); } ?>
+					<?php } ?></ul>
+				</td>
+				<?php foreach($colMap as $col_name => $title) { ?>
+				<td<?php if($errInfo[$col_name]) { ?> style="background-color: pink"<?php }?>>
+				<?php if($col_name == 'OrderId' && !$errInfo[$col_name]) { ?>
+					<a href="search/detail/id/<?php echo f_e($row[$col_name]); ?>" target="_blank">
+						<?php echo f_e($row[$col_name]); ?>
+					</a>
+				<?php } else { ?>
+					<?php echo f_e($row[$col_name]); ?>
+				<?php } ?>
+				</td>
+				<?php } ?>
+			</tr>
+			<?php } ?>
+			</tbody>
+		</table>
+	<?php } ?>
+		<p style="text-align: right">
+			<a href="shippingsp/index">配送伝票更新ページへ戻る</a>
+		</p>
+	</div>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'page_footer.php' );
+?>
+</body>
+</html>

@@ -1,0 +1,80 @@
+body {
+	font-size: small;
+}
+
+h3 {
+	padding: 4px 8px;
+	border: solid 1px dimgray;
+	background-color: steelblue;
+	color: white;
+}
+
+table.datatable {
+	background-color: #dddddd;
+}
+
+th {
+	background-color: #cccccc;
+	color: #333333;
+	font-weight: normal;
+}
+
+tr.data {
+	background-color: #ffffff;
+}
+
+tr.border {
+	background-color: #dddddd;
+}
+
+td.label {
+	text-align: right;
+	background-color: #eeeeee;
+}
+
+td.data {
+	background-color: #ffffff;
+}
+
+dt {
+	margin: 4px 0px 0px 0px;
+	background-color: gainsboro;
+	color: dimgray;
+	padding: 2px 6px;
+	border: solid 1px black;
+}
+
+dd {
+	margin-top: 0px;
+	padding: 4px 20px;
+	border: solid 1px black;
+	border-top-width: 0px;
+}
+
+dd textarea {
+	font-size: small;
+	background-color: #e8e8e0;
+	border: solid 1px gray;
+}
+
+a:link, a:hover, a:visited, a:active {
+	color: blue;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+input.button {
+	border: solid 1px blue;
+	background-color: lightcyan;
+	padding: 2px 6px;
+	color: navy;
+}
+
+input.up {
+	border-width: 0px 2px 2px 0px;
+	color: blue;
+}
+

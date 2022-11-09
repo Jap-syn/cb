@@ -1,0 +1,46 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message( $messages ) {
+    if( empty( $messages ) ) return;
+    if( ! is_array( $messages ) ) $messages = array( $messages );
+    $list = array();
+    foreach( $messages as $msg ) $list[] = f_e( $msg );
+    echo join('<br />', $list);
+}
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searche/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>事業者取込インポート　エラー</h3>
+<h4><font color="red"><?php echo (!is_array($this->error)) ? $this->error : '以下にエラーがあります。'; ?></font></h4>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+<?php if (is_array($this->error)) { ?>
+<?php     foreach ($this->error as $key => $val) { ?>
+  <tr>
+    <td class="l_data" style="font-size: 14px;"><?php echo (int)$key + 1; ?>行目
+<?php         foreach ($val as $fldkey => $fldval) { ?>
+</br>
+　・<?php echo $fldkey ?> : <?php echo $fldval[0] ?>
+<?php         } ?>
+    </td>
+  </tr>
+<?php     } ?>
+<?php } ?>
+  <tr>
+    <td class="c_data"><a href="searche/upload">事業者取込インポートへ戻る</a></td>
+  </tr>
+  </tbody>
+</table>
+
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

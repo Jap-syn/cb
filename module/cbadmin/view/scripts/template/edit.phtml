@@ -1,0 +1,55 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$validList = $this->validList;
+$invalidList = $this->invalidList;
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/template/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+    <h3 class="contents_title">テンプレート編集(<?php echo $this->templateRow['TemplateId'] . '-' . $this->templateRow['TemplateSeq'] . '：' . $this->templateRow['TemplateName']; ?>)</h3>
+    <div class="content-box clearfix">
+            <div class="list-box left-list-box">
+                <h4>対象項目</h4>
+                <select class="template-list" name="valid-list"  id="valid-list" size="2">
+                <?php foreach( $validList as $value ) { echo '<option '; if( $value['RequiredFlg'] == 1 ) { echo 'class="required" '; } else { echo 'class="norequired" '; } echo 'value="' . $value['PhysicalName'] .'">' . $value['LogicalName'] . '</option>'; } ?></select>
+                <div class="control-area">
+                    <button type="button" id="up-to-item">↑</button>
+                    <button type="button" id="down-to-item">↓</button>
+                    <button type="button" id="item-to-invalid">非対象項目へ →</button>
+                </div>
+            </div>
+
+            <div class="list-box right-list-box">
+                <h4>非対象項目</h4>
+                <select class="template-list" name="invalid-list" id="invalid-list" size="2">
+                <?php foreach( $invalidList as $value ) { echo '<option '; if( $value['RequiredFlg'] == 1 ) { echo 'class="required" ' ; } else { echo 'class="norequired" '; } echo 'value="' . $value['PhysicalName'] .'">' . $value['LogicalName'] . '</option>'; } ?></select>
+                <div class="control-area">
+                    <button type="button" id="item-to-valid">← 対象項目へ</button>
+                    <button type="button" id="item-to-valid-all">← 全て対象項目へ</button>
+                </div>
+            </div>
+        </div>
+        <form id="form" action="template/save" method="post" onSubmit="submit();">
+            <input type="hidden" name="templateseq" id="templateseq" value="<?php echo f_e($this->templateSeq); ?>" />
+            <input type="hidden" name="validlistData" id="validListData" value="" />
+            <input type="hidden" name="invalidlistData" id="invalidListData" value="" />
+            <button type="submit" id="submit">登録</button>
+            <button type="button" id="reset" onClick="location.href=location.href">リセット</button>
+        </form>
+    </div>
+    <!-- end contents -->
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'cbadmin/page_footer.php' );
+?>
+</div>
+</body>
+</html>

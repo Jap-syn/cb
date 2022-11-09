@@ -1,0 +1,43 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+    margin-left: 25px;
+    text-align: center;
+}
+
+body.atpay #wrapper,
+body.atpay #wrapper > div {
+/*    background-color: #C5C56A;*/
+/*    background-color: #D8E698;*/
+/*    background-color: #AACF53;*/
+    background-color: #7EBEAB;
+}
+-->
+</style>
+</head>
+<body class="atpay">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">＠Payment(EG社)インポート</h3>
+    <form name="form" enctype="multipart/form-data" method="post" action="rwrcptcfm/impatpay">
+      <div id="formdiv">
+      ＠Payment(EG社)ファイル　
+        <input type="file" name="cres" size="80" />
+        <p><button type="submit">　　インポート　　</button></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

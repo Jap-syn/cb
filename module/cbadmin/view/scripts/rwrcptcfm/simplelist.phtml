@@ -1,0 +1,143 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+	background-color: #ffddff;
+}
+
+/* [paging] */
+.page_nav {
+	border-top-width: 1px;
+	margin-bottom: -5px;
+}
+
+#loading_message {
+	margin: 5px 25px;
+	color: gray;
+	padding: 0px;
+	padding-left: 24px;
+	font-size: 16px;
+	background-image: url('../images/loading_mini_01.gif');
+	background-position: 2px center;
+	background-repeat: no-repeat;
+	border: solid 1px #ffcc00;
+}
+tr.border td {
+	background-color: #ddd;
+	padding: 0px !important;
+	font-size: 3px !important;
+	line-height: 3px !important;
+}
+-->
+</style></head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金処理</h3>
+    <div style="clear:both;">
+    </div>
+    <table style="clear:both; table-layout: fixed; width:863px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+<td style=clear:both; class="setting">入金形態、入金日、実入金額を設定してください </td>
+</table>
+	<div style="clear: both; float: none;">&nbsp;</div>
+	<?php /*echo $this->render('page_navigation.php');*/ ?>
+<div id="loading_message">now loading...</div>
+    <form name="form" method="post" action="rwrcptcfm/confirm" style="display: none;" id="main_form">
+      <table style="clear:both; table-layout: fixed; width:863px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+
+		<thead>
+          <tr>
+          	<th style="width: 68px">注文ID</th>
+          	<th style="width: 30px">初回<br />期限</th>
+          	<th style="width: 30px">最終<br />請求</th>
+          	<th style="width: 30px">支払<br />期限</th>
+          	<th style="width: 34px">請求</th>
+          	<th style="width: 22px">属性</th>
+          	<th style="width: 206px">請求先氏名</th>
+          	<th style="width: 43px">請求額</th>
+          	<th style="width: 167px">入金形態</th>
+          	<th style="width: 120px">入金日</th>
+          	<th style="width: 100px">実入金額</th>
+          </tr>
+		</thead>
+        <tbody>
+          <?php
+          /* count関数対策 */
+		      $l = 0;
+          if (!empty($this->list)){
+              $l = count($this->list);
+          }
+          for ($i = 0; $i < $l; $i++) { ?>
+		  <?php $item = $this->list[$i]; ?>
+
+          <tr <?php echo $item['DamageRecord']; ?>>
+            <td class="l_data target_cell">
+              <?php $id = 'OrderSeq'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderSeq']; ?>" />
+              <?php $id = 'OrderId'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderId']; ?>" />
+              <?php $id = 'OutOfAmends'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OutOfAmends']; ?>" />
+              <?php echo $item['OrderId']; ?>
+            </td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['Clm_F_LimitDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['Clm_L_ClaimDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['Clm_L_LimitDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo $item['Clm_L_ClaimPattern']; ?></td>
+            <td class="c_data target_cell"><?php echo $item['IncreArCaption']; ?></td>
+            <td class="l_data target_cell">
+              <?php $id = 'NameKj'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo f_e($item['NameKj']); ?>" />
+              <a target="_blank" href="rworder/detail/oseq/<?php echo f_e($item['OrderSeq']); ?>">
+			  <?php echo f_e(f_trim($item['NameKj'])); ?></a>
+            </td>
+            <td class="r_data target_cell">
+              <?php $id = 'ClaimTotalAmount'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['ClaimTotalAmount']; ?>" />
+              <?php echo number_format($item['ClaimTotalAmount']); ?>
+            </td>
+            <td class="c_data target_cell"><?php echo $item['receiptFormTag']; ?></td>
+            <td class="l_data target_cell">
+              <?php $id = 'Rct_ReceiptDate'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+            </td>
+            <td class="r_data target_cell">
+              <?php $id = 'Rct_ReceiptAmount'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+            </td>
+          </tr>
+<?php
+/*
+		  <tr class="border">
+			<td colspan="11">
+				&nbsp;
+			</td>
+		  </tr>
+*/
+?>
+          <?php } ?>
+
+          <tr>
+            <td colspan="11" class="c_data">
+              <input type="hidden" name="page" value="<?php echo $this->current_page; ?>" />
+              <input type="submit" id="confirm_check" value="　　入金確認　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	Element.show($("main_form"));
+	setTimeout(function() {
+		Element.hide($("loading_message"));
+	}, 0);
+});
+</script>
+</html>

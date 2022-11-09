@@ -1,0 +1,227 @@
+<?php
+use member\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\Validate\CoralValidateUtility;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+use Zend\Validator;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// 日付・数値フォーマットの簡易代替関数
+function f_dfx($a, $b) {
+    return date('y/m/d', strtotime($a));
+}
+function f_nfx($a, $b) {
+    return number_format($a);
+}
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<style>
+.main_contents {
+	height: auto;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+$formatter = new CoralViewHelperValueFormat();
+
+$fixedDate = $this->fixedDate;
+$summaries = array(
+	'UseAmount' => 0,
+	'SettlementFee' => 0,
+	'ClaimFee' => 0,
+);
+
+$this->tabIndex = (int)$this->tab;
+?>
+
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	'表示したい取引の立替締め日を選択し、「表示」ボタンを押してください'
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+<form id="selection_form" action="claim/index" method="post">
+<div class="submit_area">
+	<label for="fixedDate">立替締め日</label>
+	<select id="fixedDate" name="fixedDate">
+<?php
+$selectedRow = null;
+foreach( $this->dateList as $row ) {
+	$date = $row['FixedDate'];
+	$execDate = $row['ExecScheduleDate'];
+	$selected = f_df($date, 'Y/m/d') == f_df($fixedDate, 'Y/m/d');
+	if($selected) $selectedRow = $row;
+	$out = array(
+		'<option value="',
+		f_df($date, 'Y-m-d'),
+		'" label="',
+		f_df($date, 'Y/m/d'),
+		( empty($execDate) ? '' : ' (' . f_df($execDate, 'y/m/d') . ' 支払分)' ),
+		'"',
+		( $selected ? ' selected="selected"' : '' ),
+		'>',
+		$formatter->valueFormat($date, 'date'),
+		( empty($execDate) ? '' : ' (' . f_df($execDate, 'y/m/d') . ' 支払分)' ),
+		'</option>'
+	);
+
+	echo join('', $out);
+}
+?>
+
+	</select>
+	<input name="tab" id="selectedTabIndex" type="hidden" value="<?php echo f_e($this->tabIndex); ?>" />
+	<button type="submit">表示する</button>
+	<right>　　　　　　　　　　　　　　　　　　　　　　　<button id="csv" type="button" onclick="window.open( '<?php echo $this->baseUrl; ?>/claim/download/fixedDate/<?php echo str_replace('/', '-', f_e($this->fixedDate) ); ?>' );">CSVダウンロード</button>　　　<button id="pdf" type="button" onclick="window.open( '<?php echo $this->baseUrl; ?>/claim/billissue/fixedDate/<?php echo str_replace('/', '-', f_e($this->fixedDate) ); ?>' );">請求書印刷</button></right>
+</div>
+</form>
+
+<div class="tab_container" id="mainTab">
+	<div>
+		<ul class="tab_bar">
+			<li id="summary_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">請求書兼領収書</a>
+			</li>
+			<li id="chargelist_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">お取引明細</a>
+			</li>
+			<li id="stamplist_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">印紙代明細</a>
+			</li>
+			<li id="cancellist_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">キャンセル返金明細</a>
+			</li>
+			<li id="adjustmentlist_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">調整額内訳明細</a>
+			</li>
+		<!-- 2015/10/29 立替精算戻し明細のタブは表示しない。（立替精算戻しの運用をしないため、非表示とする。）
+			<li id="paybacklist_tab" class="tab_item">
+				<a class="tab" href="#" onclick="return false;">立替精算戻し明細</a>
+			</li>
+		 -->
+		</ul>
+	</div>
+
+	<div class="tab_pages">
+		<?php /* 請求書兼領収書 */ ?>
+		<div id="summary_tab_page" class="tab_page" style="display: none;">
+			<?php echo $this->render('member/claim/summary.php'); ?>
+		</div>
+
+		<?php /* お取引明細 */ ?>
+		<div id="chargelist_tab_page" class="tab_page" style="display: none;">
+			<?php
+			$this->list = $this->charge_list;
+			echo $this->render('member/claim/charge_list.php');
+			?>
+		</div>
+
+		<?php /* 印紙代明細 */ ?>
+		<div id="stamplist_tab_page" class="tab_page" style="display: none;">
+			<?php
+			$this->list = $this->stamp_list;
+			echo $this->render('member/claim/stamp_list.php');
+			?>
+		</div>
+
+		<?php /* キャンセル返金明細 */ ?>
+		<div id="cancellist_tab_page" class="tab_page" style="display: none;">
+			<?php
+			$this->list = $this->cancel_list;
+			echo $this->render('member/claim/cancel_list.php');
+			?>
+		</div>
+
+		<?php /* 調整額内訳明細 */ ?>
+		<div id="adjustmentlist_tab_page" class="tab_page" style="display: none;">
+			<?php
+			$this->list = $this->adjustment_list;
+			echo $this->render('member/claim/adjustment_list.php');
+			?>
+		</div>
+
+	<!-- 2015/10/29 立替精算戻し明細のタブは表示しない。（立替精算戻しの運用をしないため、非表示とする。） -->
+	<?php if (false) { ?>
+		<?php /* 立替精算戻し明細 */ ?>
+		<div id="paybacklist_tab_page" class="tab_page" style="display: none;">
+			<?php
+			$this->list = $this->payback_list;
+			echo $this->render('member/claim/payback_list.php');
+			?>
+		</div>
+	<?php } ?>
+
+	</div>
+</div>
+
+<div class="note">
+	<ul>
+		<li>表示金額はすべて税込金額となっております。</li>
+		<li>決済手数料の1円未満の端数は切捨てとなっております。</li>
+	</ul>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php echo $this->render('member/tab_support.php'); ?>
+<script>
+<?php
+$app_global = Application::getInstance()->appGlobalConfig;
+if( isset( $app_global->page_title_prefix ) ) {
+	$page_title_prefix = $app_global->page_title_prefix . ( ( isset( $app_global->page_title_separaotor )) ?
+		$app_global->page_title_separator : ' : ' );
+} else {
+	$page_title_prefix = '';
+}
+?>
+Event.observe(window, "load", function() {
+	var tabui = new TabControl(
+							   $("mainTab"),
+							   null,
+							   function(activeTab, index) {
+									($("selectedTabIndex") || { value : null }).value = index;
+									document.title = "<?php echo f_e($page_title_prefix); ?>{0} （<?php echo '立替締め日：' . f_e($this->fixedDate); ?>）".format(
+										(activeTab.innerText || activeTab.textContent)
+									);
+								}
+							   );
+	tabui.tabs[<?php echo $this->tabIndex; ?>].show();
+
+	<?php if (empty($this->dateList)) { ?>
+	$("csv").disabled = true;
+	$("pdf").disabled = true;
+	<?php } ?>
+});
+
+</script>
+</html>

@@ -1,0 +1,101 @@
+@CHARSET "UTF-8";
+
+div#Tcreditsettlement_area {
+    margin: 10px auto;
+}
+
+div#Tcreditsettlement_area h5 {
+    text-align: center;
+    margin: 20px 20px 20px 10px;
+    padding: 4px 8px;
+    font-size: 20pt;
+    color: green;
+}
+
+div#creditsettlement_area h5 {
+    margin: 20px 20px 20px 10px;
+    padding: 4px 8px;
+    font-size: 20pt;
+    color: green;
+}
+
+div#creditsettlement_area h6 {
+    margin: 10px 20px;
+    padding: 4px 8px;
+    font-size: 16pt;
+    color: #9BBB59;
+}
+
+div#creditsettlement_area table {
+    margin: 20px auto;
+}
+
+div#creditsettlement_area tr {
+    margin: 5px 0px;
+}
+
+div#creditsettlement_area td.l_area {
+    text-align: left;
+    background-color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    padding-left: 8%;
+}
+
+/* header(creditsettlement) */
+#header_creditsettlement {
+    clear: both;
+    width: 99.5%;
+/*    height: 80px; */
+    margin: 0px;
+    padding: 5px 0px 0px;
+    border: 1px solid #cfcfcf;
+    background: #F0F0F0;
+    color: #222222;
+    font-size: 1.0em;
+    text-align: left;
+}
+
+/* 決定ボタン */
+input#submit_button {
+    font-size: 20px;
+    padding: 15px 35px;
+    margin: 15px;
+    background: #bad93d;
+    border-style: none;
+    cursor: pointer;
+    display: inline-block;
+    color: #000;
+
+}
+
+input#submit_button:hover {
+    background: #9fbe25;
+        -webkit-box-shadow:inset 0px 0px 5px #00c;
+        -moz-box-shadow:inset 0px 0px 5px #00c;
+        box-shadow:inset 0px 0px 5px #00c;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* キャンセルボタン */
+input#cancel_button {
+    font-size: 20px;
+    padding: 15px 35px;
+    margin: 15px;
+    background: #dddddd;
+    border-style: none;
+    cursor: pointer;
+    display: inline-block;
+    color: #000;
+
+}
+
+input#cancel_button:hover {
+    background: #aaaaaa;
+        -webkit-box-shadow:inset 0px 0px 5px #00c;
+        -moz-box-shadow:inset 0px 0px 5px #00c;
+        box-shadow:inset 0px 0px 5px #00c;
+    color: #ffffff;
+    font-weight: bold;
+}

@@ -1,0 +1,202 @@
+<?php
+use models\Logic\Validation\LogicValidationResult;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.error_message {
+    color: red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信条件一覧</h3>
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信条件一覧</h3>
+    <?php } ?>
+    <!-- count関数対策 -->
+    <?php if(isset($this->error_messages) && !empty($this->error_messages) || isset($this->validationResults) && !empty($this->validationResults)) { ?>
+    <h4>※：入力に不備があります。登録内容を見直してください。 <br>
+            以下のデータの入力に不備があったため、データは更新されませんでした。</h4>
+    <ul class="error_info_container">
+    <!--<php foreach($this->error_messages as $info) { ?>
+        <li class="error_message" onclick="highlight_error('<php echo f_e($info['seq']); ?>')"><php echo f_e($info['message']); ?></li>
+    <php } }?-->
+<?php foreach($this->error_messages as $error) { ?>
+	<font color="red"><li><?php echo escape($error); ?></li></font>
+<?php } ?>
+<?php } ?>
+    </ul>
+  <?php
+    /**
+     * @var LogicValidationResult
+     */
+    $vr = $this->validationResults;
+    if($vr == null) $vr = new LogicValidationResult();
+
+    $data = $this->data;
+
+    echo $this->render('cbadmin/credit/validation_error_handler.php');
+    ?>
+    <!-- ページナビゲーション -->
+    <?php echo $this->render('cbadmin/page_navigation.php'); ?>
+    <div style="margin: 5px 25px;">
+    <table style="margin: 0px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="r_data"><a class="download_link" href="<?php echo $this->durl; ?>">CSVダウンロード</a></td>
+      </tr>
+    </table>
+    </div>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <?php if (f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <form id="condition_list_edit_form" method="post" action="credit/savemodify">
+    <?php } else { ?>
+    <form id="condition_list_edit_form" method="post" action="credit/savemodify/eid/<?php echo f_e($this->EnterpriseId); ?>">
+    <?php } ?>
+      <table  id="credit_condition_list" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th style="width:35px">Seq</th>
+            <th style="width:165px">項目種別</th>
+            <th style="width:60px">検索方法</th>
+            <th style="width:180px">条件文字列</th>
+            <th style="width:180px">コメント</th>
+            <th style="width:60px">ポイント</th>
+            <th style="width:35px">有効</th>
+            <th style="width:80px">与信強制化</th>
+            <th style="width:80px">追加条件</th>
+          </tr>
+          <?php foreach ((array)$this->result as $i => $data) {  ?>
+            <?php
+
+            $seq = $data['Seq'];
+            $category = $data['Category'];
+
+            $data_for_hash = array();
+            foreach($data as $key => $value) {
+                if(in_array($key, array('Seq', 'Category', 'SearchPattern', 'Cstring', 'Comment', 'Point'))) {
+                    $data_for_hash[$key] = $value;
+                }
+            }
+            ksort($data_for_hash);
+            ?>
+
+            <tr id="row_<?php echo f_e($seq . $category); ?>" class="<?php echo f_e(($i % 2 == 0) ? 'odd' : 'even'); ?>" title="<?php echo f_df($data['RegistDate'], 'Y年 n月 d日'); ?> 登録">
+                <td class="r_data">
+                    <?php echo f_e($seq); ?><br/>
+                    <input id="seq_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][Seq]" type="hidden" value="<?php echo f_e($data['Seq']); ?>" />
+                    <input id="row_hash_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][_row_hash]" type="hidden" value="<?php echo f_e(base64_encode(serialize($data_for_hash))); ?>" />
+                </td>
+
+                <td class="l_data">
+                    <?php $count = 0; ?>
+                    <?php foreach($this->categoryName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq . $category , $key); ?>
+                        <?php if(((f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) && f_e($value['Class2']) <> "") || (f_e($this->EnterpriseId) != -1 && f_e($value['Class2']) <> "" && f_e($value['Class2']) <> "事ID")) { ?>
+                            <label for="category_<?php echo f_e($id); ?>" class="chk_label category_label category_<?php echo f_e($seq . $category); ?><?php if($key == $data['Category']-1) echo ' selected'; ?>">
+                            <input id="category_<?php echo f_e($id); ?>" name="form[<?php echo f_e($seq . $category); ?>][Category]" type="radio" value="<?php echo f_e($key)+1; ?>" class="chk"<?php if(($key+1) == $data['Category']) echo ' checked="checked"'; ?> onclick="change_category_selection('<?php f_e($seq . $category); ?>')" />
+
+                            <?php echo f_e($value['Class2']); ?>
+                            </label>
+                            <!-- 項目種別が2つ並ぶごとにに改行を行う -->
+                            <?php if($count % 2 != 0){
+                               echo '<br>';
+                            } ?>
+                        <?php $count++; ?>
+                        <?php } ?>
+                    <?php } ?>
+                </td>
+
+                <td class="l_data">
+                    <?php foreach($this->patternName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq . $category , $key); ?>
+                        <label for="pattern_<?php echo f_e($id); ?>" class="chk_label pattern_label pattern_<?php echo f_e($seq . $category); ?><?php if($key == $data['SearchPattern']) echo ' selected'; ?>">
+                        <input id="pattern_<?php echo f_e($id); ?>" name="form[<?php echo f_e($seq . $category); ?>][SearchPattern]" type="radio" value="<?php echo f_e($key); ?>" class="chk"<?php if(($key) == $data['SearchPattern']) echo ' checked="checked"'; ?> onclick="change_pattern_selection('<?php echo f_e($seq . $category); ?>')" />
+
+                        <?php echo f_e($value['Class2']); ?>
+                        </label>
+                    <?php } ?>
+                </td>
+
+                <td class="c_data">
+                    <input class="large_item" id="cstring_<?php echo f_e($seq .$category); ?>" name="form[<?php echo f_e($seq . $category); ?>][Cstring]" type="text" value="<?php echo f_e($data['Cstring']); ?>" maxlength = 4000  />
+                </td>
+                <td class="c_data">
+                    <input class="large_item" id="comment_<?php echo f_e($seq .$category); ?>" name="form[<?php echo f_e($seq . $category); ?>][Comment]" type="text" value="<?php echo f_e($data['Comment']); ?>" maxlength = 255 />
+                </td>
+                <td class="c_data">
+                    <input  id="point_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][Point]" type="text" size="8" value="<?php echo f_e($data['Point']); ?>" style="text-align:right;" />
+                </td>
+                <td class="c_data" style="padding: 0px">
+                    <input type="checkbox" id="delete_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][delete]"  value ="1" <?php if($data['ValidFlg'] == 1) echo 'checked'; ?> />
+                </td>
+                <td class="c_data" style="padding: 0px">
+                    <input type="checkbox" id="jintec_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][jintec]"  value ="1" <?php if($data['JintecManualReqFlg'] == 1) echo 'checked'; ?> />
+                </td>
+                <td class="c_data" style="padding: 0px">
+                <input type="hidden" id="addcount_<?php echo f_e($seq . $category); ?>" name="form[<?php echo f_e($seq . $category); ?>][addcount]"  value ="<?php echo f_e($data['AddConditionCount']); ?>" />
+                    <?php if (f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+                        <a target="_blank" href="credit/add/seq/<?php echo f_e($seq); ?>/category/<?php echo f_e($data['Category']); ?>"><?php echo f_e($data['AddConditionCount'] > 0 ? sprintf('%s 件', $data['AddConditionCount']) : '(未設定)'); ?></a>
+                    <?php } else { ?>
+                        <a target="_blank" href="credit/add/eid/<?php echo f_e($this->EnterpriseId); ?>/seq/<?php echo f_e($seq); ?>/category/<?php echo f_e($data['Category']); ?>"><?php echo f_e($data['AddConditionCount'] > 0 ? sprintf('%s 件', $data['AddConditionCount']) : '(未設定)'); ?></a>
+                    <?php }  ?>
+                </td>
+
+            </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+     <!-- ページナビゲーション -->
+             <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr align="center">
+            <td>
+            <input id="hash_for_modify" name="nav[hash]" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+            <input id="page_for_modify" name="nav[page]" type="hidden" value="<?php echo f_e($this->current_page); ?>" />
+            <input id="total_count_for_modify" name="nav[total_count]" type="hidden" value="<?php echo f_e($this->pager->getItemsPerPage()); ?>" />
+            <input type="hidden" name="page" value="<?php echo f_e($this->current_page); ?>" />
+            <input name="hash" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+                <button id="submit_button" type="button" class="action">この内容で更新</button>
+                <button id="backto_button" type="button" class="action">&laquo; 検索条件入力へ戻る</button>
+            </td>
+          </tr>
+        </table>
+    </form>
+    </div>
+    <!-- 検索画面への遷移 -->
+    <?php if(f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <form id="search_form" action="credit/search" method="post">
+    <?php } else { ?>
+    <form id="search_form" action="credit/search/eid/<?php echo f_e($this->EnterpriseId); ?>" method="post">
+    <?php } ?>
+    <input name="hash" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+    </form>
+    <!-- end contents -->
+    <script type="text/javascript">
+    Event.observe(window, "load", function() {
+        // 戻るボタン
+        Event.observe($("backto_button"), "click", function() {
+            $("search_form").submit();
+        });
+        // 更新ボタン
+        Event.observe($("submit_button"), "click", function() {
+            $("condition_list_edit_form").submit();
+        });
+
+    });
+    </script>
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  #contents .error {
+    color: red;
+  }
+</style>
+<script>
+  // 加盟店検索
+  function searchEnterprise()
+  {
+    // 加盟店検索
+    $('search_button').click();
+  }
+
+  // 支払完了確認
+  function updConfirm(payingDataDownloadFlg)
+  {
+    // 振込データDLフラグがない場合はTRUE
+    if (payingDataDownloadFlg == null) {
+      return true;
+    }
+
+    // 振込みデータDLフラグ=1の場合はTRUE
+    if (payingDataDownloadFlg == 1) {
+      return true;
+    }
+
+    // 確認メッセージ
+    var result = confirm("振込ﾃﾞｰﾀDLが実施されていません。支払完了にしていいですか？");
+    if (result == false) {
+      $("buttonDisabled").value = "1";
+    }
+    return result;
+  }
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/spclpaying/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">臨時　加盟店立替精算</h3>
+    <div align="center"><?php echo $this->CompleteMessage; ?></div>
+    <form id="searchform" name="searchform" method="post" action="spclpaying/process">
+      <input type="submit" id="search_button" name="search_button" style="display: none;" />
+      <input type="hidden" id="buttonDisabled" name="buttonDisabled" />
+      <input type="hidden" id="csvDownloadFlg" name="csvDownloadFlg" value="0" />
+      <table style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="9" class="error"><?php if (isset($this->ErrorMessage)) echo $this->ErrorMessage; ?><td>
+        </tr>
+
+        <tr>
+          <td>加盟店ID：</td>
+          <td><input type="text" id="SearchEnterpriseId" name="SearchEnterpriseId" size="8" value="<?php if (isset($this->SearchEnterpriseId)) echo f_e($this->SearchEnterpriseId); ?>" onchange="searchEnterprise();"; /></td>
+          <td>名称：</td>
+          <td style="width: 150px; "><span style="font-weight: bold;"><?php if (isset($this->EnterpriseName)) { echo f_e($this->EnterpriseName); } else { echo "&nbsp;";} ?></span></td>
+          <td>立替締め日：</td>
+          <td><?php if (isset($this->PayingControlDate)) { echo f_e($this->PayingControlDate); } else { echo "&nbsp;";} ?></td>
+          <td>立替予定日：</td>
+          <td><input type="text" id="PayingPlanDate" name="PayingPlanDate" size="6" value="<?php if (isset($this->PayingPlanDate)) echo f_e($this->PayingPlanDate); ?>" /></td>
+          <td><input type="submit" id="calc_button" name="calc_button" value="　立替計算　" /></td>
+        </tr>
+      </table>
+      <input type="hidden" id="EnterpriseId" name="EnterpriseId"" value="<?php if (isset($this->EnterpriseId)) { echo f_e($this->EnterpriseId); } ?>" />
+      <input type="hidden" id="EnterpriseName" name="EnterpriseName"" value="<?php if (isset($this->EnterpriseName)) { echo f_e($this->EnterpriseName); } ?>" />
+      <input type="hidden" id="PayingControlDate" name="PayingControlDate" value="<?php if (isset($this->PayingControlDate)) { echo f_e($this->PayingControlDate); } ?>" />
+      <?php if (isset($this->EnterpriseName) && strlen($this->EnterpriseName) > 0) { ?>
+      <table class="datatable" style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th>お取引<br />件数</th>
+          <th>ご利用<br />総額</th>
+          <th>決済手数料<br />合計</th>
+          <th>請求手数料<br />合計</th>
+          <th>印紙代<br />合計</th>
+          <th>月額<br />固定費</th>
+          <th>前回持越<br />（固定費）</th>
+          <th>CNL<br />返金分</th>
+          <th>振込<br />手数料</th>
+          <th>精算<br />調整額</th>
+          <th>立替精算<br />戻し額</th>
+          <th>支払額</th>
+          <th>指示</th>
+        </tr>
+        <?php if(isset($this->SimuList)) { $i = 0; foreach($this->SimuList as $row) { ?>
+        <tr>
+          <td class="r_data">
+            <?php echo $row["ChargeCount"]; ?>
+            <input type="hidden" id="SimuList[ChargeCount]" name="SimuList[ChargeCount]" value="<?php echo $row['ChargeCount']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["ChargeAmount"]; ?>
+            <input type="hidden" id="SimuList[ChargeAmount]" name="SimuList[ChargeAmount]" value="<?php echo $row['ChargeAmount']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["SettlementFee"]; ?>
+            <input type="hidden" id="SimuList[SettlementFee]" name="SimuList[SettlementFee]" value="<?php echo $row['SettlementFee']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["ClaimFee"]; ?>
+            <input type="hidden" id="SimuList[ClaimFee]" name="SimuList[ClaimFee]" value="<?php echo $row['ClaimFee']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["StampFeeTotal"]; ?>
+            <input type="hidden" id="SimuList[StampFeeTotal]" name="SimuList[StampFeeTotal]" value="<?php echo $row['StampFeeTotal']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["MonthlyFee"]; ?>
+            <input type="hidden" id="SimuList[MonthlyFee]" name="SimuList[MonthlyFee]" value="<?php echo $row['MonthlyFee']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["CarryOver"]; ?>
+            <input type="hidden" id="SimuList[CarryOver]" name="SimuList[CarryOver]" value="<?php echo $row['CarryOver']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["CalcelAmount"]; ?>
+            <input type="hidden" id="SimuList[CalcelAmount]" name="SimuList[CalcelAmount]" value="<?php echo $row['CalcelAmount']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["TransferCommission"]; ?>
+            <input type="hidden" id="SimuList[TransferCommission]" name="SimuList[TransferCommission]" value="<?php echo $row['TransferCommission']; ?>" />
+          </td>
+          <td class="r_data">
+            <a href="spclpaying/adjust/eid/<?php echo $this->EnterpriseId; ?>/pdate/<?php echo $this->PayingControlDate; ?>/loginid/<?php echo $this->SearchEnterpriseId; ?><?php if(nvl($this->PayingPlanDate, 0) != 0) { echo ("/ppdate/" . f_e($this->PayingPlanDate)); }; ?>" ><?php echo $row["AdjustmentAmount"]; ?></a>
+            <input type="hidden" id="SimuList[AdjustmentAmount]" name="SimuList[AdjustmentAmount]" value="<?php echo $row['AdjustmentAmount']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["PayBackAmount"]; ?>
+            <input type="hidden" id="SimuList[PayBackAmount]" name="SimuList[PayBackAmount]" value="<?php echo $row['PayBackAmount']; ?>" />
+          </td>
+          <td class="r_data">
+            <?php echo $row["DecisionPayment"]; ?>
+            <input type="hidden" id="SimuList[DecisionPayment]" name="SimuList[DecisionPayment]" value="<?php echo $row['DecisionPayment']; ?>" />
+            <input type="hidden" id="SimuList[DecisionPaymentHid]" name="SimuList[DecisionPaymentHid]" value="<?php echo $row['DecisionPaymentHid']; ?>" />
+            <input type="hidden" id="SimuList[OrderSeqList]" name="SimuList[OrderSeqList]" value="<?php echo $row['OrderSeqList']; ?>" />
+          </td>
+          <td class="c_data">&nbsp;</td>
+        </tr>
+        <?php $i++; }} ?>
+        <?php $i = 0; foreach($this->PcList as $row) { ?>
+        <tr>
+          <td class="r_data"><?php echo $row["ChargeCount"]; ?></td>
+          <td class="r_data"><?php echo $row["ChargeAmount"]; ?></td>
+          <td class="r_data"><?php echo $row["SettlementFee"]; ?></td>
+          <td class="r_data"><?php echo $row["ClaimFee"]; ?></td>
+          <td class="r_data"><?php echo $row["StampFeeTotal"]; ?></td>
+          <td class="r_data"><?php echo $row["MonthlyFee"]; ?></td>
+          <td class="r_data"><?php echo $row["CarryOver"]; ?></td>
+          <td class="r_data"><?php echo $row["CalcelAmount"]; ?></td>
+          <td class="r_data"><?php echo $row["TransferCommission"]; ?></td>
+          <td class="r_data"><?php echo $row["AdjustmentAmount"]; ?></td>
+          <td class="r_data"><?php echo $row["PayBackAmount"]; ?></td>
+          <td class="r_data"><?php echo $row["DecisionPayment"]; ?></td>
+          <td class="c_data">
+            <input type="hidden" id="PcList[<?php echo $row['Seq']; ?>][DecisionPayment]" name="PcList[<?php echo $row['Seq']; ?>][DecisionPayment]" value="<?php echo $row['DecisionPayment']; ?>" />
+            <input type="submit" id="update_button[<?php echo $row['Seq']; ?>]" name="update_button[<?php echo $row['Seq']; ?>]" value="支払完了"
+              onclick="return updConfirm(<?php echo $row["PayingDataDownloadFlg"] == null ? "null" : $row["PayingDataDownloadFlg"]; ?>);" />
+            <br />
+            <a href="spclpaying/dcsvreserve/entId/<?php if (isset($this->EnterpriseId)) { echo $this->EnterpriseId; } ?>/pcseq/<?php echo $row['Seq']; ?>/flg/<?php echo isset($this->csvDownloadFlg) ? $this->csvDownloadFlg : "0"; ?>">CSVダウンロード</a>
+          </td>
+        </tr>
+        <?php $i++; } ?>
+        <!-- count関数対策 -->
+        <?php if (!empty($this->SimuList)) { ?>
+        <tr>
+          <td align="center" colspan="13">
+            <input type="submit" id="save_button" name="save_button" value="　立替確定　" />
+          </td>
+        </tr>
+        <?php } ?>
+      </table>
+      <?php } ?>
+    </form>
+    <form id="csvform" name="csvform" method="post" action="spclpaying/dcsv">
+      <input type="hidden" id="entId" name="entId" value="<?php echo isset($this->entId) ? f_e($this->entId) : ''; ?>" />
+      <input type="hidden" id="pcseq" name="pcseq" value="<?php echo isset($this->pcseq) ? f_e($this->pcseq) : ''; ?>" />
+      <input type="submit" id="dcsv_button" name="dcsv_button" style="display: none;" />
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	// ボタン無効化
+	function disable_buttons() {
+		// 無効化フラグが1の場合は処理なし
+		if ($("buttonDisabled") != null) {
+			if ($("buttonDisabled").value == "1") {
+				$("buttonDisabled").value = "";
+				return;
+			}
+		}
+		["search_button", "calc_button", "save_button"].each(function(id) {
+			if ($(id) != null) {
+				$(id).disabled = true;
+			}
+		});
+		// 支払完了ボタンは1行ごとにIDが異なるので別処理で指定
+		var upd = document.getElementsByTagName("input");
+		for (var i = 0; i < upd.length; i++) {
+			if (upd[i].id.match(/^update_button\[\d+\]$/)) {
+				if ($(upd[i].id) != null) $(upd[i].id).disabled = true;
+			}
+		}
+	}
+
+	// 検索ボタン押下時
+	if($("search_button") != null) {
+		Event.observe($("search_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+	// 立替計算ボタン押下時
+	if($("calc_button") != null) {
+		Event.observe($("calc_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+	// 立替確定ボタン押下時
+	if($("save_button") != null) {
+		Event.observe($("save_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+	// 支払完了ボタン押下時　1行ごとにIDが異なるので別処理で指定
+	var upd = document.getElementsByTagName("input");
+	for (var i = 0; i < upd.length; i++) {
+		if (upd[i].id.match(/^update_button\[\d+\[$/)) {
+			if ($(upd[i].id) != null) {
+				Event.observe($(upd[i].id), "click", function() {
+					setTimeout(disable_buttons, 0);
+				});
+			}
+		}
+	}
+
+	// 加盟店テキスト入力時
+	if($("SearchEnterpriseId") != null) {
+		// 入力中はボタン非活性
+		Event.observe($("SearchEnterpriseId"), "focus", function() {
+			["calc_button", "save_button"].each(function(id) {
+				if ($(id) != null) {
+					$(id).disabled = true;
+				}
+			})
+		});
+		// フォーカスアウトで有効化
+		Event.observe($("SearchEnterpriseId"), "blur", function() {
+			["calc_button", "save_button"].each(function(id) {
+				if ($(id) != null) {
+					$(id).disabled = false;
+				}
+			})
+		});
+	}
+
+	// 初期化
+	if ($('csvDownloadFlg') != null) $('csvDownloadFlg').value="1";
+
+	// CSVダウンロードリンク押下後
+	if ($('entId') != null && $('pcseq') != null) {
+		if ($('entId').value != "" && $('pcseq').value != "") {
+			// 実際のCSVダウンロード処理実行
+			$('dcsv_button').click();
+		}
+	}
+});
+</script>
+</html>

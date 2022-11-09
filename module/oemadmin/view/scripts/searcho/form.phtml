@@ -1,0 +1,412 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<script type="text/javascript">
+    Event.observe(window, 'load', function() {
+        Event.observe($('main-form'), 'submit', function(evt) {
+            Event.stop(evt);
+            $A(Form.getInputs(this, 'submit')).each(function(ele) {
+                try {
+                    ele.disabled = true;
+                } catch (e) {
+                }
+            });
+            setTimeout(function() {
+                this.submit();
+            }.bind(this), 0);
+        });
+    });
+</script>
+</head>
+<body>
+    <!-- start contents -->
+    <div id="contents">
+        <?php echo $this->render('oemadmin/page_header.php'); ?>
+        <?php echo $this->render('oemadmin/searcho/page_menu.php'); ?>
+        <div class="title"><span>注文検索</span></div>
+        <?php if (isset($this->SearchExpressionError)) { ?>
+            <dl class="error-message">
+                <dt>以下のエラーで検索を実行できませんでした</dt>
+                <dd><?php echo f_e($this->SearchExpressionError); ?></dd>
+            </dl>
+        <?php } ?>
+        <form name="form" id="main-form" method="post" action="searcho/search/searchkbn/0">
+            <table class="datatable clear">
+                <tr>
+                    <th>項目</th>
+                    <th>指定値</th>
+                    <th>項目補足</th>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【基本情報】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">注文ID</td>
+                    <td class="l_data"><input type="text" name="OrderId" id="OrderId" /></td>
+                    <td class="l_data">後方一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">注文登録日</td>
+                    <td class="l_data"><input type="text" name="RegistDateF" id="RegistDateF" />～<input type="text" name="RegistDateT" id="RegistDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">注文日</td>
+                    <td class="l_data"><input type="text" name="OrderDateF" id="OrderDateF" />～<input type="text" name="OrderDateT" id="OrderDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">役務提供予定日</td>
+                    <td class="l_data"><input type="text" name="ServiceExpectedDateF" id="ServiceExpectedDateF" />～<input type="text" name="ServiceExpectedDateT" id="ServiceExpectedDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【請求先】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">氏名</td>
+                    <td class="l_data"><input type="text" size="50" name="NameKj" id="NameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">氏名カナ</td>
+                    <td class="l_data"><input type="text" size="50" name="NameKn" id="NameKn" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+
+                <tr>
+                    <td class="r_label">郵便番号</td>
+                    <td class="l_data"><input type="text" name="PostalCode" id="PostalCode" /></td>
+                    <td class="l_data">XXX-XXXX形式で入力</td>
+                </tr>
+
+                <tr>
+                    <td class="r_label">住所</td>
+                    <td class="l_data"><input type="text" size="50" name="Address" id="Address" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">電話番号</td>
+                    <td class="l_data"><input type="text" name="Phone" id="Phone" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">メールアドレス</td>
+                    <td class="l_data"><input type="text" size="50" name="MailAddress" id="MailAddress" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">加盟店顧客番号</td>
+                    <td class="l_data"><input type="text" size="50" name="EntCustId" id="EntCustId" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【配送先】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">氏名</td>
+                    <td class="l_data"><input type="text" size="50" name="DeliNameKj" id="DeliNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">氏名カナ</td>
+                    <td class="l_data"><input type="text" size="50" name="DeliNameKn" id="DeliNameKn" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+
+                <tr>
+                    <td class="r_label">郵便番号</td>
+                    <td class="l_data"><input type="text" name="DeliPostalCode" id="DeliPostalCode" /></td>
+                    <td class="l_data">XXX-XXXX形式で入力</td>
+                </tr>
+
+                <tr>
+                    <td class="r_label">住所</td>
+                    <td class="l_data"><input type="text" size="50" name="DeliAddress" id="DeliAddress" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">電話番号</td>
+                    <td class="l_data"><input type="text" name="DeliPhone" id="DeliPhone" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【事業者】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者名</td>
+                    <td class="l_data"><input type="text" size="50" name="EnterpriseNameKj" id="EnterpriseNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者ID</td>
+                    <td class="l_data"><input type="text" name="LoginId" id="LoginId" /></td>
+                    <td class="l_data">後方一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">サイト名</td>
+                    <td class="l_data"><input type="text" size="50" name="SiteName" id="SiteName" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">プラン</td>
+                    <td class="l_data">
+                        <?php echo $this->planTag; ?>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">締日パターン</td>
+                    <td class="l_data">
+                        <?php echo $this->fixPatternTag; ?>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">営業担当</td>
+                    <td class="l_data"><input type="text" size="50" name="Salesman" id="Salesman" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【与信】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">与信結果</td>
+                    <td class="l_data">
+                        <select name="CreditResult" id="CreditResult">
+                            <option value="0">－　　　　</option>
+                            <option value="1">OK</option>
+                            <option value="2">NG</option>
+                        </select>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【伝票番号】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">伝票登録</td>
+                    <td class="l_data">
+                        <select name="RegistJournal" id="RegistJournal">
+                            <option value="0">－　　　　</option>
+                            <option value="1">登録済み</option>
+                            <option value="2">未登録</option>
+                        </select>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">伝票番号</td>
+                    <td class="l_data">
+                        <select name="JournalRegistClass" id="JournalRegistClass">
+                            <option value="0">－　　　　</option>
+                            <option value="1">必要</option>
+                            <option value="2">不要</option>
+                        </select>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">伝票番号登録日</td>
+                    <td class="l_data"><input type="text" name="Deli_JournalIncDateF" id="Deli_JournalIncDateF" />～<input type="text" name="Deli_JournalIncDateT" id="Deli_JournalIncDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【請求書発行】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">請求日</td>
+                    <td class="l_data"><input type="text" name="ClaimDateF" id="ClaimDateF" />～<input type="text" name="ClaimDateT" id="ClaimDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">支払期限</td>
+                    <td class="l_data"><input type="text" name="LimitDateF" id="LimitDateF" />～<input type="text" name="LimitDateT" id="LimitDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">請求金額</td>
+                    <td class="l_data"><input type="text" name="ClaimAmountF" id="ClaimAmountF" />～<input type="text" name="ClaimAmountT" id="ClaimAmountT" /></td>
+                    <td class="l_data"></td>
+                </tr>
+                 <tr>
+                    <td class="r_label">同梱/別送</td>
+                    <td class="l_data">
+                        <input type="checkbox" name="ClaimSendingClass1" />同梱請求書　　　<input type="checkbox" name="ClaimSendingClass2" />別送請求書　　　
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【着荷・立替】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">着荷確認</td>
+                    <td class="l_data">
+                        <select name="ArrivalConfirm" id="ArrivalConfirm">
+                            <option value="0">－　　　　</option>
+                            <option value="1">確認済み</option>
+                            <option value="2">未確認</option>
+                        </select>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">着荷確認日</td>
+                    <td class="l_data"><input type="text" name="DeliConfirmArrivalDateF" id="DeliConfirmArrivalDateF" />～<input type="text" name="DeliConfirmArrivalDateT" id="DeliConfirmArrivalDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">立替実行（立替確定）</td>
+                    <td class="l_data">
+                        <select name="ExecCharge" id="ExecCharge">
+                            <option value="0">－　　　　</option>
+                            <option value="1">立替済み</option>
+                            <option value="2">未立替え</option>
+                        </select>
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">立替予定日</td>
+                    <td class="l_data"><input type="text" name="ExecScheduleDateF" id="ExecScheduleDateF" />～<input type="text" name="ExecScheduleDateT" id="ExecScheduleDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">臨時立替日</td>
+                    <td class="l_data"><input type="text" name="SpecialPayingDateF" id="SpecialPayingDateF" />～<input type="text" name="SpecialPayingDateT" id=SpecialPayingDateT /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">立替精算戻し日</td>
+                    <td class="l_data"><input type="text" name="PayBackIndicationDateF" id="PayBackIndicationDateF" />～<input type="text" name="PayBackIndicationDateT" id="PayBackIndicationDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" class="l_label">【入金】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">入金確認日</td>
+                    <td class="l_data"><input type="text" name="ReceiptConfirmF" id="ReceiptConfirmF" />～<input type="text" name="ReceiptConfirmT" id="ReceiptConfirmT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">入金日</td>
+                    <td class="l_data"><input type="text" name="ReceiptF" id="ReceiptF" />～<input type="text" name="ReceiptT" id="ReceiptT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">入金方法</td>
+                    <td class="l_data">
+                        <input type="checkbox" name="rcpt1" />コンビニ　　　<input type="checkbox" name="rcpt2" />郵便局　　　<input type="checkbox" name="rcpt3" />銀行　　　
+                    </td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">入金状態</td>
+                    <td class="l_data"><input type="checkbox" name="IsWaitForReceipt" id="IsWaitForReceipt" />入金待ちである　　　<input type="checkbox" name="IsWaitForReceipt2" id="IsWaitForReceipt2" />入金待ちでない　　　</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr style="display: none">
+                    <td class="r_label">一部入金</td>
+                    <td class="l_data"><input type="checkbox" name="ichibunyukin" id="ichibunyukin" />一部入金有　　　</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【キャンセル】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">キャンセル確認日</td>
+                    <td class="l_data"><input type="text" name="CancelConfirmDateF" id="CancelConfirmDateF" />～<input type="text" name="CancelConfirmDateT" id="CancelConfirmDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">キャンセル状態</td>
+                    <td class="l_data"><input type="radio" name="IsNotCancel" id="IsNotCancel"  onclick="cancelSet(0)" value="0" checked/>指定なし　　　
+                        <input type="radio" name="IsNotCancel" id="IsNotCancel"  value="1" onclick="cancelSet(1)" />キャンセルされていない　　　
+                        <input type="radio" name="IsNotCancel" id="IsNotCancel" value="2" onclick="cancelSet(2)" />キャンセルされている</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">キャンセル区分</td>
+                    <td class="l_data"><input type="radio" name="classifyCancel" id="classifyCancel1"  value="0" disabled=disabled checked/>指定なし　　　
+                        <input type="radio" name="classifyCancel" id="classifyCancel2"  value="1" disabled=disabled/>通常　　　
+                        <input type="radio" name="classifyCancel" id="classifyCancel3" value="2" disabled=disabled/>返却</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">キャンセル理由</td>
+                    <td class="l_data"><?php echo $this->cancelreasonTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【その他】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">備考</td>
+                    <td class="l_data"><input type="text" size="50" name="Oem_Note" id="Oem_Note" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者用：任意番号</td>
+                    <td class="l_data"><input type="text" size="50" name="Ent_OrderId" id="Ent_OrderId" /></td>
+                    <td class="l_data">前方一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">OEM任意番号</td>
+                    <td class="l_data"><input type="text" size="50" name="Oem_OrderId" id="Oem_OrderId" /></td>
+                    <td class="l_data">前方一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者用：任意欄</td>
+                    <td class="l_data"><input type="text" size="50" name="Ent_Note" id="Ent_Note" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">補償対象外</td>
+                    <td class="l_data"><input type="checkbox" size="50" name="OutOfAmends" id="OutOfAmends" />補償対象外である</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">とりまとめ</td>
+                    <td class="l_data"><input type="radio" name="CombinedClaimTargetStatus" id="CombinedClaimTargetStatus"  value="0"  checked/>指定なし　　　
+                        <input type="radio" name="CombinedClaimTargetStatus" id="CombinedClaimTargetStatus"  value="1" />とりまとめデータのみ</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">とりまとめ代表</td>
+                    <td class="l_data"><input type="radio" name="CombinedClaimParentFlg" id="CombinedClaimParentFlg"  value="0"  checked/>指定なし　　　
+                        <input type="radio" name="CombinedClaimParentFlg" id="CombinedClaimParentFlg"  value="1" />代表のみ</td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">代表注文ID</td>
+                    <td class="l_data"><input type="text" name="pOrderId" id="pOrderId" /></td>
+                    <td class="l_data">後方一致検索（3桁以上の入力が必要）</td>
+                </tr>
+            </table>
+            <div class="btncontents"><input type="submit" class="default_btn" value="検　索" /></div>
+        </form>
+        <?php echo $this->render('oemadmin/page_footer.php'); ?>
+    </div>
+    <!-- end contents -->
+</body>
+<script type="text/javascript">
+//キャンセル区分設定
+    function cancelSet(check) {
+
+        if (check == 0 || check == 1) {
+            document.getElementById('classifyCancel1').disabled = true;
+            document.getElementById('classifyCancel2').disabled = true;
+            document.getElementById('classifyCancel3').disabled = true;
+            document.getElementById('classifyCancel1').checked = true;
+        } else {
+            document.getElementById('classifyCancel1').disabled = false;
+            document.getElementById('classifyCancel2').disabled = false;
+            document.getElementById('classifyCancel3').disabled = false;
+
+        }
+    }
+</script>
+</html>

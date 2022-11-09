@@ -1,0 +1,730 @@
+<?php
+
+use oemmember\Application;
+use Zend\Json\Json;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+
+$viewHelper = new CoralViewHelperValueFormat();
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+$hide_default = (Application::getInstance()->getCurrentEnterpriseData()['JournalRegistDispClass'] == 1) && ($this->credit_filter == 0);
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$hasList = $this->list_count > 0 ? true : false;
+$commandBar = new CoralViewCommandBar(
+    // title
+    (
+        $hasList ?
+            '商品発送の終わった取引の配送伝票番号を入力してください' :
+            '伝票入力可能なデータがありません'
+    ),
+    // buttons
+    array(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'linkToCsv',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/registCsv',
+                CoralViewCommandBarButton::OPTION_TEXT => '一括登録',
+                CoralViewCommandBarButton::OPTION_TITLE => 'CSVファイルで一括登録する場合はこちらから'
+            )
+        )
+    )
+);
+if( $hasList ) {
+    $commandBar->addButton(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'download',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/download',
+                CoralViewCommandBarButton::OPTION_TEXT => '一覧をダウンロード',
+                CoralViewCommandBarButton::OPTION_TITLE => 'この一覧をCSV形式でダウンロードします。一括登録用の雛形として利用できます'
+            )
+        )
+    )->addButton(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'toggleNgItem',
+                CoralViewCommandBarButton::OPTION_HREF => '#',
+                CoralViewCommandBarButton::OPTION_TEXT => '入力可能項目のみ表示',
+                CoralViewCommandBarButton::OPTION_TITLE => '与信中や結果NGの項目をリストから隠します'
+            )
+        )
+    );
+}
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+<script>
+// NG項目トグルボタン
+if( $("toggleNgItem") ) {
+    var action = function(evt) {
+        var CLASS_NAME = "showNgItem";
+        var classNames = new Element.ClassNames( this );
+        var cmd = "show";
+        if( classNames.include( CLASS_NAME ) ) {
+            classNames.remove( CLASS_NAME );
+            this.innerHTML = "入力可能項目のみ表示";
+            this.title = "与信中や結果NGの項目をリストから隠します";
+            this.style.backgroundImage = "";
+        } else {
+            classNames.add( CLASS_NAME );
+            this.innerHTML = "すべて表示";
+            this.title = "与信中や結果NGの項目もリストに表示します";
+            this.style.backgroundImage = "url('../../images/icon_show_item_s.gif')";
+            cmd = "hide";
+        }
+        document.getElementsByClassName("readonly", $("orderFormTable")).each( function(row) {
+            if( ! /tr/i.test( row.tagName ) ) throw $continue;
+            Element[cmd]( row );
+        } );
+    }.bindAsEventListener( $("toggleNgItem") );
+
+    Event.observe( Object.extend( $("toggleNgItem"), { onclick : function() { return false; } } ), "click", action );
+    <?php if($hide_default) { ?>
+    action();
+    <?php } ?>
+}
+</script>
+<center>
+    <form id="filter_form" action="shipping/regist" method="post">
+    <span style="float: left; margin: 1px 4px; padding: 1px 0px;">
+        <select name="credit_filter">
+        <?php
+            foreach( $this->credit_filters as $filter ) {
+                if( $filter['KeyCode'] == $this->credit_filter ) {
+                    echo "<option value=\"" . $filter['KeyCode'] . "\" selected=\"selected\">" . $filter['KeyContent'] . "</option>";
+                } else {
+                    echo "<option value=\"" . $filter['KeyCode'] . "\">" . $filter['KeyContent'] . "</option>";
+                }
+            }
+        ?>
+        </select>
+        <button type="submit" id="display_filter_status">　表示　</button>
+    </span>
+    </form>
+<span style="float: left; margin: 1px 4px; padding: 1px 0px;">
+        <select id="master_deli_methods" class="deli_method">
+            <option value="-1">-- 配送会社一括設定 --</option>
+        <?php
+            foreach( $this->deliv_masters as $master) {
+                if( $master['DeliMethodId'] == $row['Deli_DeliveryMethod']) {
+                    echo "<option value=\"{$master['DeliMethodId']}\" label=\"{$master['DeliMethodName']}\" selected=\"selected\">{$master['DeliMethodName']}</option>";
+                } else {
+                    echo "<option value=\"{$master['DeliMethodId']}\" label=\"{$master['DeliMethodName']}\">{$master['DeliMethodName']}</option>";
+                }
+            }
+        ?>
+        </select>
+        <button type="button" id="apply_master_deli_selection" disabled="disabled" title="左のリストから選択してこのボタンをクリックすると、すべての伝票の配送会社を一括設定できます">一括設定実行</button>
+    </span>
+    <div class="summary">
+        リスト件数：<?php echo $viewHelper->ValueFormat( $this->list_count, 'number', '#,##0' ); ?>件
+        （伝票入力可能：<?php echo $viewHelper->ValueFormat( $this->order_count, 'number', '#,##0' ); ?>件、
+        与信中：<?php echo $viewHelper->ValueFormat( $this->progress_count, 'number', '#,##0' ); ?>件、
+        与信NG：<?php echo $viewHelper->ValueFormat( $this->ng_count, 'number', '#,##0' ); ?>）
+    </div>
+</center>
+    <?php
+$viewHelper->setReplaceEmpty(true);
+if( $this->list_count > 0 ) {
+?>
+<center>
+    <div id="loadingMessage" style="display:none"><span class="message">now loading...</span><img src="../../images/loading_mini_01.gif" /></div>
+    <form id="regist_form" action="shipping/confirm" method="post">
+        <script>Element.hide( $("regist_form") ); Element.show( $("loadingMessage") );</script>
+        <input type="hidden" name="regist_data" id="regist_data"/>
+        <table id="orderFormTable" class="regist_table" border="1" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <td style="border-style: hidden; text-align: right" colspan="9">
+                    <input style="font-size: 10px;" type="button" <?php if( $this->credit_filter != 2 ) { ; } ?> onclick="allChecked(true,this.form);" value="NG非表示&#13;&#10;全選択"><br />
+                    <input style="font-size: 10px;" type="button" <?php if( $this->credit_filter != 2 ) { ; } ?> onclick="allChecked(false,this.form);" value="NG非表示&#13;&#10;全解除"></td>
+                </tr>
+                <tr>
+                    <th>配送方法／伝票番号</th>
+                    <th>注文日／注文ID</th>
+                    <th>購入者</th>
+                    <th>電話番号</th>
+                    <th>請求総額</th>
+                    <th>配送先住所</th>
+                    <th>任意注文番号</th>
+                    <th>NG非表示</th>
+                    <th width="90">キャンセル</th>
+                </tr>
+            </thead>
+            <tbody>
+<?php
+    $i = 0;
+    foreach( $this->order_list as $row ) {
+        $additonal_class = $row['CanInput'] ? '' : (
+            $row['DataStatus'] < 31 ? ' readonly progress' : ' readonly' );
+        $additional_style = strlen($additonal_class) ? ' style="display:none"' : '';
+?>
+
+                <tr class="data_row disabled_row<?php echo $additonal_class; ?>"<?php if($hide_default) echo $additional_style; ?>>
+                    <td class="data">
+<?php if( $row['CanInput'] ) { ?>
+                        <div>
+                            <span>配送会社</span>
+                            <?php if($row['DataStatus'] == 31) {?>
+                            <select id="deli_method<?php echo $i; ?>" class="deli_method"<?php if( isset($row['Deli_DeliveryMethod']) ) { echo " value=\"{$row['Deli_DeliveryMethod']}\""; }; ?>>
+                                <?php } else { ?>
+                                <select id="deli_method" class="deli_method"<?php if( isset($row['Deli_DeliveryMethod']) ) { echo " value=\"{$row['Deli_DeliveryMethod']}\""; }; ?>>
+                                <?php } ?>
+                                <option value="-1" label="-">-</option>
+                                <?php
+                                    foreach( $this->deliv_masters as $master) {
+                                        if( $master['DeliMethodId'] == $row['Deli_DeliveryMethod']) {
+                                            echo "<option value=\"{$master['DeliMethodId']}\" label=\"{$master['DeliMethodName']}\" selected=\"selected\">{$master['DeliMethodName']}</option>";
+                                        } else {
+                                            echo "<option value=\"{$master['DeliMethodId']}\" label=\"{$master['DeliMethodName']}\">{$master['DeliMethodName']}</option>";
+                                        }
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                        <div>
+                            <span>配送伝票番号</span>
+                            <?php if($row['DataStatus'] == 31) {?>
+                            <input id="journal_number<?php echo $i; ?>" type="text" size="15" maxlength="255" pattern="^[0-9A-Za-z]+$" class="journal_number" value="<?php echo $viewHelper->ValueFormat( $row['Deli_JournalNumber'], 'string', null, false ); ?>" />
+                            <?php $i++;
+                            } else { ?>
+                            <input id="journal_number" type="text" size="15" maxlength="255" pattern="^[0-9A-Za-z]+$" class="journal_number" value="<?php echo $viewHelper->ValueFormat( $row['Deli_JournalNumber'], 'string', null, false ); ?>" />
+                            <?php } ?>
+                            <input type="hidden" class="order_seq" value="<?php echo $viewHelper->ValueFormat( $row['OrderSeq'], 'string', null, false ); ?>" />
+                        </div>
+<?php } else { ?>
+                        <span><?php echo $row['DataStatus'] < 31 ? '与信中' : '与信NG'; ?></span>
+<?php } ?>
+                    </td>
+                    <td>
+                        <div class="order_date"><?php echo $viewHelper->ValueFormat( $row['ReceiptOrderDate'], 'date' );?></div>
+                        <div class="order_id">
+                            <a href="search/detail/id/<?php echo $row['OrderId']; ?>"><?php echo $viewHelper->ValueFormat( $row['OrderId'] ); ?></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="customer_name"><?php echo $viewHelper->ValueFormat( $row['NameKj'] ); ?></div>
+                    </td>
+                    <td>
+                        <div class="customer_phone"><?php echo $viewHelper->ValueFormat( $row['Phone'] ); ?></div>
+                    </td>
+                    <td>
+                        <div class="use_amount">\ <?php echo $viewHelper->ValueFormat( $row['UseAmount'], 'number', '#,##0' ); ?></div>
+                    </td>
+                    <td>
+                        <div class="deli_addr"><?php echo $viewHelper->ValueFormat( $row['UnitingAddress'] ); ?></div>
+                    </td>
+                    <td>
+                        <div class="ent_order_id"><?php echo $viewHelper->ValueFormat( $row['Ent_OrderId'] ); ?></div>
+                    </td>
+                    <td>
+                    <?php if( $row['DataStatus'] > 31 ) { ?>
+                        <input style="width:60px;"  type="checkbox" name="hide_ng[]" value="<?php echo $row['OrderSeq'] ?>" <?php if (!is_null($this->creditNgHiddenFlgList) && in_array($row['OrderSeq'], $this->creditNgHiddenFlgList)) { echo " checked='checked'"; } ?>>
+                    <?php } ?>
+                    </td>
+                    <td>
+                    <?php if( $row['Incre_Status'] == -1 ) { ?>
+                        <span>不可</span>
+                    <?php } else { ?>
+                        <a id="cnl_<?php echo $row['OrderSeq'] ?>" class="command do_cancel" href="#" onclick="return false" title="この注文をキャンセルします">キャンセル申請</a>
+                        <input type="hidden" id="row_<?php echo $row['OrderSeq'] ?>" class="item_row" title="<?php echo $row['OrderId']; ?>">
+                        <input type="hidden" id="combined_<?php echo $row['OrderSeq'] ?>" value="<?php echo $row['CombinedClaimTargetStatus']; ?>">
+                    <?php  } ?>
+                    </td>
+                    </tr>
+<?php
+        // order_listループ終了
+
+    }
+?>
+
+            </tbody>
+        </table>
+<?php if( $hasList ) { ?>
+        <p>
+            <center>
+                <button type="submit" disabled="disabled">この内容で登録</button>
+            </center>
+        </p>
+<?php } ?>
+    </form>
+
+</center>
+<div id="cancel_dialog" style="display:none">
+    <div>
+        <div id="cancel_reason_title" align="left" style="height: 40px; vertical-align:top;">
+        </div>
+        <div align="left" style="margin: 10px 0px 10px 0px;">
+        <select id="cancel_reason_list">
+        </select>
+        </div>
+        <div align="left" style="height: 110px; vertical-align:top;">
+        <textarea rows="2" cols="1" id="cancel_reason"></textarea>
+        </div>
+        <div id="combined_order_cancel" align="left" style="color: red;">
+        </div>
+        <div class="dlg_buttons" align="center">
+            <button id="dialog_ok">OK</button>
+            <button id="dialog_cancel">キャンセル</button>
+        </div>
+    </div>
+</div>
+<script>
+// 配送会社IDと検証ルールのマスタマップ
+var masterValidators = <?php
+$masterValidators = array();
+$masterValidators[-1] = '^.*$';
+foreach( $this->deliv_masters as $master) {
+    $masterValidators[ $master['DeliMethodId'] ] = $master['ValidateRegex'];
+}
+echo Json::encode( $masterValidators );
+?>;
+// 伝票番号登録不要の配送会社取得 (2015/04/03)
+var enableEmpty = new Array();
+<?php
+foreach( $this->deliv_masters as $master) {
+    echo 'enableEmpty[' . $master['DeliMethodId'] . ']=';
+    if( $master['JournalRegistClass'] == 0 ) {
+        echo 'true; ';
+    }
+    else {
+        echo 'false;';
+    }
+}
+?>
+
+// 入力値検証オブジェクト
+var validators = {
+    OrderSeq : function(v) {
+        return ! isNaN( v );
+    },
+    Deli_DeliveryMethod : function(v) {
+        return ! isNaN( v );
+    },
+    Deli_JournalNumber : function(v) {
+        return /^.+$/.test( v );
+    }
+};
+
+// フォーム登録前イベント
+Event.observe( $("regist_form"), "submit", function(evt) {
+
+    var c = <?php echo $i?>;
+    var m = "";
+    var n = "";
+    var empty_id = [];
+
+    for (var j=0; j<c; j++){
+        m = document.getElementById("deli_method"+j);
+        n = document.getElementById("journal_number"+j);
+        // 伝票番号登録不要の配送会社は伝票番号が空でも許可する (2015/04/03)
+        if(n.value == "" && m.value != -1 && enableEmpty[m.value] != true) {
+            applyDeliSelection("deli_method"+j,"journal_number"+j);
+        }
+    }
+
+    var succese = 0;
+    var _self = this;
+
+    WindowCover.show();
+    Event.stop( evt );
+
+    setTimeout( function() {
+        try {
+            var valid_errors = [];
+
+            var propMaps = [
+                { cn : "order_seq", key : "OrderSeq", prop : "value" },
+                { cn : "deli_method", key : "Deli_DeliveryMethod", prop : "value", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "journal_number", key : "Deli_JournalNumber", prop : "value", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "order_date", key : "ReceiptOrderDate", prop : "innerHTML", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "order_id", key : "OrderId", prop : "innerHTML", filter : function(s) { return s.stripTags(); } },
+                { cn : "customer_name", key : "NameKj", prop : "innerHTML", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "customer_phone", key : "Phone", prop : "innerHTML", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "use_amount", key : "UseAmount", prop : "innerHTML", filter : function(s) { return s.replace(/^(\s*\\\s)*([^\s]+)/, "$2"); } },
+                { cn : "deli_addr", key : "UnitingAddress", prop : "innerHTML", filter : function(s) { return s.unescapeHTML(); } },
+                { cn : "ent_order_id", key : "Ent_OrderId", prop : "innerHTML", filter : function(s) { return s.unescapeHTML(); } }
+            ];
+
+            var items = document.getElementsByClassName( "data_row", $("orderFormTable") ).map( function(tr) {
+                var classNames = new Element.classNames( tr );
+                if( classNames.include( "readonly" ) || classNames.include( "disabled_row" ) ) {
+                    throw $continue;
+                }
+
+                var item = {};
+                $A( tr.getElementsByTagName("input") ).concat(
+                    $A( tr.getElementsByTagName("select") ),
+                    $A( tr.getElementsByTagName("div") )
+                ).each( function(el) {
+                    var cn = new Element.ClassNames( el );
+
+                    for(var i = 0, l = propMaps.length; i < l; i++) {
+                        var map = propMaps[i];
+                        if( cn.include( map.cn ) ) {
+                            item[ map.key ] = ( map.filter || Prototype.K )( el[ map.prop ] ).trim();
+                            break;
+                        }
+                    }
+                } );
+
+                var valid;
+                var empty = 0;
+
+//                 valid = [ "OrderSeq", "Deli_DeliveryMethod", "Deli_JournalNumber" ].all( function(key) {
+//                     if(key == "Deli_JournalNumber" && item[key] !== "") {
+//                         empty = 0;
+//                     var result = key == "Deli_JournalNumber" ?
+//                         new RegExp( masterValidators[ item["Deli_DeliveryMethod"] ] || "^.+$" ).test( item[key] ) :
+//                         validators[key]( item[key] );
+//                     } else {
+//                         result = true;
+//                         empty = 1;
+//                     }
+//                     return result;
+
+//                 } );
+                valid = [ "OrderSeq", "Deli_DeliveryMethod", "Deli_JournalNumber" ].all( function(key) {
+                    // 伝票番号登録不要の配送会社は、伝票番号の入力の有無を問わずOKとする(20151119)
+                    if(key == "Deli_JournalNumber" && enableEmpty[ item["Deli_DeliveryMethod"] ] ) {
+                        empty = 0;
+                        result = true;
+                    } else if(key == "Deli_JournalNumber" && !enableEmpty[ item["Deli_DeliveryMethod"] ] ) {
+                        if( item[key] == "" ) {
+                            result = false;
+                        }
+                        else {
+                            empty = 0;
+                        var result = key == "Deli_JournalNumber" ?
+                            new RegExp( masterValidators[ item["Deli_DeliveryMethod"] ] || "^.+$" ).test( item[key] ) :
+                            validators[key]( item[key] );
+                        }
+                    } else {
+                        result = true;
+                        empty = 1;
+                    }
+                    return result;
+
+                } );
+                if( ! valid ) {
+                    valid_errors.push( item );
+                    classNames.add( "error" );
+                } else if(valid == true && empty == 1){
+                    classNames.remove( "error" );
+                    classNames.add( "disabled_row" );
+                }  else {
+                    classNames.remove( "error" );
+                    succese++;
+                }
+                return item;
+            }.bind( _self ) );
+
+            if( valid_errors.length > 0 ) { // メッセージ追加 (2015/04/03)
+                throw [
+                    "ピンク色の行の伝票番号に不備があります。以下の点をもう一度確認してください。",
+                    "",
+                    "●伝票番号の桁数が正しいか",
+                    "　→ 配送会社で決められた桁数で登録する必要があります。",
+                    "",
+                    "●ハイフンなどの区切り文字を入力していないか",
+                    "　→ 伝票番号は区切らず連続で入力してください。",
+                    "",
+                    "●伝票番号入力が必要な配送会社で伝票番号を入力しているか",
+                    "　→ 伝票番号入力が必要な配送会社は伝票番号を入力してください。"
+                ].join("\n");
+            }
+
+
+            var str = Form.serialize('regist_form');
+            var isExistsCheck = (str.indexOf('hide_ng') >= 0) ? true : false;
+
+            if(( items.length == 0 || succese == 0 ) && !isExistsCheck) {
+                throw "更新対象がありません";
+            }
+
+            $("regist_data").value = items.toJSONString();
+
+            _self.submit();
+        } catch(e) {
+            WindowCover.hide();
+            alert( e );
+        }
+    }, 0 );
+
+    return false;
+}.bindAsEventListener( $("regist_form") ), false );
+
+Event.observe( window, "load", function() {
+    document.getElementsByClassName("message", $("loadingMessage")).innerHTML = "layouting...";
+
+    var rows = $A( $("orderFormTable").rows ).findAll( function(tr) {
+        return new Element.ClassNames( tr ).include( "data_row" );
+    } );
+    var index = 0;
+
+    // select要素を拡張するプロトタイプ
+    var selObj = {
+        // 状態を変更する
+        changeJournalEnabled : function() {
+            var txt = this.textElement;
+            // 有効判断
+            var selected = this.selectedIndex > 0;
+            // フィールドのdisabled制御
+            txt.disabled = ! selected;
+
+            // 行のCSSクラス操作
+            var cn = new Element.ClassNames( this.getParentRow() );
+            cn[ selected ? "remove" : "add" ]( "disabled_row" );
+
+            // フィールドのCSSクラス操作
+            new Element.ClassNames( txt )[ selected ? "remove" : "add" ]("disabled");
+        },
+        // 親のTR要素を取得する
+        getParentRow : function() {
+            var result = this;
+            while( ! /^tr$/i.test( result.tagName ) ) result = result.parentNode;
+            return result;
+        }
+    };
+    setTimeout( function() {
+        var tr = rows[index];
+
+        if( tr && ! ( new Element.ClassNames( tr ).include( "readonly" ) ) ) {
+            // 配送会社リストの選択時のイベントをアタッチ
+            var sel = $A( tr.getElementsByTagName("select") ).find( function(sel) {
+                return new Element.ClassNames( sel ).include( "deli_method" );
+            } );
+            var txt = sel.textElement = $A(tr.getElementsByTagName("input")).find( function(ip) {
+                return new Element.ClassNames( ip ).include( "journal_number" );
+            } );
+
+            // メソッドを拡張
+            Object.extend( sel, selObj );
+
+            // イベントをアタッチ
+            Event.observe( sel, "change", function(evt) {
+                this.changeJournalEnabled();
+            }.bindAsEventListener( sel ) );
+
+            // 状態変更通知
+            sel.changeJournalEnabled();
+        }
+
+        if( ++index < rows.length ) {
+        setTimeout( arguments.callee, 0 );
+        } else {
+            bytefx.fade( $("loadingMessage"), 100, 0, 5, function() {
+                Element.hide( $("loadingMessage") );
+                bytefx.fade( $("loadingMessage"), 0, 100, 100 );
+            } );
+            Element.show( $("regist_form") );
+
+            Event.observe($("apply_master_deli_selection"), "click", applyMasterDeliSelection);
+            $("apply_master_deli_selection").disabled = false;
+        }
+    }, 0 );
+} );
+// 配送会社一括選択
+function applyMasterDeliSelection() {
+    var id = "master_deli_methods";
+    var idx = $(id).selectedIndex;
+    var value = $(id).options[idx].value;
+
+    var rows = $A( $("orderFormTable").rows ).findAll( function(tr) {
+        return new Element.ClassNames( tr ).include( "data_row" );
+    } );
+    rows.each(function(row) {
+        if( ! row || new Element.ClassNames(row).include("readonly") ) throw $continue;
+
+        var target = $A(row.getElementsByTagName("select")).find(function(el) {
+            return new Element.ClassNames(el).include("deli_method");
+        });
+
+        target.selectedIndex = idx;
+        target.changeJournalEnabled();
+    });
+}
+
+//配送番号空白チェック
+function applyDeliSelection(method,text) {
+    var id = method;
+
+    var target = document.getElementById(method);
+
+    // 伝票番号登録要の配送会社で伝票番号が空の場合配送会社のindexを保持し、textをdisableしないよう修正 (2015/05/13)
+    var txt = document.getElementById(text);
+}
+//チェックボックス全件選択
+function allChecked(check,targetForm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        if(targetForm.elements[j].type == "checkbox"){
+        targetForm.elements[j].checked = check;
+        }
+    }
+}
+//キャンセル申請
+var rowOrderSeq;
+document.getElementsByClassName("do_cancel").each( function(cmd) {
+    Event.observe( cmd, "click", function(evt) {
+        Event.stop( evt );
+        requestCancel( this );
+    }.bindAsEventListener( cmd ) );
+} );
+function getCancelDialog() {
+    if( window.cancelDlg == null ) {
+        window.cancelDlg = new base.UI.ModalDialog(
+            "cancel_dialog",
+            {
+                width: 500,
+                height: 280,
+                title: "キャンセル申請",
+                draggable : false
+            }
+        );
+    }
+    Element.show( $("cancel_dialog") );
+    return window.cancelDlg;
+};
+function requestCancel(cmd) {
+    rowOrderSeq = /^cnl_(.+)$/.exec( cmd.id )[1];
+    if( rowOrderSeq == null ) return;
+
+    var row = document.getElementById( "row_{0}".format( rowOrderSeq ) );
+    if( row == null ) return;
+
+    rowClassNames = new Element.ClassNames( row );
+    rowClassNames.add( "hover" );
+
+    var dlg = getCancelDialog();
+    // ダイアログイベントのクリア
+    dlg.options.preClose = Prototype.emptyFunction;
+
+    var title = document.getElementById( "cancel_reason_title");
+    title.innerHTML = "{0} のキャンセル理由を入力してください（空文字可）".format( row.title ), "";
+
+    // キャンセル理由リスト
+    var list = $( "cancel_reason_list" );
+
+    // キャンセル理由リストの構築
+    if (list.value == "") {
+        <?php foreach( $this->cancelList as $key => $value ) {
+            if( $key == -99 ) continue;
+            echo 'var opt = document.createElement( "option" );' . "\r\n";
+            echo 'opt.value="' . $key . "\";\r\n";
+            echo 'opt.innerHTML="' . $value . "\";\r\n";
+            echo "list.appendChild( opt );\r\n";
+        }?>
+    }
+
+    // 請求取りまとめキャンセルメッセージ
+    var combinedFlg = document.getElementById( "combined_{0}".format( rowOrderSeq ) ).value;
+    var combined = document.getElementById( "combined_order_cancel");
+    if (combinedFlg == "91" || combinedFlg == "92") {
+        combined.innerHTML = "とりまとめのすべての商品がキャンセルされます";
+    }
+    else {
+        combined.innerHTML = "";
+    }
+
+    // ダイアログイベント（preClose）の設定
+    dlg.options.preClose = function() {
+        $("cancel_reason_list").selectedIndex = 0;
+        $("cancel_reason").value = "";
+        return true;
+    }
+
+    dlg.center().open();
+}
+Event.observe( $("dialog_ok"), "click", function() {
+    var row = document.getElementById( "row_{0}".format( rowOrderSeq ) );
+    var list = $( "cancel_reason_list" );
+    var reason = $( "cancel_reason" );
+    var cancel_reason_list_value = list.value;
+    var cancel_reason = reason.value;
+    if( cancel_reason_list_value != null && cancel_reason != null ) {
+        var ajax = new Ajax.Request(
+            "{0}ajax/requestCancel".format(
+                ( document.getElementsByTagName("base")[0] || { href : "./" } ).href
+            ),
+            {
+                method : "post",
+                asynchronous : false,
+                postBody : $H( {
+                    orderSeq : rowOrderSeq,
+                    reason : cancel_reason,
+                    reason_code : cancel_reason_list_value,
+                    userid : <?php echo $this->userId; ?>
+                } ).toQueryString()
+            }
+        );
+        var result = ajax.transport.responseText.parseJSON();
+
+        if( result === false ) {
+            alert( "この注文は、他の端末からキャンセル申請されているか、または、キャンセル不可の注文です。" );
+        } else {
+            if( ! result.result ) {
+                alert( "この注文は、他の端末からキャンセル申請されているか、または、キャンセル不可の注文です。" );
+            } else {
+                if (result.combinedFlg) {
+                	alert( "取りまとめ注文を全てキャンセルしました。" );
+                }
+				Object.extend( $("filter_form"), {
+					action : "shipping/regist"
+				} ).submit();
+            }
+        }
+    }
+    rowClassNames.remove( "hover" );
+
+    getCancelDialog().close();
+}, false );
+
+Event.observe( $("dialog_cancel"), "click", function() {
+    getCancelDialog().close();
+}, false );
+Event.observe( window, "load", function() {
+	// モーダルダイアログの初期化
+	getCancelDialog().close();
+});
+</script>
+<?php
+    // order_list > 0 終了
+}
+?>
+
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>

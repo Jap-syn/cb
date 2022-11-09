@@ -1,0 +1,125 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+<!-- start contents -->
+<div id="contents">
+<h3>テスト与信結果</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <th>項目</th>
+    <th>データ</th>
+    <th>クラス</th>
+    <th>スコア</th>
+    <th>メッセージ</th>
+  </tr>
+  <tr>
+    <td class="label">氏名</td>
+    <td class="data"><?php echo $this->data["CustName"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_CustName"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_CustName"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_CustName"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">住所</td>
+    <td class="data">〒
+    <?php echo $this->data["PostalCode"]; ?>
+    <?php echo $this->data["PrefectureName"]; ?><?php echo $this->data["City"]; ?><br />
+    <?php echo $this->data["Town"]; ?><br />
+    <?php echo $this->data["Building"]; ?>
+    </td>
+    <td class="data"><?php echo $this->data["Cls_Address"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_Address"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_Address"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">郵便番号整合性</td>
+    <td class="data"></td>
+    <td class="data"><?php echo $this->data["Cls_PostalCode"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_PostalCode"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_PostalCode"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">利用額（ボーダー）</td>
+    <td class="data"><?php echo $this->data["RiyouGaku"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_RiyouGaku"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_RiyouGaku"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_RiyouGaku"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">利用額（限度額）</td>
+    <td class="data"><?php echo $this->data["RiyouGaku"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_Limit"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_Limit"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_Limit"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">商品名</td>
+    <td class="data"><?php echo $this->data["ItemName"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_ItemName"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_ItemName"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_ItemName"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">事業者ログインID</td>
+    <td class="data"><?php echo $this->data["EnterpriseLoginId"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_EnterpriseLoginId"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_EnterpriseLoginId"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_EnterpriseLoginId"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">メールアドレス</td>
+    <td class="data"><?php echo $this->data["MailAddress"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_MailAddress"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_MailAddress"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_MailAddress"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">配送先氏名</td>
+    <td class="data"><?php echo $this->data["CustNameH"]; ?></td>
+    <td class="data"><?php echo $this->data["Cls_CustNameH"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_CustNameH"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_CustNameH"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">配送先住所</td>
+    <td class="data">〒
+    <?php echo $this->data["PostalCodeH"]; ?>
+    <?php echo $this->data["PrefectureNameH"]; ?><?php echo $this->data["CityH"]; ?><br />
+    <?php echo $this->data["TownH"]; ?><br />
+    <?php echo $this->data["BuildingH"]; ?>
+    </td>
+    <td class="data"><?php echo $this->data["Cls_AddressH"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_AddressH"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_AddressH"]; ?></td>
+  </tr>
+    <td class="label">配送先郵便番号整合性</td>
+    <td class="data"></td>
+    <td class="data"><?php echo $this->data["Cls_PostalCodeH"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_PostalCodeH"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_PostalCodeH"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">住所相違</td>
+    <td class="data"></td>
+    <td class="data"><?php echo $this->data["Cls_DiffH"]; ?></td>
+    <td class="data"><?php echo $this->data["Scr_DiffH"]; ?></td>
+    <td class="data"><?php echo $this->data["Msg_DiffH"]; ?></td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center">
+      <a href="test/form">戻　る</a>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

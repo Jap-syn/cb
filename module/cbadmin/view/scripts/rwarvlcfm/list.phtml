@@ -1,0 +1,425 @@
+<?php
+use Coral\Base\BaseGeneralUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<?php
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+?>
+<script type="text/javascript">
+	function load()
+	{
+    	$A($('navisel').options).each(function(opt) {
+    		var
+    			s = opt.innerHTML.escapeHTML().replace(/[\s　]/g, ''),
+    			m = s.match(/^(.+)\((\d+)\).*$/);
+    		if(!parseInt(m[2])) Object.extend(opt.style, {
+    			color: '#999'
+    		});
+    	});
+	}
+
+	/* 配送方法変更イベント */
+	function navi()
+	{
+		var oemselected = $('oemnavisel').selectedIndex;
+		var oem = $('oemnavisel').options[oemselected].value;
+
+		var selected = $('navisel').selectedIndex;
+		var dm = $('navisel').options[selected].value;
+
+		var h = '<?php echo $this->baseUrl;?>/rwarvlcfm/list/oem/' + oem + '/dm/' + dm;
+		h += makeAddUrl();
+
+		location.href = h;
+	}
+
+	/* OEM変更イベント */
+	function oemnavi()
+	{
+		var oemselected = $('oemnavisel').selectedIndex;
+		var oem = $('oemnavisel').options[oemselected].value;
+
+		// NOTE:初期の配送方法はコントローラで決定するため、ここでの通知は行わない
+		var h = '<?php echo $this->baseUrl;?>/rwarvlcfm/list/oem/' + oem;
+		h += makeAddUrl();
+
+		location.href = h;
+	}
+
+	/* (着荷)確認イベント */
+	function caflgnavi()
+	{
+		var oemselected = $('oemnavisel').selectedIndex;
+		var oem = $('oemnavisel').options[oemselected].value;
+
+		var selected = $('navisel').selectedIndex;
+		var dm = $('navisel').options[selected].value;
+
+		var caflgselected = $('caflgnavisel').selectedIndex;
+		var caflg = $('caflgnavisel').options[caflgselected].value;
+
+		var h = '<?php echo $this->baseUrl;?>/rwarvlcfm/list/oem/' + oem + '/dm/' + dm + '/caflg/' + caflg;
+		h += makeAddUrl();
+
+		location.href = h;
+	}
+
+    /* URLへ付加する(検索)条件を生成 */
+    function makeAddUrl()
+    {
+        var retval = "";
+
+        // (自動「その他」注文のみ)
+        if ($('onlyetc').checked) {
+            retval += "/onlyetc/1";
+        }
+
+        // (伝票登録日From)
+        if ($('journal').value != "") {
+            retval += ("/journal/" + $('journal').value);
+        }
+
+        // (伝票登録日To)
+        if ($('journalT').value != "") {
+            retval += ("/journalT/" + $('journalT').value);
+        }
+
+        // (同梱請求書の印刷済確定前を除かない場合のみ)
+        if ($('exceptPrintedBilling').checked) {
+            retval += "/exceptPrintedBilling/1";
+        }
+
+        // 存在確認用フラグ
+        retval += "/existsControlFlg/0";
+
+
+        // (締めパターン)
+        var selected = $('fixPattern').selectedIndex;
+        retval += ("/fixPattern/" + $('fixPattern').options[selected].value);
+
+        // (加盟店ID)
+        if ($('entid').value != "") {
+            retval += ("/entid/" + $('entid').value);
+        }
+
+        return retval;
+    }
+
+	/*
+	 * 伝票修正解除
+	 */
+	function backdelimodefy(oseq)
+	{
+        var url = '<?php echo $this->baseUrl;?>/rwarvlcfm/backdelimodefy/seq/' + oseq;
+
+		var ajax = new Ajax.Request(
+			url,
+			{
+				method: 'get',
+				asynchronous: false
+			});
+
+		var res = eval('(' + ajax.transport.responseText + ')');
+
+		if  (res['status'] != 1) {
+			alert('伝票修正解除に失敗しました。 Err=' + res['status']);
+			return;
+		}
+
+		window.location.reload(true);
+	}
+</script>
+<style>
+td, th {
+	padding: 2px !important;
+	vertical-align: top;
+}
+a.mail {
+	float: right;
+	margin: 1px 0px 0px 2px;
+	border: none;
+}
+a.mail img {
+	border: none 0px;
+}
+#setting_form {
+	display: inline;
+}
+</style>
+</head>
+<body onLoad="javascript:load();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwarvlcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">着荷確認　　　着荷確認待ち：　<?php echo $this->cnt; ?></h3>
+	<!-- ページナビゲーション -->
+	<?php echo $this->render('cbadmin/page_navigation.php'); ?>
+	<div class="page_nav" style="border-top-width: 1px;">
+		確認日一括設定：
+		<?php echo $this->gcadTag; ?>
+		<button id="apply_gcad" type="button" style="padding-left: 16px; padding-right: 16px;">一括変更</button>
+		<button id="apply_tyakka_sel_all" type="button" style="padding-left: 16px; padding-right: 16px;">着荷全選択</button>
+        </p>
+		<form name="setting_form" method="post" action="rwarvlcfm/dcsv" id="setting_form">
+		<?php foreach($this->list as $i => $list_item) { ?>
+        <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $list_item["OrderSeq"]; ?>" />
+        <?php } ?>
+		<input type="hidden" id="btnDownload" style="margin: 0px 20px; " type="submit" value="　CSVﾀﾞｳﾝﾛｰﾄﾞ　" />
+		</form>
+	</div>
+    <form name="setting_form" method="post" action="rwarvlcfm/list" id="setting_form">
+        <div class="page_nav" style="border-top-width: 1px; font-size: 12px;">
+        	<div >
+                <label><input type="checkbox" name="onlyetc" id="onlyetc" value="1"<?php echo (isset($this->onlyetc)) ? ' checked="checked"' : ''; ?> />自動「その他」注文のみ　　　</label>
+                <label for="journalDate">
+                    伝票登録日　　　　：
+                    <input id="journal" name="journal" size="15" value="<?php if($this->limitDate != '' ) echo f_df($this->limitDate, 'Y-m-d'); ?>" />
+                </label>
+                <a href="#" id="journalDate_choose" title="日付を選択" onclick="return false;">
+                <img src="./../images/icon_date_s.gif" alt="日付を選択" />
+                </a>
+                <label for="journalDateT">
+                    　　　～　　　
+                    <input id="journalT" name="journalT" size="15" value="<?php if($this->limitDateT != '') echo f_df($this->limitDateT, 'Y-m-d'); ?>" />
+                </label>
+                <a href="#" id="journalDateT_choose" title="日付を選択" onclick="return false;">
+                    <img src="./../images/icon_date_s.gif" alt="日付を選択" />
+                </a>
+            </div>
+            <div >
+                締めパターン：<?php echo $this->fixPatternTag; ?>　　　
+                加盟店ID：<input style="text-align: left;" type="text" size="10" name="entid" id="entid" value="<?php echo f_e($this->entid); ?>" />　　　
+                <label><input type="checkbox" name="onlyprnt" id="onlyprnt" value="1"<?php echo (isset($this->onlyprnt)) ? ' checked="checked"' : ''; ?> />取りまとめ注文のみ　　　</label>
+            </div>
+            <label><input type="hidden" name="existsControlFlg" id="existsControlFlg" value="0"  />
+            <input type="checkbox" name="exceptPrintedBilling" id="exceptPrintedBilling" value="1" <?php  if($this->exceptPrintedBilling == 1 ) echo ' checked="checked"' ?> />同梱請求書の印刷済確定前を除く　　　</label>
+            <input type="submit" id="exec_filter"  style="padding-left: 22px; padding-right: 22px;" value="検　索" />
+        </div>
+    </form>
+    <form name="form" method="post" action="rwarvlcfm/up" id="filter_form">
+      <table style="clear:both; margin: 0px 0px 0px 25px;" width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data" style="padding: 8px;"><?php echo $this->oemTag; ?>　<?php echo $this->naviTag; ?>　<?php echo $this->caflgTag; ?></td>
+            <td class="r_data" style="padding: 8px;"><input style="width: 120px;" type="submit" value="着荷確認決定" /></td>
+          </tr>
+          <!--
+          <tr>
+          	<td id="hcol01" style="width: 55px;"class="c_label">注文SEQ</td>
+            <td id="hcol02" style="width: 120x;" class="c_label">伝票番号</td>
+          	<td id="hcol03" style="width: 150px;" class="c_label">配送先氏名</td>
+          	<td id="hcol04" style="width: 100px;" class="c_label">住所</td>
+          	<td id="hcol05" style="width: 200px;" class="c_label">確認</td>
+          	<td id="hcol06" style="width: 120px;" class="c_label">メモ</td>
+          	<td id="hcol07" class="c_label">確認日</td>
+          </tr>
+          -->
+        </tbody>
+      </table>
+      <div style="margin-left: 24px;">
+      <table style="clear:both; margin: 0px;" width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+          	<td class="c_label" style="width: 102px;">事業者名</td>
+          	<td class="c_label" style="width: 34px;">伝登日</td>
+          	<td class="c_label" style="width: 74px;">配送先氏名</td>
+            <td class="c_label" style="width: 128px;">伝票番号</td>
+          	<td class="c_label" style="width: 24px;">締P</td>
+          	<td class="c_label" style="width: 38px;">利用額</td>
+          	<td class="c_label" style="width: 152px;">確認</td>
+          	<td class="c_label" style="width: 92px;">メモ</td>
+          	<td class="c_label" style="width: 78px;">確認日</td>
+
+          </tr>
+        </thead>
+        <tbody>
+          <?php /*for ($i = 0 ; $i < count($this->list) ; $i++) {*/ ?>
+		  <?php foreach($this->list as $i => $list_item) { ?>
+		  <?php
+                  // 伝票修正があったか？ 非ヌル且つ[伝票番号色戻し]より後に更新があればtrueを、そうでなければfalse
+                  $isDeliModefy = (!is_null($list_item['Hrc32RegDate']) && ($list_item['Hrc32RegDate'] > $list_item['Hrc34RegDate'])) ? true : false;
+		  ?>
+          <tr class="orderstatus_<?php echo $list_item['is_receipted'] ? 'receipted' : 'noreceipt'; ?>_normal" title="<?php echo $list_item['receipted_info']; ?>">
+			<td class="l_data<?php if($list_item['Special01Flg']) echo ' sp_ent_flg'; ?>">
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" id="OrderSeq<?php echo $i; ?>" value="<?php echo $list_item["OrderSeq"]; ?>" />
+			  <?php $link_title = sprintf('事業者ID：%s%s', $list_item['EnterpriseId'], $list_item['Special01Flg'] ? '(特殊店舗)' : ''); ?>
+              <a href="enterprise/detail/eid/<?php echo f_e($list_item['EnterpriseId']); ?>" target="_blank" title="<?php echo f_e($link_title); ?>" style="line-height: 105%;">
+			    <?php echo f_e($list_item["EnterpriseNameKj"]); ?>
+			  </a>
+              <input type="hidden" name="Deli_PayChgCondition<?php echo $i; ?>" id="Deli_PayChgCondition<?php echo $i; ?>" value="<?php echo $list_item["Deli_PayChgCondition"]; ?>" />
+              <input type="hidden" name="OutOfAmends<?php echo $i; ?>" id="OutOfAmends<?php echo $i; ?>" value="<?php echo $list_item["OutOfAmends"]; ?>" />
+            </td>
+            <td class="l_data"><?php echo $list_item["Deli_JournalIncDate"]; ?></td>
+            <td class="l_data">
+			  <a target="_blank" href="rworder/detail/oseq/<?php echo $list_item["OrderSeq"]; ?>" title="注文ID：<?php echo f_e($list_item['OrderId']); ?>" style="line-height: 105%;">
+			    <?php echo $list_item["OrderId"]; ?>
+			  </a>
+			  </br><?php echo $list_item["DestNameKj"]; ?>
+			</td>
+            <td class="l_data copy_target_cell">
+				<?php if ($isDeliModefy) { ?><font color="red"><?php } ?>
+				<?php echo preg_replace('/[-]/', '', BaseGeneralUtils::convertWideToNarrow($list_item["Deli_JournalNumber"])); ?>
+				<?php if ($isDeliModefy) { ?></font><?php } ?>
+				<a class="mail" id="diff_mail_<?php echo $list_item['OrderSeq']; ?>" href="javascript:void(0)" onclick="return send_diff_mail(this)" title="事業者へ伝票番号間違いのメールを送信します">
+					<img id="diff_mail_icon_<?php echo $list_item['OrderSeq']; ?>" src="../images/slipnum_diff_01.png" />
+				</a>
+				<input <?php if (!$isDeliModefy) { echo ' style="display:none"'; } ?> style="font-size: 11px; width:60px;" type="button" value="修正解除" onclick='backdelimodefy(<?php echo $list_item["OrderSeq"]; ?>);' />
+			</td>
+            <td class="l_data"><?php echo $list_item["FixPattern"]; ?></td>
+            <td class="r_data"><?php echo f_nf($list_item["UseAmount"], '#,##0'); ?></td>
+            <td class="c_data date_list_confirm"><?php echo $list_item["confirmTag"]; ?></td>
+            <td class="c_data"><?php echo $list_item["noArrReasonTag"]; ?></td>
+            <td class="c_data date_list_container"><?php echo $list_item["cadTag"]; ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="7">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      </div>
+    </form>
+	<div style="margin: 10px 0 4px 25px; text-align:right; width: 858px"><a href="<?php echo f_e($this->confirmUrl); ?>" target="_blank">⇒ 別ウィンドウで開く</a></div>
+	<iframe style="margin: 0px 0px 10px 25px; height: 280px; width: 858px;" id="confirmpage" src="<?php echo $this->confirmUrl;  ?>">
+      iframe 対応ブラウザを使用してください。
+    </iframe>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	// カレンダーコントロール初期化
+	new base.UI.DatePicker(
+		'limitJournalDate',
+		$('journal'),
+		$('journalDate_choose')
+	).format="yyyy-MM-dd";
+
+	new base.UI.DatePicker(
+			'limitJournalDateT',
+			$('journalT'),
+			$('journalDateT_choose')
+		).format="yyyy-MM-dd";
+
+	// [一括変更]ボタン押下
+	Event.observe($("apply_gcad"), "click", function() {
+		var val = $("gcad").options[$("gcad").selectedIndex].value;
+		document.getElementsByClassName("date_list_container").each( function(container) {
+			var target = container.getElementsByTagName("select")[0];
+			if( target ) target.value = val;
+		});
+	});
+
+	// [着荷全選択]ボタン押下
+	Event.observe($("apply_tyakka_sel_all"), "click", function() {
+	    var i = 0;
+		document.getElementsByClassName("date_list_confirm").each( function(container) {
+            var objId = ("Deli_ConfirmArrivalFlg" + i + "2");// サフィックス[2]が[着荷]
+            document.getElementById(objId).checked = true;
+		    i = i + 1;
+ 		});
+ 	});
+
+	Event.observe($("filterSet"), "click", function() {
+		var limitDate = document.getElementById("journal").value;
+		var dm = (function() {
+			if(!$('navisel')) return '';
+			return $('navisel').options[$('navisel').selectedIndex].value;
+		})();
+		$('setting_form').action = build_path("rwarvlcfm/list/dm/{0}".format(dm));
+		$('setting_form').submit();
+		return false;
+
+	});
+
+	var unselect_text = function() {
+
+		try {
+			if(window.getSelection) {
+				window.getSelection().collapse(document.body, 0);
+			} else {
+				var selection = document.selection.createRange();
+				selection.setEndPoint('EndToStart', selection);
+				selection.select();
+			}
+		} catch(e) {}
+	}
+	$A(document.getElementsByClassName('copy_target_cell')).each(function(td) {
+		Event.observe(td, 'dblclick', function(evt) {
+			var txt = this.textContent || this.innerText;
+			if(new Element.ClassNames(this).include('r_data')) {
+				txt = txt.replace(/,/g, '');
+			}
+			unselect_text();
+			prompt('コピーできます', txt.trim());
+		}.bindAsEventListener(td));
+	});
+
+});
+
+function build_path(path) {
+	var path1 = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+	return [
+		path1.replace(/\/$/, ""),
+		path.replace(/^\//, "")
+	].join("/");
+}
+function send_diff_mail(link) {
+	function build_image_path(image_name) {
+		return build_path( "../images/{0}".format(image_name) );
+	}
+
+	var classNames = new Element.ClassNames(link);
+	if( !classNames.include("sent") && !classNames.include("seinding") && confirm("伝票番号間違いのメールを通知しますか？")) {
+		var id = link.id.replace(/^diff_mail_/, "");
+		var img = ( $("diff_mail_icon_{0}".format(id)) || { src : "" } );
+		img.src = build_image_path("loading_mini_01.gif");
+		classNames.add("sending");
+		new Ajax.Request(
+			build_path("rwarvlcfm/sendmail/seq/{0}/stamp/{1}".format(id, new Date().valueOf())), {
+				method : "get",
+				onComplete : function(xhr) {
+					classNames.remove("seinding");
+					try {
+						var response = xhr.responseText.parseJSON();
+					} catch(err) {
+						response = {
+							status : false,
+							msg : err
+						};
+					}
+					if(response && response.status) {
+						classNames.add("sent");
+						img.src = build_image_path("slipnum_diff_02.png");
+						link.title = "メール送信済み";
+					} else {
+						if(! response) {
+							response.msg = "unknown reason";
+						}
+						img.src = build_image_path("slipnum_diff_01.png");
+						alert("メールの送信に失敗しました。しばらくたってからやり直してください。\nmsg:{0}".format(response.msg));
+					}
+				}
+			} );
+		classNames.add("sending");
+	}
+	return false;
+}
+</script>
+</html>

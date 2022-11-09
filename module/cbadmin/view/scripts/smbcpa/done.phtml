@@ -1,0 +1,45 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper"><!-- start #wrapper -->
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpa/page_menu.php'); ?>
+
+<!-- start #contents -->
+<div id="contents">
+  <h3 class="contents_title">SMBCバーチャル口座登録完了</h3>
+  <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+      <tr>
+        <td class="r_label">OEM先</td>
+        <td class="l_data"><?php echo f_e(sprintf('%d：%s', $this->data['OemId'], $this->data['OemNameKj'])); ?></td>
+      </tr>
+      <tr>
+        <td class="r_label">名称</td>
+        <td class="l_data"><?php echo f_e($this->data['DisplayName']); ?></td>
+      </tr>
+      <tr>
+        <td class="r_label">銀行コード／銀行名</td>
+        <td class="l_data"><?php echo f_e(sprintf('%s／%s', $this->data['BankCode'], $this->data['BankName'])); ?></td>
+      </tr>
+      <tr>
+        <td class="r_label">有効・無効</td>
+        <td class="l_data"><?php echo $this->data['ValidFlg'] ? '有効' : '無効'; ?></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="submit-area">
+    <a class="action" href="smbcpa/detail/oid/<?php echo f_e($this->oid); ?>">　SMBCバーチャル口座登録内容詳細へ戻る　</a>
+  </div>
+
+</div><!-- end #contents -->
+
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div><!-- end #wrapper -->
+</body>
+</html>

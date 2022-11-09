@@ -1,0 +1,84 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	'一括注文修正用のCSVファイルをアップロードします',
+	// buttons
+	array(
+        new CoralViewCommandBarButton(
+            array(
+                    CoralViewCommandBarButton::OPTION_ID => 'toggleNgItem',
+                    CoralViewCommandBarButton::OPTION_HREF => 'order/changeeditCsv/tid/CKA01001_2/tclass/2/eid/' . $this->userInfo->EnterpriseId,
+                    CoralViewCommandBarButton::OPTION_TEXT => '入力CSV設定',
+                    CoralViewCommandBarButton::OPTION_TITLE => '入力CSVの設定を変更する場合にはここをクリックしてください'
+            )
+        )
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+	<center>
+		<form id="csv_form" method="post" action="order/confirmeditCsv" enctype="multipart/form-data">
+
+			<table class="order_items" id="csv_form_table" border="yes" cellpadding="0" cellspacing="0">
+				<thead>
+					<tr>
+						<th>CSVファイルの登録(修正用)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="file_item">
+							<input id="csv_file" name="<?php echo $this->field_name; ?>" type="file" size="60" />
+						</td>
+					</tr>
+					<tr>
+						<td class="submit_item">
+							<button id="csv_submit" type="submit">登録実行</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+		</form>
+	</center>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+
+</html>
+

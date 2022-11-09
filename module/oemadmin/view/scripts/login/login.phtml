@@ -1,0 +1,51 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+</script>
+
+    <div id="logincontents">
+        <div id="frame">
+            <div>
+				<div id="header_logo">
+                    <img src="resource/image/type/logo-l" alt="<?php echo f_e($this->oemInfo['ServiceName']); ?>" style="height: 25px" />
+				</div>
+                <div id="loginheadertitle">オペレーター認証</div>
+            </div>
+            <form id="login_form" class="login_form" action="login/auth" method="post">
+                <div class="title">オペレーターＩＤ：</div>
+                <input id="op_loginid" type="text" name="op_loginid" class="login_param" value="" />
+                <div class="title">パスワード：</div>
+                <input id="op_passwd" type="password" name="op_passwd" class="login_param" value="" />
+                <div id="loginbutton">
+                    <input type="submit" name="loginbtn" value="ログイン" />
+                </div>
+            </form>
+        </div>
+        <div id="loginfooter"><?php echo $this->oemInfo['Copyright']; ?></div>
+    </div>
+    <div id="system_messages">
+    <?php if (isset($this->systemMessages)){ ?>
+        <?php foreach( array_reverse( $this->systemMessages ) as $message ) { ?>
+	        <div class="system_message">
+	            <script>alert('<?php echo $message ?>')</script>
+	        </div>
+        <?php } ?>
+    <?php } ?>
+    <script>
+        Event.observe(window, "load", function() {
+            document.getElementsByClassName("login_param").each(function(field) {
+                Event.observe(field, "focus", function(evt) {
+                    new Element.ClassNames(this).add("login_focused_param");
+                }.bindAsEventListener(field));
+                Event.observe(field, "blur", function(evt) {
+                    new Element.ClassNames(this).remove("login_focused_param");
+                }.bindAsEventListener(field));
+            });
+            ($("op_loginid") || {focus: Prototype.K}).focus();
+        });
+    </script>
+</body>
+</html>

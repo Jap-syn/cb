@@ -1,0 +1,29 @@
+a.do_cancel:link,
+a.do_cancel:hover,
+a.do_cancel:active,
+a.do_cancel:visited {
+	background-color: lightgrey;
+	color: black;
+	border: solid 1px dimgray;
+	font-size: 8pt;
+}
+
+a.do_cancel:hover {
+	color: blue;
+	background-color: aliceblue;
+}
+
+input,
+textarea,
+select {
+    font-size: 10pt;
+}
+
+input {
+    width: 150px;
+}
+
+textarea {
+    width: 250px;
+    height: 60px;
+}

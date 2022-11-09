@@ -1,0 +1,117 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/paying/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替確認－事業者リスト</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1"></div><div id="cmd1"></div>
+    </div>
+    -->
+    <form>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <?php
+            for ($fix = 0; $fix < 3 ; $fix++)
+            {
+          ?>
+          <tr>
+            <td style="font-size: 16px; font-weight: bold; " class="l_data" colspan="6">【立替締めパターン：<?php echo $this->caption[$fix]; ?>　／　立替締め日：<?php if ($this->list[$fix][0]["FixedDate"] == "") { echo "立替なし"; } else { echo $this->list[$fix][0]["FixedDate"]; } ?>】</td>
+          </tr>
+          <?php
+              // count関数対策
+              $listCount = 0;
+              if (!empty($this->list[$fix])) {
+                  $listCount = count($this->list[$fix]);
+              }
+            	for ($i = 0 ; $i < $listCount ; $i++)
+            	{
+          ?>
+          <tr>
+            <td class="r_label">事業者名</td>
+            <td class="l_data" style="font-size: 12px; font-weight: bold;">
+              <a href="paying/trnlist/pcseq/<?php echo $this->list[$fix][$i]["Seq"]; ?>">
+                <?php echo $this->list[$fix][$i]["EnterpriseNameKj"]; ?>
+              </a>
+            </td>
+            <td class="r_label">前月持越</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["CarryOver"], 'number', '#,##0'); ?></td>
+            <td class="r_label">金融機関名</td>
+            <td class="l_data"><?php echo $this->list[$fix][$i]["FfName"]; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">支払額</td>
+            <td class="r_data" style="font-size: 18px; font-weight: bold;"><?php echo valueFormat($this->list[$fix][$i]["DecisionPayment"], 'number', '#,##0'); ?></td>
+            <td class="r_label">決済手数料</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["SettlementFee"], 'number', '#,##0'); ?></td>
+            <td class="r_label">支店名</td>
+            <td class="l_data"><?php echo $this->list[$fix][$i]["FfBranchName"]; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">当社売上</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["Uriage"], 'number', '#,##0'); ?></td>
+            <td class="r_label">請求手数料</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["ClaimFee"], 'number', '#,##0'); ?></td>
+            <td class="r_label">口座種別</td>
+            <td class="l_data"><?php echo $this->codeMaster->getAccountClassCaption( $this->list[$fix][$i]["FfAccountClass"]); ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo $this->list[$fix][$i]["ChargeCount"]; ?></td>
+            <td class="r_label">キャンセル金額</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["CalcelAmount"], 'number', '#,##0'); ?></td>
+            <td class="r_label">口座番号</td>
+            <td class="l_data"><?php echo $this->list[$fix][$i]["FfAccountNumber"]; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">ご利用総額</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["UseAmount"], 'number', '#,##0'); ?></td>
+            <td class="r_label">印紙代</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["StampFeeTotal"], 'number', '#,##0'); ?></td>
+            <td class="r_label">口座名義</td>
+            <td class="l_data"><?php echo $this->list[$fix][$i]["FfAccountName"]; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">プラン</td>
+            <td class="l_data"><?php echo $this->codeMaster->getPlanCaption($this->list[$fix][$i]["Plan"]); ?></td>
+            <td class="r_label">振込手数料</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["TransferCommission"], 'number', '#,##0'); ?></td>
+            <td class="r_label"></td>
+            <td class="l_data"></td>
+          </tr>
+          <tr>
+            <td class="r_label">決済手数料率</td>
+            <td class="r_data"><?php echo (double)$this->list[$fix][$i]["SettlementFeeRate"]; ?> %</td>
+            <td class="r_label">月額固定費</td>
+            <td class="r_data"><?php echo valueFormat($this->list[$fix][$i]["MonthlyFee"], 'number', '#,##0'); ?></td>
+            <td class="r_label"></td>
+            <td class="l_data"></td>
+          </tr>
+          <tr class="border">
+            <td colspan="6">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php	} ?>
+          <tr>
+            <td colspan="6" class="l_data">&nbsp;</td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

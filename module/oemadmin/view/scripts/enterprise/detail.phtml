@@ -1,0 +1,429 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+
+if( ! isset($this->error) || ! is_array($this->error) ) $this->error = array();
+
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+
+?>
+
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+<?php echo $this->render('oemadmin/page_header.php'); ?>
+<?php echo $this->render('oemadmin/enterprise/page_menu.php'); ?>
+    <div class="title"><span>事業者詳細情報</span></div>
+  <table class="datatable width_440 l_float">
+    <tr>
+      <td colspan="2" class="l_data">【事業者情報－基本情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_150">事業者ID</td>
+      <td class="l_data"><?php echo f_e($this->data["EnterpriseId"]); ?></td>
+    </tr>
+    <tr>
+      <td width="100" class="r_label">サービス開始日</td>
+      <td class="l_data"><?php echo f_e($this->data["ServiceInDate"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">ログインID</td>
+      <td class="l_data"><?php echo f_e($this->data["LoginId"]); ?></td>
+    </tr>
+	<!--
+    <tr>
+      <td class="r_label">ログインPW</td>
+      <td class="l_data"><?php echo f_e($this->data["LoginPasswd"]); ?></td>
+    </tr>
+    -->
+    <tr>
+      <td class="r_label">事業者名</td>
+      <td class="l_data"><?php echo f_e($this->data["EnterpriseNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">事業者名カナ</td>
+      <td class="l_data"><?php echo f_e($this->data["EnterpriseNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">所在地</td>
+      <td class="l_data">〒<?php echo f_e($this->data["PostalCode"]); ?><br />
+        <?php echo f_e($this->data["PrefectureName"]); ?><?php echo f_e($this->data["City"]); ?>
+        <?php echo f_e($this->data["Town"]); ?>
+        <?php echo f_e($this->data["Building"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">代表者氏名</td>
+      <td class="l_data"><?php echo f_e($this->data["RepNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">代表者氏名カナ</td>
+      <td class="l_data"><?php echo f_e($this->data["RepNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">電話番号</td>
+      <td class="l_data"><?php echo f_e($this->data["Phone"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">FAX番号</td>
+      <td class="l_data"><?php echo f_e($this->data["Fax"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">推定月商</td>
+      <td class="l_data"><?php echo f_e($this->data["PreSales"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">業種</td>
+      <td class="l_data"><?php echo f_e($this->data["Industry"]); ?></td>
+    </tr>
+  </table>
+  <table class="datatable width_440 r_float b_margin_clear">
+    <tr>
+      <td colspan="2" class="l_data">【事業者情報－ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_150">担当者名</td>
+      <td class="l_data"><?php echo f_e($this->data["CpNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名カナ</td>
+      <td class="l_data"><?php echo f_e($this->data["CpNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">部署名</td>
+      <td class="l_data"><?php echo f_e($this->data["DivisionName"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data">
+		<span class="wrap_container">
+			<?php echo f_e($this->data["MailAddress"]); ?>
+		</span>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先電話番号</td>
+      <td class="l_data"><?php echo f_e($this->data["ContactPhoneNumber"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先FAX番号</td>
+      <td class="l_data"><?php echo f_e($this->data["ContactFaxNumber"]); ?></td>
+    </tr>
+  </table>
+<!--
+  <table class="datatable width_440 r_float b_margin_clear">
+    <tr>
+      <td colspan="2" class="l_data">【オプション機能】</td>
+    </tr>
+	<tr>
+	  <td class="r_label width_150">請求自動ストップ</td>
+	  <td class="l_data">
+	  <?php echo f_e($this->master_map['AutoClaimStopFlg'][nvl($this->data['AutoClaimStopFlg'], 0)]); ?>
+	  </td>
+	</tr>
+    <tr>
+      <td class="r_label">与信結果メール</td>
+      <td class="l_data">
+      <?php
+		if($this->data['CjMailMode'] == 1) {
+			echo '与信OKのみメール送信';
+		} else if($this->data['CjMailMode'] == 2) {
+			echo '与信NGのみメール送信';
+		} else if($this->data['CjMailMode'] == 3) {
+			echo '与信OKおよびNGともにメール送信';
+		} else {
+			echo '送信しない';
+		}
+		?>
+
+      </td>
+     </tr>
+      <tr>
+		<td class="r_label">伝票番号自動仮登録</td>
+		<td class="l_data">
+		<?php if(!$this->data['AutoJournalIncMode']) { ?>
+			無効
+		<?php } else { ?>
+			有効（配送先：<?php echo f_e($this->deliMethodMap[$this->data['AutoJournalDeliMethodId']]); ?>）
+		<?php } ?>
+		</td>
+    </tr>
+    </table>
+-->
+<form name="form" method="post" action="enterprise/up">
+  <table class="datatable width_440 r_float b_margin_clear">
+    <tr>
+      <td colspan="2" class="l_data">【備考】</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">
+        <?php echo f_e($this->data["Note"]); ?>
+	  </td>
+    </tr>
+  </table>
+</form>
+  <table class="datatable clear">
+    <tr>
+      <td colspan="9" class="l_data">【サイト情報】</td>
+    <tr>
+      <th rowspan = "2">ID</th>
+      <th rowspan = "2">サイト名</th>
+      <th colspan = "3">URL</th>
+      <th>メアド</th>
+      <th>初回請求支払期限算出方法</th>
+      <th>サイト形態</th>
+      <th>伝票番号自動仮登録</th>
+    </tr>
+    <tr>
+      <th>決済上限額</th>
+      <th>決済手数料率</th>
+      <th>OEM決済手数料率<BR>(税抜)</th>
+      <th>請求手数料(税抜)</th>
+      <th>OEM請求手数料(税抜)</th>
+      <th>再請求手数料(税抜)</th>
+      <th>与信結果メール</th>
+    </tr>
+    <?php foreach($this->sites as $i => $site) { ?>
+    <tr>
+      <td class="r_data" rowspan = "2"><?php echo f_e($site["SiteId"]); ?></td>
+      <td class="l_data" rowspan = "2"><?php echo f_e($site["SiteNameKj"]); ?></td>
+      <td class="l_data" colspan = "3"><a target="_blank" href="<?php echo f_e($site["Url"]); ?>"><?php echo f_e($site["Url"]); ?></a></td>
+      <td class="c_data"><?php echo f_e($site["ReqMailAddrFlg"]); ?></td>
+      <td class="c_data"><?php echo f_e($site["LimitDatePattern"]); ?></td>
+      <td class="c_data"><?php echo f_e($site["SiteForm"]); ?></td>
+      <td class="c_data">
+		<?php if(!$site['AutoJournalIncMode']) { ?>
+			無効
+		<?php } else { ?>
+			有効（配送先：<?php echo f_e($this->deliMethodMap[$site['AutoJournalDeliMethodId']]); ?>）
+		<?php } ?>
+		</td>
+    </tr>
+    <tr>
+      <td class="r_data"><?php echo f_nf(nvl($site["SettlementAmountLimit"], 0)); ?>　円</td>
+      <?php if (isset($site["SettlementFeeRate"])) { ?>
+        <td class="r_data"><?php echo f_e(doubleval($site["SettlementFeeRate"])); ?>%</td>
+      <?php } else { ?>
+        <td class="r_data"></td>
+      <?php } ?>
+      <?php if (isset($site["OemSettlementFeeRate"])) { ?>
+        <td class="r_data"><?php echo f_e(doubleval($site["OemSettlementFeeRate"])); ?>%</td>
+      <?php } else { ?>
+        <td class="r_data"></td>
+      <?php } ?>
+      <td class="r_data"><?php echo f_nf(nvl($site["ClaimFeeBS"], 0)); ?>　円</td>
+      <td class="r_data"><?php echo f_nf(nvl($site["OemClaimFee"], 0)); ?>　円</td>
+      <td class="r_data"><?php echo f_nf(nvl($site["ReClaimFee"], 0)); ?>　円</td>
+      <td class="c_data">
+      <?php
+		if($site["CreditResultMail"] == 1) {
+			echo '与信OKのみメール送信';
+		} else if($site["CreditResultMail"] == 2) {
+			echo '与信NGのみメール送信';
+		} else if($site["CreditResultMail"] == 3) {
+			echo '与信OKおよびNGともにメール送信';
+		} else {
+			echo '送信しない';
+		}
+		?>
+    </tr>
+    <?php } ?>
+  </table>
+  <table class="datatable">
+    <tr>
+      <td colspan="5" class="l_data">【APIユーザー情報】</td>
+    </tr>
+    <tr>
+      <th style="width: 54px">ID</th>
+	  <th style="width: 50px">状態</th>
+      <th>APIユーザー名</th>
+    </tr>
+    <?php foreach($this->apiUsers as $i => $apiUser) { ?>
+    <tr class="<?php echo ($apiUser['ValidFlg'] ? 'valid' : 'invalid'); ?>">
+      <td class="r_data"><?php echo f_e($apiUser["ApiUserId"]); ?></td>
+	  <td class="c_data"><?php echo ($apiUser['ValidFlg'] ? '有効' : '無効'); ?></td>
+      <td class="l_data">
+		<!--<a href="apiuser/detail/id/<?php echo f_e($apiUser['ApiUserId']); ?>">-->
+		  <?php echo f_e($apiUser["ApiUserNameKj"]); ?>
+		<!--</a>-->
+	  </td>
+    </tr>
+    <?php } ?>
+  </table>
+<!--</div>-->
+<table class="datatable">
+
+    <tr>
+      <td colspan="2" class="l_data">【請求取りまとめモード】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_250">請求取りまとめモード</td>
+      <td class="l_data">
+      	<?php
+		if($this->data['CombinedClaimMode'] == 1) {
+			echo '事業者毎';
+		} else if($this->data['CombinedClaimMode'] == 2) {
+			echo 'サイト毎('.$this->combinedclaimnum.')';
+		} else {
+			echo 'なし';
+		}
+		?>
+</td>
+    </tr>
+  </table>
+  <table class="datatable">
+    <tr>
+      <td colspan="5" class="l_data">【請求書同梱ツール設定】</td>
+	</tr>
+    <tr>
+	  <td class="r_label width_250">同梱ツールの利用</td>
+	  <td class="l_data" colspan="2">
+		<?php
+		if($this->data['SelfBillingMode'] >= 1) {
+			echo '利用する';
+		} else if($this->data['SelfBillingMode'] == -1) {
+			echo '（一時保留中）';
+		} else {
+			echo '利用しない';
+		}
+		?>
+	  </td>
+    </tr>
+	<tr>
+	  <td class="r_label">請求書発行後の伝票番号更新機能</td>
+	  <td class="l_data" colspan="2">
+		<?php if($this->data['SelfBillingMode'] > 10) { ?>
+		更新を許可する
+		<?php } else { ?>
+		更新を許可しない
+		<?php } ?>
+	  </td>
+	</tr>
+<!--
+<?php if(empty($this->sbprops)) {?>
+	<tr>
+	  <td class="r_label">CSV出力機能の利用</td>
+	  <td class="l_data" colspan="2">（未設定）</td>
+	</tr>
+	<tr>
+	  <td class="r_label">同梱ツールアクセスキー</td>
+	  <td class="l_data" colspan="2">（未発行）</td>
+	</tr>
+	<tr>
+	  <td class="r_label">同梱ツール利用時の請求手数料</td>
+	  <td class="l_data" colspan="2">（未設定）</td>
+	</tr>
+	<tr>
+	  <td class="r_label">OEM同梱請求手数料(税抜)</td>
+	  <td class="l_data" colspan="2">（未設定）</td>
+	</tr>
+
+<?php } else { ?>
+	<tr>
+	  <td class="r_label">CSV出力機能の利用</td>
+	  <td class="l_data" colspan="2"><?php echo $this->data['SelfBillingExportAllow'] ? '利用可能' : '利用不可'; ?></td>
+	</tr>
+  <?php foreach($this->sbprops as $i => $row) { ?>
+	<tr>
+	<?php if($i == 0) {
+	         $sbpropsCount = 0;
+	         if(!empty($this->sbprops)){
+                 $sbpropsCount = count($this->sbprops);
+             }
+	    ?>
+	  <td class="r_label" rowspan="<?php echo f_e($sbpropsCount); ?>">同梱ツールアクセスキー</td>
+	<?php } ?>
+	  <td class="r_data" style="width: 20px;"><?php echo f_e($i + 1); ?></td>
+	  <td class="l_data" title="in: <?php echo f_e($row['LastLoginDateTime']); ?>, out: <?php echo f_e($row['LastLogoutDateTime']); ?>">
+	    <?php echo f_e($row['AccessKey']); ?>
+		<?php if($row['ch_count'] || $row['LastLoginDateTime'] > $row['LastLogoutDateTime']) { ?>
+			<?php
+			$info = array();
+			if($row['ch_count']) $info[] = sprintf('未印刷：%d 件', $row['ch_count']);
+			if($row['LastLoginDateTime'] > $row['LastLogoutDateTime']) $info[] = 'ログイン中';
+			echo f_e(sprintf('(%s)', join('、', $info)));
+			?>
+		<?php } ?>
+	  </td>
+  <?php } ?>
+
+	  </td>
+	</tr>
+	<tr>
+	  <td class="r_label">同梱ツール利用時の請求手数料(税抜)</td>
+	  <td class="l_data" colspan="2"><?php echo f_e(nvl($this->data['SelfBillingClaimFee'], $this->data['ClaimFee'])); ?> 円</td>
+	</tr>
+	<tr>
+	  <td class="r_label">OEM同梱請求手数料(税抜)</td>
+	  <td class="l_data" colspan="2"><?php echo f_e(nvl($this->data['SelfBillingOemClaimFee'], 0)); ?> 円</td>
+	</tr>
+<?php } ?>
+-->
+  </table>
+  <table class="datatable">
+    <tr>
+      <td colspan="2" class="l_data">【サービス内容】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_250">利用プラン</td>
+      <td class="l_data"><?php echo f_e($this->data["Plan"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">月額固定費(税抜)</td>
+      <td class="l_data"><?php echo f_nf(f_get_monthly_fee($this->data), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">OEM月額固定費(税抜)</td>
+      <td class="l_data"><?php echo f_nf(f_get_oemmonthly_fee($this->data), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">次回請求月額固定費(税抜)</td>
+      <td class="l_data"><?php echo f_nf(f_get_n_monthly_fee($this->data), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">次回請求OEM月額固定費(税抜)</td>
+      <td class="l_data"><?php echo f_nf(f_get_n_oemmonthly_fee($this->data), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">締め日パターン</td>
+      <td class="l_data">
+	    <?php echo f_e($this->data["FixPattern"]); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">営業担当</td>
+      <td class="l_data"><?php echo f_e($this->data["Salesman"]); ?></td>
+    </tr>
+  </table>
+  <table class="datatable">
+    <tr>
+      <td colspan="2" class="l_data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_250">金融機関</td>
+      <td class="l_data">
+        銀行名：<?php echo f_e($this->data["FfName"]); ?>　銀行番号：<?php echo f_e($this->data["FfCode"]); ?><br />
+        支店名：<?php echo f_e($this->data["FfBranchName"]); ?>　支店番号：<?php echo f_e($this->data["FfBranchCode"]); ?><br />
+        口座種別：<?php echo f_e($this->data["FfAccountClass"]); ?><br />
+        口座番号：<?php echo f_e($this->data["FfAccountNumber"]); ?><br />
+        口座名義：<?php echo f_e($this->data["FfAccountName"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">振込手数料</td>
+      <td class="l_data"><?php echo f_e($this->data["TcClass"]); ?></td>
+    </tr>
+  </table>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

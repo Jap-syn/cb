@@ -1,0 +1,32 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'orderpage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'orderpage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'orderpage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">エラー</div>
+        <div id="d_01">エラーが発生しました。</div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'orderpage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

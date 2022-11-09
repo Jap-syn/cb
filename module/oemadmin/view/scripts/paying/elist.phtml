@@ -1,0 +1,87 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+if($this->advancesFl){
+  $col = 9;
+}else{
+  $col = 8;
+}
+?>
+</head>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+    <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <?php echo $this->render('oemadmin/paying/page_menu.php'); ?>
+    <div class="title"><span>立替実行済み</span></div>
+    <form name="form" method="post" action="paying/elist">
+      <table class="datatable">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              立替確定日範囲　(YYYY-MM-DD)　：　
+              <input type="text" name="f" id="f" value="<?php echo f_e($this->f); ?>" /> ～
+              <input type="text" name="t" id="t" value="<?php echo f_e($this->t); ?>" />
+              <input class="default_btn" style="margin-top: 1px;" type="submit" value="　表　示　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="datatable">
+        <tbody>
+          <tr>
+            <th>立替確定日</th>
+            <th>立替予定日
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替額</th>
+            <th>事業者計</th>
+            <th>立替総額</th>
+          <?php if($col == 9){ ?>
+            <th>立替実行確認</th>
+          <?php } ?>
+          </tr>
+        <?php foreach ($this->list as $key => $value) { ?>
+        <?php   for ($loop = 1; $loop <= $this->numSimePtn; $loop++) { ?>
+        <?php     if ($loop == 1) { ?>
+          <tr>
+            <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data">
+              <a href="paying/dlist2/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>">
+                <?php echo $value["DecisionDate"]; ?>
+              </a>
+            </td>
+            <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data"><?php echo $value["ExecScheduleDate"]; ?></td>
+            <td class="c_data"><?php echo $value["P1NM"]; ?></td>
+            <td class="c_data"><?php echo $value["P1FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P1CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P1PAY"], 'number', '#,##0'); ?></td>
+            <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+            <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+        <?php       if ($col == 9) { ?>
+            <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data">
+              立替実行済み
+              <div style="margin-top:10px;">
+                <a class="default_btn" href="paying/transdatadl/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>">振込データＤＬ</a>
+              </div>
+            </td>
+        <?php       } ?>
+          </tr>
+        <?php     } else { ?>
+          <tr>
+            <td class="c_data"><?php echo $value["P" . $loop . "NM"]; ?></td>
+            <td class="c_data"><?php echo $value["P" . $loop . "FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P" . $loop . "CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P" . $loop . "PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+        <?php     } ?>
+        <?php   } ?>
+        <?php } ?>
+        </tbody>
+      </table>
+    </form>
+    <!-- end contents -->
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+    <div id="wrapper">
+        <?php echo $this->render('page_header.php'); ?>
+        <?php echo $this->render('page_menu.php'); ?>
+        <!-- start contents -->
+        <div id="contents">
+            <h3 class="contents_title">店舗別精算明細</h3>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                    <tr>
+                        <td class="l_data">
+                            <?php echo $this->from."～".$this->to;?>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                    <tr>
+                        <td class="r_label width_400 under">対象店舗名</td>
+                        <td class="c_data under" style="background-color: lightyellow;"><a href="oemmonthly/trading/eid/<?php echo $this->enterprise_settlement['EnterpriseId'];?>/fd/<?php echo $this->enterprise_settlement['SpanFrom']."_".$this->enterprise_settlement['SpanTo'];?>"><?php echo f_e($this->enterprise_settlement['EnterpriseNameKj']); ?></a></td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗利用総額</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['UseAmount'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗立替総額</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗精算総額</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['FixedTransferAmount'],0) + ($this->addtcflg ? nvl($this->enterprise_settlement['PC_TransferCommission'],0) : 0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label under">OEM手数料総額</td>
+                        <td class="r_data under"><?php echo  f_nf(nvl($this->enterprise_settlement['OM_TotalProfit'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">店舗月額固定費</td>
+                        <td class="r_data l_height">合計：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_EntMonthlyFee'] + $this->enterprise_settlement['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+                        <br />
+                        CB請求額：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_EntMonthlyFee'],0),'#,##0'); ?>　円
+                        <br />
+                        精算額：<?php echo  f_nf(nvl($this->enterprise_settlement['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+                        <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">取引件数</td>
+                        <td class="r_data"><?php echo $this->enterprise_settlement['OrderCount']; ?>　件</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">決済手数料率</td>
+                        <td class="r_data l_height">合計：
+                        <?php echo NetB_GeneralUtils::ToRealRate($this->enterprise_settlement['OecSettlementFeeRate']); ?>　％
+                        <br />
+                        CB決算手数料率：<?php echo NetB_GeneralUtils::ToRealRate($this->enterprise_settlement['OecOemSettlementFeeRate']); ?>　％
+                        <br />
+                        決算手数料率：<?php echo NetB_GeneralUtils::ToRealRate($this->enterprise_settlement['OecSettlementFeeRate']) - NetB_GeneralUtils::ToRealRate($this->enterprise_settlement['OecOemSettlementFeeRate']); ?>　％
+                        <br /></td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">決済手数料</td>
+                        <td class="r_data l_height">合計：
+                            <?php echo  f_nf(nvl($this->enterprise_settlement['CB_SettlementFee'] + $this->enterprise_settlement['OM_SettlementFee'],0),'#,##0'); ?>　円
+                            <br />
+                            CB請求額：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_SettlementFee'],0),'#,##0'); ?>　円
+                            <br />
+                             精算額：<?php echo  f_nf(nvl($this->enterprise_settlement['OM_SettlementFee'],0),'#,##0'); ?>　円
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">請求手数料(別送)</td>
+                        <td class="r_data l_height">合計：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_ClaimFeeBS'] + $this->enterprise_settlement['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+                            <br />
+                            CB請求額：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_ClaimFeeBS'],0),'#,##0'); ?>　円
+                            <br />
+                            精算額：<?php echo  f_nf(nvl($this->enterprise_settlement['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">請求手数料(同梱)</td>
+                        <td class="r_data l_height">合計：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_ClaimFeeDK'] + $this->enterprise_settlement['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+                            <br />
+                            CB請求額：<?php echo  f_nf(nvl($this->enterprise_settlement['CB_ClaimFeeDK'],0),'#,##0'); ?>　円
+                            <br />
+                            精算額：<?php echo  f_nf(nvl($this->enterprise_settlement['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">キャンセルによる返金</td>
+                        <td class="r_data">
+                            <?php echo  f_nf(nvl($this->enterprise_settlement['CR_TotalAmount'],0),'#,##0'); ?>　円
+                            <br />
+                            入金額：<?php echo  f_nf(nvl($this->enterprise_settlement['CR_OemAmount'],0),'#,##0'); ?>　円
+                            <br />
+                            費用：<?php echo  f_nf(nvl($this->enterprise_settlement['CR_EntAmount'],0),'#,##0'); ?>　円
+                            <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">前月持越</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['PC_CarryOver'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">印紙代</td>
+                        <td class="r_data"><?php echo  f_nf(nvl(abs($this->enterprise_settlement['PC_StampFeeTotal']),0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">振り込み手数料</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['PC_TransferCommission'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">精算調整額</td>
+                        <td class="r_data"><?php echo  f_nf(nvl($this->enterprise_settlement['PC_AdjustmentAmount'],0),'#,##0'); ?>　円</td>
+                    </tr>
+                </tbody>
+            </table>
+        <!-- end contents -->
+        </div>
+        <?php echo $this->render('page_footer.php'); ?>
+    </div>
+</body>
+</html>

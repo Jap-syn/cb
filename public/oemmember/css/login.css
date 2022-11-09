@@ -1,0 +1,75 @@
+/* ログインフォーム */
+form#login_form {
+	margin: 20px auto 100px auto;
+	padding: 0px;
+	border: solid 1px #cc0000;
+	border-radius: 8px;
+	width: 400px;
+	height: 280px;
+}
+
+form#login_form h3 {
+	margin: 0px;
+	padding: 4px 8px;
+	font-size: 20pt;
+	background-color: #cc0000;
+/*background-color: green;*/
+	color: white;
+	background-image: url("../../images/login_icon.png");
+	background-position: right center;
+	background-repeat: no-repeat;
+	border-radius: 7px 7px 0 0;
+}
+* html form#login_form h3 {
+	background-image: url("../../images/login_icon2.gif");
+}
+
+form#login_form ul,
+form#login_form ul li {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+form#login_form ul {
+	margin: 10px;
+	font-size: 12pt;
+}
+
+form#login_form ul li {
+	margin: 15px;
+}
+
+form#login_form ul li.field_area {
+	text-align: right;
+}
+
+form#login_form ul li.button_container,
+form#login_form ul li.information {
+	text-align: center;
+}
+
+form#login_form ul li.information {
+	font-size: 10pt;
+	line-height: 150%;
+	margin-top: 20px;
+}
+
+form#login_form input,
+form#login_form button {
+	font-size: 12pt;
+}
+
+input#login_id,
+input#password {
+	width: 250px;
+}
+
+form#login_form button {
+	padding: 0px 40px;
+}
+
+form#login_form label {
+	display: inline;
+	white-space: nowrap;
+}

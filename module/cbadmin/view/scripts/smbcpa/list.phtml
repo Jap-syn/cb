@@ -1,0 +1,107 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#contents table.formtable td {
+  padding: 2px 5px;
+}
+#contents table.formtable th.group-count {
+  width: 55px;
+}
+#contents table.formtable th.acc-count {
+  width: 65px;
+}
+#contents table.formtable tr.data-row td {
+  background-color: transparent;
+}
+#contents table.formtable tr.data-row td a {
+  /*font-weight: normal !important;*/
+}
+#contents table.formtable tr.data-row {
+  background-color: #fff;
+}
+#contents table.formtable tr.not-usable-row {
+  background-color: #eee;
+}
+#contents table.formtable tr.warn-row {
+  background-color: #fff0f5;
+}
+#contents table.formtable tr.warn-row.not-usable-row {
+  color: crimson;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpa/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座契約一覧</h3>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="oem-name">OEM</th>
+          <th class="smbcpa-name">名称</th>
+          <th class="group-count">グループ<br />数</th>
+          <th class="acc-count">口座数</th>
+          <th class="acc-count">請求中<br />口座数</th>
+          <th class="acc-count">空き<br />口座数</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach($this->list as $data) { ?>
+        <?php
+        $row_class = array('data-row');
+        $row_title = null;
+        if($data['TotalCount']) {
+          if($data['UsableCount'] / $data['TotalCount'] <= 0.1) {
+            $row_class[] = 'warn-row';
+            $row_title = '割り当て可能な口座の残りが少なくなっています';
+          }
+        }
+        if(!$data['UsableCount']) {
+          $row_class[] = 'not-usable-row';
+          $row_title = '割り当て可能な口座がありません';
+        }
+        ?>
+        <tr class="<?php echo f_e(join(' ', $row_class)); ?>"<?php if($row_title) { ?> title="<?php echo f_e($row_title); ?>"<?php } ?>>
+          <td class="l_data">
+          <?php if($data['OemId']) { ?>
+            <a href="oem/detail/oid/<?php echo f_e($data['OemId']); ?>" target="_blank" title="OEM詳細を開く">
+              <?php echo f_e(sprintf('%d：%s', $data['OemId'], $data['OemNameKj'])); ?>
+            </a>
+          <?php } else { ?>
+            <?php echo f_e(sprintf('%d：%s', $data['OemId'], $data['OemNameKj'])); ?>
+          <?php } ?>
+          </td>
+          <td class="l_data">
+            <a href="smbcpa/detail/oid/<?php echo f_e($data['OemId']); ?>" title="契約詳細を開く">
+              <?php echo f_e($data['DisplayName']); ?>
+            </a>
+          </td>
+          <td class="r_data"><?php echo f_nf($data['GroupCount'], '#,##0'); ?></td>
+          <td class="r_data"><?php echo f_nf($data['TotalCount'], '#,##0'); ?></td>
+          <td class="r_data"><?php echo f_nf($data['ClaimingCount'], '#,##0'); ?></td>
+          <td class="r_data"><?php echo f_nf($data['UsableCount'], '#,##0'); ?></td>
+        </tr>
+        <tr class="border">
+          <td colspan="6">
+            <img src="../images/spacer_gray.gif" height="1" width="1">
+          </td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

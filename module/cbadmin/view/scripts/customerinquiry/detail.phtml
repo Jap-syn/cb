@@ -1,0 +1,147 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+table.datatable th {
+  white-space: nowrap;
+}
+
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/customerinquiry/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">関連顧客表示</h3>
+    <div style="margin: 5px 25px;">
+      <?php if(!empty($this->mandata)){?>
+      <table style="margin: 0px; clear:both;" width="862" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr><td colspan="14">　管理顧客</td></tr>
+          <tr>
+            <th>管理顧客ID</th>
+            <th >顧客名</th>
+            <th>顧客名カナ</th>
+            <th>郵便番号</th>
+            <th>住所</th>
+            <th>電話番号</th>
+            <th>メールアドレス</th>
+            <th>請求残高</th>
+            <th>ブラック</th>
+            <th>優良</th>
+            <th>クレーマー</th>
+            <th>督促ｽﾄｯﾌﾟ</th>
+            <th>身分証</th>
+            <th>備考</th>
+          </tr>
+          <?php foreach ($this->mandata as $row) { ?>
+          <tr class="data man-row">
+            <td class="l_data"><?php echo f_e($row['ManCustId']); ?></td>
+            <td class="l_data">
+              <a href="customer/managementdetail/mcid/<?php echo f_e($row['ManCustId']); ?>" target="_blank"><?php echo f_e($row['NameKj']); ?></a>
+            </td>
+            <td class="l_data"><?php echo f_e($row['NameKn']); ?></td>
+            <td class="c_data"><?php echo f_e($row['PostalCode']); ?></td>
+            <td class="l_data"><?php echo f_e($row['UnitingAddress']); ?></td>
+            <td class="c_data"><?php echo f_e($row['Phone']); ?></td>
+            <td class="l_data"><?php echo f_e($row['MailAddress']); ?></td>
+            <td class="r_data">
+              <a href="rwrcptcfm/list/mcid/<?php echo f_e($row['ManCustId']); ?>" target="_blank"><?php echo f_nf( $row['ClaimedBalance'], '#,##0' ); ?></a>
+            </td>
+            <td class="c_data"><?php if( $row['BlackFlg'] == 1 ) echo '○'; ?></td>
+            <td class="c_data"><?php if( $row['GoodFlg'] == 1 ) echo '○'; ?></td>
+            <td class="c_data"><?php if( $row['ClaimerFlg'] == 1 ) echo '○'; ?></td>
+            <td class="c_data"><?php if( $row['RemindStopFlg'] == 1 ) echo '○'; ?></td>
+            <td class="c_data"><?php if( $row['IdentityDocumentFlg'] == 1 ) echo '○'; ?></td>
+            <td class="l_data"><?php echo f_e($row['Note']); ?></td>
+          </tr>
+          <?php $i++;} ?>
+        </tbody>
+      </table>
+      <?php } ?>
+      <?php if(!empty($this->entdata)){?>
+      <table style="margin: 0px; clear:both;" width="862" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr><td colspan="9">　加盟店顧客</td></tr>
+          <tr>
+            <th>顧客ID</th>
+            <th>加盟店ID</th>
+            <th>顧客名</th>
+            <th>顧客名カナ</th>
+            <th>郵便番号</th>
+            <th>住所</th>
+            <th>電話番号</th>
+            <th>メールアドレス</th>
+            <th>請求残高</th>
+          </tr>
+          <?php foreach ($this->entdata as $row) { ?>
+          <tr class="data ent-row">
+            <td class="l_data"><?php echo f_e($row['EntCustSeq']); ?></td>
+            <td class="l_data"><?php echo f_e($row['EnterpriseId']); ?></td>
+            <td class="l_data">
+              <a href="customer/memberdetail/ecseq/<?php echo f_e($row['EntCustSeq']); ?>" target="_blank"><?php echo f_e($row['NameKj']); ?></a>
+            </td>
+            <td class="l_data"><?php echo f_e($row['NameKn']); ?></td>
+            <td class="c_data"><?php echo f_e($row['PostalCode']); ?></td>
+            <td class="l_data"><?php echo f_e($row['UnitingAddress']); ?></td>
+            <td class="c_data"><?php echo f_e($row['Phone']); ?></td>
+            <td class="l_data"><?php echo f_e($row['MailAddress']); ?></td>
+            <td class="r_data">
+              <a href="rwrcptcfm/list/ecs/<?php echo f_e($row['EntCustSeq']); ?>" target="_blank"><?php echo f_nf( $row['ClaimedBalance'], '#,##0' ); ?></a>
+            </td>
+          </tr>
+          <?php $i++;} ?>
+        <tbody>
+      </table>
+      <?php }?>
+      <?php if( !empty( $this->search_data ) ) { ?>
+      <form name="form" action="customerinquiry/search" method="post">
+        <?php foreach( $this->search_data as $key => $value ) { ?>
+        <input type="hidden" name="<?php echo $key; ?>" value="<?php echo $value; ?>" />
+        <?php } ?>
+        <table style="margin: 0px; clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td colspan="2" class="c_data"><button type="submit">戻　る</button></td>
+          </tr>
+        </table>
+      </form>
+      <?php }?>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+// new base.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+</script>
+</html>

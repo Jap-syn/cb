@@ -1,0 +1,113 @@
+<?php
+$summary_templates = array(
+        'StampFee' => 0
+);
+$summaries = array_merge(array(), $summary_templates);
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/monthly/page_menu2.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">月次明細（印紙代明細）</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1">
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    -->
+    <form name="form">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <!-- count関数対策 -->
+<?php if(empty($this->list)) { ?>
+	　　　明細はありません。
+<?php } else { ?>
+<?php
+$item_count = 0;
+foreach($this->list as $key => $value) {
+  // count関数対策 
+  if (!empty($value)){	
+    $item_count += count($value);	
+  }	
+};
+
+$last_sitename = array_pop(array_keys($this->list));
+$i = 0;
+foreach($this->list as $sitename => $rows) {
+	$_summaries = array_merge(array(), $summary_templates);
+?>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 50px">No</th>
+            <th style="width: 100px">注文ID</th>
+            <th style="width: 120px">任意注文番号</th>
+            <th style="width: 160px">購入者</th>
+            <th style="width: 85px">注文日</th>
+            <th style="width: 85px">伝登日</th>
+            <th style="width: 85px">立替締</th>
+            <th style="width: 85px">顧客<br />請求額</th>
+            <th>印紙<br />代金</th>
+          </tr>
+        </thead>
+        <tbody>
+<?php   foreach($rows as $row) { ?>
+          <tr>
+            <td class="seq_col c_data"><?php echo (++$i); ?></td>
+            <td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+            <td class="c_data"><?php echo f_e(nvl($row['Ent_OrderId'], '-')); ?></td>
+            <td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+            <td class="date_col c_data"><?php echo date('Y/m/d', strtotime($row['ReceiptOrderDate'])); ?></td>
+            <td class="date_col c_data"><?php echo date('Y/m/d', strtotime($row['MaxDeliJournalIncDate'])); ?></td>
+            <td class="date_col c_data"><?php echo date('Y/m/d', strtotime($row['FixedDate'])); ?></td>
+            <td class="money_col r_data"><?php echo nvl(number_format($row['UseAmount']), '&nbsp;'); ?></td>
+            <td class="money_col r_data"><?php echo nvl(number_format($row['StampFee'] ), '&nbsp;'); ?></td>
+          </tr>
+<?php
+            foreach( array_keys( $summaries ) as $key ) {
+                $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+                $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+            }
+        }
+        $style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+          <tr class="summary">
+            <td class="r_data" colspan="8"<?php echo $style; ?>>サイト計<?php echo '（' . $sitename . '）'; ?></td>
+            <td class="money_col total_col r_data"<?php echo $style; ?>><?php echo f_nf((int)$_summaries['StampFee'], '\ #,##0'); ?></td>
+          </tr>
+
+<?php   if( $sitename == $last_sitename ) { ?>
+          <tr class="summary">
+            <td class="seq_col r_data" colspan="8">お取引先計</td>
+            <td class="money_col total_col r_data"><?php echo f_nf((int)$summaries['StampFee'], '\ #,##0'); ?></td>
+          </tr>
+<?php   } ?>
+        </tbody>
+      </table>
+<?php
+    }
+}
+?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

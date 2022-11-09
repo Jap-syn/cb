@@ -1,0 +1,237 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+
+<script type="text/javascript" src="<?php echo f_e($this->tokenurl); ?>"></script>
+<script type="text/javascript">
+
+    function doSubmit() {
+        document.getElementById('submit_button').disabled = true;
+        // 入力チェック(ワンタイムトークン取得要求前に実施)
+        $('card_no').style.backgroundColor = null;
+        $('period_month').style.backgroundColor = null;
+        $('period_year').style.backgroundColor = null;
+        $('cvc').style.backgroundColor = null;
+        var errMsg = "";
+        if ($('card_no').value == "") {
+            errMsg += "\n・カード番号が未入力です。";
+            $('card_no').style.backgroundColor = 'pink';
+        }
+        if ($('card_no').value != "" && $('card_no').value.match(/[^0-9]/)) {
+            errMsg += "\n・カード番号は半角数値入力してください。";
+            $('card_no').style.backgroundColor = 'pink';
+        }
+        if ($('period_month').value == "0") {
+            errMsg += "\n・有効期限（月）が指定されていません。";
+            $('period_month').style.backgroundColor = 'pink';
+        }
+        if ($('period_year').value == "0") {
+            errMsg += "\n・有効期限（年）が指定されていません。";
+            $('period_year').style.backgroundColor = 'pink';
+        }
+        if ($('cvc').value == "") {
+            errMsg += "\n・セキュリティコードが未入力です。";
+            $('cvc').style.backgroundColor = 'pink';
+        }
+        if ($('cvc').value != "" && $('cvc').value.match(/[^0-9]/)) {
+            errMsg += "\n・セキュリティコードは半角数値入力してください。";
+            $('cvc').style.backgroundColor = 'pink';
+        }
+        if (errMsg != "") {
+            window.alert(errMsg);
+            document.getElementById('submit_button').disabled = false;
+            return;
+        }
+
+        com_sbps_system.generateToken({
+            merchantId : $('merchantid').value
+          , serviceId : $('serviceid').value
+          , ccNumber : $('card_no').value
+          , ccExpiration : $('period_year').value + $('period_month').value
+          , securityCode : $('cvc').value
+        }, afterGenetateToken);
+    }
+
+    var afterGenetateToken = function(response) {
+        if (response.result == "OK") {
+            // (ワンタイムトークン取得成功)
+            $('token').value = response.tokenResponse.token;
+            $('tokenKey').value = response.tokenResponse.tokenKey;
+            $('creditsettlement_form').submit();
+        }
+        else {
+            // (ワンタイムトークン取得失敗)
+            var syubetuCd = response.errorCode.substr(0,2);
+            var koumokuCd = response.errorCode.substr(2,3);
+            var syubetuVal = "";
+            if      (syubetuCd == "03" ) { syubetuVal = "必須項目に値が指定されていません"; }
+            else if (syubetuCd == "04" ) { syubetuVal = "入力文字属性に誤りがあります"; }
+            else if (syubetuCd == "05" ) { syubetuVal = "入力文字桁数に誤りがあります"; }
+            else if (syubetuCd == "07" ) { syubetuVal = "入力文字に定義値外の値が指定されています"; }
+            else                         { syubetuVal = "内部処理エラーが発生しました"; }
+            var koumokuVal = "";
+            if      (koumokuCd == "001") { koumokuVal = "マーチャントID"; }
+            else if (koumokuCd == "002") { koumokuVal = "サービスID"; }
+            else if (koumokuCd == "003") { koumokuVal = "クレジットカード番号"; }
+            else if (koumokuCd == "004") { koumokuVal = "クレジットカード有効期限"; }
+            else if (koumokuCd == "005") { koumokuVal = "セキュリティコード"; }
+            else                         { koumokuVal = "（該当項目無し）"; }
+
+             var msg = "ワンタイムトークン取得に失敗しました。\n";
+             msg += "以下の内容を確認の上、入力値を修正してください。\n\n";
+             msg += "種別 : " + syubetuVal + "(" + syubetuCd + ")" + "\n";
+             msg += "項目 : " + koumokuVal + "(" + koumokuCd + ")" + "\n";
+
+            document.getElementById('submit_button').disabled = false;
+            window.alert(msg);
+        }
+    }
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/creditsettlement/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message.php' );
+?>
+<!-- start contents -->
+<div id="contents">
+  <div id="Tcreditsettlement_area">
+    <img src="../../images/navi01.png" alt="navi01" width="270px" height="38px" style="margin-left: 14px" />
+    <h5 style="text-align: left;">カード支払い（入力）</h5>
+    <table>
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご注文番号 : <?php echo f_e($this->orderId); ?></td>
+      </tr>
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご請求金額 : <?php echo f_nf($this->claimedBalance, '#,##0'); ?> 円</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="creditsettlement_area">
+    <form id="creditsettlement_form" name="creditsettlement_form" method="post" action="creditsettlement/confirm">
+      <input type="hidden" id="merchantid" name="merchantid" value="<?php echo f_e($this->merchantid);?>" />
+      <input type="hidden" id="serviceid" name="serviceid" value="<?php echo f_e($this->serviceid);?>" />
+      <input type="hidden" id="token" name="token" value="" />
+      <input type="hidden" id="tokenKey" name="tokenKey" value="" />
+      <input type="hidden" id="oseq" name="oseq" value="<?php echo $this->oseq; ?>" />
+        <input type="hidden" id="cb_token" name="cb_token" value="<?php echo $this->cb_token; ?>" />
+      <table style="width: 800px;">
+        <tr>
+          <td class="l_area" style="font-size: 13px ;font-weight: normal">ご利用可能なカードの種類</td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area">
+              <?php foreach (explode( ',', $this->creditLogoUrl) as $key => $val) { ?>
+              	<img class="img_logo" src='<?php echo $this->baseUrl . "/../../images/" . $val; ?>' alt="" style="width: auto; height: 24px;">
+              <?php } ?>
+          </td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:10px">カード番号 <font style="font-size: 12px; font-weight: normal">(半角数字)</font> <font style="font-size: 12px ;font-weight: normal; color: red;">[必須]</font></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area">
+            <input id="card_no" name="card_no" size="30" style="height:26px" maxlength="16" value="<?php if (isset($this->data['card_no'])) { echo f_e($this->data['card_no']); } ?>" placeholder="0000 0000 0000 0000" />
+          </td>
+          <td class="l_area">　</td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 12px ;font-weight: normal">※ ハイフンなしで入力してください。</td>
+          <td class="l_area">&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 12px ;font-weight: normal">※ ご本人様名義のクレジットカードのみ、ご利用いただけます。</td>
+          <td class="l_area">&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:10px">有効期限 <font style="font-size: 12px ;font-weight: normal; color: red;">[必須]</font></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area">
+            <select id="period_month" name="period_month" style="height:26px">
+              <option value="0"  <?php echo ($this->data['period_month'] == '0' ) ? ' selected="selected"' : ''; ?>>－　</option>
+              <option value="01" <?php echo ($this->data['period_month'] == '01') ? ' selected="selected"' : ''; ?>>01</option>
+              <option value="02" <?php echo ($this->data['period_month'] == '02') ? ' selected="selected"' : ''; ?>>02</option>
+              <option value="03" <?php echo ($this->data['period_month'] == '03') ? ' selected="selected"' : ''; ?>>03</option>
+              <option value="04" <?php echo ($this->data['period_month'] == '04') ? ' selected="selected"' : ''; ?>>04</option>
+              <option value="05" <?php echo ($this->data['period_month'] == '05') ? ' selected="selected"' : ''; ?>>05</option>
+              <option value="06" <?php echo ($this->data['period_month'] == '06') ? ' selected="selected"' : ''; ?>>06</option>
+              <option value="07" <?php echo ($this->data['period_month'] == '07') ? ' selected="selected"' : ''; ?>>07</option>
+              <option value="08" <?php echo ($this->data['period_month'] == '08') ? ' selected="selected"' : ''; ?>>08</option>
+              <option value="09" <?php echo ($this->data['period_month'] == '09') ? ' selected="selected"' : ''; ?>>09</option>
+              <option value="10" <?php echo ($this->data['period_month'] == '10') ? ' selected="selected"' : ''; ?>>10</option>
+              <option value="11" <?php echo ($this->data['period_month'] == '11') ? ' selected="selected"' : ''; ?>>11</option>
+              <option value="12" <?php echo ($this->data['period_month'] == '12') ? ' selected="selected"' : ''; ?>>12</option>
+            </select>
+            月　
+            <select id="period_year" name="period_year" style="height:26px">
+              <option value="0" <?php echo ($this->data['period_year'] == '0') ? ' selected="selected"' : ''; ?>>－　</option>
+              <?php /* システム年＋20年分までをリスト表示 */
+              for ($i = 0; $i <= 20; $i++) {
+                  $dateTime = new DateTime();
+                  $dateTime->modify('+'. $i. ' Year');
+                  $dateYear = $dateTime->format('Y');
+                  echo '<option value="'. $dateYear. '"'. (($this->data['period_year'] == $dateYear) ? ' selected="selected"' : ''). '>'. mb_strcut($dateYear, 2) . '</option>'. "\r\n";
+              }
+               ?>
+            </select>
+            年　
+          </td>
+          <td class="l_area">　</td>
+        </tr>
+        <tr>
+          <td class="l_area" style="padding-top:10px">セキュリティコード <font style="font-size: 12px ;font-weight: normal">(半角数字)</font> <font style="font-size: 12px ;font-weight: normal; color: red;">[必須]</font></td>
+          <td ></td>
+        </tr>
+        <tr>
+          <td class="l_area"><input id="cvc" name="cvc" size="5" style="height:26px" type="text" maxlength="4" value="<?php if (isset($this->data['cvc'])) { echo f_e($this->data['cvc']); } ?>" placeholder="000" />
+          　　<font style="font-size: 12px ;font-weight: normal;"><a style="color: #009DE4; text-decoration: underline; cursor:pointer;" onclick="cmanImgPop(this,'../../images/securitycode.png')">セキュリティコードについて</a></font></td>
+          <td class="l_area"></td>
+        </tr>
+        <tr>
+          <td class="l_area" style="font-size: 12px ;font-weight: normal">※ カード裏面のサインパネルに表示されている数字末尾3桁です。</td>
+          <td class="l_area">&nbsp;</td>
+        </tr>
+
+        <!-- 以下、エラーメッセージ -->
+        <?php if (!empty($this->errorMessages)) { ?>
+        <?php     foreach ($this->errorMessages as $message) { ?>
+        <tr>
+          <td style="color:red ; padding-left:8%" ><?php echo $message; ?></td>
+        </tr>
+        <?php     } ?>
+        <?php } ?>
+      </table>
+
+      <table style="width: 700px;">
+        <tr>
+          <?php $backUrl = $this->baseUrl . '/index/index?oseq='. $this->OrderSeq; ?>
+          <td align="left" width="300px"><input id="cancel_button" type="button" onclick="window.location.href = '<?php echo escape($backUrl); ?>';" value="戻る" /></td>
+          <td align="left"><input id="submit_button" type="button" value="次へ" onClick="doSubmit()" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/creditsettlement/page_footer.php' );
+?>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,99 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+
+</head>
+<style>
+    .page_nav {
+        margin-top: 20px;
+        padding-bottom: 3px;
+        text-align: right;
+    }
+    a.download_link {
+        padding: 6px 8px 5px 29px;
+        background-image: url('../../images/icon_download_s.gif');
+        background-repeat: no-repeat;
+        background-position: 7px center;
+        font-size: 12px;
+    }
+    a.download_link,
+    a.download_link:link,
+    a.download_link:hover,
+    a.download_link:active,
+    a.download_link:visited {
+        border: solid 1px silver;
+        border-radius: 3px;
+        background-color: transparent;
+        color: royalblue;
+    }
+    a.download_link:hover {
+        background-color: azure;
+        border-color: gray;
+        color: blue;
+    }
+    td.c_data a:hover, td.l_data a:hover {
+        text-decoration: underline;
+    }
+    #result_cnt {
+        margin-top: -8px;
+    }
+</style>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/enterprise/page_menu.php'); ?>
+      <div class="title"><span>事業者一覧</span></div>
+      <table class="datatable">
+        <div class="page_nav">
+            <div id="result_cnt">
+                登録件数　<?php echo valueFormat($this->list->count(), 'number', '#,##0'); ?> 件
+            </div>
+            <a class="download_link" href="enterprise/dcsv">一覧をCSVでダウンロード</a>
+        </div>
+        <tbody>
+          <tr>
+            <th rowspan="2">事業者ID</th>
+            <th>ログインID</th>
+            <th>事業者名</th>
+            <th>プラン</th>
+            <th>締め日</th>
+            <th>担当者名</th>
+            <th>担当部署</th>
+            <th>連絡先</th>
+            <th>&nbsp;</th>
+          </tr>
+          <tr>
+            <th colspan="8">備考</th>
+          </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td rowspan="2" class="r_data"><?php echo f_e($row["EnterpriseId"]); ?></td>
+            <td class="c_data"><?php echo f_e($row["LoginId"]); ?></td>
+            <td class="l_data"><a href="enterprise/detail/eid/<?php echo f_e($row["EnterpriseId"]); ?>"><?php echo f_e($row["EnterpriseNameKj"]); ?></a></td>
+            <td class="l_data"><?php echo f_e($row["PricePlanStr"]); ?></td>
+            <td class="l_data"><?php echo f_e($row["FixPatternStr"]); ?></td>
+            <td class="l_data"><?php echo f_e($row["CpNameKj"]) . '<br />(' . f_e($row["CpNameKn"]) . ')'; ?></td>
+            <td class="l_data"><?php echo f_e($row["DivisionName"]); ?></td>
+            <td class="l_data"><?php echo f_e($row["ContactPhoneNumber"]); ?></td>
+            <td class="c_data">
+              <a href="site/list/eid/<?php echo f_e($row["EnterpriseId"]); ?>">Site</a>
+            </td>
+          </tr>
+          <tr class="data">
+            <td colspan="8" class="l_data"><?php echo strlen($row["Note"]) ? f_e($row["Note"]) : ''; ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="9">
+              <img src="../../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    <!-- end contents -->
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

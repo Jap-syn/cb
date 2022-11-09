@@ -1,0 +1,58 @@
+<?php
+$links = array(
+  array('link' => 'operator/chgpw',             'text' => 'パスワード変更',                 'visible' => $this->menu_auth_info['kanriMenus']['chgpw'] ),
+  array('link' => 'gp/notice',                  'text' => 'お知らせ管理',                   'visible' => $this->menu_auth_info['kanriMenus']['notice'] ),
+  array('link' => 'credit/pointform',           'text' => '社内与信条件設定',               'visible' => $this->menu_auth_info['kanriMenus']['credit']),
+  array('link' => 'delimethod/list',            'text' => '配送方法設定',                   'visible' => $this->menu_auth_info['kanriMenus']['delimethod']),
+  array('link' => 'calendar/index',             'text' => 'カレンダー設定',                 'visible' => $this->menu_auth_info['kanriMenus']['calendar']),
+  array('link' => 'operator/list',              'text' => 'オペレーター管理',               'visible' => $this->menu_auth_info['kanriMenus']['operator']),
+  array('link' => 'gp/mailtf',                  'text' => 'メールテンプレート管理',         'visible' => $this->menu_auth_info['kanriMenus']['mailtf']),
+  array('link' => 'gp/gpmstrf/cls/18',          'text' => '督促分類マスター',               'visible' => $this->menu_auth_info['kanriMenus']['gpcls18']),
+  array('link' => 'gp/gpmstrf/cls/19',          'text' => 'キャリアマスター',               'visible' => $this->menu_auth_info['kanriMenus']['gpcls19']),
+  array('link' => 'gp/gpmstrf/cls/20',          'text' => '最終回収手段マスター',           'visible' => $this->menu_auth_info['kanriMenus']['gpcls20']),
+  array('link' => 'creditvalue/index',          'text' => '与信閾値設定',                   'visible' => $this->menu_auth_info['kanriMenus']['creditvalue']),
+  array('link' => 'cvsagent/list',              'text' => 'コンビニ収納代行会社管理',       'visible' => $this->menu_auth_info['kanriMenus']['cvsagent']),
+  array('link' => 'jnb/br',                     'text' => 'JNB支店マスター管理',            'visible' => $this->menu_auth_info['kanriMenus']['jnbbr']),
+  array('link' => 'smbcpa/br',                  'text' => 'SMBCバーチャル口座支店マスター管理',         'visible' => $this->menu_auth_info['kanriMenus']['smbcpabr']),
+  array(                                        'text' => ' ',                              'visible' => 1 ),
+  array('link' => 'opauthority/list',           'text' => '操作権限',                       'visible' => $this->menu_auth_info['kanriMenus']['opauthority']),
+  array('link' => 'priceplan/list',             'text' => '加盟店料金プラン',               'visible' => $this->menu_auth_info['kanriMenus']['priceplan']),
+  array('link' => 'agency/list',                'text' => '代理店一覧',                     'visible' => $this->menu_auth_info['kanriMenus']['agency']),
+  array('link' => 'payingcycle/list',           'text' => '立替サイクル一覧',               'visible' => $this->menu_auth_info['kanriMenus']['payingcycle']),
+  array('link' => 'gp/note',                    'text' => '備考マスター',                   'visible' => $this->menu_auth_info['kanriMenus']['gpnote']),
+  array('link' => 'template/index',             'text' => 'テンプレート一覧',               'visible' => $this->menu_auth_info['kanriMenus']['template']),
+  array('link' => 'commentregist/index',        'text' => 'コメント設定',                   'visible' => $this->menu_auth_info['kanriMenus']['commentregist']),
+  array('link' => 'systemcondition/index',      'text' => 'システム条件',                   'visible' => $this->menu_auth_info['kanriMenus']['systemcondition']),
+  array('link' => 'fixednote/list',             'text' => '定型備考管理',                   'visible' => $this->menu_auth_info['kanriMenus']['fixednote']),
+  array('link' => 'credittransfer/index',       'text' => '口座振替期間設定',               'visible' => $this->menu_auth_info['kanriMenus']['credittransfer']),
+  array(                                        'text' => ' ',                              'visible' => 1),
+  array('link' => 'ngaccess/list',              'text' => 'アカウントロック管理',           'visible' => $this->menu_auth_info['kanriMenus']['idlock'],           'large' => true),
+  array(                                        'text' => ' ',                              'visible' => 1),
+  array('link' => 'claimaccount/list',          'text' => '請求口座設定一覧',               'visible' => $this->menu_auth_info['kanriMenus']['claimaccountlist'], 'large' => true),
+  array('link' => 'claimaccount/detail/oid/0',  'text' => '請求口座設定（キャッチボール）', 'visible' => $this->menu_auth_info['kanriMenus']['claimaccountdetail'], 'large' => true),
+  array(                                        'text' => ' ',                              'visible' => 1),
+  array('link' => 'jnb/list',                   'text' => 'JNB契約一覧',                    'visible' => $this->menu_auth_info['kanriMenus']['jnblist'],          'large' => true),
+  array('link' => 'jnbmon/autorcpt',            'text' => 'JNB自動入金実行状況',            'visible' => $this->menu_auth_info['kanriMenus']['jnbmon'],           'large' => true),
+  array('link' => 'smbcpa/list',                'text' => 'SMBCバーチャル口座契約一覧',                 'visible' => $this->menu_auth_info['kanriMenus']['smbcpalist'], 'large' => true)
+);
+?>
+    <table style="font-size: 12px;" width="400" border="0" cellspacing="0" cellpadding="2">
+      <tr>
+        <td colspan="2" bgcolor="#FF99CC"><span class="style10">管理機能（管理者のみ使用可）</span></td>
+      </tr>
+      <tr>
+        <td width="60" rowspan="<?php echo f_e(count($links) + 1); ?>" align="center" valign="middle"><img src="../images/icon_administration.gif"></td>
+        <td>&nbsp;
+      </tr>
+    <?php foreach($links as $conf) { ?>
+      <tr>
+      <?php if($conf['visible']) { ?>
+          <?php if(!isset($conf['link'])) { ?>
+            <td>&nbsp;</td>
+          <?php } else { ?>
+            <td align="left"<?php if($conf['large']) echo ' style="font-size:14px"'; ?>>■<a href="<?php echo f_e($conf['link']); ?>"><?php echo f_e($conf['text']); ?></a></td>
+          <?php } ?>
+      <?php } ?>
+      </tr>
+    <?php } ?>
+    </table>

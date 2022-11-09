@@ -1,0 +1,126 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<style>
+.main_contents {
+	height: auto;
+}
+</style>
+<?php
+// body前のJS
+echo $this->render( 'member/search/pre_body_js.php' );
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+// Del By Takemasa(NDC) 20150811 Stt 機能廃止故コメントアウト化
+// // コマンドバー使用
+//
+// $commandBar = new CoralViewCommandBar(
+// 	// title
+// 	"検索条件入力",
+// 	// buttons
+// 	array(
+// 		new CoralViewCommandBarButton(
+// 			array(
+// 				CoralViewCommandBarButton::OPTION_ID => 'column_edit',
+// 				CoralViewCommandBarButton::OPTION_HREF => '#',
+// 				CoralViewCommandBarButton::OPTION_TEXT => '検索表示のカスタマイズ',
+// 				CoralViewCommandBarButton::OPTION_TITLE => '検索結果項目の並び順や表示・非表示をカスタマイズします'
+// 			)
+// 		)
+// 	)
+// );
+//
+// // コマンドバーのレンダリング
+// echo $commandBar->render();
+// Del By Takemasa(NDC) 20150811 End 機能廃止故コメントアウト化
+?>
+<center>
+<?php
+echo $this->render( 'member/search/search_form.php' );
+?>
+</center>
+</div>
+
+<?php
+// 結果カラム編集ダイアログ用
+echo $this->render( 'member/search/column_order_table.php' );
+
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php
+// body後のJS
+echo $this->render( 'member/search/post_body_js.php' );
+?>
+<script>
+//Del By Takemasa(NDC) 20150811 Stt 機能廃止故コメントアウト化
+// $("column_edit").onclick = function() {
+// 	return false;
+// };
+// Event.observe( $("column_edit"), "click", function(evt) {
+// 	loadData();
+// 	columnEditor.show();
+// }.bindAsEventListener( $("column_edit") ) );
+// Del By Takemasa(NDC) 20150811 End 機能廃止故コメントアウト化
+
+Event.observe( window, "load", function() {
+    onChangeSite();
+
+    $("SiteId").onchange = function() {
+        onChangeSite();
+    };
+} );
+/*
+ * 受付サイト変更イベント
+ */
+function onChangeSite() {
+
+    var siteid = document.getElementById('SiteId').value;
+    var url = "<?php echo $this->baseUrl; ?>/search/enablesite/siteid/" + siteid;
+    var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    if (res['status'] != 1) { return; }// 正しく結果を戻せない時は、何もしないで処理を抜ける
+
+    // 役務提供予定日
+    var obj = document.getElementById('ServiceExpectedDate_Mode');
+    var objtr = obj.parentNode.parentNode.parentNode;
+    objtr.style.display = (res['enableinfo']['isEnableServiceTargetClass'] == 1) ? "" : "none";
+
+    // テスト注文 (※なしの明示)
+
+    // 請求書別送
+    obj = document.getElementById('ClaimSendingClass_val21');
+    objtr = obj.parentNode.parentNode.parentNode;
+    objtr.style.display = (res['enableinfo']['isEnableSelfBillingFlg'] == 1) ? "" : "none";
+}
+</script>
+</html>

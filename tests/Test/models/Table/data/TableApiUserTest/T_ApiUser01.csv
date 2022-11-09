@@ -1,0 +1,2 @@
+ApiUserId,ApiUserNameKj,ApiUserNameKn,RegistDate,ServiceInDate,AuthenticationKey,PostalCode,PrefectureCode,PrefectureName,City,Town,Building,RepNameKj,RepNameKn,Phone,Fax,CpNameKj,CpNameKn,DivisionName,MailAddress,ContactPhoneNumber,ContactFaxNumber,ValidFlg,InvalidatedDate,InvalidatedReason,ConnectIpAddressList,Note,OemId
+10037,株式会社Ｅストアー,カブシキガイシャイーストアー,"2014-08-18 13:49:56",2014-08-18,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,吉野　彰,ヨシノ　アキラ,ショップサーブ事業部,a-yoshino@estore.co.jp,03-3595-2940,,1,NULL,NULL,221.253.41.210;210.160.220.8,,3

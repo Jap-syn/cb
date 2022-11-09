@@ -1,0 +1,51 @@
+div.title.t_status {
+    border-left: 7px coral solid;
+    border-bottom: 1px coral dotted;
+}
+
+#status {
+    height: 100px;
+}
+
+.status {
+    float: left;
+    margin: 5px 10px;
+}
+.status .status_title {
+    margin-top: 15px;
+    margin-left: 5px;
+    height: 5px;
+    width: 140px;
+}
+.status .status_title span {
+    padding: 6px 8px;
+    background: steelblue;
+    color: white;
+    font-size: 80%;
+    font-weight: bold;
+    border-radius: 5px;
+}
+.status .status_cnt {
+    width: 100px;
+    border:2px solid gainsboro;
+    text-align: center;
+    padding:25px 20px 15px 20px;
+    font-size:150%;
+    border-radius:5px;
+}
+
+.sidemenu ul {
+    margin: 15px 0 30px 20px;
+}
+.sidemenu li {
+    list-style:outside none;
+    background: #FFF url(../images/y_right.gif) no-repeat left center;
+    padding-left:20px;
+    margin:10px 0;
+}
+.sidemenu li a {
+    color: darkblue;
+}
+.sidemenu li a:hover {
+    text-decoration: underline;
+}

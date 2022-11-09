@@ -1,0 +1,32 @@
+<?php
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+echo $this->render( 'member/column_table.php' );
+
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>
+

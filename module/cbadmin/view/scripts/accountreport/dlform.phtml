@@ -1,0 +1,200 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/accountreport/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3>会計帳票ダウンロード</h3>
+      <form name="form" id="form" method="post" action="accountreport/dlreport">
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="label">出力対象(日次/月次)</td>
+              <td class="l_data">
+                <input type="radio" id="outputTarget" name="outputTarget" value="0" <?php if($this->outputTarget == 0){echo "checked";} ?> onclick="changeSelect(0)">日次　
+                <input type="radio" id="outputTarget" name="outputTarget" value="1" <?php if($this->outputTarget == 1){echo "checked";} ?> onclick="changeSelect(1)">月次
+              </td>
+            </tr>
+            <tr>
+              <td class="label">帳票名</td>
+              <td class="l_data"><?php echo $this->reportList; ?></td>
+            </tr>
+            <tr>
+              <td class="label">対象期間(YYYY-MM-DD)</td>
+              <td class="l_data">
+                <input type="text" id="targetPeriodFrom" name="targetPeriodFrom" value="<?php echo $this->targetPeriodFrom; ?>">
+                ～
+                <input type="text" id="targetPeriodTo" name="targetPeriodTo" value="<?php echo $this->targetPeriodTo; ?>">
+                <?php show_error_message($this->error['targetPeriodFrom']); ?>
+                <?php show_error_message($this->error['targetPeriodTo']); ?>
+                <?php show_error_message($this->error['targetPeriodFromTo']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">対象月(YYYY-MM)</td>
+              <td class="l_data">
+                <input type="text" id="targetMonth" name="targetMonth" value="<?php echo $this->targetMonth; ?>">
+                <?php show_error_message($this->error['targetMonth']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">選択条件(絞込み)</td>
+              <td class="l_data">
+                <input type="radio" id="selectCondition" name="selectCondition" value="0" <?php if($this->selectCondition == 0){echo "checked";} ?> onclick="setTarget(0)">全て　
+                <input type="radio" id="selectCondition" name="selectCondition" value="1" <?php if($this->selectCondition == 1){echo "checked";} ?> onclick="setTarget(1)">OEM全て　
+                <input type="radio" id="selectCondition" name="selectCondition" value="2" <?php if($this->selectCondition == 2){echo "checked";} ?> onclick="setTarget(2)">CB直販全て　
+                <input type="radio" id="selectCondition" name="selectCondition" value="3" <?php if($this->selectCondition == 3){echo "checked";} ?> onclick="setTarget(3)">OEM指定　
+                <input type="radio" id="selectCondition" name="selectCondition" value="4" <?php if($this->selectCondition == 4){echo "checked";} ?> onclick="setTarget(4)">加盟店指定
+              </td>
+            </tr>
+            <tr>
+              <td class="label">OEM</td>
+              <td class="l_data">
+                <select id="oem" name="oem" value="<?php echo $this->oemId; ?>">
+<?php foreach ($this->oemList as $key => $caption) {?>
+<?php   $fd = ''; $selected = isset($fd['oemId']) == $key ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($key); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+<?php } ?>
+                </select>
+                <?php show_error_message($this->error['oem']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">加盟店ID</td>
+              <td class="l_data">
+                <input type="text" id="enterpriseId" name="enterpriseId">
+                <?php show_error_message($this->error['enterpriseId']); ?>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td style="padding: 2px 0px">
+                <input type="submit" id="submit_button" value="　ダウンロード　" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+  Event.observe(window, "load", function() {
+    var check1 = <?php echo $this->outputTarget; ?>;
+    var check2 = <?php echo $this->selectCondition; ?>;
+
+    setOutput(check1);
+    setTarget(check2);
+  });
+
+  // 出力対象変更ｲﾍﾞﾝﾄ
+  function setOutput(check) {
+    if (check == 0) {
+        document.getElementById('targetPeriodFrom').disabled = false;
+        document.getElementById('targetPeriodTo').disabled = false;
+        document.getElementById('targetMonth').disabled = true;
+    } else {
+        document.getElementById('targetPeriodFrom').disabled = true;
+        document.getElementById('targetPeriodTo').disabled = true;
+        document.getElementById('targetMonth').disabled = false;
+    }
+  }
+  // 選択条件変更ｲﾍﾞﾝﾄ
+  function setTarget(check) {
+    if (check == 0 || check == 1 || check == 2) {
+        document.getElementById('oem').disabled = true;
+        document.getElementById('enterpriseId').disabled = true;
+    } else if (check == 3) {
+        document.getElementById('oem').disabled = false;
+        document.getElementById('enterpriseId').disabled = true;
+    } else {
+        document.getElementById('oem').disabled = true;
+        document.getElementById('enterpriseId').disabled = false;
+    }
+  }
+
+  // ｾﾚｸﾄﾎﾞｯｸｽの内容を変更する
+  function changeSelect(check) {
+    var h = '<?php echo $this->baseUrl;?>/accountreport/dlform/outputTarget/' + check;
+
+    location.href = h;
+  }
+
+  // 帳票名変更ｲﾍﾞﾝﾄ
+  function setReport() {
+    var selected = $('reportList').selectedIndex;
+    var reportid = $('reportList').options[selected].value;
+
+    var i = 0;
+    var sel = document.getElementsByName('selectCondition');
+    if (reportid == 1 || reportid == 3 || reportid == 7 || reportid == 9) {
+        for (i = 0; i < sel.length; i++) {
+            if (i == 1 || i == 2 || i == 3) {
+                sel[i].disabled = true;
+            } else {
+                sel.disabled = false;
+            }
+        }
+    } else if (reportid == 2 || reportid == 4 || reportid == 6 || reportid == 18) {
+        for (i = 0; i < sel.length; i++) {
+            if (i == 1 || i == 2) {
+                sel[i].disabled = true;
+            } else {
+                sel.disabled = false;
+            }
+        }
+    } else if (reportid == 11) {
+        for (i = 0; i < sel.length; i++) {
+            if (i == 0) {
+                sel[i].disabled = false;
+            } else {
+                sel.disabled = true;
+            }
+        }
+    } else if (reportid == 12) {
+        for (i = 0; i < sel.length; i++) {
+            if (i == 1 || i == 2 || i == 4) {
+                sel[i].disabled = true;
+            } else {
+                sel.disabled = false;
+            }
+        }
+    } else if (reportid == 20) {
+        for (i = 0; i < sel.length; i++) {
+            sel[i].disabled = true;
+        }
+    } else {
+        for (i = 0; i < sel.length; i++) {
+            sel[i].disabled = false;
+        }
+    }
+  }
+</script>
+</html>

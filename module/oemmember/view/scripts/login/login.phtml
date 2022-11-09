@@ -1,0 +1,56 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+$oemInfo = $this->currentOemInfo;
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+?>
+
+<form id="login_form" class="login_form" method="post" action="login/auth">
+	<h3>ログイン</h3>
+	<ul>
+		<li class="field_area">
+			<label for="login_id">
+				ログインID：
+				<input id="login_id" name="login_id" type="text" size="32" />
+			</label>
+		</li>
+		<li class="field_area">
+			<label for="password">
+				パスワード：
+				<input id="password" name="password" type="password" size="32" />
+			</label>
+		</li>
+		<li class="button_container">
+			<button type="submit" disabled="disabled">ログイン</button>
+		</li>
+		<li class="information">
+			パスワードを忘れた方は下記までお問い合わせください<br />
+			<?php if($oemInfo['ServicePhone']) { ?>
+			TEL: <?php echo $oemInfo['ServicePhone']; ?>
+			<?php } ?>
+			<?php echo $oemInfo['SupportTime']; ?>
+			<?php if($oemInfo['SupportMail']) { ?>
+						<br />
+			e-mail: <a href="mailto:<?php echo $oemInfo['SupportMail'];//f_e($mail_addr); ?>"><?php echo $oemInfo['SupportMail'];//f_e($mail_addr); ?></a>
+			<?php } ?>
+		</li>
+	</ul>
+</form>
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>
+

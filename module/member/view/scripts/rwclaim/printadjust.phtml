@@ -1,0 +1,119 @@
+<?php
+use member\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+<style>
+table#settingtable {
+    width: 600px;
+    margin: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+#settingtable tr {
+    background-color: white;
+    font: black
+}
+#settingtable td {
+    font-size: 14px;
+    padding: 5px;
+}
+#buttons {
+    text-align: center;"
+}
+#buttons input {
+    margin: 10px;
+    padding: 5px;
+    background-color: lightgrey;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+<?php if (isset($this->message)) { ?>
+<div id="message" align="center"><?php echo $this->message; ?></div>
+<?php } ?>
+<?php if (!empty($this->errors)) { ?>
+<font color="red"">
+※：入力に不備があります。登録内容を見直してください。
+<?php foreach($this->errors as $error) { ?>
+<li><?php echo f_e($error); ?></li>
+<?php } ?>
+</font>
+<?php } ?>
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+    // title
+    '余白を設定します'
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+
+  <!-- start contents -->
+  <div id="contents" class="main_contents">
+  <form id='form' name='form' action="rwclaim/saveprintadjust">
+    <div align="center">
+    お使いのプリンターに合わせて、上端・左端からの印字位置を設定してください。<br />
+    デフォルトから広げるときはプラス値、狭めるときはマイナス値を入力してください。<br />
+    </div>
+    <table id="settingtable" cellpadding="0" cellspacing="0" border="1">
+      <tr>
+        <td>上マージン</td>
+        <td><input type="text" name="PrintAdjustmentY" id="PrintAdjustmentY" value="<?php echo f_e($this->PrintAdjustmentY); ?>" />ポイント</td>
+      </tr>
+        <td>左マージン</td>
+        <td><input type="text" name="PrintAdjustmentX" id="PrintAdjustmentX" value="<?php echo f_e($this->PrintAdjustmentX); ?>" />ポイント</td>
+      <tr>
+      </tr>
+    </table>
+    <div id="buttons">
+      <input name="submit2" id="submit2" type="button" value="テスト印刷"/>
+      <input name="submit1" id="submit1" type="submit" value="設定反映" />
+      <input type="button" value="戻る" onclick="location.href='<?php echo $this->baseUrl;?>/rwclaim/list'"/>
+    </div>
+  </form>
+  </div>
+  <!-- end contents -->
+
+<table style="clear:both;" width="1000" class="datatable" cellpadding="0" cellspacing="0" border="0"></table>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php echo $this->render('member/tab_support.php'); ?>
+
+<script>
+Event.observe($("submit2"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+
+    // PDF出力処理
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/testprint?" + str;
+    var ref = window.open( url );
+});
+</script>
+</html>

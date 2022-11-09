@@ -1,0 +1,178 @@
+.main_contents {
+	height: auto;
+}
+
+.regist_table {
+	border: solid #999999;
+	border-width: 1px 0px 0px 1px;
+	border-collapse: collapse;
+}
+
+.regist_table th,
+.regist_table td {
+	border: solid #999999;
+	border-width: 0px 1px 1px 0px;
+	padding: 2px 8px;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 10pt;
+}
+
+.regist_table th {
+	background-color: #0066FF;
+	color: white;
+}
+
+.regist_table td.data {
+	background-color: #b3c6ff;
+	text-align: left;
+}
+
+td.data div {
+	white-space: nowrap;
+	margin-bottom: 1px;
+}
+
+.order_date {
+	font-size: 14pt;
+	font-weight: bold;
+	color: #666666;
+}
+
+.order_id {
+	font-size: 9pt;
+}
+
+input.journal_number {
+	width: 110px;
+}
+
+tr.error,
+tr.error td {
+	background-color: mistyrose;
+}
+
+tr.error td.data {
+	background-color: pink;
+}
+
+tr.disabled_row td {
+	background-color: ghostwhite;
+}
+
+tr.disabled_row td.data {
+	background-color: silver;
+}
+
+tr.readonly,
+tr.readonly td {
+	background-color: white;
+	color: red;
+}
+
+tr.readonly td.data {
+	background-color: white;
+	color: red;
+	font-size: 12pt;
+	font-weight: bold;
+	text-align: center;
+}
+
+tr.readonly td .order_date {
+	color: red;
+	font-size: 12pt;
+}
+
+.order_id a:link,
+.order_id a:hover,
+.order_id a:visited,
+.order_id a:active {
+	text-decoration: none;
+	color: blue;
+}
+
+.order_id a:hover {
+	color: royalblue;
+	text-decoration: underline;
+}
+
+tr.readonly .order_id a {
+	color: red;
+}
+
+tr.readonly .order_id a:hover {
+	color: climson;
+}
+
+tr.progress,
+tr.progress td,
+tr.progress td *,
+tr.progress td .order_date,
+tr.progress td .order_id {
+	color: green;
+}
+tr.progress .order_id a {
+	color: green;
+}
+
+tr.progress .order_id a:hover {
+	color: mediumseagreen;
+}
+
+#loadingMessage {
+	width: 95%;
+	margin : 4px;
+	border: solid 2px silver;
+	background-color: ghostwhite;
+	padding: 3px;
+	font-size: 12pt;
+	color: gray;
+	opacity: 0.8;
+	-moz-opacity: 0.8;
+	filter: alpha(opacity=80);
+}
+
+div.summary {
+	margin: 0px 0px 8px 0px;
+	padding: 3px 8px 6px 8px;
+	border: solid 0px silver;
+	border-top-width: 1px;
+	background-color: lemonchiffon;
+	color: #666;
+	font-size: 10pt;
+	text-align: right;
+}
+
+.caution_area {
+	background-color: lavenderblush;
+}
+
+.csv_caution {
+	background-color: lavenderblush;
+}
+
+.error_cancel_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_cancel_container h4,
+ul.error_cancel_table {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: yellow;
+}
+
+.error_cancel_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: black;
+}
+
+ul.error_cancel_table {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: khaki;
+}

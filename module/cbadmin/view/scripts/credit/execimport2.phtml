@@ -1,0 +1,26 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.error_message {
+	color: red;
+}
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">与信条件新規インポート</h3>
+<?php echo $this->message; ?>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  <div>
+</body>
+</html>

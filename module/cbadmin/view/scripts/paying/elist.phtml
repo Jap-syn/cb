@@ -1,0 +1,103 @@
+<?php
+use models\View\ViewChargeConfirm;
+use cbadmin\Application;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$mdlViewChargeConfirm = new ViewChargeConfirm(Application::getInstance()->dbAdapter);
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/paying/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替実行済み</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1">
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    -->
+    <form name="form" method="post" action="paying/elist">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              立替確定日範囲　(YYYY-MM-DD)　：　
+              <input type="text" name="f" id="f" value="<?php echo f_e($this->f); ?>" />～
+              <input type="text" name="t" id="t" value="<?php echo f_e($this->t); ?>" />
+              <input type="checkbox" name="isOnlyTudoSeikyu" id="isOnlyTudoSeikyu" <?php echo ($this->isOnlyTudoSeikyu == 1 or $this->isOnlyTudoSeikyu == 'on') ? 'value="1" checked="checked"' : ''; ?> />都度請求のみ表示
+              <input style="margin: 0px 20px; " type="submit" value="　表　示　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <?php foreach($this->list as $oem_key=>$oem_data){?>
+        <table style="clear:both;" class="datatable" cellpadding="1" cellspacing="0" border="0">
+            <td class="c_data">
+                <span style="color: red;"><?php if($oem_key == 0){ echo "キャッチボール加盟店";}else{ echo $this->oem_data[$oem_key]['OemNameKj']."/".$this->oem_data[$oem_key]['PayingMethodName'];}?></span>
+            </td>
+        </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>立替確定日</th>
+            <th>立替予定日
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替額</th>
+            <th>事業者計</th>
+            <th>立替総額</th>
+            <th>立替実行確認</th>
+          </tr>
+          <?php foreach($oem_data as $key=>$value){?>
+            <?php for ($loop=1; $loop<=$this->numSimePtn; $loop++){?>
+              <?php if ($loop == 1) { ?>
+                  <tr>
+                    <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data">
+                      <a href="paying/dlist2/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>/oemid/<?php echo $oem_key;?>/tudo/<?php echo ($this->isOnlyTudoSeikyu == 1 or $this->isOnlyTudoSeikyu == 'on') ? '1' : '0'; ?>/execFlg/1">
+                        <?php echo $value["DecisionDate"]; ?>
+                      </a>
+                    </td>
+                    <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data"><?php echo $value["ExecScheduleDate"]; ?></td>
+                    <td class="c_data"><?php echo $value["P1NM"]; ?></td>
+                    <td class="c_data"><?php echo $value["P1FD"]; ?></td>
+                    <td class="r_data"><?php echo $value["P1CNT"]; ?></td>
+                    <td class="r_data"><?php echo valueFormat($value["P1PAY"], 'number', '#,##0'); ?></td>
+                    <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+                    <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+                    <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data">
+                      立替実行済み
+                      </p>
+                      <?php if($mdlViewChargeConfirm->isClaimPdfDownLoad($value['SeqList'])) { ?>
+                        都度請求あり
+                      <?php } else { ?>
+                        都度請求なし
+                      <?php } ?>
+                    </td>
+                  </tr>
+              <?php } else { ?>
+                  <tr>
+                    <td class="c_data"><?php echo $value["P" . $loop . "NM"]; ?></td>
+                    <td class="c_data"><?php echo $value["P" . $loop . "FD"]; ?></td>
+                    <td class="r_data"><?php echo $value["P" . $loop . "CNT"]; ?></td>
+                    <td class="r_data"><?php echo valueFormat($value["P" . $loop . "PAY"], 'number', '#,##0'); ?></td>
+                  </tr>
+              <?php } ?>
+            <?php }?>
+          <?php } ?>
+        </tbody>
+      </table>
+        <?php } ?>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<?php
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$title_map = array(
+  'raw' => 'すべてのログ',
+  'id' => sprintf('ログインID：[%s] のログ', $this->loginid),
+  'ip' => sprintf('IPアドレス：[%s] のログ', $this->ip),
+  'hash' => sprintf('クライアント識別子：[%s] のログ', $this->hash)
+);
+$app_map = array(
+  '0' => 'CB管理画面',
+  '1' => '事業者(直収)',
+  '2' => 'OEM管理画面',
+  '3' => '事業者(OEM)'
+);
+$logtype_map = array(
+  '0' => 'ログイン',
+  '1' => 'ロックアウト',
+  '2' => 'ログイン'
+);
+$result_map = array(
+  '0' => array('txt' => '認証失敗', 'caption' => '認証に失敗しました'),
+  '-1' => array('txt' => '認証成功', 'caption' => '認証に成功しました'),
+  '1' => array('txt' => 'クライアント', 'caption' => 'クライアントレベルでロックアウトされました'),
+  '2' => array('txt' => 'IDレベル', 'caption' => 'IDレベルでロックアウトされました'),
+  '101' => array('txt' => '認証失敗 [CL]', 'caption' => 'クライアントレベルでロックアウト中に発生した認証失敗です'),
+  '102' => array('txt' => '認証失敗 [ID]', 'caption' => 'IDレベルでロックアウト中に発生した認証失敗です')
+);
+$nav_base_url = $this->current_action;
+if($this->mode == 'id') {
+  $nav_base_url .= sprintf('/loginid/%s', $this->loginid);
+} else
+if($this->mode == 'ip') {
+  $nav_base_url .= sprintf('/ip/%s', $this->ip);
+} else
+if($this->mode == 'hash') {
+  $nav_base_url .= sprintf('/hash/%s', $this->hash);
+}
+$this->nav_base_url = $nav_base_url;
+?>
+<script type="text/javascript">
+var
+  initialized = false,
+  showScrollToTop = function() {
+    if (!base) { return; }
+    if (!base.UI) { return; }
+	var
+	  b = base.UI.currentBrowser(),
+	  base = (b == base.UI.browserTypes.opera ? document.body : document.documentElement),
+	  scrollable = base.clientHeight < base.scrollHeight,
+	  target = $('scroll-to-top'),
+	  func = scrollable ? (function() {
+		if(!initialized) return Element.show;
+		return function(ele) {
+		  if(!Element.visible(ele)) {
+			bytefx.fade(ele, 0, 100, 3, function() { console.log('test'); Element.show(ele); });
+		  }
+		};
+	  })() : (function() {
+		if(!initialized) return Element.hide;
+		return function(ele) {
+		  if(Element.visible(ele)) {
+			bytefx.fade(ele, 100, 0, 3, function() { console.log('test'); Element.hide(ele); });
+		  }
+		};
+	  })();
+	func(target);
+  };
+Event.observe(window, 'load', function() {
+  Event.observe(window, 'resize', showScrollToTop);
+  showScrollToTop();
+  initialized = true;
+});
+</script>
+</head>
+<body>
+<div id="top-of-page"></div>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/authlog/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+	  <?php echo f_e($title_map[$this->mode]); ?>
+	  <?php if(isset($this->date)) { ?>
+		<span class="filter-info">(<?php echo f_df($this->date, 'Y年 n月 j日'); ?>)</span>
+	  <?php } ?>
+	</h3>
+
+  <?php if(isset($this->error)) { /* ================================================ エラー時はエラーメッセージのみ表示 */ ?>
+
+	<p><?php echo f_e($this->error); ?></p>
+
+  <?php } else { /* ================================================================================== ログの出力 */?>
+
+	<div id="nav-in-page">
+	  <h3>このページの日付一覧</h3>
+	  <ul></ul>
+	</div>
+
+	<?php /* ページナビゲーションの挿入 --------------------------------------------------------------- */ ?>
+	<?php $this->is_bottom_nav = 0; echo $this->render('cbadmin/authlog/page_nav.php'); ?>
+
+	<?php /* ログテーブル ------------------------------------------------------------------------- */ ?>
+	<table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+	  <thead>
+		<tr>
+		  <th style="width: 60px">No.</th>
+		  <th style="width: 105px">日時</th>
+		  <th>対象サイト</th>
+		  <th style="width: 90px">IPアドレス</th>
+		  <th>ログインID</th>
+		  <th style="width: 140px">クライアント識別子</th>
+		  <th>ログ種別</th>
+		  <th>結果</th>
+		</tr>
+	  </thead>
+
+	  <tbody>
+	  <?php
+	  $h4_id_list = array();
+	  $last_date = null;
+	  $link_suffix = isset($this->date) ? sprintf('/date/%s', $this->date) : '';
+	  foreach($this->logs as $i => $row) {
+		$dt = f_df($row['LogTime'], 'Y-m-d');
+		if($dt != $last_date) {
+		  $h4_id = sprintf('date-%s', f_df($dt, 'Ymd'));
+	  ?>
+		<tr id="<?php echo f_e($h4_id) ?>" class="date-header">
+		  <td colspan="8">
+			<?php echo f_df($dt, 'Y年 n月 j日'); ?>
+			<a class="scroll-to-top" href="javascript:void(0)" onclick="bytefx.scroll($('top-of-page'), 15)">[TOP]</a>
+			<div class="clear-float"></div>
+		  </td>
+		</tr><?php
+		  $last_date = $dt;
+		  $h4_id_list[] = $h4_id;
+		}
+	  ?>
+		<tr class="logtype-<?php echo f_e($row['LogType']); ?> <?php echo f_e($i % 2 ? 'even' : 'odd'); ?>">
+		  <td class="r_data"><?php echo f_e($this->start + $i); ?></td>
+		  <td class="l_data"><?php echo f_df($row['LogTime'], 'y-m-d H:i:s'); ?></td>
+		  <td class="l_data"><?php echo f_e($app_map[$row['TargetApp']]); if(strlen($row['OemAccessId'])) echo f_e(sprintf(' (%s)', $row['OemAccessId'])); ?></td>
+		  <td class="l_data">
+			<a href="authlog/byip/ip/<?php echo f_e($row['IpAddress'].$link_suffix); ?>" title="このIPアドレスのログを表示">
+			  <?php echo f_e($row['IpAddress']); ?>
+			</a>
+		  </td>
+		  <td class="l_data">
+			<a href="authlog/byid/loginid/<?php echo f_e($row['LoginId'].$link_suffix); ?>" title="このログインIDのログを表示">
+			  <?php echo f_e($row['LoginId']); if(strlen($row['AltLoginId'])) echo f_e(sprintf(' (代理：%s)', $row['AltLoginId'])); ?>
+			</a>
+		  </td>
+		  <td class="l_data">
+			<a href="authlog/byhash/hash/<?php echo f_e($row['ClientHash'].$link_suffix); ?>" title="クライアント識別子 '<?php echo f_e($row['ClientHash']); ?>' のログを表示">
+			  <?php echo f_e(substr($row['ClientHash'], 0, 19) . '…'); ?>
+			</a>
+		  </td class="l_data">
+		  <td class="l_data"><?php echo f_e($logtype_map[$row['LogType']]); ?></td>
+		  <td class="l_data result-<?php echo f_e($row['Result']); ?>">
+			<?php $info = $result_map[$row['Result']]; ?>
+			<span<?php if(isset($info['caption'])) echo sprintf(' title="%s"', f_e($info['caption'])); ?>><?php echo f_e($info['txt']); ?></span>
+		  </td>
+		</tr>
+	  <?php } ?>
+	  </tbody>
+	</table>
+
+	<?php /* ページナビゲーションの挿入 --------------------------------------------------------------- */ ?>
+	<?php $this->is_bottom_nav = 1; echo $this->render('cbadmin/authlog/page_nav.php'); ?>
+
+	<?php /* ページトップへ移動 --------------------------------------------------------------------- */ ?>
+    <div id="scroll-to-top" class="submit-area">
+      <a href="javascript:void(0)" onclick="bytefx.scroll($('top-of-page'), 15)">ページの先頭へ</a>
+    </div>
+
+	<script type="text/javascript">
+	<?php echo Json::encode($h4_id_list); ?>.each(function(id, i) {
+	  var
+		link = Object.extend(document.createElement('a'), {
+		  href : window.location.href + '#{0}'.format(id),
+		  innerHTML : Date.parseExact(id.replace(/^date-/, ''), 'yyyyMMdd').format('yyyy年 M月 d日'),
+		  onclick : function() { bytefx.scroll($(id), 15); return false; }
+		}),
+		li = document.createElement('li');
+	  li.appendChild(link);
+	  $('nav-in-page').getElementsByTagName('ul')[0].appendChild(li);
+	});
+	</script>
+  <?php } /* ================================================================================ 出力内容分岐の終了 */ ?>
+  </div>
+
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

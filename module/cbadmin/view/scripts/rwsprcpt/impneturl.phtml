@@ -1,0 +1,41 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">ネットDE受取URL・PW取得</h3>
+    <h4><?php echo $this->message; ?></h4>
+      <p>取込エラーデータ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>行</th>
+            <th>受取番号</th>
+            <th>お客様番号</th>
+            <th>WCOS ID</th>
+            <th>エラー情報</th>
+          </tr>
+          <?php foreach ($this->listNa as $row) { ?>
+          <tr>
+            <td class="l_data"><?php echo f_e($row['RowNo']); ?></td>
+            <td class="l_data"><?php echo f_e($row['CoYoyakuNum']); ?></td>
+            <td class="l_data"><?php echo f_e($row['CoRecvNum']); ?></td>
+            <td class="l_data"><?php echo f_e($row['CoWcosId']); ?></td>
+            <td class="l_data"><?php echo f_e($row['Error']); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

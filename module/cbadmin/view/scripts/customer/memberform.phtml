@@ -1,0 +1,290 @@
+<?php
+use Zend\Db\Sql\Predicate\IsNull;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$fd = $this->data;
+
+function show_error_message( $messages ) {
+  if( empty( $messages ) ) return;
+  if( ! is_array( $messages ) ) $messages = array( $messages );
+  $list = array();
+  foreach( $messages as $msg ) $list[] = f_e( $msg );
+  echo '<div class="input_error_message">';
+  echo join( '<br />', $list );
+  echo '</div>';
+}
+?>
+<style>
+  .input_error_message {
+    color: red;
+  }
+</style>
+</head>
+<script type="text/javascript">
+  function BtoBCreditLimitAmountSet()
+  {
+    var v = <?php echo $fd['BtoBCreditLimitAmountFlg']; ?>;
+    if( v == 0 ) {
+      document.getElementById( 'BtoBCreditLimitAmount' ).disabled = true;
+    } else if ( v == 1 ) {
+      document.getElementById( 'BtoBCreditLimitAmount' ).disabled = false;
+    }
+  }
+
+  function check()
+  {
+    // ブラック顧客の削除確認
+    if( document.getElementById( 'ValidFlg' ).checked == false )
+    {
+      var v = <?php echo $fd['ValidFlg']; ?>;
+      var b = <?php echo $fd['BlackFlg']; ?>;
+      if( v == 1 && b == 1 )
+      {
+        if( confirm( 'ブラック登録顧客ですが、削除しますか？' ) )
+        {
+          setTimeout(disable_buttons, 0);
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function ctlRequestSubStatus()
+  {
+      if (document.getElementById('RequestStatus').value == 1) {
+          document.getElementById('RequestSubStatus').disabled = false;
+      } else {
+          document.getElementById('RequestSubStatus').disabled = true;
+          document.getElementById('RequestSubStatus').value= 0;
+      }
+  }
+
+  function dispConfirm()
+  {
+      document.getElementById('RequestSubStatus').disabled = false;
+      return true;
+  }
+</script>
+<body onload="javascript:BtoBCreditLimitAmountSet();ctlRequestSubStatus();">
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/customer/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3>事業者別顧客編集</h3>
+      <?php if( !empty( $this->error ) ) { ?>
+      <div style="border: double 3px firebrick; background-color: lemonchiffon; margin: 5px 25px; padding: 5px 10px; color: crimson">
+        ※：入力に不備があります。登録内容を見直してください。
+      </div>
+      <?php } ?>
+      <form name="form" id="form" method="post" action="customer/memberconfirm">
+        <input name="form[EntCustSeq]" id="EntCustSeq" type="hidden" value="<?php echo f_e( $fd['EntCustSeq'] ); ?>" />
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="2" class="l_data">【基本情報】</td>
+            </tr>
+            <tr>
+              <td class="r_label">事業者ID</td>
+              <td class="l_data"><?php echo f_e( $fd['EnterpriseId'] ); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">事業者名</td>
+              <td class="l_data"><?php echo f_e( $fd['EnterpriseNameKj'] ); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">顧客ID</td>
+              <td class="l_data"><?php echo f_e( $fd['EntCustSeq'] ); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">顧客名<font color="red">*</font></td>
+              <td class="l_data">
+                <input size="35" name="form[NameKj]" type="text" id="NameKj" class="must" value="<?php echo f_e($fd['NameKj']); ?>" />
+                <?php show_error_message($this->error['NameKj']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">顧客名カナ</td>
+              <td class="l_data">
+                <input size="35" name="form[NameKn]" type="text" id="NameKn" value="<?php echo f_e($fd['NameKn']); ?>" />
+                <?php show_error_message($this->error['NameKn']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">住所<font color="red">*</font></td>
+              <td class="l_data">〒
+                <input name="form[PostalCode]" type="text" id="PostalCode" value="<?php echo f_e( $fd['PostalCode'] ); ?>" />
+                <input type="button" id="postal_button" value="検索"  /><br />
+                <input size="80" name="form[UnitingAddress]" type="text" id="UnitingAddress" value="<?php echo f_e( $fd['UnitingAddress'] ); ?>" />
+                <?php show_error_message( $this->error['PostalCode'] ); ?>
+                <?php show_error_message( $this->error['UnitingAddress'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="l_data">【基本情報】</td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号<font color="red">*</font></td>
+              <td class="l_data">
+                <input size="20" name="form[Phone]" type="text" id="Phone" class="must" value="<?php echo f_e($fd['Phone']); ?>" />
+                <?php show_error_message($this->error['Phone']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">メールアドレス</td>
+              <td class="l_data">
+                <input size="40" name="form[MailAddress]" type="text" id="MailAddress" class="must" value="<?php echo f_e($fd['MailAddress']); ?>" />
+                <?php show_error_message($this->error['MailAddress']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="l_data">【その他】</td>
+            </tr>
+            <tr>
+              <td class="r_label">BtoB与信限度額</td>
+              <td class="l_data">あり<input name="form[BtoBCreditLimitAmountFlg]" id="BtoBCreditLimitAmountFlg" type="radio" value="1"<?php if( $fd['BtoBCreditLimitAmountFlg'] == 1 ) echo ' checked="checked"'; ?> onclick="document.getElementById( 'BtoBCreditLimitAmount' ).disabled = false;"/>　
+              なし<input name="form[BtoBCreditLimitAmountFlg]" id="BtoBCreditLimitAmountFlg" type="radio" value="0"<?php if( $fd['BtoBCreditLimitAmountFlg'] == 0 ) echo ' checked="checked"'; ?> onclick="document.getElementById( 'BtoBCreditLimitAmount' ).disabled = true;" /><br />
+              限度額　<input name="form[BtoBCreditLimitAmount]" type="text" id="BtoBCreditLimitAmount" value="<?php echo f_e( $fd['BtoBCreditLimitAmount'] ); ?>" />　円
+              <?php show_error_message( $this->error['BtoBCreditLimitAmount'] ); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">付帯情報</td>
+              <td class="l_data">
+              <input name="BlackFlg" id="BlackFlg" type="checkbox" disabled="disabled"<?php if( $fd['BlackFlg'] == 1 ) echo ' checked="checked"'; ?> />ブラック顧客　
+              <input name="GoodFlg" id="GoodFlg" type="checkbox" disabled="disabled"<?php if( $fd['GoodFlg'] == 1 ) echo ' checked="checked"'; ?> />優良顧客　
+              <input name="ClaimerFlg" id="ClaimerFlg" type="checkbox" disabled="disabled"<?php if( $fd['ClaimerFlg'] == 1 ) echo ' checked="checked"'; ?> />クレーマー　
+              <input name="RemindStopFlg" id="RemindStopFlg" type="checkbox" disabled="disabled"<?php if( $fd['RemindStopFlg'] == 1 ) echo ' checked="checked"'; ?> />督促ストップ　
+              <input name="IdentityDocumentFlg" id=" dentityDocumentFlg" type="checkbox" disabled="disabled"<?php if( $fd['IdentityDocumentFlg'] == 1 ) echo ' checked="checked"'; ?> />身分証アップロード
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">メモ</td>
+              <td class="l_data">
+              <textarea name="form[Note]" id="Note" rows="3" cols="60"><?php echo f_e( $fd['Note'] ); ?></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="l_data">【口座振替情報】</td>
+            </tr>
+            <tr>
+              <td class="label">金融機関</td>
+              <td class="data">
+                銀行名<input size="30" name="form[FfName]" type="text" id="FfName" value="<?php echo f_e($fd['FfName']); ?>" />　
+                銀行番号<input size="10" name="form[FfCode]" type="text" id="FfCode" value="<?php echo f_e($fd['FfCode']); ?>" /><br />
+                支店名<input size="30" name="form[FfBranchName]" type="text" id="FfBranchName" value="<?php echo f_e($fd['FfBranchName']); ?>" />　
+                支店番号<input size="10" name="form[FfBranchCode]" type="text" id="FfBranchCode" value="<?php echo f_e($fd['FfBranchCode']); ?>" /><br />
+                預金種目
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['FfAccountClass'] as $value => $caption) { ?>
+                    <label for="FfAccountClass<?php echo f_e($value); ?>">
+                      <?php $checked = $fd['FfAccountClass'] == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[FfAccountClass]" id="FfAccountClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  </span><br />
+                口座番号<input name="form[FfAccountNumber]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountNumber']); ?>" /><br />
+                預金者名<input size="30" name="form[FfAccountName]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountName']); ?>" />（半角入力）<br />
+                ※半角小文字や[ｰ]は使用できません。半角大文字および[-]を使用してください
+                <?php show_error_message($this->error['FfName']); ?>
+                <?php show_error_message($this->error['FfCode']); ?>
+                <?php show_error_message($this->error['FfBranchName']); ?>
+                <?php show_error_message($this->error['FfBranchCode']); ?>
+                <?php show_error_message($this->error['FfAccountClass']); ?>
+                <?php show_error_message($this->error['FfAccountNumber']); ?>
+                <?php show_error_message($this->error['FfAccountName']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">申込完了予定日</td>
+              <td class="data">
+                <input name="form[RequestCompScheduleDate]" type="text" id="RequestCompScheduleDate" value="<?php echo f_e($fd['RequestCompScheduleDate']); ?>" />
+                <input type="button"  id="setDate" value="日付セット" />
+                <?php show_error_message($this->error['RequestCompScheduleDate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">申込ステータス</td>
+              <td class="data">
+                <select id="RequestStatus" name="form[RequestStatus]" value="<?php echo f_e($fd['RequestStatus']); ?>" onChange="ctlRequestSubStatus();">
+                <?php foreach($this->master_map['RequestStatus'] as $value => $caption) { ?>
+                  <?php $selected = $fd['RequestStatus'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                <?php } ?>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">申込サブステータス</td>
+              <td class="data">
+                <select id="RequestSubStatus" name="form[RequestSubStatus]" value="<?php echo f_e($fd['RequestSubStatus']); ?>">
+                <?php foreach($this->master_map['RequestSubStatus'] as $value => $caption) { ?>
+                  <?php $selected = $fd['RequestSubStatus'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                <?php } ?>
+                </select>
+                <?php show_error_message( $this->error['RequestSubStatus'] ); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">備考</td>
+              <td class="l_data">
+              <textarea name="form[FfNote]" id="Note" rows="3" cols="60"><?php echo f_e( $fd['FfNote'] ); ?></textarea>
+              </td>
+            </tr>
+            <tr align="center">
+              <td colspan="2" style="padding: 2px 0px">
+                <input type="submit" id="submit_button" value="　確　定　" onClick="return dispConfirm()" />
+                &nbsp;
+                <input type="button" id="cancel_edit" value="キャンセル" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    function disable_buttons() {
+        ["submit_button", "cancel_edit"].each(function(id) {
+            $(id).disabled = true;
+        });
+    }
+
+    Event.observe($("cancel_edit"), "click", function() {
+        var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+        disable_buttons();
+        var url = [
+            base.replace(/\/$/, ""),
+            "<?php echo sprintf( 'customer/memberdetail/ecseq/%s', $fd['EntCustSeq'] ); ?>"
+        ].join("/");
+        window.location.href = url;
+    });
+//     Event.observe($("submit_button"), "click", function() {
+//         setTimeout(disable_buttons, 0);
+//     });
+
+    Event.observe($("postal_button"), "click", function() {
+      var str = Form.serialize('form');   // フォーム内容をシリアライズ
+      var url = '<?php echo $this->baseUrl . '/customer/customersearchzip' ?>';
+      var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+      var res = eval('(' + ajax.transport.responseText + ')');
+      $("UnitingAddress").value = res['PrefectureKanji'] + res['UnitingAddress'];
+    });
+
+    Event.observe($("setDate"), "click", function() {
+        document.getElementById("RequestCompScheduleDate").value = "<?php echo $this->setDate; ?>";
+    });
+});
+</script>
+</html>

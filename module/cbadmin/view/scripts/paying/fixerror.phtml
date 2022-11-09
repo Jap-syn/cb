@@ -1,0 +1,43 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+<!--
+	function doFix() {
+	  var link = ($('toFix') || (function(b) {
+		return [(b || { href : ''}).href, 'paying/fix'].map(function(p) { return p.replace(/^\/*/, '').replace(/\/*$/, ''); }).join('/');
+	  })(document.getElementsByTagName('base')[0]));
+	  $('cmd1').innerHTML = '<span style="color:gray">確定処理中...</span>';
+	  setTimeout(function() {
+		window.location.href = link;
+	  }, 100);
+	}
+//-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/paying/page_menu_for_fix.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替確認</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+		<div>立替確定処理中に以下のエラーが発生しました。<br /></div>
+		<div style="color: red">
+			<?php echo f_e($this->errorMsg); ?>
+		</div>
+		<div>エラーが繰り返し発生する場合はシステム管理者までご連絡をお願いします</div>
+      </div>
+      <div id="cmd1"><a id="toFix" href="paying/fix" onclick="doFix();return false">立替確定処理</a></div>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

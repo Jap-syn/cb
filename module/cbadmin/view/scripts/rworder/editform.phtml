@@ -1,0 +1,562 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+	/*
+	 * フォームロード
+	 */
+	function load()
+	{
+		// 請求先
+		/* 2007.12.13 kashira 無条件に編集できるようにする。
+		if ($('jpmIsCharge').innerHTML == 1)
+		{
+			customer = document.getElementsByClassName('customer');
+			for (var i = 0 ; i < customer.length ; i++)
+			{
+				customer[i].disabled = true;
+				customer[i].name = 'disabled';
+			}
+		}
+		*/
+
+		// 購入商品
+		if ($('jpmDataStatus').innerHTML <= 31)
+		{
+
+		}
+		else
+		{
+			items = document.getElementsByClassName('itemlist');
+			for (var i = 0 ; i < items.length ; i++)
+			{
+				items[i].disabled = true;
+				items[i].name = 'disabled';
+			}
+		}
+
+		// 配送方法・伝票番号
+		if ($('jpmIsArrival').innerHTML != 1 && $('jpmDataStatus').innerHTML > 31)
+		{
+
+		}
+		else
+		{
+			journal = document.getElementsByClassName('journal');
+			for (var i = 0 ; i < journal.length ; i++)
+			{
+				journal[i].disabled = true;
+				journal[i].name = 'disabled';
+			}
+		}
+
+		// 補償外案件チェックボックス
+		if ($('jpmIsArrival').innerHTML != 1 && $('jpmIsReceipt').innerHTML != 1 && ($('jpmIsCombined').innerHTML == "" || parseInt($('jpmIsCombined').innerHTML) < 11 ))
+		{
+			// 着荷確認されていなくて、入金もされていなくて、取りまとめ指示もされていない場合に限り補償外案件フラッグを操作できる。
+		}
+		else
+		{
+			document.getElementById('OutOfAmends').disabled = true;
+			document.getElementById('OutOfAmends').name = 'disabled';
+			<?php /* 補償外フラグを操作できない場合に誤ってフラグをクリアしないようhiddenを追加 */ ?>
+			<?php /* 2011.6.8 eda */ ?>
+
+			$("button_area").appendChild(Object.extend(document.createElement("input"), {
+				type : "hidden",
+				name : "NoUpdateOutOfAmends",
+				id : "no_update_out_of_amends",
+				value : 1
+			}));
+		}
+	}
+
+	/*
+	 * 購入商品の編集
+	 */
+	function changeItem()
+	{
+		var titemNum = parseInt($('TotalItemNum').value);
+		var orgTotalSumMoney = parseInt($('OrgTotalSumMoney').value);
+		var stotal = 0;
+
+		for (var n = 0 ; n < titemNum ; n++)
+		{
+			var unitPrice = parseInt($('UnitPrice' + n).value);
+			var itemNum = parseFloat($('ItemNum' + n).value);
+            var dgtrate = Math.pow(10,<?php echo (int)$this->oc['DispDecimalPoint']; ?>);
+            var total = unitPrice * (itemNum * dgtrate).toFixed(0);
+            total /= dgtrate;
+
+			<?php if ((int)$this->oc['UseAmountFractionClass'] == 0) { ?>total = Math.floor( total );<?php } ?>
+		    <?php if ((int)$this->oc['UseAmountFractionClass'] == 1) { ?>total = Math.round( total );<?php } ?>
+			<?php if ((int)$this->oc['UseAmountFractionClass'] == 2) { ?>total = Math.ceil(  total );<?php } ?>
+			$('SumMoney' + n).innerHTML = total;
+
+			stotal += total;
+		}
+
+		var deliveryFee = parseInt($('DeliveryFee').value);
+		var settlementFee = parseInt($('SettlementFee').value);
+		var exTax = ($('ExTax')) ? parseInt($('ExTax').value) : 0;
+
+		stotal += (deliveryFee + settlementFee + exTax);
+		var diff = stotal - orgTotalSumMoney;
+
+		$('TotalSumMoney').innerHTML = stotal;
+
+		if (diff > 3000)
+		{
+			$('okbtn').disabled = true;
+			alert('利用額の増分が3000円を超過しているため変更できません。');
+		}
+		else
+		{
+			$('okbtn').disabled = false;
+		}
+	}
+</script>
+</head>
+<body onLoad="javascript:load();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      注文情報　(<?php echo $this->oc['OrderId']; ?>　／　<span id="oseq"><?php echo $this->oc['OrderSeq']; ?></span>)
+      <!-- not visible params for javascript -->
+      <span style="height: 0px; visibility: hidden;">
+        <!-- 自動与信結果クラス -->
+        <span id="jpmIncre_ArAddr"><?php echo $this->oc['Incre_ArAddr']; ?></span>
+        <!-- ステータス -->
+        <span id="jpmDataStatus"><?php echo $this->oc['DataStatus']; ?></span>
+        <!-- キャンセルステータス -->
+        <span id="jpmCancelStatus"><?php echo $this->oc['Cnl_Status']; ?></span>
+        <!-- キャンセル不可フラッグ -->
+        <span id="jpmCantCancel"><?php echo $this->oc['Cnl_CantCancelFlg']; ?></span>
+        <!-- 着荷確認 -->
+        <span id="jpmIsArrival"><?php echo $this->deli['Deli_ConfirmArrivalFlg']; ?></span>
+        <!-- 立替実行 -->
+        <span id="jpmIsCharge"><?php echo $this->oc['PayingControlStatus']; ?></span>
+        <!-- 入金状況 -->
+        <span id="jpmIsReceipt"><?php echo $this->oc['Rct_Status']; ?></span>
+        <!-- 取りまとめ状況 -->
+        <span id="jpmIsCombined"><?php echo $this->oc['CombinedClaimTargetStatus']; ?></span>
+      </span>
+    </h3>
+
+    <form id="form" name="form" method="post" action="rworder/editdone">
+    <input type="hidden" name="OrderSeq" id="OrderSeq" value="<?php echo $this->oc['OrderSeq']; ?>" />
+    <input type="hidden" name="UseAmountFractionClass" id="UseAmountFractionClass" value="<?php echo $this->oc['UseAmountFractionClass']; ?>" />
+    <!-- 左肩の基本情報 -->
+    <div id="div01">
+      <!-- 注文IDなど -->
+      <div id="div01_1">
+        <table style="width: 300px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td width="90" class="r_label">注文ID</td>
+              <td class="l_data"><?php echo $this->oc['OrderId']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">注文登録日時</td>
+              <td class="l_data"><?php echo $this->oc['RegistDate']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">ご注文日</td>
+              <td class="l_data"><?php echo $this->oc['ReceiptOrderDate']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">役務提供予定日</td>
+              <td class="l_data"><?php echo $this->oc['ServiceExpectedDate']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">ステータス</td>
+              <td class="l_data">[<?php echo $this->oc['DataStatus']; ?>]<?php echo $this->custom['DataStatus']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">取りまとめ</td>
+              <td class="l_data">
+              <?php if ($this->oc['CombinedClaimTargetStatus'] == 91 || $this->oc['CombinedClaimTargetStatus'] == 92) {
+                        echo ($this->oc['CombinedClaimParentFlg'] == 1) ? '取りまとめ代表注文' : '取りまとめ注文';
+                    } else { echo '---'; }  ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">注文代表ID</td>
+              <td class="l_data">
+              <?php if ($this->oc['CombinedClaimTargetStatus'] == 91 || $this->oc['CombinedClaimTargetStatus'] == 92) {
+                        echo $this->oc['ParentOrderId'];
+                    } else { echo '---'; }  ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">利用額</td>
+              <td class="l_data"><?php echo $this->oc['UseAmount']; ?></td>
+            </tr>
+          </tbody>
+        </table>
+        <font style="color: red; font-size:12px;">
+           手動で住所を変更するときは、不良住所確認のため、必ず変更後の住所を検索してから変更してください
+        </font>
+        </div>
+
+      <!-- コマンド郡 -->
+      <div id="command">
+      </div>
+
+      <!-- 請求先 -->
+      <div id="div01_2">
+        <table style="width: 540px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="4" class="l_data">請求先</td>
+            </tr>
+            <tr>
+              <td width="55" class="r_label">氏名</td>
+              <td width="120" class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_NameKj" id="A_NameKj" value="<?php echo escape($this->oc['NameKj']); ?>" />
+              </td>
+              <td width="45" class="r_label">カナ</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px; width: 200px;" name="A_NameKn" id="A_NameKn" value="<?php echo escape($this->oc['NameKn']); ?>" />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">郵便番号</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_PostalCode" id="A_PostalCode" value="<?php echo escape($this->oc['PostalCode']); ?>" />
+              </td>
+              <td class="r_label">住所</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px; width: 280px;" name="A_UnitingAddress" id="A_UnitingAddress" value="<?php echo escape($this->oc['UnitingAddress']); ?>" />
+                <input name="A_SendAddress" id="A_SendAddress" value="<?php echo escape($this->oc['UnitingAddress']); ?>" type="hidden">
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">顧客番号</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_EntCustId" id="A_EntCustId" value="<?php echo escape($this->oc['EntCustId']); ?>" />
+              </td>
+              <td class="r_label">住所ｶﾅ</td>
+              <td class="l_label"><?php echo escape($this->oc['AddressKn']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_Phone" id="A_Phone" value="<?php echo escape($this->oc['Phone']); ?>" />
+              </td>
+              <td class="r_label">E-mail</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px; width: 280px;" name="A_MailAddress" id ="A_MailAddress" value="<?php echo escape($this->oc['MailAddress']); ?>" />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">職業</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_Occupation" id="A_Occupation" value="<?php echo escape($this->oc['Occupation']); ?>" />
+              </td>
+              <td class="r_label">法人名</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px; width: 280px;" name="A_CorporateName" id ="A_CorporateName" value="<?php echo escape($this->oc['CorporateName']); ?>" />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">部署名</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px;" name="A_DivisionName" id="A_DivisionName" value="<?php echo escape($this->oc['DivisionName']); ?>" />
+              </td>
+              <td class="r_label">担当者名</td>
+              <td class="l_data">
+                <input type="text" class="customer" style="font-size: 11px; width: 280px;" name="A_CpNameKj" id ="A_CpNameKj" value="<?php echo escape($this->oc['cstCpNameKj']); ?>" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- 配送先 -->
+      <div id="div01_3">
+        <table style="width: 540px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="4" class="l_data">
+                配送先
+                　　　<input type="checkbox" name="AnotherDeliFlg" id="AnotherDeliFlg" <?php if ($this->oc['AnotherDeliFlg'] == 1) { echo 'checked'; } ?> />別配送先指定
+              </td>
+            </tr>
+            <tr>
+              <td width="55" class="r_label">氏名</td>
+              <td width="120" class="l_data">
+                <input type="text" style="font-size: 11px;" name="B_NameKj" id="B_NameKj" value="<?php echo escape($this->deli['DestNameKj']); ?>" />
+              </td>
+              <td width="45" class="r_label">カナ</td>
+              <td class="l_data">
+                <input type="text" style="font-size: 11px; width: 200px;" name="B_NameKn" id="B_NameKn" value="<?php echo escape($this->deli['DestNameKn']); ?>" />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">郵便番号</td>
+              <td class="l_data">
+                <input type="text" style="font-size: 11px;" name="B_PostalCode" id="B_PostalCode" value="<?php echo escape($this->deli['PostalCode']); ?>" />
+              </td>
+              <td class="r_label">住所</td>
+              <td class="l_data">
+                <input type="text" style="font-size: 11px; width: 280px;" name="B_UnitingAddress" id="B_UnitingAddress" value="<?php echo escape($this->deli['UnitingAddress']); ?>" />
+                <input name="B_SendAddress" id="B_SendAddress" value="<?php echo escape($this->deli['UnitingAddress']); ?>" type="hidden">
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号</td>
+              <td class="l_data">
+                <input type="text" style="font-size: 11px;" name="B_Phone" id="B_Phone" value="<?php echo escape($this->deli['Phone']); ?>" />
+              </td>
+              <td class="data"></td>
+              <td class="data"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 右肩の事業者と購入商品の情報 -->
+    <div id="div02">
+      <!-- 事業者情報 -->
+      <div id="div02_1">
+        <table style="width: 310px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="2" class="l_data">事業者情報</td>
+            </tr>
+            <?php if(isset($this->oem)) {?>
+                <tr>
+                  <td class="r_label">OEM先名</td>
+                  <td class="l_data" ><a href="oem/detail/oid/<?php echo f_e($this->oem['OemId']); ?>"><?php echo f_e($this->oem['OemNameKj']); ?></a></td>
+                </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label">事業者名</td>
+              <td class="l_data"><a href="enterprise/detail/eid/<?php echo $this->oc['EnterpriseId']; ?>"><?php echo escape($this->oc['EnterpriseNameKj']); ?></a></td>
+            </tr>
+            <tr>
+              <td class="r_label">購入サイト</td>
+              <td class="l_data"><?php echo escape($this->oc['SiteNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">担当者名</td>
+              <td class="l_data"><a href="mailto:<?php echo escape($this->oc['EntMailAddress']); ?>"><?php echo escape($this->oc['CpNameKj']); ?></a></td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号</td>
+              <td class="l_data"><?php echo escape($this->oc['ContactPhoneNumber']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- 商品情報 -->
+      <input type="hidden" name="TotalItemNum" id="TotalItemNum" value="<?php
+      // count関数対策
+        $itemsCount = 0;
+        if (!empty($this->items)){
+          $itemsCount = count($this->items);
+        }
+        echo $itemsCount; ?>" />
+      <div id="div02_2">
+        <table style="width: 310px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <th>購入品目</th>
+              <th>単価</th>
+              <th>数量</th>
+              <th>小計</th>
+            </tr>
+            <?php
+            // count関数対策
+              $itemsCount = 0;
+              if (!empty($this->items)) {
+              $itemsCount = count($this->items);
+              }
+              for ($i = 0 ; $i < $itemsCount ; $i++) { ?>
+            <tr>
+              <td class="l_data">
+                <input type="hidden" class="itemlist" name="OrderItemId<?php echo $i; ?>" id="OrderItemId<?php echo $i; ?>" value="<?php echo $this->items[$i]['OrderItemId']; ?>" />
+                <input type="text" class="itemlist" style="font-size: 11px; width: 80px;" name="ItemNameKj<?php echo $i; ?>" id="ItemNameKj<?php echo $i; ?>" value="<?php echo escape($this->items[$i]['ItemNameKj']); ?>" />
+              </td>
+              <td class="r_data">
+                <input type="text" class="itemlist" style="font-size: 11px; width: 50px; text-align: right;" name="UnitPrice<?php echo $i; ?>" id="UnitPrice<?php echo $i; ?>" value="<?php echo $this->items[$i]['UnitPrice']; ?>" onChange="javascript:changeItem();" />
+              </td>
+              <td class="r_data">
+                <input type="text" class="itemlist" style="font-size: 11px; width: 20px; text-align: right;" name="ItemNum<?php echo $i; ?>" id="ItemNum<?php echo $i; ?>" value="<?php echo number_format($this->items[$i]['ItemNum'], $this->oc['DispDecimalPoint']);//$this->items[$i]['ItemNum']; ?>" onChange="javascript:changeItem();" />
+              </td>
+              <td class="r_data">
+                <span id="SumMoney<?php echo $i; ?>"><?php echo $this->items[$i]['SumMoney']; ?></span>
+              </td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td colspan="3" class="r_label">送料</td>
+              <td class="r_data">
+                <input type="text" class="itemlist" style="font-size: 11px; width: 50px; text-align: right;" name="DeliveryFee" id="DeliveryFee" value="<?php echo $this->deliveryFee; ?>" onChange="javascript:changeItem();" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">手数料</td>
+              <td class="r_data">
+                <input type="text" class="itemlist" style="font-size: 11px; width: 50px; text-align: right;" name="SettlementFee" id="SettlementFee" value="<?php echo $this->settlementFee; ?>" onChange="javascript:changeItem();" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">外税額</td>
+              <td class="r_data">
+                <?php if (is_null($this->exTax)) { ?>
+                <?php     echo '---'; ?>
+                <?php } else { ?>
+                <input type="text" class="itemlist" style="font-size: 11px; width: 50px; text-align: right;" name="ExTax" id="ExTax" value="<?php echo $this->exTax; ?>" onChange="javascript:changeItem();" />
+                <?php } ?>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">合計</td>
+              <td class="r_data">
+                <span id="TotalSumMoney"><?php echo $this->totalSumMoney; ?></span>
+                <input type="hidden" name="OrgTotalSumMoney" id="OrgTotalSumMoney" value="<?php echo $this->totalSumMoney; ?>" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="clear: both; margin-left: 25px;">
+      <table class="ddtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td style="width: 80px;" class="r_label">配送方法</td>
+            <td style="width: 120px;" class="l_data">
+              <?php echo $this->deliveryMethodTag; ?>
+            </td>
+            <td style="width: 80px;" class="r_label">伝票番号</td>
+            <td style="width: 120px;" class="l_data">
+              <input type="text" class="journal" style="font-size: 11px;" name="Deli_JournalNumber" id="Deli_JournalNumber" value="<?php echo escape($this->deli['Deli_JournalNumber']); ?>" />
+            </td>
+            <td style="width: 109px;" class="l_data">
+            <!--
+              <input type="checkbox" name="Bekkan" id="Bekkan" <?php if ($this->oc['Bekkan'] == 1) { echo 'checked'; } ?> />別管理<br />
+              <input type="checkbox" name="StopClaimFlg" id="StopClaimFlg" <?php if ($this->oc['StopClaimFlg'] == 1) { echo 'checked'; } ?> />請求ストップ<br />
+              <input type="checkbox" name="ReturnClaimFlg" id="ReturnClaimFlg" <?php if ($this->oc['ReturnClaimFlg'] == 1) { echo 'checked'; } ?> />戻り請求書
+            -->
+            <!--
+              <input type="checkbox" class="journal" name="OutOfAmends" id="OutOfAmends" <?php if ($this->oc['OutOfAmends'] == 1) { echo 'checked'; } ?> />補償外案件
+            -->
+              <input type="checkbox" name="OutOfAmends" id="OutOfAmends" <?php if ($this->oc['OutOfAmends'] == 1) { echo 'checked'; } ?> />補償外案件
+            </td>
+          </tr>
+          <?php if ($this->oc['SelfBillingFlg'] == 1) {?>
+          <tr>
+            <td style="width: 80px;" class="r_label">同梱判定ﾌﾗｸﾞ</td>
+            <td class="l_data">
+              <?php echo $this->claimSendingClassTag; ?>
+            </td>
+          </tr>
+          <?php } ?>
+          <?php if (($this->oc['CreditTransferFlg'] == 1) || ($this->oc['CreditTransferFlg'] == 2) || ($this->oc['CreditTransferFlg'] == 3)) {?>
+          <tr>
+            <td style="width: 80px;" class="r_label">口座振替利用</td>
+            <td class="l_data">
+              <?php echo $this->creditTransferRequestFlgTag; ?>
+            </td>
+          </tr>
+          <?php } ?>
+          </tbody>
+      </table>
+        <input type="checkbox" name="ResumeFlg" id="ResumeFlg" <?php if ($this->ao['ResumeFlg'] == 1) { echo 'checked'; } ?> <?php if ($this->ao['DefectFlg'] != 1 || $this->oc['DataStatus'] != 11) { echo 'disabled'; } ?>/>強制的に保留を解除する</tr>
+    </div>
+
+    <div id="button_area" style="clear: both; margin: 0px 25px; text-align: center;">
+	  <?php if( $this->hash ) { ?>
+	  <input name="content_hash" value="<?php echo $this->hash; ?>" type="hidden" />
+	  <input name="idx" value="<?php echo $this->index_in_cache; ?>" type="hidden" />
+	  <?php } ?>
+	  <input name="CustomerId" value="<?php echo $this->oc['CustomerId']; ?>" type="hidden" />
+      <input style="width: 100px; margin: 10px;" type="button" id="okbtn" value="　OK　" />
+      <input style="width: 100px; margin: 10px;" type="button" value="　キャンセル　" onClick="doCancel()" />
+    </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <div style="clear: both; font-weight: bold; text-align: center;"><!-- <?php echo $this->backNavi; ?> --></div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+function doCancel() {
+	<?php if( $this->hash ) { ?>
+	var url = "rworder/detail/oseq/{0}/content_hash/<?php echo $this->hash; ?>/idx/<?php echo $this->index_in_cache; ?>".format(
+		$("OrderSeq").value
+	);
+	<?php } else { ?>
+	var url = "rworder/detail/oseq/{0}".format(
+		$("OrderSeq").value
+	);
+	<?php } ?>
+	location.href = url;
+};
+
+Event.observe($("okbtn"), "click", function() {
+    // 配送方法の選択値を取得
+    var obj = document.getElementById('Deli_DeliveryMethod');
+    var ddm = obj.options[obj.selectedIndex].value;
+
+    // 伝票番号の値を取得
+    var obj = document.getElementById('Deli_JournalNumber');
+    var djm = obj.value;
+
+    // 配送方法選択あり＆伝票番号値ありの時、チェックを行う
+    if (ddm > 0 && djm != "") {
+        var str = ("Deli_DeliveryMethod=" + ddm + "&Deli_JournalNumber=" + djm);
+        var url = "<?php echo $this->baseUrl; ?>/rworder/isValidDelijournalnumber?" + str;
+
+        var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+        var res = eval('(' + ajax.transport.responseText + ')');
+
+        // 全角半角変換された値を設定
+        document.getElementById('Deli_JournalNumber').value = res['convertedDeliJournalNumber'];
+
+        if  (res['status'] != 1) {
+        	alert("伝票番号の入力が不正です。確認してください。");
+        	return;
+        }
+    }
+
+     var asa = document.getElementById('A_SendAddress');
+     var aua = document.getElementById('A_UnitingAddress');
+
+     var bsa = document.getElementById('B_SendAddress');
+     var bua = document.getElementById('B_UnitingAddress');
+
+    if (asa.value != aua.value || bsa.value != bua.value) {
+        if(!window.confirm("手動で住所を変更するときは、不良住所確認のため、\n必ず変更後の住所を検索してから、変更してください。")){
+            return;
+        }
+    }
+
+    // 口座振込利用（MAILアドレス必須）チェック
+    var mailAddress = document.getElementById('A_MailAddress');
+    var creditTransferRequest = document.getElementById('CreditTransferRequestFlg');
+    // 口座振込利用が表示されている場合
+    if (creditTransferRequest != null) {
+        // メールアドレス(E-mail)が 空欄 かつ 口座振込利用が 利用する（WEB申込み）の場合
+        if (mailAddress.value == "" && creditTransferRequest.value == 1) {
+            // エラーとする
+            alert("メールアドレスを空にすることはできません。");
+            return;
+        }
+    }
+
+    // 更新処理
+    document.form.submit();
+});
+</script>
+</html>

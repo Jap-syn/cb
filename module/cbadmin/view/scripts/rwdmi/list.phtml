@@ -1,0 +1,201 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+<!--
+/* [paging] */
+.page_nav {
+	border-top-width: 1px;
+	margin-bottom: -5px;
+}
+
+/* [all OK/NG/RESET] */
+.status_action_container {
+	text-align: center;
+	padding: 0px;
+	margin: 0px;
+	height: 20px;
+	overflow: hidden;
+}
+
+a.status_action,
+a.status_action:link,
+a.status_action:hover,
+a.status_action:visited,
+a.status_action:active {
+	font-size: 8pt;
+	border: solid 1px gray;
+	padding: 1px 3px;
+	text-decoration: none;
+	background-color: #FFCC00;
+	color: black;
+	margin: 0px;
+}
+
+a.status_action:hover {
+	background-color: yellow;
+	color: navy;
+	border-color: #999999;
+}
+
+-->
+</style>
+<script>
+function changeStatuses() {
+	try {
+		document.getElementsByClassName("status_selection").each(function(sel) {
+			sel.selectedIndex = 1;	// DMI OK
+		} );
+	} catch(e) {
+	}
+	return false;
+}
+
+function resetStatuses() {
+	try {
+		document.getElementsByClassName("status_selection").each(function(sel) {
+			sel.selectedIndex = 0;	// non selections
+		} );
+	} catch(e) {
+	}
+	return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">DMI与信用リスト</h3>
+    <div style="clear:both;">
+      <div id="lbl1"><span class="cnt"><?php echo f_e($this->expCnt); ?></span>　件の与信がエクスポート待ち</div><div id="cmd1"><a href="rwdmi/exp" onClick="javascritp:alert('ファイル保存後、リストを更新してください。');">DMI与信用CSVエクスポート</a></div>
+    </div>
+    <div style="clear:both;">
+      <div id="lbl2"><span class="cnt"><?php echo f_e($this->impCnt); ?></span>　件の与信がインポート待ち</div><div id="cmd2"><a href="rwdmi/impform">DMI与信結果CSVインポート</a></div>
+    </div>
+    <div style="float: none; clear: both; padding-top: 12px;">
+    <?php echo $this->render('page_navigation.php'); ?>
+	<?php if( isset( $this->pager ) && isset( $this->current_page) && isset( $this->page_links ) && $this->pager->getTotalItems() > 0 ) { ?>
+	<div class="page_nav" style="border-top-width: 1px;">
+		一括操作
+		<button id="dmi_all_ok" type="button" onclick="if(confirm('DMI与信確定待ちをすべて OK にします。よろしいですか？'))window.location.href='rwdmi/modifyAll';">全件 OK</a>
+	</div>
+	<?php } ?>
+    </div>
+    <form name="form" method="post" action="rwdmi/modify">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+		<!--
+          <tr>
+          	<th>注文ID</th>
+          	<th>状態</th>
+          	<th>注文登録日時</th>
+          	<th>属性</th>
+          	<th>事業者名</th>
+          	<th>請求先氏名</th>
+          	<th>住所</th>
+          	<th>与信<br />点数</th>
+          	<th>利用額</th>
+          	<th>
+				手動設定
+				<div class="status_action_container">
+					<a id="all_ok" class="status_action" href="#" onclick="return changeStatuses();" title="このページ内の手動設定をすべてDMI与信OKにします">all ok</a>
+					<a id="all_reset" class="status_action" href="#" onclick="return resetStatuses();" title="このページ内の手動設定を初期状態にリセットします">reset</a>
+				</div>
+			</th>
+          </tr>
+          <?php /*for ($i = 0 ; $i < count($this->list) ; $i++) {*/ ?> 
+          <tr>
+            <td class="l_data">
+              <input type="hidden" name="OrderSeq<?php echo f_e($i); ?>" id="OrderSeq<?php echo f_e($i); ?>" value="<?php echo f_e($this->list[$i]["OrderSeq"]); ?>" />
+              <?php echo f_e($this->list[$i]["OrderId"]); ?>
+            </td>
+            <td class="c_data" <?php echo $this->list[$i]["CelDsStyle"]; ?>><?php echo f_e($this->list[$i]["DataStatus"]); ?></td>
+            <td class="c_data"><?php echo f_e($this->list[$i]["RegistDate"]); ?></td>
+            <td class="c_data"><?php echo f_e($this->list[$i]["IncreArCaption"]); ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?></td>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["NameKj"]); ?></a></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]["UnitingAddress"]); ?>...</td>
+            <td class="c_data" <?php echo $this->list[$i]["CelScoreStyle"]; ?>><?php echo f_e($this->list[$i]["Incre_ScoreTotal"]); ?></td>
+            <td class="r_data"><?php echo f_e($this->list[$i]["UseAmount"]); ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["dok"]; ?></td>
+          </tr>                                                            
+          <?php /*}*/ ?>
+		  -->
+          <tr>
+		    <th rowspan="2">No</th>
+          	<th rowspan="2">注文ID</th>
+          	<th rowspan="2">状態</th>
+          	<th rowspan="2">属性</th>
+          	<th style="width: 125px">事業者名</th>
+          	<th style="width: 120px">請求先氏名</th>
+          	<th style="width: 225px">住所</th>
+          	<th rowspan="2">与信<br />点数</th>
+          	<th rowspan="2">利用額</th>
+          	<th rowspan="2">
+				手動設定
+				<div class="status_action_container">
+					<a id="all_ok" class="status_action" href="#" onclick="return changeStatuses();" title="このページ内の手動設定をすべてDMI与信OKにします">all ok</a>
+					<a id="all_reset" class="status_action" href="#" onclick="return resetStatuses();" title="このページ内の手動設定を初期状態にリセットします">reset</a>
+				</div>
+			</th>
+          </tr>
+		  <tr>
+          	<th>注文登録日時</th>
+			<th colspan="2">備考</th>
+		  </tr>
+          <?php 
+					// count関数対策
+						$listCount = 0;
+						if (!empty($this->list)) {
+						$listCount = count($this->list);
+						}
+						for ($i = 0 ; $i < $listCount ; $i++) { ?> 
+
+          <tr>
+		  <td class="l_data" rowspan="2">
+			<?php echo $i + 1; ?>
+			</td>
+            <td class="l_data" rowspan="2">
+              <input type="hidden" name="OrderSeq<?php echo f_e($i); ?>" id="OrderSeq<?php echo f_e($i); ?>" value="<?php echo f_e($this->list[$i]["OrderSeq"]); ?>" />
+              <?php echo f_e($this->list[$i]["OrderId"]); ?>
+            </td>
+            <td class="c_data" <?php echo $this->list[$i]["CelDsStyle"]; ?> rowspan="2"><?php echo f_e($this->list[$i]["DataStatus"]); ?></td>
+            <td class="c_data" rowspan="2"><?php echo f_e($this->list[$i]["IncreArCaption"]); ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?></td>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["NameKj"]); ?></a></td>
+            <td class="l_data" title="<?php echo f_e($this->list[$i]['UnitingAddress']); ?>"><?php echo f_e($this->list[$i]["DisplayUnitingAddress"]); ?></td>
+            <td class="c_data" <?php echo $this->list[$i]["CelScoreStyle"]; ?> rowspan="2"><?php echo f_e($this->list[$i]["Incre_ScoreTotal"]); ?></td>
+            <td class="r_data" rowspan="2"><?php echo f_e($this->list[$i]["UseAmount"]); ?></td>
+            <td class="c_data" rowspan="2"><?php echo $this->list[$i]["dok"]; ?></td>
+          </tr>                                                            
+          <tr>
+            <td class="c_data"><?php echo f_e($this->list[$i]["RegistDate"]); ?></td>
+            <td class="l_data" colspan="2"><?php echo $this->list[$i]["DisplayIncre_Note"]; ?></td>
+          </tr>
+		  <tr><td colspan="9" style="height: 4px; background-color: silver; font-size: 0px"></td></tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<td class="c_data">
+				<input type="hidden" name="page" value="<?php echo f_e($this->current_page); ?>" />
+				<input type="submit" value="　DMI手動設定　実行　" />
+			</td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

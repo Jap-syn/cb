@@ -1,0 +1,113 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+    hr {
+      border-width: 1px 0px 0px 0px; /* 太さ */
+      border-style: dotted; /* 線種 */
+      border-color: silver; /* 線色 */
+      height: 3px; /* 高さ */
+    }
+    ul.errors {
+      border: solid 1px silver;
+      color: crimson;
+      background-color: lemonchiffon;
+      font-size: 10pt;
+      padding: 4px !important;
+      padding-left: 24px !important;
+    }
+    ul.errors li.error {
+      margin : 0px !important;
+    }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3>請求取りまとめ設定登録確認</h3>
+<?php if( isset($this->warning) ) {?>
+<ul class="errors">
+  <li><?php echo f_e($this->warning); ?></li>
+</ul>
+<?php } ?>
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td colspan="2" class="l_data">【請求取りまとめモード設定】</td>
+    </tr>
+    <tr>
+      <td class="label">事業者ID</td>
+      <td class="data"><?php echo f_e($this->data["EnterpriseId"])?></td>
+    </tr>
+    <tr>
+      <td class="label">事業者名</td>
+      <td class="data"><?php echo f_e($this->data["EnterpriseNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求取りまとめモード</td>
+      <td class="data"><?php echo f_e($this->data["CombinedClaimModeCap"]); ?></td>
+    </tr>
+<!-- 2015/09/07 未使用のため非表示 Stt
+    <tr>
+      <td class="label">請求取りまとめ（定期購入）</td>
+      <td class="data"><?php echo f_e($this->data["CombinedClaimFlgRegCap"]); ?></td>
+    </tr>
+2015/09/07 未使用のため非表示 End -->
+     <tr>
+      <td class="label">自動請求取りまとめ指定日</td>
+      <td class="data"><?php echo f_e($this->data["AutoCombinedClaimDay"]); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【サイト毎の請求取りまとめ設定】</td>
+    </tr>
+    <tr>
+      <td class="label">サイト毎の請求取りまとめ</td>
+      <td class="data">
+      <!--?php $i = 0; while (($this->data["SiteId" . $i])) { ?-->
+      <?php $i = 0; while ((array_key_exists('SiteId' . $i, $this->data))){ ?>
+        <?php echo f_e($this->data["SiteNameKj".$i]); ?>(<?php echo f_e($this->data["SiteId".$i]); ?>) : <?php echo f_e($this->data["CombinedClaimCap".$i]); ?></br><hr>
+      <?php $i++; } ?>
+      </td>
+    </tr>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+        <form id="saveForm" action="combinedclaim/save" method="post">
+           <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+            <a id="doSave" href="javascript:void(0)">確　認</a>　　　　　<a id="cancelSave" href="javascript:void(0)">戻　る</a>
+        </form>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("doSave"), "click", function() {
+    $("saveForm").submit();
+    return false;
+  });
+  Event.observe($("cancelSave"), "click", function() {
+    $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+    $("saveForm").submit();
+    return false;
+  });
+});
+</script>
+</body>
+</html>

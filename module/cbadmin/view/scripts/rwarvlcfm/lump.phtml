@@ -1,0 +1,33 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+.form_item {
+	float: left;
+	margin-right: 15px;
+	padding: 2px 6px;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwarvlcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+	<?php /* フィルタ入力フォームを表示 */ ?>
+	<?php echo $this->render('cbadmin/rwarvlcfm/filter_expression_form.php'); ?>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

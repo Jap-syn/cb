@@ -1,0 +1,507 @@
+<?php
+use Zend\Json\Json;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use oemmember\classes\OrderInputInfo;
+use oemmember\classes\OrderEnums;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$hasList = !empty($this->order_list) ? true : false;
+$commandBar = new CoralViewCommandBar(
+	// title
+	'注文情報を登録してください',
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'linkToCsv',
+				CoralViewCommandBarButton::OPTION_HREF => 'order/orderCsv',
+				CoralViewCommandBarButton::OPTION_TEXT => '一括登録',
+				CoralViewCommandBarButton::OPTION_TITLE => 'CSVファイルで一括登録する場合はこちらから'
+			)
+		),
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'download',
+				CoralViewCommandBarButton::OPTION_HREF => 'order/download',
+				CoralViewCommandBarButton::OPTION_TEXT => '雛形をダウンロード',
+				CoralViewCommandBarButton::OPTION_TITLE => '一括登録用のCSV雛形ファイルをダウンロードします'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+?>
+	<!-- 注意書き -->
+	<div class="information_container">
+		<ul class="information">
+			<li>「<img src="../../images/order_item_must.png" />」の項目は必須項目です。</li>
+			<li>別配送先情報の「<img src="../../images/order_item_must.png" />」の項目は配送先が別にある場合のみ、必須項目となります。配送先が基本情報と同じ場合は入力せず、「別配送先を指定する」のチェックをはずしてください。</li>
+			<li>キーボードの「Tab」キーを使うと入力欄の移動ができます。</li>
+			<li>9:00～18:00の間にいただきました、注文登録情報は結果が出次第、更新されます。時間外に登録されたお取引は次回営業日まで先送りされますので、あらかじめご了承願います。</li>
+		</ul>
+	</div>
+
+	<!-- 検証エラー一覧 -->
+	<div class="error_info_container" id="validate_error_area" style="display: none">
+		<h4>検証エラー</h4>
+		<ul class="error_info_list">
+		</ul>
+	</div>
+	<!-- 登録フォーム -->
+	<form id="order_form" method="post" action="order/confirm">
+
+		<!-- 商品情報以外の情報 -->
+<?php
+		foreach( $this->form_info->getGroups() as $groupName => $group ) {
+			if( $groupName == OrderInputInfo::ARRKEY_ITEMS ) continue;
+?>
+		<h3>
+			【<?php echo f_e($group->getLabel()); ?>】
+			<span style="font-size: 9pt; font-weight: normal;"><?php echo $group->getDescription(); ?></span>
+		</h3>
+<?php if( $groupName == OrderInputInfo::ARRKEY_DELIV ) { ?>
+		<div>
+			<input type="checkbox" id="use_delivery_info" name="AnotherDeliFlg"<?php
+				if( isset($this->postData['AnotherDeliFlg']) && $this->postData['AnotherDeliFlg'] == OrderEnums::AnotherDeliFlg_ANOTHER_SPEC ) echo ' checked="checked"';
+			?> value="<?php echo f_e(OrderEnums::AnotherDeliFlg_ANOTHER_SPEC); ?>">別配送先を指定する
+		</div>
+<?php } ?>
+
+		<table class="order_items order_input_form" id="<?php echo f_e($groupName); ?>" border="yes" cellpadding="0" cellspacing="0">
+			<thead>
+				<tr>
+					<th class="item_name">項目名</th>
+					<th class="item_value">入力</th>
+					<th class="item_help">ヘルプ</th>
+				</tr>
+			</thead>
+			<tbody>
+
+				<?php
+				foreach( $group->getItems() as $item ) {
+					$classNames = array();
+					if( preg_match( '/\s?must\s?/', $item->getAttribute('class') ) ) $classNames[] = 'must_row';
+					if( in_array( $item, $this->postErrors ) ) {
+						$classNames[] = 'validate_error';
+					}
+
+					$classNames = !empty( $classNames )? ( ' class="' . join(' ', $classNames) . '"' ) : '';
+				?>
+
+				<tr<?php echo $classNames; ?> <?php if ($item->getId() == 'o_claimsendingclass' && nvl($this->userInfo->SelfBillingMode, 0) == 0) { echo ' style="display: none;"'; }/* 加盟店の[SelfBillingMode]が[0orNull]の時は、[請求書別送]を表示しない */ ?>>
+					<td class="item_name"><?php echo $item->getCaption(); ?></td>
+					<td class="item_value">
+						<?php
+						$val = isset($this->postData[ $item->getName() ]) ? $this->postData[ $item->getName() ] : null;
+						$additional_elements = array();
+						switch( $item->getId() ) {
+							case 'o_receipt_order_date':
+								$additional_elements = array(
+									'<button id="selectDate" type="button">カレンダーで選択</button>',
+									'<button id="setToday" type="button">今日</button>',
+									'<div id="datePicker1" style="margin-bottom: 20px; position: absolute; left: 90px; top: 80px;"></div>'
+								);
+								break;
+
+							case 'o_service_expected_date':
+							    $additional_elements = array(
+    							    '<button id="selectDate2" type="button">カレンダーで選択</button>',
+    							    '<button id="setToday2" type="button">今日</button>',
+    							    '<div id="datePicker2" style="margin-bottom: 20px; position: absolute; left: 90px; top: 80px;"></div>'
+							    );
+							    break;
+					        case 'o_t_orderclass':
+					            $additional_elements = array(
+					               '　　　　　',
+					               '設定与信結果　',
+					               $this->cmst87Tag,
+					            );
+					            break;
+
+							case 'c_postalcode':
+							case 'd_postalcode':
+								$additional_elements = array(
+									'<button id="' .
+										( $item->getId() == 'c_postalcode' ? 'address_from_postalcode_c' : 'address_from_postalcode_d' ) .
+									'" type="button"'.
+									( $item->getId() == 'd_postalcode' ? ' disabled="disabled"' : '') .
+									'>住所を自動入力</button>',
+									'<div>※郵便番号を3桁以上入力し、[住所を自動入力]をクリックすると町名までの住所が自動的に挿入されます</div>'
+								);
+								break;
+						}
+
+						if($item->getId() == 'o_ent_orderid' && isset($this->postData['O_Ent_OrderId']) && $this->postData['O_Ent_OrderId'] != '' && $this->caution == '1') {
+							$additional_elements = array(
+							'過去に登録されている番号です<img id="return_alart" src="../../images/dest_match_icon.gif">'
+							);
+						}
+
+						echo $item->createSource( $val );
+						foreach( $additional_elements as $element ) echo $element;
+?>
+
+					</td>
+					<td class="item_help"><?php echo $item->getDescription(); ?></td>
+				</tr>
+				<?php } ?>
+
+			</tbody>
+		</table>
+<?php
+		}
+		$groupName = OrderInputInfo::ARRKEY_ITEMS;
+		$group = $this->form_info->getGroup( $groupName );
+?>
+		<!-- 商品情報フォーム -->
+		<h3>【商品情報（請求書に記載される項目）】<span style="font-size: 9pt; font-weight: normal;">⇒当社から注文者様への請求書・検索に使用されます。</span></h3>
+		<div>
+			※ポイント等の割引サービスは、「商品名／購入品目」にポイント割引など記入し、単価の前にマイナス記号（-）をご入力ください。<br />
+			例）ポイント（商品名） -1000（単価） 1（数量）
+		</div>
+		<input type="hidden" name="I_ItemList" id="i_itemlist" value="" />
+		<table class="order_items items_table" id="<?php echo f_e($groupName); ?>" border="yes" cellpadding="0" cellspacing="0">
+			<thead>
+				<tr>
+					<th class="item_name">
+						項目の削除
+					</th>
+					<th class="item_name">
+						商品名／購入品目<br/>
+						※最低一品目の登録が必要です<br/>
+					</th>
+					<th class="item_value">
+						単価<br/>
+						※半角数字でご入力ください
+					</th>
+					<th class="item_value">
+						数量<br/>
+						※半角数字でご入力ください
+					</th>
+					<th class="item_value">
+						消費税率<br/>
+						※値引きの場合は適用されません
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- 商品情報 -->
+<?php
+                $postedItems = isset($this->postData['I_ItemList']) ?
+                    Json::decode( process_slashes( $this->postData['I_ItemList'] ), Json::TYPE_ARRAY ) :
+                    array();
+				if( $postedItems == null ) $postedItems = array( array( 'i_itemnamekj' => '', 'i_unitprice' => '', 'i_itemnum' => '' ) );
+                $postedItemsCount = 0;
+                if (!empty($postedItems)) {
+                    $postedItemsCount = count( $postedItems );
+                }
+				for($i = 0; $i < $postedItemsCount; $i++) {
+					$postedItem = $postedItems[ $i ];
+					$classNames = array( 'item_row', 'must_row' );
+					if( in_array( $i, $this->postItemErrors ) ) $classNames[] = 'validate_error';
+?>
+				<tr class="<?php echo f_e(join(' ', $classNames)); ?>">
+					<td class="item_name">
+						<button class="item_delete_button" type="button"<?php if( $i == 0 ) echo ' style="display:none"'; ?>>商品を削除</button>
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_itemnamekj must" value="<?php echo f_e($postedItem['i_itemnamekj']); ?>" size="20" />
+<?php
+					if( $i == 0 ) {
+?>
+
+						<div class="item_exsample">
+							例）「布団セット」、「茶碗」、「ギフト梱包費用」、「お直し代」等
+						</div>
+<?php
+					}
+?>
+
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_unitprice must" value="<?php echo f_e($postedItem['i_unitprice']); ?>" size="8" />円
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_itemnum must" value="<?php echo f_e($postedItem['i_itemnum']); ?>" size="5" />個
+					</td>
+
+
+		            <!-- 消費税率の設定 -->
+<?php
+                    if ($postedItem ['i_taxrate'] == null) {
+                    $postedItem ['i_taxrate'] = $this->postedItem ['i_taxrate'];
+                    }
+?>
+
+					<td class="item_value"><select class="i_taxrate must">
+					<option value='0' <?php if($postedItem['i_taxrate'] == 0) { echo "selected"; } ?>>0%</option>
+					<option value='8' <?php if($postedItem['i_taxrate'] == 8) { echo "selected"; } ?>>8%</option>
+					<option value='10' <?php if($postedItem['i_taxrate'] == 10) { echo "selected"; } ?>>10%</option></td>
+				</tr>
+
+<?php
+				}
+?>
+
+				<!-- 追加ボタン -->
+				<tr id="none_item_row">
+					<td colspan="5">
+						<button id="item_add_button" type="button">商品を追加</button>
+					</td>
+				</tr>
+				<!-- 送料 -->
+				<tr class="extra_item_row">
+					<td class="item_name" colspan="2">
+						商品送料<br/>
+						（送料がある場合のみ入力）
+						<input type="hidden" class="i_itemnamekj" name="I_ItemNameKj_<?php echo f_e( $this->order_item_carriage__ ); ?>" value="<?php echo f_e( $this->order_item_carriage__ ) . '__'; ?>" />
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_unitprice" name="I_UnitPrice_<?php echo f_e( $this->order_item_carriage__ ); ?>" value="<?php echo f_e(isset($this->postData['I_UnitPrice_' . $this->order_item_carriage__]) ? $this->postData['I_UnitPrice_' . $this->order_item_carriage__] : null); ?>" size="8" />円<br/>
+						※半角数字でご入力ください
+					</td>
+					<td class="item_help" colspan="2">
+						送料無料の場合などは、未入力でお願いします。
+						<input type="hidden" class="i_itemnum" name="I_ItemNum_<?php echo f_e( $this->order_item_carriage__ ); ?>"  value="1">
+					</td>
+				</tr>
+				<!-- 手数料 -->
+				<tr class="extra_item_row">
+					<td class="item_name" colspan="2">
+						店舗手数料<br/>
+						（決済手数料がある場合のみ入力）
+						<input type="hidden" class="i_itemnamekj" name="I_ItemNameKj_<?php echo f_e( $this->order_item_charge__ ); ?>" value="<?php echo f_e( $this->order_item_charge__ ) . '__'; ?>" />
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_unitprice" name="I_UnitPrice_<?php echo f_e( $this->order_item_charge__ ); ?>" value="<?php echo f_e(isset($this->postData['I_UnitPrice_' . $this->order_item_charge__]) ? $this->postData['I_UnitPrice_' . $this->order_item_charge__] : null); ?>" size="8" />円<br/>
+						※半角数字でご入力ください
+					</td>
+					<td class="item_help" colspan="2">
+						決済手数料を顧客に請求されている場合は、こちらにご入力ください。
+						<input type="hidden" class="i_itemnum" name="I_ItemNum_<?php echo f_e( $this->order_item_charge__ ); ?>" value="1">
+					</td>
+				</tr>
+                <?php if ($this->userInfo->TaxClass == 1) { ?>
+				<!-- 外税 -->
+				<tr class="extra_item_row">
+					<td class="item_name" colspan="2">
+						外税額
+						<input type="hidden" class="i_itemnamekj" name="I_ItemNameKj_<?php echo f_e( $this->order_item_taxclass__ ); ?>" value="<?php echo f_e( $this->order_item_taxclass__ ) . '__'; ?>" />
+					</td>
+					<td class="item_value">
+						<input type="text" class="i_unitprice" name="I_UnitPrice_<?php echo f_e( $this->order_item_taxclass__ ); ?>" value="<?php echo f_e(isset($this->postData['I_UnitPrice_' . $this->order_item_taxclass__]) ? $this->postData['I_UnitPrice_' . $this->order_item_taxclass__] : null); ?>" size="8" />円<br/>
+						※半角数字でご入力ください
+					</td>
+					<td class="item_help" colspan="2">
+						外税の加盟店は外税額をご入力ください。
+						<input type="hidden" class="i_itemnum" name="I_ItemNum_<?php echo f_e( $this->order_item_taxclass__ ); ?>" value="1">
+					</td>
+				</tr>
+                <?php } ?>
+			</tbody>
+		</table>
+		<div>
+			※通常、上記の金額欄は全て「内税価格」となっております。「外税価格」設定をご希望される場合はサポートセンターまでご連絡ください。
+		</div>
+		<div>
+			※顧客に事前にお知らせしてある請求額と異ならないようにしてください（金額の変更を事前に告知している場合はこの限りではありません）。
+		</div>
+		<div>
+			※商品名欄には、「○○手数料」のように、商品以外の項目名を入力することができます。
+		</div>
+
+		<!-- 請求金額合計-->
+		<center style="margin-top: 1em">
+			<table class="total_receipt order_items" id="item_items" border="yes" cellpadding="0" cellspacing="0">
+				<thead>
+					<th>
+						請求金額合計
+					</th>
+				</thead>
+					<!-- 請求金額合計 -->
+					<tr>
+						<td class="item_value">
+							<input type="text" id="total_receipt" size="10" readonly="readonly" />円 &nbsp;
+							<button id="calc_total_receipt" type="button" >再計算</button>
+						</td>
+					</tr>
+					<tr>
+						<td class="item_help">
+							※ 注文時の請求総額と差異がないかご確認ください。<br/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</center>
+		<!-- submit -->
+		<center class="submit_area">
+			<input type="hidden" class="reorderflg" name="reorderflg"  value="<?php echo f_e($this->ReOrderFlg); ?>">
+			<button type="submit" id="form_regist" disabled="disabled">この内容で登録</button>
+		</center>
+
+	</form>
+</div>
+<div id="address_select_dialog" style="display:none">
+	<div>
+		<select id="address_list" size="10">
+		</select>
+		<div class="info_container">
+			<div id="address_selection_info">
+			</div>
+		</div>
+		<div class="dlg_buttons">
+			<button id="dialog_ok" disabled="disabled">OK</button>
+			<button id="dialog_cancel">キャンセル</button>
+		</div>
+	</div>
+</div>
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+
+<?php
+// メインJS
+echo $this->render( 'oemmember/order/main_js.php' );
+?>
+<script>
+Event.observe( window, "load", function() {
+	// DatePickerの初期化
+	new base.UI.DatePicker(
+		"datePicker2",
+		"o_service_expected_date",
+		"selectDate2"
+	);
+
+	// [今日]ボタン
+	Event.observe( $("setToday2"), "click", function(evt) {
+		$("o_service_expected_date").value = new Date().format( "yyyy/MM/dd" );
+	}, false );
+
+	// 再請求イベント
+	ReOrder();
+
+	// 受付サイト変更イベント
+	onChangeSite();
+} );
+
+/*
+ * 受付サイト変更イベント
+ */
+function onChangeSite() {
+
+    var siteid = document.getElementById('o_siteid').value;
+    var url = "<?php echo $this->baseUrl; ?>/order/enablesite/siteid/" + siteid;
+    var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    if (res['status'] != 1) { return; }// 正しく結果を戻せない時は、何もしないで処理を抜ける
+
+    // 役務提供予定日
+    var obj = document.getElementById('selectDate2');
+    var objtr = obj.parentNode.parentNode;
+    objtr.style.display = (res['enableinfo']['isEnableServiceTargetClass'] == 1) ? "" : "none";
+
+    // テスト注文
+    obj = document.getElementById('o_t_orderclass');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (res['enableinfo']['isEnableTOrderClass'] == 1) ? "" : "none";
+
+    // 請求書別送
+    if (document.getElementById('o_claimsendingclass')) {
+        obj = document.getElementById('o_claimsendingclass');
+        objtr = obj.parentNode.parentNode;
+        objtr.style.display = (res['enableinfo']['isEnableSelfBillingFlg'] == 1) ? "" : "none";
+    }
+}
+
+/*
+ * 再登録イベント
+ */
+function ReOrder() {
+
+    var ReOrderFlg = "<?php echo $this->ReOrderFlg; ?>";
+
+    // 請求先住所
+    var obj = document.getElementById('c_address');
+    var objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 1) ? "" : "none";
+
+    // 請求先都道府県名
+    obj = document.getElementById('c_prefecturename');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 請求先市・区・郡
+    obj = document.getElementById('c_city');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 請求先町名
+    obj = document.getElementById('c_town');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 請求先ビル名等
+    obj = document.getElementById('c_building');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 配送先住所
+    obj = document.getElementById('d_address');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 1) ? "" : "none";
+
+    // 配送先都道府県名
+    obj = document.getElementById('d_prefecturename');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 配送先市・区・郡
+    obj = document.getElementById('d_city');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 配送先町名
+    obj = document.getElementById('d_town');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+
+    // 配送先ビル名等
+    obj = document.getElementById('d_building');
+    objtr = obj.parentNode.parentNode;
+    objtr.style.display = (ReOrderFlg == 0) ? "" : "none";
+}
+</script>
+</html>
+

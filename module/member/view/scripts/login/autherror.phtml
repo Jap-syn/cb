@@ -1,0 +1,46 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+<style type="text/css">
+.auth-error-info {
+    text-align: center;
+    margin: 40px auto;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+?>
+
+<div class="auth-error-info">
+<h3>認証エラー</h3>
+<p>
+    <?php echo f_e($this->errMessage); ?>
+    <?php if (isset($this->isAccountLock)) { ?>
+        <br>
+        <?php
+            echo "ログイン エラー回数が規定回数を超えました。 セキュリティ保護のため、ログインを制限しています。<br>";
+            echo "制限を解除するためには、お手数ですがサポートセンターまでお電話にてお問い合わせください。<br><br>";
+            echo "サポートセンター電話番号： TEL: 0120-667-690（10:00 ～ 18:00）";
+        ?>
+    <?php } ?>
+</p>
+</div>
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>
+

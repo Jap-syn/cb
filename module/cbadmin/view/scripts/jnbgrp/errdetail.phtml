@@ -1,0 +1,55 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポート エラー詳細
+    <?php if(isset($this->data)) { ?>
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    <?php } ?>
+    </h3>
+    <h4>処理ID：<?php echo f_e($this->transactionId); ?></h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th>エラーメッセージ</th>
+          <th>件数</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php foreach($this->errors as $errInfo) { ?>
+        <tr>
+          <td class="l_data"><?php echo f_e($errInfo['ImportError']); ?>...</td>
+          <td class="l_data"><?php echo f_nf($errInfo['Count'], '#,##0'); ?></td>
+        </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+    <div class="submit-area">
+    <?php if(!isset($this->data)) { ?>
+      <a href="jnbgrp/errclear/tid/<?php echo f_e($this->transactionId); ?>">　このエラーをクリアする　</a>
+      <a href="jnb/index">JNB契約一覧へ</a>
+    <?php } else { ?>
+      <a href="jnbgrp/errclear/oid/<?php echo f_e($this->data['OemId']); ?>/tid/<?php echo f_e($this->transactionId); ?>">　このエラーをクリアする　</a>
+      <a href="jnb/detail/oid/<?php echo f_e($this->data['OemId']); ?>"> JNB登録内容詳細へ戻る　</a>
+    <?php } ?>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

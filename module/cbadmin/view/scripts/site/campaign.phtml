@@ -1,0 +1,196 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  </style>
+  <script type="text/javascript">
+      function setZeikomiLbl()
+      {
+          var val = 0;
+          if (!isNaN($('OemSettlementFeeRate').value)) {
+          	val = $('OemSettlementFeeRate').value * <?php echo $this->zei_rate ?>;
+          }
+          val = Math.floor(val * 1000) / 1000;
+
+          $('OemSettlementFeeRateZeikomi').innerHTML = val.toFixed(3);
+      }
+  </script>
+</head>
+<body onLoad="javascript:setZeikomiLbl(); ">
+  <div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>キャンペーン設定</h3>
+      <div id="message" align="center"><?php echo $this->compMsg; ?></div>
+      <form name="form" action="site/campaigndone" method="post">
+        <input type="hidden" id="seq" name="seq" value="<?php echo f_e($this->seq);?>">
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_data" colspan="4">【キャンペーン内容】</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">期間</td>
+              <td class="l_data"><?php echo $this->data['DateFrom']; ?>　～　<?php echo $this->data['DateTo']; ?></td>
+              <td class="l_data">※ 加盟店にて編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">利用プラン</td>
+              <td class="l_data">
+                <?php foreach ($this->plan as $value) { ?>
+                  <?php if ($value['PricePlanId'] == $this->data['AppPlan']) echo $value['PricePlanName']; ?>
+                <?php } ?>
+              </td>
+              <td class="l_data">※ 加盟店にて編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">月額固定費（税抜）</td>
+              <td class="l_data"><?php echo $this->data['MonthlyFee'] ?>　円</td>
+              <td class="l_data">※ 加盟店にて編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM月額固定費（税抜）</td>
+              <td class="l_data"><?php echo $this->data['OemMonthlyFee'] ?>　円</td>
+              <td class="l_data">※ 加盟店にて編集します。</td>
+            </tr>
+          <?php if (! $this->comp) { ?>
+            <tr>
+              <td class="r_label" colspan="2">決済上限額（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="SettlementAmountLimit" name="form[SettlementAmountLimit]" value="<?php echo f_e($this->data['SettlementAmountLimit']) ?>">　円
+                <?php show_error_message($this->error['SettlementAmountLimit']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">決済手数料率<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="SettlementFeeRate" name="form[SettlementFeeRate]" value="<?php echo f_e($this->data['SettlementFeeRate']) ?>">　％（小数点以下有効桁数：5桁）
+                <?php show_error_message($this->error['SettlementFeeRate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（別送）（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="ClaimFeeBS" name="form[ClaimFeeBS]" value="<?php echo f_e($this->data['ClaimFeeBS']) ?>">　円
+                <?php show_error_message($this->error['ClaimFeeBS']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（同梱）（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="ClaimFeeDK" name="form[ClaimFeeDK]" value="<?php echo f_e($this->data['ClaimFeeDK']) ?>">　円
+                <?php show_error_message($this->error['ClaimFeeDK']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">再請求手数料（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="ReClaimFee" name="form[ReClaimFee]" value="<?php echo f_e($this->data['ReClaimFee']) ?>">　円
+                <?php show_error_message($this->error['ReClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM決済手数料率（税抜）</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="OemSettlementFeeRate" name="form[OemSettlementFeeRate]" value="<?php echo f_e($this->data['OemSettlementFeeRate']) ?>" onChange="setZeikomiLbl()">　％（小数点以下有効桁数：5桁）<br>
+                ※ OEM先が選択されている場合必須となります。　　税込 <label id="OemSettlementFeeRateZeikomi"></label>％
+                <?php show_error_message($this->error['OemSettlementFeeRate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM請求手数料（税抜）</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="OemClaimFee" name="form[OemClaimFee]" value="<?php echo f_e($this->data['OemClaimFee']) ?>">　円<br>
+                ※ OEM先が選択されている場合必須となります。
+                <?php show_error_message($this->error['OemClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM同梱請求手数料（税抜）</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="SelfBillingOemClaimFee" name="form[SelfBillingOemClaimFee]" value="<?php echo f_e($this->data['SelfBillingOemClaimFee']) ?>">　円<br>
+                ※ OEM先が選択されている場合必須となります。
+                <?php show_error_message($this->error['SelfBillingOemClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">システム手数料（税抜）</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="SystemFee" name="form[SystemFee]" value="<?php echo f_e($this->data['SystemFee']) ?>">　円
+                <?php show_error_message($this->error['SystemFee']); ?>
+              </td>
+            </tr>
+          <?php } else { ?>
+            <tr>
+              <td class="r_label" colspan="2">決済上限額（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['SettlementAmountLimit'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">決済手数料率<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['SettlementFeeRate'] ?>　％（小数点以下有効桁数：5桁）</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（別送）（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['ClaimFeeBS'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（同梱）（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['ClaimFeeDK'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">再請求手数料（税抜）<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['ReClaimFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM決済手数料率（税抜）</td>
+              <td class="l_data" colspan="2"><?php echo $this->data['OemSettlementFeeRate'] ?>　％（小数点以下有効桁数：5桁）　　(税込 <?php echo sprintf("%.5f", $this->data['OemSettlementFeeRateZeikomi']); ?>％)</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM請求手数料（税抜）</td>
+              <td class="l_data" colspan="2"><?php echo $this->data['OemClaimFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM同梱請求手数料（税抜）</td>
+              <td class="l_data" colspan="2"><?php echo $this->data['SelfBillingOemClaimFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">システム手数料（税抜）</td>
+              <td class="l_data" colspan="2"><?php echo $this->data['SystemFee'] ?>　円</td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td style="padding: 2px 0px">
+              <?php if (! $this->comp) { ?>
+                <input type="submit" id="submit_button" value="キャンペーン登録" />&nbsp;
+              <?php } ?>
+                <input type="button" id="close_button" onclick="window.close();" value="閉じる" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div><!-- end #contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+</body>
+</html>

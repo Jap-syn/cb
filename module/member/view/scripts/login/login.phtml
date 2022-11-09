@@ -1,0 +1,51 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+?>
+
+<form id="login_form" class="login_form" method="post" action="login/auth">
+	<h3>ログイン</h3>
+	<ul>
+		<li class="field_area">
+			<label for="login_id">
+				ログインID：
+				<input id="login_id" name="login_id" type="text" size="32" />
+			</label>
+		</li>
+		<li class="field_area">
+			<label for="password">
+				パスワード：
+				<input id="password" name="password" type="password" size="32" />
+			</label>
+		</li>
+		<li class="button_container">
+			<button type="submit" disabled="disabled">ログイン</button>
+		</li>
+		<li class="information">
+			パスワードを忘れた方は下記までお問い合わせください<br />
+			TEL: 0120-667-690 （9～18時）<br />
+			e-mail: <a href="mailto:customer@ato-barai.com">customer@ato-barai.com</a>
+		</li>
+	</ul>
+</form>
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>
+

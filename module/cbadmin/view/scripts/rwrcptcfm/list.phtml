@@ -1,0 +1,150 @@
+<?php
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+
+$viewHelper = new CoralViewHelperValueFormat();
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+    background-color: #ffddff;
+}
+
+/* [paging] */
+.page_nav {
+    border-top-width: 1px;
+    margin-bottom: -5px;
+}
+
+#loading_message {
+    margin: 5px 25px;
+    color: gray;
+    padding: 0px;
+    padding-left: 24px;
+    font-size: 16px;
+    background-image: url('../images/loading_mini_01.gif');
+    background-position: 2px center;
+    background-repeat: no-repeat;
+    border: solid 1px #ffcc00;
+}
+tr.border td {
+    background-color: #ddd;
+    padding: 0px !important;
+    font-size: 3px !important;
+    line-height: 3px !important;
+}
+-->
+</style></head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金確認</h3>
+
+    <div style="clear: both; float: none;">&nbsp;</div>
+    <?php /*echo $this->render('page_navigation.php');*/ ?>
+<div id="loading_message">now loading...</div>
+    <form name="form" method="post" action="rwrcptcfm/confirm" style="display: none;" id="main_form">
+      <table style="clear:both; table-layout: fixed; width:875px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 Stt -->
+              <th style="width: 130px">注文ID</th>
+              <th style="width: 50px">初回<br />期限</th>
+              <th style="width: 50px">最終<br />請求</th>
+              <th style="width: 50px">支払<br />期限</th>
+              <th style="width: 54px">請求</th>
+              <th style="width: 42px">属性</th>
+              <th style="width: 186px">請求先氏名</th>
+              <th style="width: 73px">請求額</th>
+<?php if (false) { // 入力項目は画面上から削除 ?>
+              <th style="width: 167px">入金形態</th>
+              <th style="width: 120px">入金日</th>
+              <th style="width: 100px">実入金額</th>
+<?php } ?>
+              <th style="width: 120px">入金</th>
+              <th style="width: 120px">雑損失雑収入</th>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 End -->
+          </tr>
+        <tbody>
+          <?php
+          // count関数対策
+          $listCount = 0;
+          if (!empty($this->list)){
+              $listCount = count($this->list);
+          }
+        for ($i = 0; $i < $listCount; $i++) { ?>
+          <?php $item = $this->list[$i]; ?>
+
+          <tr <?php echo $item['DamageRecord']; ?>>
+            <td class="l_data target_cell">
+              <?php $id = 'OrderSeq'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderSeq']; ?>" />
+              <?php $id = 'OrderId'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderId']; ?>" />
+              <?php $id = 'OutOfAmends'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php if(isset($item['OutOfAmends'])){ echo $item['OutOfAmends']; } else { echo ''; } ?>" />
+              <a target="_blank" href="rworder/detail/oseq/<?php echo f_e($item['OrderSeq']); ?>"><?php echo $item['OrderId']; ?></a>
+            </td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['F_LimitDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['ClaimDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo date('m/d', strtotime($item['LimitDate'])); ?></td>
+            <td class="c_data target_cell"><?php echo $item['ClaimPatternShortStr']; ?></td>
+            <td class="c_data target_cell"><?php echo $item['IncreArCaption']; ?></td>
+            <td class="l_data target_cell">
+              <?php $id = 'NameKj'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo f_e($item['NameKj']); ?>" />
+              <a target="_blank" href="customerinquiry/detail/custid/<?php echo f_e($item['CustomerId']); ?>">
+              <?php echo f_e(f_trim($item['NameKj'])); ?></a>
+            </td>
+            <td class="r_data target_cell">
+              <?php $id = 'ClaimTotalAmount'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['ClaimTotalAmount']; ?>" />
+              <?php echo number_format($item['ClaimTotalAmount']); ?>
+            </td>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 Stt -->
+<?php if (false) { ?>
+            <td class="c_data target_cell"><?php echo $item['receiptFormTag']; ?></td>
+            <td class="l_data target_cell">
+              <?php $id = 'Rct_ReceiptDate'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+            </td>
+            <td class="r_data target_cell">
+              <?php $id = 'Rct_ReceiptAmount'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+            </td>
+<?php } ?>
+            <td class="c_data target_cell"><a target="_blank" href="rwrcptcfm/dtlrcptform/oseq/<?php echo $item['OrderSeq']?>">詳細入金処理</a></td>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 End -->
+            <td class="c_data target_cell"><a target="_blank" href="rwsprcpt/lossedit/oid/<?php echo $item['OrderId']?>/claimtotalamount/<?php echo $item['ClaimTotalAmount']; ?>">雑損失貸倒れ登録</a></td>
+          </tr>
+          <?php } ?>
+
+<!-- 2015/09/24 Y.Suzuki Del 会計対応 Stt -->
+<?php if (false) { ?>
+          <tr>
+            <td colspan="12" class="c_data">
+              <input type="hidden" name="page" value="<?php echo $this->current_page; ?>" />
+              <input type="submit" value="　　入金確定　　" />
+            </td>
+          </tr>
+<?php } ?>
+<!-- 2015/09/24 Y.Suzuki Del 会計対応 End -->
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    Element.show($("main_form"));
+    setTimeout(function() {
+        Element.hide($("loading_message"));
+    }, 0);
+});
+</script>
+</html>

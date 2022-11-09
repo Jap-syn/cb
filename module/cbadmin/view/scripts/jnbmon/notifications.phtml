@@ -1,0 +1,260 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$sts_map = array(
+  '1' => '受信済み',
+  '2' => '自動処理待ち',
+  '3' => '手動確定待ち',
+  '9' => '入金処理済み',
+  '-1' => '破棄済み',
+  '-9' => '不正通知'
+);
+?>
+<style type="text/css">
+#contents table.formtable {
+  margin-bottom: 40px;
+  font-size: 12px;
+}
+#contents table.formtable tr {
+  background-color: #fff;
+}
+#contents table.formtable tr td {
+  background-color: transparent;
+}
+#contents table.formtable tr.even {
+  background-color: #f8ffff;
+}
+#contents table.formtable tr.odd.deleted,
+#contents table.formtable tr.even.deleted {
+  background-color: #eee;
+}
+#contents table.formtable tr.odd.disposed,
+#contents table.formtable tr.even.disposed {
+  color: green;
+}
+#contents table.formtable tr.odd.rejected,
+#contents table.formtable tr.even.rejected {
+  color: crimson;
+  background-color: lavenderblush;
+}
+#contents table.formtable td.order-info a,
+#contents table.formtable td.reject-reason span {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#contents table.formtable td.order-info a {
+  max-width: 275px;
+}
+#contents table.formtable td.reject-reason span {
+  max-width: 187px;
+}
+#contents h3 {
+  padding-right: 0;
+}
+#contents .control-box {
+  font-weight: normal;
+  float: right;
+  margin: 0;
+  font-size: 16px;
+  line-height: 16px;
+}
+#contents .nav {
+  float: left;
+  margin: 0 10px;
+}
+#contents h3 .control-box .nav {
+  margin-right: 4px;
+}
+#contents .nav a,
+#contents .nav span {
+  margin: 0 2px;
+}
+#contents .nav span {
+  color: dimgray;
+}
+#contents .clear-float {
+  float: none;
+  clear: both;
+  font-size: 0;
+  line-height: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+#scroll-to-top.submit-area {
+  margin-top: -30px;
+}
+#scroll-to-top a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  line-height: 18px;
+}
+</style>
+<script type="text/javascript">
+var
+  initialized = false,
+  showScrollToTop = function() {
+    if (!base) { return; }
+    if (!base.UI) { return; }
+	var
+	  b = base.UI.currentBrowser(),
+	  base = (b == base.UI.browserTypes.opera ? document.body : document.documentElement),
+	  scrollable = base.clientHeight < base.scrollHeight,
+	  target = $('scroll-to-top'),
+	  func = scrollable ? (function() {
+		if(!initialized) return Element.show;
+		return function(ele) {
+		  if(!Element.visible(ele)) {
+			bytefx.fade(ele, 0, 100, 3, function() { console.log('test'); Element.show(ele); });
+		  }
+		};
+	  })() : (function() {
+		if(!initialized) return Element.hide;
+		return function(ele) {
+		  if(Element.visible(ele)) {
+			bytefx.fade(ele, 100, 0, 3, function() { console.log('test'); Element.hide(ele); });
+		  }
+		};
+	  })();
+	func(target);
+  };
+Event.observe(window, 'load', function() {
+  Event.observe(window, 'resize', showScrollToTop);
+  showScrollToTop();
+  initialized = true;
+});
+</script>
+</head>
+<body>
+<div id="top-of-page"></div>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbmon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <?php
+    $prev_date = date('Y-m-d', strtotime($this->date) - 86400);
+    $next_date = date('Y-m-d', strtotime($this->date) + 86400);
+    ?>
+    <h3 class="contents_title">
+      入金通知履歴 - <?php echo f_df($this->date, 'Y年 n月 j日'); ?> 受信分
+      <div class="control-box">
+        <div class="nav date-nav">
+          <a href="jnbmon/nfl3m">直近3ヶ月の通知状況を確認</a>
+          <span>｜</span>
+          <a href="jnbmon/notifications/date/<?php echo f_e($prev_date); ?>">&laquo; <?php echo f_df($prev_date, 'Y年 n月 j日'); ?></a>
+          <span>｜</span>
+        <?php if($next_date <= date('Y-m-d')) { ?>
+          <a href="jnbmon/notifications/date/<?php echo f_e($next_date); ?>"><?php echo f_df($next_date, 'Y年 n月 j日'); ?> &raquo;</a>
+        <?php } else { ?>
+          <span><?php echo f_df($next_date, 'Y年 n月 j日'); ?> &raquo;</span>
+        <?php } ?>
+        </div>
+      </div>
+      <div class="clear-float"></div>
+    </h3>
+
+    <h4 class="category-title">
+      <?php echo f_nf($this->total, '#,##0'); ?> 件
+      <?php if($this->total) { ?>
+      (<?php echo f_nf($this->start, '#,##0'); ?> ～ <?php echo f_nf($this->end, '#,##0'); ?> 件めを表示)
+      <?php } ?>
+      <div class="control-box">
+        <div class="nav page-nav">
+        <?php if($this->page > 1) { ?>
+          <a href="jnbmon/notifications/date/<?php echo f_e($this->date); ?>/page/<?php echo f_e($this->page - 1); ?>">&laquo; 前へ</a>
+        <?php } else { ?>
+          <span>&laquo; 前へ</span>
+        <?php } ?>
+          <span>｜</span>
+        <?php if($this->end < $this->total) { ?>
+          <a href="jnbmon/notifications/date/<?php echo f_e($this->date); ?>/page/<?php echo f_e($this->page + 1); ?>">次へ &raquo;</a>
+        <?php } else { ?>
+          <span>次へ &raquo;</span>
+        <?php } ?>
+        </div>
+      </div>
+      <div class="clear-float"></div>
+    </h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th style="width: 33px">No.</th>
+          <th style="width: 52px">受信時刻</th>
+          <th style="width: 75px">状態</th>
+          <th style="width: 85px">要求口座</th>
+          <th style="width: 85px">対象JNB口座</th>
+          <th style="width: 280px">対象注文</th>
+          <th style="width: 50px">入金額</th>
+          <th style="width: 192px">拒否理由</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php if(!$this->count) { ?>
+        <tr>
+          <td class="l_data" colspan="9">履歴がありません</td>
+        </tr>
+      <?php } else { ?>
+        <?php foreach($this->list as $i => $data) { ?>
+        <?php
+        $account_number = sprintf('%s-%s', $data['ReqBranchCode'], $data['ReqAccountNumber']);
+        $disp_acc_number = sprintf('%s - %s', $data['ReqBranchCode'], $data['ReqAccountNumber']);
+        $classes = array();
+        $classes[] = ($i % 2 ? 'even' : 'odd');
+        if($data['DeleteFlg']) $classes[] = 'deleted';
+        if($data['Status'] == -1) $classes[] = 'disposed';
+        if($data['Status'] == -9) $classes[] = 'rejected';
+        ?>
+        <tr class="<?php echo f_e(join(' ', $classes)); ?>">
+          <td class="r_data"><?php echo f_e($this->start + $i); ?></td>
+          <td class="c_data"><?php echo f_df($data['ReceivedDate'], 'H:i:s'); ?></td>
+          <td class="c_data"><?php echo f_e($sts_map[$data['Status']]); ?></td>
+          <td class="l_data">
+            <a href="jnb/history/account/<?php echo f_e($account_number); ?>" target="_blank">
+              <?php echo f_e($disp_acc_number); ?>
+            </a>
+          </td>
+          <td class="l_data">
+        <?php if($data['AccountSeq']) { ?>
+            <a href="jnb/history/account/<?php echo f_e($account_number); ?>" target="_blank">
+              <?php echo f_e($disp_acc_number); ?>
+            </a>
+        <?php } else { ?>
+            -
+        <?php } ?>
+          </td>
+          <td class="l_data order-info">
+        <?php if($data['OrderId']) { ?>
+            <?php $order_info = sprintf('%s：%s', $data['OrderId'], $data['NameKj']); ?>
+            <a href="rworder/detail/oseq/<?php echo f_e($data['OrderSeq']); ?>" target="_blank" title="<?php echo f_e($order_info); ?>">
+              <?php echo f_e($order_info); ?>
+            </a>
+        <?php } else { ?>
+            -
+        <?php } ?>
+          </td>
+          <td class="r_data"><?php echo f_nf($data['ReceiptAmount'], '#,##0'); ?></td>
+          <td class="l_data reject-reason"><span title="<?php echo f_e($data['RejectReason']); ?>"><?php echo f_e($data['RejectReason']); ?></span></td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </tbody>
+    </table>
+
+    <div id="scroll-to-top" class="submit-area">
+      <a href="javascript:void(0)" onclick="bytefx.scroll($('top-of-page'), 15)">ページの先頭へ</a>
+    </div>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,295 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">返金指示確定待ち・履歴一覧</h3>
+	<!-- ページナビゲーション -->
+	<?php echo $this->render('cbadmin/page_navigation.php'); ?>
+    <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr height="30">
+        <td class="l_data" colspan="12">
+          <form id="sform" name="sform" method="post" action="rwsprcpt/histlist">
+            OEM先
+            <select id="oemId" name="oemId" >
+              <option value="-1">-----</option>
+          <?php foreach($this->oemList as $value => $caption) { ?>
+              <?php $selected = $this->selectOemId == $value ? ' selected="selected"' : '';?>
+              <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+          <?php } ?>
+            </select>　
+          振込データＤＬ状態：<?php echo $this->outputTag; ?><br>
+          <?php echo $this->srchtypeTag; ?>　
+            返金確定期間：
+            <input type="text" style="width:90px;" name="DecisionDateF" id="DecisionDateF" value="<?php echo f_e($this->DecisionDateF); ?>" />～
+            <input type="text" style="width:90px;" name="DecisionDateT" id="DecisionDateT" value="<?php echo f_e($this->DecisionDateT); ?>" />
+            (YYYY-MM-DD形式で入力)
+            <BR>
+            処理方法&nbsp;<?php echo $this->procclassTag; ?>
+            ﾈｯﾄDE受取ｽﾃｰﾀｽ&nbsp;<?php echo $this->statusTag; ?>
+            返金指示日&nbsp;
+            <input type="text" style="width:90px;" name="IndicationDateF" id="IndicationDateF" value="<?php echo f_e($this->IndicationDateF); ?>" />～
+            <input type="text" style="width:90px;" name="IndicationDateT" id="IndicationDateT" value="<?php echo f_e($this->IndicationDateT); ?>" />
+            <input type="submit" id="btnSearch" name="btnSearch" value="　検　索　" />
+          </form>
+        </td>
+      </tr>
+    </table>
+    <form id="form" name="form">
+    <input type="hidden" name="RepaySeqs" value="<?php echo $this->RepaySeqs; ?>"/>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <td align="right" style="background-color: white"></p>
+            <input id="btnAllOn"  type="button" onclick="allChecked(true, this.form,'chkDecision');" value="　返金確定全選択　" /></p>
+            <input id="btnAllOff" type="button" onclick="allChecked(false,this.form,'chkDecision');" value="　返金確定全解除　" />
+          </td>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>初回<br>期限</th>
+            <th>最終<br>請求</th>
+            <th>支払<br>期限</th>
+            <th>請求</th>
+            <th>属<br>性</th>
+            <th>請求先氏名</th>
+            <th>請求金額</th>
+            <th>入金形態</th>
+            <th>入金日</th>
+            <th>実入金額</th>
+            <th>過剰金</th>
+            <th>返金金額</th>
+            <th>返金<br>予定日</th>
+            <th>ﾈｯﾄDE受取<br>ｽﾃｰﾀｽ</th>
+            <th>返金指示<br>ｷｬﾝｾﾙ</th>
+            <th>返金<br>確定</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <?php     $row = $this->list[$i]; ?>
+          <tr>
+            <input type="hidden" name="RepaySeq<?php echo $i; ?>" value="<?php echo $row["RepaySeq"]; ?>"/>
+            <input type="hidden" name="ClaimId<?php echo $i; ?>" value="<?php echo $row["ClaimId"]; ?>"/>
+            <input type="hidden" name="RepayAmount<?php echo $i; ?>" value="<?php echo $row["RepayAmount"]; ?>"/>
+
+            <td class="c_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['F_LimitDate'])); ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['ClaimDate'])); ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['LimitDate'])); ?></td>
+            <td class="c_data"><?php echo $row['ClaimCaption']; ?></td>
+            <td class="c_data"><?php echo $row['IncreCaption']; ?></td>
+            <td class="l_data"><a target="_blank" href="customerinquiry/detail/custid/<?php echo $row['CustomerId']; ?>"><?php echo $row['NameKj']; ?></a></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimAmount'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['ReceiptClass']; ?></td>
+            <td class="c_data"><?php echo $row['ReceiptDate']; ?></td>
+            <td class="r_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['SurplusAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['RepayAmount'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['RepayExpectedDate']; ?></td>
+            <td class="c_data"><?php echo $row['NetStatusCaption']; ?></td>
+            <td class="c_data"><input type="checkbox" name="chkCancel<?php echo $i; ?>" id="chkCancel<?php echo $i; ?>" /></td>
+            <td class="c_data"><input type="checkbox" name="chkDecision<?php echo $i; ?>" id="chkDecision<?php echo $i; ?>" /></td>
+          </tr>
+          <tr class="border">
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+
+    <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="c_data">
+          <button id="btnCancel" type="btnCancel">　返金ｷｬﾝｾﾙ　</button>　　　
+          <button id="btnDecision" type="btnDecision">　返金確定　</button>
+        </td>
+      </tr>
+      <tr class="border">
+      </tr>
+      <tr>
+        <td class="c_data">
+          <form id="dlform" name="dlform" method="post" action="rwsprcpt/dhistlistcsv">
+            <input type="hidden" name="DecisionDateF" id="DecisionDateF" value="<?php echo f_e($this->DecisionDateF); ?>" />
+            <input type="hidden" name="DecisionDateT" id="DecisionDateT" value="<?php echo f_e($this->DecisionDateT); ?>" />
+            <input type="hidden" name="oemId" id="oemId" value="<?php echo f_e($this->selectOemId); ?>" />
+            <button type="button" id="btnDlCsv" name="btnDlCsv" <?php if ($this->disable != 1) { echo 'disabled'; } ?> >　振込データDL　</button>
+            <button type="button" id="btnDlNetData" name="btnDlNetData">　ﾈｯﾄDE受取ﾃﾞｰﾀDL　</button>
+            <button type="button" id="btnDlNetHagaki" name="btnDlNetHagaki" >　ﾈｯﾄDE受取ﾊｶﾞｷﾃﾞｰﾀDL　</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+	changeSrchtype();
+});
+
+//チェックボックス全件選択
+function allChecked(check, targetForm, colnm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        var str = targetForm.elements[j].name;
+        if (str.indexOf(colnm) == 0){
+            // オブジェクトがイネーブル時に限り処理を行う
+            if (!targetForm.elements[j].disabled) {
+                targetForm.elements[j].checked = check;
+            }
+        }
+    }
+}
+
+// 検索種別によるオブジェクトの有効無効
+function changeSrchtype() {
+
+    var selectedIndex = $('srchtype').selectedIndex;
+
+    if ($('srchtype').options[selectedIndex].value == 1) {
+        // 返金確定待ち
+        document.getElementById('btnCancel').disabled = false;
+        document.getElementById('btnDecision').disabled = false;
+        document.getElementById('DecisionDateF').disabled = true;
+        document.getElementById('DecisionDateT').disabled = true;
+        document.getElementById('btnAllOn' ).disabled = false;
+        document.getElementById('btnAllOff').disabled = false;
+        document.getElementById('output').disabled = true;
+    }
+    else {
+        // 返金確定履歴(読み込み専用)
+        document.getElementById('btnCancel').disabled = true;
+        document.getElementById('btnDecision').disabled = true;
+        document.getElementById('DecisionDateF').disabled = false;
+        document.getElementById('DecisionDateT').disabled = false;
+        document.getElementById('btnAllOn' ).disabled = true;
+        document.getElementById('btnAllOff').disabled = true;
+        document.getElementById('output').disabled = false;
+    }
+}
+
+Event.observe($("btnCancel"), "click", function() {
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/repaycancel";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    if  (res['status'] == 1) {
+        // 成功⇒検索ボタン押下処理
+        alert("返金ｷｬﾝｾﾙ処理完了 : 更新件数 = " + res['updatecount']);
+        document.getElementById('btnSearch').click();
+    }
+    else {
+        // 失敗⇒メッセージ送出
+        alert(res['status']);
+        return false;
+    }
+});
+
+Event.observe($("btnDecision"), "click", function() {
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/repaydecision";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    if  (res['status'] == 1) {
+        // 成功⇒検索ボタン押下処理
+        alert("返金確定処理完了 : 更新件数 = " + res['updatecount']);
+        document.getElementById('btnSearch').click();
+    }
+    else {
+        // 失敗⇒メッセージ送出
+        alert(res['status']);
+        return false;
+    }
+});
+Event.observe($("btnDlCsv"), "click", function() {
+    $("dlform").submit();
+    return false;
+  });
+Event.observe($("btnDlNetData"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/dlnetdataset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // CSV出力処理
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/dlnetdata";
+    var ref = window.open( url );
+
+    // CSV出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+});
+Event.observe($("btnDlNetHagaki"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/dlnethagakiset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // CSV出力処理
+    var url = "<?php echo $this->baseUrl; ?>/rwsprcpt/dlnethagaki";
+    var ref = window.open( url );
+
+    // CSV出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+});
+</script>
+
+</html>

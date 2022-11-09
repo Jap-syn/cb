@@ -1,0 +1,213 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+use Coral\Base\BaseHtmlUtils;
+static $j = 0;
+?>
+</head>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/spclpaying/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3 class="contents_title">臨時　調整金</h3>
+      <form id="adjustform" action="spclpaying/list" method="post">
+      <table style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="9" class="error"><?php if (isset($this->ErrorMessage)) echo $this->ErrorMessage; ?><td>
+        </tr>
+        <tr>
+          <td>加盟店ID：</td>
+          <td><?php echo f_e($this->loginid) ?></td>
+          <td>名称：</td>
+          <td style="width: 150px; "><span style="font-weight: bold;"><?php echo $this->ename ?></span></td>
+          <td>立替締め日：</td>
+          <td><?php echo f_e($this->pdate) ?></td>
+          <td>　　　　　　　　　　　　　</td>
+          </tr>
+          <input type="hidden" id="eid" name="eid" value="<?php echo f_e($this->eid); ?>">
+          <input type="hidden" id="loginid" name="loginid" value="<?php echo f_e($this->loginid); ?>">
+          </table>
+      <table class="datatable" id="basetable" width="862" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th>項目の削除</th>
+            <th>注文ID</th>
+            <th>氏名</th>
+            <th>科目</th>
+            <th>調整額</th>
+            <th>登録日時</th>
+            <th>登録者</th>
+          </tr>
+        </thead>
+        <tbody>
+        <!-- count関数対策 -->
+        <?php if (!empty($this->adjlist)) { ?>
+        <?php   foreach ($this->adjlist as $adjust) { ?>
+          <tr id="SerialNumber_<?php echo $adjust['SerialNumber']; ?>">
+            <td class="c_data">
+              <input type="checkbox" name="item_delete_chk_<?php echo $adjust['SerialNumber']; ?>"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              <input type="button" id="item_delete_button" name="item_delete_button_<?php echo $adjust['SerialNumber']; ?>" value="　削除　" onclick="deleteRow(this);"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?> style="display: none; margin-left: 8px;">
+            </td>
+            <td class="c_data">
+              <input type="text" size="15" name="orderid_<?php echo $adjust['SerialNumber']; ?>" style="width:140px" class="orderid" value="<?php echo $adjust['OrderId']; ?>"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+            <td class="l_data"><?php echo $adjust['NameKj']; ?></td>
+            <td class="l_data">
+              <select name="itemcode_<?php echo $adjust['SerialNumber']; ?>" id="itemcode"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+                <?php foreach( $this->kamokuList as $itemCode ) { ?>
+                <option value="<?php echo $itemCode['KeyCode']; ?>"<?php if( $itemCode['KeyCode'] == $adjust['ItemCode'] ) { echo ' selected="selected"'; } ?>>
+                  <?php echo $itemCode['KeyContent']; ?>
+                </option>
+                <?php } ?>
+              </select>
+            </td>
+            <td class="c_data">
+              <input type="text" size="15" name="adjamount_<?php echo $adjust['SerialNumber']; ?>" value="<?php echo $adjust['AdjustmentAmount']; ?>"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+            <td class="c_data"><?php echo $adjust['RegistDate']; ?></td>
+            <td class="l_data"><?php echo $adjust['RegistName']; ?></td>
+          </tr>
+        <?php   } ?>
+        <?php } else { ?>
+          <tr id="SerialNumber_<?php echo $adjust['SerialNumber']; ?>" style="display: none">
+            <td class="c_data">
+              <input type="button" id="item_delete_button" name="item_delete_button_<?php echo $adjust['SerialNumber']; ?>" value="　削除　" onclick="deleteRow(this);"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?> style="margin-left: 8px;">
+            </td>
+            <td class="c_data">
+              <input type="text" size="15" name="orderid_<?php echo $adjust['SerialNumber']; ?>" style="width:140px" class="orderid" value="<?php echo $adjust['OrderId']; ?>"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+            <td class="l_data"><?php echo $adjust['NameKj']; ?></td>
+            <td class="l_data">
+              <select name="itemcode_<?php echo $adjust['SerialNumber']; ?>" id="itemcode"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+                <?php foreach( $this->kamokuList as $itemCode ) { ?>
+                <option value="<?php echo $itemCode['KeyCode']; ?>"<?php if( $itemCode['KeyCode'] == $adjust['ItemCode'] ) { echo ' selected="selected"'; } ?>>
+                  <?php echo $itemCode['KeyContent']; ?>
+                </option>
+                <?php } ?>
+              </select>
+            </td>
+            <td class="c_data">
+              <input type="text" size="15" name="adjamount_<?php echo $adjust['SerialNumber']; ?>" value="<?php echo $adjust['AdjustmentAmount']; ?>"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+            <td class="c_data"><?php echo $adjust['RegistDate']; ?></td>
+            <td class="l_data"><?php echo $adjust['RegistName']; ?></td>
+          </tr>
+        <?php } ?>
+          <tr class="data">
+            <td class="l_data" colspan="7">
+              <input type="button" id="btnAddRow" value="行追加" onclick="insertRow();"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" cellpadding="1" cellspacing="1" border="0" style="font-size: 12px">
+        <tr>
+          <td class="l_data" colspan="7" style="text-align: center">
+            <input type="button" id="btnUpdate" name="btnUpdate" value="　更新　"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>　
+            <input type="hidden" id="SearchEnterpriseId" name="SearchEnterpriseId" value="<?php echo f_e($this->loginid); ?>">
+            <input type="hidden" id="calc_button" name="calc_button" value="　立替計算　">
+            <input type="hidden" id="PayingControlDate" name="PayingControlDate" value="<?php echo f_e($this->pdate) ?>">
+            <input type="hidden" id="PayingPlanDate" name="PayingPlanDate" value="<?php echo f_e($this->ppdate) ?>">
+            <input type="submit" id="btnBack" name="btnBack" value="　戻る　" >
+          </td>
+        </tr>
+      </table>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+  function insertRow() {
+    var table = document.getElementById( "basetable" );
+     var rows = table.rows.length;
+
+     // 前の行が新規追加行でない場合
+    var beforeRowId = table.rows[ rows - 2 ].id;
+    if (beforeRowId.match( /SerialNumber/ ) != null || beforeRowId == null || beforeRowId == '') {
+      var name = "new_1";
+    } else {
+      var name = beforeRowId.replace( /\d+/, function( i ) { return ++i; } );
+    }
+
+    var row = table.insertRow(rows - 1);
+    row.id = name;
+
+    var button = document.getElementById("item_delete_button").cloneNode(true);
+    button.style.display = "block";
+    button.name = "item_delete_button_" + name;
+    var text = document.createElement("input");
+    text.type = "text";
+    text.size = "15";
+    text.name = "orderid_" + name;
+    var text2 = document.createElement("input");
+    text2.type = "text";
+    text2.size = "15";
+    text2.name = "adjamount_" + name;
+    var select = document.getElementById("itemcode").cloneNode(true);
+    select.name = "itemcode_" + name;
+
+    // 項目の削除
+    var cell0 = row.insertCell(0);
+    cell0.className = "c_data";
+    cell0.appendChild(button);
+
+    // 注文ID
+    var cell1 = row.insertCell(1);
+    cell1.className = "c_data";
+    cell1.appendChild(text);
+
+    // 氏名
+    var cell2 = row.insertCell(2);
+    cell2.className = "l_data";
+
+    // 科目
+    var cell3 = row.insertCell(3);
+    cell3.className = "l_data";
+    cell3.appendChild(select);
+
+    // 調整額
+    var cell4 = row.insertCell(4);
+    cell4.className = "c_data";
+    cell4.appendChild(text2);
+
+    // 登録日時
+    var cell5 = row.insertCell(5);
+    cell5.className = "c_data";
+
+    // 登録者
+    var cell6 = row.insertCell(6);
+    cell6.className = "l_data";
+  }
+
+  // 行削除
+  function deleteRow(obj) {
+    // 削除ボタンが押された行を取得
+    tr = obj.parentNode.parentNode;
+    // インデックスを取得して行を削除
+    tr.parentNode.deleteRow(tr.sectionRowIndex);
+  }
+
+  // 更新ボタン押下時
+  Event.observe($("btnUpdate"), "click", function() {
+    var str = Form.serialize('adjustform');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/spclpaying/confirm";
+    debugger;
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] == 1) {
+      // 成功⇒ページをリロード（再読み込み）
+      alert("更新処理完了 : 更新件数 = " + res['updatecount'] + "　削除件数 = " + res['deletecount']);
+      window.location.reload(true);
+    } else {
+      // 失敗⇒メッセージ送出
+      alert(res['status']);
+    }
+  });
+</script>
+</html>

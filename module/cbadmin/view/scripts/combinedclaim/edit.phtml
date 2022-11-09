@@ -1,0 +1,160 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+    ul.errors {
+      border: solid 1px silver;
+      color: crimson;
+      background-color: lemonchiffon;
+      font-size: 10pt;
+      padding: 4px !important;
+      padding-left: 24px !important;
+    }
+    ul.errors li.error {
+      margin : 0px !important;
+    }
+    #ip_help_toggle,
+    #ip_help_toggle:link,
+    #ip_help_toggle:hover,
+    #ip_help_toggle:visited,
+    #ip_help_toggle:active {
+      font-size: 11px;
+      padding: 2px 4px;
+    }
+    #ip_help_toggle:hover {
+      background-color: white;
+      color: royalblue;
+    }
+    #ip_help {
+      white-space: pre;
+      font-size: 12px;
+      padding: 2px;
+      border: solid 1px silver;
+      background-color: ghostwhite;
+      color: #444;
+      position: absolute;
+      width: 380px;
+      height: 220px;
+      text-align: left;
+      line-height: 120%;
+      overflow: visible;
+      opacity : .9;
+    }
+    hr {
+      border-width: 1px 0px 0px 0px; /* 太さ */
+      border-style: dotted; /* 線種 */
+      border-color: silver; /* 線色 */
+      height: 3px; /* 高さ */
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3>請求取りまとめ設定登録</h3>
+    <?php if( isset($this->error) ) {?>
+      <ul class="errors">
+        <li><?php echo f_e($this->error); ?></li>
+      </ul>
+    <?php } ?>
+      <form id="edit_form" action="combinedclaim/confirm" method="post">
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td colspan="2" class="l_data">【請求取りまとめモード設定】</td>
+          </tr>
+          <tr>
+            <td class="label">事業者ID</td>
+            <td class="data">
+                <?php echo f_e($this->data["EnterpriseId"])?>
+                <input type="hidden" name="data[EnterpriseId]" value="<?php echo f_e($this->data["EnterpriseId"])?>" />
+            </td>
+          </tr>
+          <tr>
+            <td class="label">事業者名</td>
+            <td class="data">
+                <?php echo f_e($this->data["EnterpriseNameKj"]); ?>
+                <input type="hidden" name="data[EnterpriseNameKj]" value="<?php echo f_e($this->data["EnterpriseNameKj"])?>" />
+            </td>
+          </tr>
+          <tr>
+            <td class="label">請求取りまとめモード<font color="red">*</font></td>
+            <td class="data">
+              <span class="radio_set">
+    <?php foreach($this->data['combinedclaimmodelist'] as $value => $caption) { ?>
+              <label for="CombinedClaimMode<?php echo f_e($value); ?>">
+                  <?php $checked = $this->data['CombinedClaimMode'] == $value ? ' checked="checked"' : ''; ?>
+                  <input name="data[CombinedClaimMode]" id="CombinedClaimMode<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                  <?php echo f_e($caption); ?>
+              </label>
+    <?php } ?>
+              </span>
+            </td>
+          </tr>
+<!-- 2015/09/07 未使用のため非表示 Stt
+          <tr>
+            <td class="label">請求取りまとめ（定期購入）</td>
+            <td class="data">
+              <span class="radio_set">
+    <?php foreach($this->data['combinedclaimflgreglist'] as $value => $caption) { ?>
+              <label for="CombinedClaimFlgReg<?php echo f_e($value); ?>">
+                <?php $checked = $this->data['CombinedClaimFlgReg'] == $value ? ' checked="checked"' : ''; ?>
+                <input name="data[CombinedClaimFlgReg]" id="CombinedClaimFlgReg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                <?php echo f_e($caption); ?>
+              </label>
+    <?php } ?>
+              </span>
+            </td>
+          </tr>
+2015/09/07 未使用のため非表示 End -->
+          <tr>
+            <td class="label">自動請求取りまとめ指定日</td>
+            <td class="data">
+              <input type="text" name="data[AutoCombinedClaimDay]" id="data[AutoCombinedClaimDay]" value="<?php echo f_e($this->data["AutoCombinedClaimDay"]); ?>" />
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="l_data">【サイト毎の請求取りまとめ設定】</br>※サイト単位でまとめる場合にはサイト名の前にチェックを入れてください。</td>
+          </tr>
+          <tr>
+            <td class="label">サイト毎の請求取りまとめ</td>
+            <td class="data">
+    <?php $i = 0; while (array_key_exists('SiteId' . $i, $this->data)) {?>
+              <input type="checkbox" class="CombinedClaimFlg" name="data[CombinedClaimFlg<?php echo $i; ?>]" id="CombinedClaimFlg<?php echo $i; ?>"
+              <?php if((array_key_exists('CombinedClaimFlg' . $i, $data)) == true && $this->data["CombinedClaimFlg" . $i] == 1) echo 'checked'; ?>  />
+              <?php echo f_e($this->data["SiteNameKj" . $i]); ?>(<?php echo f_e($this->data["SiteId" . $i]); ?>)</br>
+              <hr>
+              <input type="hidden" name="data[SiteId<?php echo $i; ?>]" value="<?php echo f_e($this->data["SiteId" . $i]); ?>" />
+              <input type="hidden" name="data[SiteNameKj<?php echo $i; ?>]" value="<?php echo f_e($this->data["SiteNameKj" . $i]);?>" />
+    <?php $i++; } ?>
+            </td>
+          </tr>
+        </table>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td>
+                <input type="submit" value="　確　定　" />
+                <?php $cancelUrl = $this->baseUrl . '/combinedclaim/list'; ?>
+                <button type="button" onclick="window.location.href = '<?php echo f_e($cancelUrl); ?>';">キャンセル</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <!-- end contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+  Event.observe(window, "load", function() {
+    Event.observe($("CombinedClaimMode0"), "click", function() {
+    });
+  });
+</script>
+</html>

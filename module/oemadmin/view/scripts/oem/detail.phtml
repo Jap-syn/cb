@@ -1,0 +1,209 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+if( ! isset($this->error) || ! is_array($this->error) ) $this->error = array();
+
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+<style type="text/css">
+
+    .left {
+        float: left;
+        margin-bottom: 20px;
+    }
+    .right {
+        float: right;
+        margin-bottom: 20px;
+    }
+
+</style>
+<script type="text/javascript">
+</script>
+</head>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+    <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <?php echo $this->render('oemadmin/oem/page_menu.php'); ?>
+    <div class="title"><span>登録情報</span></div>
+    <div class="left">
+      <table class="datatable width_440" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="l_data">【基本情報】</td>
+        </tr>
+        <tr>
+          <td width="180" class="r_label">ID</td>
+          <td class="l_data"><?php echo f_e($this->data["OemId"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">お申込日</td>
+          <td class="l_data"><?php echo f_e($this->data["ApplicationDate"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">CB営業担当</td>
+          <td class="l_data"><?php echo f_e($this->data["Salesman"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">社名</td>
+          <td class="l_data"><?php echo f_e($this->data["OemNameKj"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">社名カナ</td>
+          <td class="l_data"><?php echo f_e($this->data["OemNameKn"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">所在地</td>
+          <td class="l_data">〒<?php echo f_e($this->data["PostalCode"]); ?><br />
+            <?php echo f_e($this->data["PrefectureName"]); ?><?php echo f_e($this->data["City"]); ?>
+            <?php echo f_e($this->data["Town"]); ?>
+            <?php echo f_e($this->data["Building"]); ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">代表者氏名</td>
+          <td class="l_data"><?php echo f_e($this->data["RepNameKj"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">代表者氏名カナ</td>
+          <td class="l_data"><?php echo f_e($this->data["RepNameKn"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">代表電話番号</td>
+          <td class="l_data"><?php echo f_e($this->data["Phone"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">代表FAX番号</td>
+          <td class="l_data"><?php echo f_e($this->data["Fax"]); ?></td>
+        </tr>
+      <?php if(isset($this->opData) && $this->opData && $this->opData['LastPasswordChanged']) { ?>
+        <tr>
+          <td class="r_label">パスワード更新日</td>
+          <td class="l_data"><?php echo f_df($this->opData['LastPasswordChanged'], 'Y-m-d H:i'); ?></td>
+        </tr>
+      <?php } ?>
+      </table>
+      <table class="datatable width_440" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="l_data">【ご連絡先】</td>
+        </tr>
+        <tr>
+          <td class="r_label">担当者名</td>
+          <td class="l_data"><?php echo f_e($this->data["CpNameKj"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">担当者名カナ</td>
+          <td class="l_data"><?php echo f_e($this->data["CpNameKn"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">部署名</td>
+          <td class="l_data"><?php echo f_e($this->data["DivisionName"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data">
+            <span class="wrap_container">
+              <?php echo f_e($this->data["MailAddress"]); ?>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">連絡先電話番号</td>
+          <td class="l_data"><?php echo f_e($this->data["ContactPhoneNumber"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">連絡先FAX番号</td>
+          <td class="l_data"><?php echo f_e($this->data["ContactFaxNumber"]); ?></td>
+        </tr>
+      </table>
+    </div>
+    <div class="right">
+      <table class="datatable width_440" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="l_data">【サービス内容】</td>
+        </tr>
+        <tr>
+          <td width="160" class="r_label">サービス開始日</td>
+          <td class="l_data"><?php echo f_e($this->data["ServiceInDate"]); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">標準決済手数料率</td>
+          <td class="l_data">
+        <?php foreach ($this->plan as $value) {
+                echo $value['PricePlanName']; ?>：<?php echo f_e(doubleval($value["SettlementFeeRate"])); ?>　％<br />
+        <?php } ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">標準請求手数料(税抜)</td>
+          <td class="l_data">
+            別送：<?php echo f_nf($this->data["ClaimFeeBS"], '#,##0'); ?>　円<br />
+            同梱：<?php echo f_nf($this->data["ClaimFeeDK"], '#,##0'); ?>　円
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">標準店舗月額固定費(税抜)</td>
+          <td class="l_data">
+        <?php foreach ($this->plan as $value) {
+                echo $value['PricePlanName']; ?>：<?php echo f_nf(nvl($value["EntMonthlyFee"], 0), '#,##0'); ?>　円<br />
+        <?php } ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">月額固定費(税抜)</td>
+          <td class="l_data"><?php echo f_nf($this->data["MonthlyFee"], '#,##0'); ?>　円</td>
+        </tr>
+        <tr>
+          <td class="r_label">次回請求月額固定費(税抜)</td>
+          <td class="l_data"><?php echo f_nf($this->data["N_MonthlyFee"], '#,##0'); ?>　円</td>
+        </tr>
+      </table>
+      <table class="datatable width_440" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="l_data">【入金口座】</td>
+        </tr>
+        <tr>
+          <td width="130" class="r_label">金融機関</td>
+          <td class="l_data">
+            銀行名：<?php echo f_e($this->data["FfName"]); ?>　銀行番号：<?php echo f_e($this->data["FfCode"]); ?><br />
+            支店名：<?php echo f_e($this->data["FfBranchName"]); ?>　支店番号：<?php echo f_e($this->data["FfBranchCode"]); ?><br />
+            口座種別：<?php echo f_e($this->data["FfAccountClass"]); ?><br />
+            口座番号：<?php echo f_e($this->data["FfAccountNumber"]); ?><br />
+            口座名義：<?php echo f_e($this->data["FfAccountName"]); ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">振込手数料</td>
+          <td class="l_data"><?php echo f_e($this->data["TcClass"]); ?></td>
+        </tr>
+      </table>
+      <table class="datatable width_440" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="l_data">【立替金振込手数料】</td>
+        </tr>
+        <tr>
+          <td width="100" class="r_label">同行振込手数料</td>
+          <td class="l_data">
+            30,000円未満：<?php echo f_e($this->data["SameFfTcFeeUnderThirtyK"]); ?>円<br />
+            30,000円以上：<?php echo f_e($this->data["SameFfTcFeeThirtyKAndOver"]); ?>円
+          </td>
+        <tr>
+          <td width="100" class="r_label">他行振込手数料</td>
+          <td class="l_data">
+            30,000円未満：<?php echo f_e($this->data["OtherFfTcFeeUnderThirtyK"]); ?>円<br />
+            30,000円以上：<?php echo f_e($this->data["OtherFfTcFeeThirtyKAndOver"]); ?>円
+          </td>
+        </tr>
+      </table>
+    </div>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

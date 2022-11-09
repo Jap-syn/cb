@@ -1,0 +1,76 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+<!-- start contents -->
+<div id="contents">
+<h3>オペレーター登録内容確認</h3>
+<form id="saveForm" method="post" action="oemoperator/save">
+<input name="data[ValidFlg]" type="hidden" id="ValidFlg" value="1" />
+<?php if(isset($this->data['OemOpId'])) { ?><input name="data[OemOpId]" type="hidden" value="<?php echo $this->data['OemOpId']; ?>" /><?php } ?>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">ログインID</td>
+    <td class="data">
+      <?php echo $this->data["LoginId"]; ?>
+      <input name="data[LoginId]" type="hidden" value="<?php echo $this->data['LoginId']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">OEMID</td>
+    <td class="data">
+      <?php echo $this->oemname; ?>
+      <input name="data[OemId]" type="hidden" value="<?php echo $this->data['OemId']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">氏名</td>
+    <td class="data">
+      <?php echo $this->data["NameKj"]; ?>
+      <input name="data[NameKj]" type="hidden" value="<?php echo $this->data['NameKj']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">氏名カナ</td>
+    <td class="data">
+      <?php echo $this->data["NameKn"]; ?>
+      <input name="data[NameKn]" type="hidden" value="<?php echo $this->data['NameKn']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="label">所属</td>
+    <td class="data">
+      <?php echo $this->data["Division"]; ?>
+      <input name="data[Division]" type="hidden" value="<?php echo $this->data['Division']; ?>" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <button type="submit">確　認</button>　　　　　<button type="button" id="goBack">戻　る</button>
+    </td>
+  </tr>
+</table>
+</form>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("goBack"), "click", function() {
+    <?php if(isset($this->data['OemOpId'])) { ?>
+    $("saveForm").action = "oemoperator/edit/opid/<?php echo $this->data['OpId']; ?>";
+    <?php } else { ?>
+    $("saveForm").action = "oemoperator/form";
+    <?php } ?>
+    $("saveForm").submit();
+  });
+});
+</script>
+</html>

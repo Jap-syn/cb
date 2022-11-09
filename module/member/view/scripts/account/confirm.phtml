@@ -1,0 +1,268 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+    // title
+    '入力内容を確認して、登録を実行してください',
+    // buttons
+    array(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'confirmed',
+                CoralViewCommandBarButton::OPTION_HREF => 'account/save/mode/save',
+                CoralViewCommandBarButton::OPTION_TEXT => 'この内容で登録',
+                CoralViewCommandBarButton::OPTION_TITLE => '現在の内容で問題ない場合はここをクリックして登録を完了させてください'
+            )
+        ),
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'rollback',
+                CoralViewCommandBarButton::OPTION_HREF => 'account/index/mode/rollback',
+                CoralViewCommandBarButton::OPTION_TEXT => '内容を修正する',
+                CoralViewCommandBarButton::OPTION_TITLE => '登録内容を修正するにはここをクリックして前の画面に戻ります'
+            )
+        )
+    )
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+//$this->getHelper('ValueFormat')->setReplaceEmpty(true);
+$viewHelper = new CoralViewHelperValueFormat();
+$viewHelper->setReplaceEmpty(true);
+
+//$changePassword = $this->postData['ChangePassword'] ? true :false;
+if(isset($this->postData['ChangePassword'])){
+    $changePassword = true;
+} else {
+    $changePassword = false;
+}
+
+?>
+    <div class="tab_page" style="padding: 8px">
+    <table id="modify_table" border="1" cellpadding="0" cellspacing="0">
+        <tr>
+            <th colspan="2">パスワードの変更</th>
+        </tr>
+        <tr>
+            <td class="row_header">パスワードの変更</td>
+            <td><?php echo $changePassword ? '変更する' : '変更しない'; ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="CurrentPassword_label">現在のパスワード</td>
+            <td>(非表示)</td>
+        </tr>
+        <tr>
+            <td class="row_header" id="NewPassword_label">新しいパスワード</td>
+            <td>(非表示)</td>
+        </tr>
+        <tr>
+            <td class="row_header" id="NewPassword2_label">新しいパスワード(確認)</td>
+            <td>(非表示)</td>
+        </tr>
+        <tr>
+            <th colspan="2">連絡先ご担当の変更</th>
+        </tr>
+        <tr>
+            <td class="row_header" id="CpNameKj_label">ご担当氏名</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['CpNameKj'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="CpNameKn_label">ご担当カナ氏名</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['CpNameKn'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="DivisionName_label">ご担当部署名</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['DivisionName'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="MailAddress_label">メールアドレス</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['MailAddress'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="ContactPhoneNumber_label">連絡先電話番号</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['ContactPhoneNumber'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="row_header" id="ContactFaxNumber_label">連絡先FAX番号</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['ContactFaxNumber'] ); ?></td>
+        </tr>
+        <tr>
+            <th colspan="2">与信NG表示期間の設定</th>
+        </tr>
+        <tr>
+            <td class="row_header" id="CreditNgDispDays_label">与信NG表示期間</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['CreditNgDispDays'] ); ?>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="2">表示対象の変更</th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                　　　　　
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['JournalRegistDispClass']) == '0') {
+                    echo '全て表示';
+                } else if ($viewHelper->valueFormat( $this->postData['JournalRegistDispClass']) == '1') {
+                    echo '入力可能のみ表示';
+                } else {
+                    // 何もしない
+                }
+            ?>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="2">配送伝票入力時の表示順</th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                　　　　　
+                表示順１:
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['DispOrder1']) == '0') {
+                    echo '注文ID';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder1']) == '1') {
+                    echo '購入者名';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder1']) == '2') {
+                    echo '任意注文番号';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder1']) == '3') {
+                    echo '注文日';
+                } else {
+                    // 何もしない
+                }
+            ?>
+                　　　　
+                表示順２：
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['DispOrder2']) == '0') {
+                    echo '注文ID';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder2']) == '1') {
+                    echo '購入者名';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder2']) == '2') {
+                    echo '任意注文番号';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder2']) == '3') {
+                    echo '注文日';
+                } else {
+                    // 何もしない
+                }
+            ?>
+                　　　　
+                表示順３：
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['DispOrder3']) == '0') {
+                    echo '注文ID';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder3']) == '1') {
+                    echo '購入者名';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder3']) == '2') {
+                    echo '任意注文番号';
+                } else if ($viewHelper->valueFormat( $this->postData['DispOrder3']) == '3') {
+                    echo '注文日';
+                } else {
+                    // 何もしない
+                }
+            ?>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="2">請求書発行(同梱待ちリスト)の表示順</th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                　　　　　
+                表示順:
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '0') {
+                    echo '注文ID';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '1') {
+                    echo '別配送先';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '2') {
+                    echo '印刷状態';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '3') {
+                    echo '同梱/別送';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '4') {
+                    echo '任意注文番号';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '5') {
+                    echo '注文日';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '6') {
+                    echo '注文登録日';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '7') {
+                    echo '請求先氏名';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '8') {
+                    echo '請求先住所';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder1']) == '9') {
+                    echo '利用額';
+                } else {
+                    // 何もしない
+                }
+            ?>
+                　　　　
+            <?php
+                if ($viewHelper->valueFormat( $this->postData['ClaimOrder2']) == '0') {
+                    echo '昇順';
+                } else if ($viewHelper->valueFormat( $this->postData['ClaimOrder2']) == '1') {
+                    echo '降順';
+                } else {
+                    // 何もしない
+                }
+            ?>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="2">履歴検索時の表示件数設定</th>
+        </tr>
+        <tr>
+            <td class="row_header" id="DisplayCount_label">1ページの表示件数</td>
+            <td><?php echo $viewHelper->valueFormat( $this->postData['DisplayCount'] ); ?></td>
+        </tr>
+
+        <tr>
+            <td class="submit_area" colspan="2">
+                <button type="button" onclick="window.location.href=document.getElementsByTagName('base')[0].href + 'account/save/mode/save'">この内容で登録する</button>&nbsp;
+                <button type="button" onclick="window.location.href=document.getElementsByTagName('base')[0].href + 'account/index/mode/rollback'">内容を修正する</button>
+            </td>
+        </tr>
+    </table>
+
+    </div>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>
+

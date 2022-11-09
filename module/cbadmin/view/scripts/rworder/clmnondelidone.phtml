@@ -1,0 +1,31 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求書不達</h3>
+    <h4>
+      請求書戻りフラグを更新しました。
+
+      <?php if ($this->mailmsg == '1') { ?>
+      <br>（請求書不達メールを送信しました。）
+      <?php } else if ($this->mailmsg != '') { ?>
+      <br><font color="red"><?php echo $this->mailmsg; ?></font>
+      <?php } ?>
+
+      <div style="margin-top: 18px"><a href="<?php echo f_e($this->urlDetail) ?>">注文詳細へ</a></div>
+    </h4>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

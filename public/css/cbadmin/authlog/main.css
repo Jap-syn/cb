@@ -1,0 +1,162 @@
+#contents h3 {
+	padding: 5px 0 5px 10px;
+}
+#contents table.datatable {
+    width: 862px;
+    background-color: #ddd;
+    margin: 0 25px;
+	font-size: 12px;
+}
+#contents h4.category-title {
+    width: 840px;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-right: 0;
+    border: solid #ddd 1px;
+    border-bottom-width: 0;
+}
+#contents h4.category-title-bottom {
+    border-top-width: 0;
+    border-bottom-width: 1px;
+	margin-top: 0;
+	margin-bottom: 30px;
+}
+#contents table.datatable tr.odd td {
+  background-color: #fff;
+}
+#contents table.datatable tr:hover td,
+#contents table.datatable tr.odd:hover td,
+#contents table.datatable tr.even:hover td {
+  background-color: azure;
+}
+#contents table.datatable tr.even td {
+  background-color: #f8f8f8;
+}
+#contents table.datatable tr.logtype-1 td,
+#contents table.datatable tr.logtype-1 td a {
+  color: crimson;
+}
+#contents table.datatable td.result-0,
+#contents table.datatable tr.odd td.result-0,
+#contents table.datatable tr.even td.result-0 {
+  font-weight: bold;
+  color: red;
+  background-color: lavenderblush;
+}
+#contents table.datatable tr.even td.result-0 {
+  background-color: mistyrose;
+}
+#contents table.datatable td.result-0,
+#contents table.datatable tr.odd:hover td.result-0,
+#contents table.datatable tr.even:hover td.result-0 {
+  background-color: pink;
+}
+#contents table.datatable td.result--1 {
+  font-weight: bold;
+  color: green;
+}
+#contents table.datatable td.result-1 {
+}
+#contents table.datatable td.result-2 {
+}
+#contents table.datatable td.result-101,
+#contents table.datatable td.result-102 {
+	color: red;
+}
+#contents table.datatable td.result-102 {
+	color: crimson;
+}
+#contents table.datatable tr.date-header td,
+#contents table.datatable tr.date-header td:hover {
+  background-color: palegoldenrod;
+  font-weight: bold;
+  color: #555;
+  padding: 2px 5px;
+  font-size: 14px;
+}
+#contents .submit-area {
+	margin: 5px 25px;
+    border: solid #ddd 1px;
+	padding: 5px 25px;
+	text-align: center;
+	width: 810px;
+}
+#scroll-to-top.submit-area {
+	margin-top: -20px;
+}
+#scroll-to-top a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+#contents .control-box {
+  font-weight: normal;
+  float: right;
+  margin: 0;
+  font-size: 16px;
+  line-height: 16px;
+}
+#contents .nav {
+  float: left;
+  margin: 0 10px;
+}
+#contents h3 span.filter-info {
+	font-weight: normal;
+	font-size: 12px;
+	margin: 0;
+	margin-left: 10px;
+}
+#contents h3 .control-box .nav {
+  margin-right: 4px;
+}
+#contents .nav a,
+#contents .nav span {
+  margin: 0 2px;
+}
+#contents .nav span {
+  color: dimgray;
+}
+#contents .clear-float {
+  float: none;
+  clear: both;
+  font-size: 0;
+  line-height: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#contents #nav-in-page {
+	margin: 10px 25px;
+	border: solid 1px #ddd;
+}
+#contents #nav-in-page h3 {
+	border: none 0px;
+	border-bottom: solid 1px #eee;
+	margin: 0;
+	padding: 2px 5px;
+	background-color: transparent;
+}
+
+#contents #nav-in-page ul {
+	list-style: disc;
+}
+#contents #nav-in-page ul li {
+}
+#contents #nav-in-page ul li a {
+}
+
+#contents table.datatable tr.date-header a.scroll-to-top {
+	font-weight: normal;
+	float: right;
+	display: block;
+	margin: 0 4px;
+	color: #999;
+	font-size: 11px;
+}
+#contents table.datatable tr.date-header a.scroll-to-top:hover {
+	color: #333;
+}

@@ -1,0 +1,241 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+$fd = $this->list;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style type="text/css">
+    .input_error_message {
+      color: red;
+    }
+
+    #contents table.datatable {
+      width: 862px;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #contents td {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    td.l_label {
+      text-align: left;
+      padding: 0px 0px 0px 5px;
+      background-color: #ffffff;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    td.r_label {
+      text-align:right;
+      padding: 0px 5px 0px 0px;
+      background-color: #eeeeee;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    td.c_label {
+      text-align: center;
+      /*padding: 2px 10px 2px 0px;*/
+      background-color: #eeeeee;
+    }
+
+    td.l_data {
+      text-align: left;
+      padding: 0px 0px 0px 5px;
+      background-color: #ffffff;
+    }
+
+    td.l_data span.wrap_container {
+      width: 398px;
+      overflow: hidden;
+      float: left;
+    }
+
+    td.r_data {
+      text-align: right;
+      padding: 0px 5px 0px 0px;
+      background-color: #ffffff;
+    }
+
+    td.c_data {
+      text-align: center;
+      padding: 2px 0px 2px 0px;
+      background-color: #ffffff;
+    }
+
+    div {
+        margin: 0px;
+        padding: 0px;
+        font-size: 12px;
+        font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+    }
+
+    .detail-tools {
+        margin: 5px 25px;
+        font-size: 16px;
+        text-align: right;
+    }
+
+    .detail-tools a,
+    .detail-tools span.dummy-link {
+        margin: 0 0 0 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper"><!-- start #wrapper -->
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>【ジンテック判定設定】</h3>
+      <form name="form" action="site/jintecjudgepost" method="post">
+        <input type="hidden" id="EnterpriseId" name="list[EnterpriseId]" value="<?php echo f_e($fd['EnterpriseId']);?>">
+        <input type="hidden" id="SiteId" name="list[SiteId]" value="<?php echo f_e($fd['SiteId']); ?>" >
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_label" >加盟店名</td>
+              <td class="l_label"colspan=3>
+                <?php echo f_e($this->EnterpriseNameKj); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >サイト名</td>
+              <td class="l_label" colspan=3>
+                <?php echo f_e($fd['SiteNameKj']); ?>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- ジンテック設定 -->
+        <table class="datatable" style="width: 250px;" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td class="r_label" >0:不明</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge0" name="list[JintecJudge0]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge0']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge0']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge0']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >1:該当データなし</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge1" name="list[JintecJudge1]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge1']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge1']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge1']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >2:無効</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge2" name="list[JintecJudge2]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge2']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge2']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge2']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >3:都合停止あり</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge3" name="list[JintecJudge3]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge3']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge3']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge3']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >4:直近加入（3ヶ月以下）</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge4" name="list[JintecJudge4]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge4']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge4']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge4']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >5:直近加入（4ヶ月以上6ヶ月以下）</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge5" name="list[JintecJudge5]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge5']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge5']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge5']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >6:変更過多</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge6" name="list[JintecJudge6]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge6']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge6']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge6']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >7:反復利用</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge7" name="list[JintecJudge7]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge7']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge7']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge7']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >8:長期利用</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge8" name="list[JintecJudge8]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge8']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge8']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge8']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >9:ＭＳＧなし</td>
+            <td class="l_label" colspan=3>
+            <select id="JintecJudge9" name="list[JintecJudge9]" >
+              <option value="0"<?php if(f_e($fd['JintecJudge9']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+              <option value="1"<?php if(f_e($fd['JintecJudge9']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+              <option value="2"<?php if(f_e($fd['JintecJudge9']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="r_label" >10:Wi-Fi</td>
+            <td class="l_label" colspan=3>
+              <select id="JintecJudge10" name="list[JintecJudge10]" >
+                <option value="0"<?php if(f_e($fd['JintecJudge10']) == 0) { echo ' selected="selected"'; } ?> >OK</option>
+                <option value="1"<?php if(f_e($fd['JintecJudge10']) == 1) { echo ' selected="selected"'; } ?> >NG</option>
+                <option value="2"<?php if(f_e($fd['JintecJudge10']) == 2) { echo ' selected="selected"'; } ?> >保留</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td class="c_data" colspan=4>
+              <input type="submit" id="btnConfirm" name="btnConfirm" value="　確定　"/>
+              <input type="submit" id="btnCancel" name="btnCancel" value="キャンセル" onClick="form.action='site/list/eid/<?php echo f_e($this->EnterpriseId); ?>';return true"/>
+              <input type="submit" id="btnDel" name="btnDel" value="　削除　"  />
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div><!-- end #contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+</body>
+</html>

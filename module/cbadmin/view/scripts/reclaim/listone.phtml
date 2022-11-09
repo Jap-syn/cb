@@ -1,0 +1,140 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+echo $this->render('cbadmin/reclaim/common_scripts.php');
+?>
+</head>
+<script type="text/javascript">
+<!--
+	function recalc(n)
+	{
+		var useAmount = parseInt($('useAmount' + n).innerHTML);
+		var damageInterest = parseInt($('damageInterest' + n).innerHTML);
+		var claimFee = parseInt($('ReClaimFee' + n).value);
+
+		if(!Element.visible($('damageInterest' + n))) damageInterest = 0;
+
+		var total;
+
+		if ($('isdi' + n).checked)
+		{
+			total = useAmount + damageInterest + claimFee;
+		}
+		else
+		{
+			total = useAmount + claimFee;
+		}
+
+		$('tClaimAmount' + n).innerHTML = total;
+	}
+//-->
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/reclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">再請求発行</h3>
+<?php if ($this->errCnt > 0) { ?>
+<h4 style="color: red;">
+  <?php echo $this->errCnt; ?> 件の請求データはエラーにより処理されませんでした。以下の事由が考えられます。
+  <ul>
+	<li>支払期限日算出に不整合がある</li>
+	<li>OEM先の請求口座情報が登録されていない</li>
+	<li>その他データベーストラブル等</li>
+  </ul>各種設定を見直してください
+</h4>
+<?php } ?>
+    <form name="form" method="post" action="reclaim/done">
+    <input type="hidden" name="reclaimone" value"yes" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th rowspan="2">注文<br />SEQ</th>
+          	<th rowspan="2">注文ID</th>
+          	<th rowspan="2">属性</th>
+          	<th>請求先氏名</th>
+          	<th>TELチェック</th>
+          	<th>初回請求額</th>
+          	<th>前回期限</th>
+          	<th>遅延損害金</th>
+          	<th>再請求手数料</th>
+          	<th rowspan="2">遅延<br />適用</th>
+          	<th rowspan="2">発行</th>
+          	<th rowspan="2">紙<br />STOP</th>
+          </tr>
+          <tr>
+          	<th>住所</th>
+          	<th>与信点数</th>
+          	<th>遅延日数</th>
+          	<th>経過日数</th>
+          	<th>再請求回数</th>
+          	<th>今回請求額</th>
+          </tr>
+          <?php 
+            // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            } 
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td rowspan="2" class="r_data">
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>"/>
+              <?php echo $this->list[$i]["OrderSeq"]; ?>
+            </td>
+            <td rowspan="2" class="l_data"><?php echo $this->list[$i]["OrderId"]; ?></td>
+            <td rowspan="2" class="c_data"><?php echo $this->list[$i]["IncreArCaption"]; ?></td>
+            <td class="l_data">
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["NameKj"]; ?></a>
+            </td>
+            <td class="l_data"><?php echo $this->list[$i]["RealCallResult"]; ?></td>
+            <td class="r_data"><span id="useAmount<?php echo $i; ?>"><?php echo $this->list[$i]["UseAmount"]; ?></span></td>
+            <td class="r_data"><?php echo $this->list[$i]["Clm_L_LimitDate"]; ?></td>
+            <td class="r_data">
+				<span id="damageInterest<?php echo $i; ?>" class="damage_interest_amount"><?php echo $this->list[$i]["damageInterest"]; ?></span>
+				<span class="dummy_damage_interest_amount" style="display: none">0</span>
+			</td>
+            <td class="r_data"><input style="text-align: right; " size="8" type="text" name="ReClaimFee<?php echo $i; ?>" id="ReClaimFee<?php echo $i; ?>" value="<?php echo $this->list[$i]["ReClaimFee"]; ?>" onChange="javascript:recalc(<?php echo $i; ?>)" /></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="isdi<?php echo $i; ?>" id="isdi<?php echo $i; ?>" <?php echo $this->list[$i]["claimDamageCheck"]; ?> onChange="javascript:recalc(<?php echo $i; ?>)" /></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="issue<?php echo $i; ?>" id="issue<?php echo $i; ?>" checked /></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="stopclaim<?php echo $i; ?>" id="stopclaim<?php echo $i; ?>" /></td>
+          </tr>
+          <tr>
+            <td class="l_data"><?php echo $this->list[$i]["UnitingAddress"]; ?>...</td>
+            <td class="r_data"><?php echo $this->list[$i]["Incre_ScoreTotal"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["damageDays"]; ?>　日</td>
+            <td class="r_data"><?php echo $this->list[$i]["passageDays"]; ?>　日</td>
+            <td class="r_data"><?php echo $this->list[$i]["reclaimCount"]; ?></td>
+            <td class="r_data"><span id="tClaimAmount<?php echo $i; ?>"><?php echo $this->list[$i]["tClaimAmount"]; ?></span></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="c_data" >
+              請求パターン　
+              <?php echo $this->claimPatternPrintTag; ?>　で　　
+              <input type="submit" value="　　印刷ジョブに転送　　" />
+			  <div id="claim_pattern_msg" style="display: none">※：再請求１は遅延損害金が計上されません</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

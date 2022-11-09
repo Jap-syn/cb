@@ -1,0 +1,53 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">返金口座情報登録</h3>
+    <h4><?php echo $this->message; ?></h4>
+
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>返金予定日</th>
+            <th>注文ID</th>
+            <th>銀行名</th>
+            <th>支店名</th>
+            <th>銀行番号</th>
+            <th>支店番号</th>
+            <th>口座種別</th>
+            <th>口座番号</th>
+            <th>口座名義</th>
+            <th>振込金額</th>
+            <th>振込手数料</th>
+          </tr>
+          <?php foreach ($this->items as $row) { ?>
+          <tr>
+            <td class="l_data"><?php echo f_e($row['repayExpectedDate']); ?></td>
+            <td class="l_data"><?php echo f_e($row['OemId']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfBranchName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfCode']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfBranchCode']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfAccountClass']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfAccountNumber']); ?></td>
+            <td class="l_data"><?php echo f_e($row['FfAccountName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['paymentAmount']); ?></td>
+            <td class="l_data"><?php echo f_e($row['TcClass']); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

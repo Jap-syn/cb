@@ -1,0 +1,141 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+?>
+<style>
+    .input_error_message {
+        color: red;
+    }
+    #contents .warning {
+        margin: 5px 25px;
+        font-size: 1em;
+        font-weight: bold;
+        color: red;
+        border: solid 1px firebrick;
+        background-color: mistyrose;
+        padding: 8px 12px;
+    }
+    .make_color {
+        color: #C0C0C0;
+    }
+</style>
+</head>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+        <h3>支払可能種類</h3>
+        <?php if (sizeof($this->payments) == 0 && sizeof($this->sbpsPayments) == 0) { ?>
+            <div class="warning">無効な支払方法が設定されています。システム課へ連絡してください。</div>
+        <?php } else { ?>
+            <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                <tr>
+                    <td class="r_label">コンビニ</td>
+                    <td class="l_data" colspan="4"><?php echo $this->ReceiptAgentName; ?></td>
+                </tr>
+
+                <?php
+                $i = 0;
+                foreach($this->payments as $payment) {
+                    $i++;
+                    $style = "";
+                    if  (is_null($payment['UseStartDate']) || ($payment['UseStartDate'] < date('Y-m-d'))) {
+                        $style = 'style="color: #C0C0C0; width: 150px;"';
+                    }
+                    ?>
+                    <tr>
+                        <?php if ($i == 1) { ?>
+                            <td class="r_label" rowspan="<?php echo sizeof($this->payments) ?>" style="width: 100px;"><?php echo $payment['PaymentGroupName'];?></td>
+                        <?php } ?>
+                        <td class="l_data" <?php echo 'style="color: #C0C0C0; width: 235px;"';?>>
+                            <input type="checkbox" disabled <?php if($payment['UseFlg'] == 1){echo 'checked';} ?>><?php echo $payment['PaymentName'];?>
+                        </td>
+                        <td class="l_data" <?php echo $style; ?>><?php echo $payment['UseStartDate'];?></td>
+                        <td class="l_data" style="width: 100px;">より開始</td>
+                        <td class="l_data"></td>
+                    </tr>
+                <?php } ?>
+                <?php
+                if ($this->PaymentAfterArrivalFlg == 1 && $this->Deli_ConfirmArrivalFlg != 1) {
+                    // list of SBPS payment methods
+                    foreach ($this->sbpsPayments as $idx => $sbpsPayment) {
+                        $contractorId = null;
+                        $numUseDay = 0;
+                        $useStartDateDB = null;
+                        $ValidFlg = 0;
+                        foreach ($this->sitePaymentsData as $key => $sitePaymentsData) {
+                            if ($sitePaymentsData['PaymentId'] == $sbpsPayment['PaymentId']) {
+                                $contractorId = $sitePaymentsData['ContractorId']; // get contractor
+                                $numUseDay = (int) $sitePaymentsData['NumUseDay']; // get number used days
+                                $useStartDateDB = $sitePaymentsData['UseStartDate'];
+                                $ValidFlg = $sitePaymentsData['ValidFlg'];  // flag to usable
+                                break;
+                            } else {
+                                continue;
+                            }
+                        }
+                        if (!is_null($useStartDateDB)) {
+                            $useStartDateBase = $this->minClaimDate;
+                            $useEndDateBase = date('Y-m-d 00:00:00', strtotime($useStartDateBase. '+'. $numUseDay. ' days'));
+                            if(strtotime($useEndDateBase) < strtotime($useStartDateDB)){
+                                $flag = 1;
+                                $useDuration = '（契約中の為、利用不可）';
+                            } else {
+                                $useStartDate = strtotime($useStartDateDB) > strtotime($this->minClaimDate) ? $useStartDateDB : date('Y-m-d 00:00:00', strtotime($this->minClaimDate));
+                                $useEndDate = date('Y-m-d 23:59:59', strtotime($useStartDate. '+'. $numUseDay. ' days'));  // calculate end date from min claim date
+                                if (strtotime(date('Y-m-d H:i:s')) >= strtotime($useStartDate) && strtotime(date('Y-m-d H:i:s')) <= strtotime($useEndDate) ) {
+                                    $flag = 0;
+                                    $useDuration = (date('Y-m-d', strtotime($useStartDate)) . ' ～ ' . date('Y-m-d', strtotime($useEndDate)));
+                                } else {
+                                    $flag = 1;
+                                    $useDuration = (date('Y-m-d', strtotime($useStartDate)) . ' ～ ' . date('Y-m-d', strtotime($useEndDate)));
+                                }
+                            }
+                        } else {
+                            $flag = 1;
+                            $useDuration = '-';
+                        }
+                        ?>
+                        <tr>
+                            <?php if ($idx == 0) { ?>
+                                <td class="r_label" rowspan="<?php echo sizeof($this->sbpsPayments) ?>" style="width: 100px;">届いてから払い</td>
+                            <?php } ?>
+                            <td class="l_data" <?php if($ValidFlg != 1){echo 'style="color: #C0C0C0; width: 235px;"';} ?>>
+                                <input type="checkbox" disabled <?php if($ValidFlg == 1){echo 'checked';} ?>><?php echo $sbpsPayment['PaymentName'] ?>
+                            </td>
+                            <td class="l_data <?php if ($flag == 1 or $ValidFlg == false) echo  'make_color';?>" style="width: 235px;"><?php echo $ValidFlg ? $useDuration : '-' ?></td>
+                            <td class="l_data <?php if ($flag == 1 or $ValidFlg == false) echo  'make_color';?>" style="width: 100px;">まで利用可能</td>
+                            <td class="l_data <?php if ($flag == 1 or $ValidFlg == false) echo  'make_color';?>">(契約先: <?php echo $this->contractors[$contractorId]['ContractorName'];?>)</td>
+                        </tr>
+                    <?php }
+                } ?>
+                </tbody>
+            </table>
+            <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                <tr align="center">
+                    <td style="padding: 2px 0px">
+                        <input type="button" id="close_button" onclick="window.close();" value="閉じる" />
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        <?php } ?>
+    </div><!-- end #contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div><!-- end #wrapper -->
+</body>
+</html>

@@ -1,0 +1,66 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/fixednote/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">定型備考一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 220px">グループ名称</th>
+            <th style="width: 334px">コメント</th>
+            <th style="width: 60px">有効/無効</th>
+            <th style="width: 60px">注文詳細</th>
+            <th style="width: 60px">社内与信</th>
+            <th style="width: 60px">表示順</th>
+            <th>関連付け</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php $prevHeaderSeq = -1; ?>
+        <?php
+            // count関数対策
+            $dataCount = 0;
+            if (!empty($this->data)) {
+                $dataCount = count($this->data);
+            }
+            for ($i=0;$i < $dataCount; $i++) { ?>
+        <?php     $row = $this->data[$i]; ?>
+        <?php     $isHeaderLine = ($row['HeaderSeq'] != $prevHeaderSeq) ? true : false; ?>
+          <tr>
+        <?php     if ($isHeaderLine) { ?>
+            <td class="l_data"><?php echo f_e($row['NoteHeader']); ?></td>
+            <td class="l_data"><?php echo (!is_null($row['NoteDetail'])) ? f_e($row['NoteDetail']) : '（関連付けられたコメントなし）'; ?></td>
+            <td class="c_data"><?php echo ($row['ValidFlg'] == 1) ? '有効' : '（無効）';  ?></td>
+            <td class="c_data"><?php echo ($row['UseType1'] == 1) ? '○' : '×';  ?></td>
+            <td class="c_data"><?php echo ($row['UseType2'] == 1) ? '○' : '×';  ?></td>
+            <td class="c_data"><?php echo (!is_null($row['NoteDetail'])) ? f_e($row['ListNumber']) : '-'; ?></td>
+            <td class="c_data"><a href="fixednote/relate/seq/<?php echo f_e($row['HeaderSeq']); ?>">編集</a></td>
+        <?php     } else { ?>
+            <td class="l_data"></td>
+            <td class="l_data"><?php echo f_e($row['NoteDetail']); ?></td>
+            <td class="c_data"><?php echo ($row['ValidFlg'] == 1) ? '有効' : '（無効）';  ?></td>
+            <td class="c_data"><?php echo ($row['UseType1'] == 1) ? '○' : '×'; ?></td>
+            <td class="c_data"><?php echo ($row['UseType2'] == 1) ? '○' : '×'; ?></td>
+            <td class="c_data"><?php echo f_e($row['ListNumber']); ?></td>
+            <td class="c_data"></td>
+        <?php     } ?>
+          </tr>
+        <?php     $prevHeaderSeq = $row['HeaderSeq']; ?>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+INSERT INTO `coraldb_test03`.`M_CodeManagement` (`CodeId`, `CodeName`, `KeyLogicName`, `Class1ValidFlg`, `Class2ValidFlg`, `Class3ValidFlg`, `RegistDate`, `RegistId`, `UpdateDate`, `UpdateId`, `ValidFlg`) VALUES ('208', '注文マイページ:ログイン画面文言', '注文マイページ:ログイン画面文言', '0', '0', '0', NOW(), '1', NOW(), '1', '1');

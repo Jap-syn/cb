@@ -1,0 +1,61 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+function hideSubmits() {
+    Element.hide('upload-button');
+    Element.hide('upload-file');
+    Element.hide('nav-to-detail');
+    Element.show('submitting-message');
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポート
+    <?php if(!$this->noOem) { ?>
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    <?php } ?>
+    </h3>
+  <?php if($this->noOem) { ?>
+    <p class="page_error_message">OEM先の指定が不正です。</p>
+    <div class="submit-area">
+      <a href="jnb/index">　JNB契約一覧へ　</a>
+    </div>
+  <?php } else { ?>
+    <form id="upload-form" enctype="multipart/form-data" action="jnbgrp/confirm/oid/<?php echo f_e($this->data['OemId']); ?>" method="post">
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="r_label">CSVファイル</td>
+            <td class="l_data">
+              <div style="margin: 10px">
+                <input id="upload-file" type="file" name="jnbcsv" size="200" />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="submit-area">
+        <span id="submitting-message" style="display: none">処理中...</span>
+        <button id="upload-button" type="submit" onclick="hideSubmits()">アップロード</button>
+        <a id="nav-to-detail" href="jnb/detail/oid/<?php echo f_e($this->data['OemId']); ?>" onclick="hideSubmits()"> JNB登録内容詳細へ戻る　</a>
+      </div>
+    </form>
+  <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

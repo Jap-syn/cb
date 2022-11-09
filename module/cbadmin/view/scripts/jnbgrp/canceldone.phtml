@@ -1,0 +1,36 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポートキャンセル
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    </h3>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <tr>
+          <td class="l_data">インポートをキャンセルしました</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="submit-area">
+      <a href="jnbgrp/imp/oid/<?php echo f_e($this->data['OemId']); ?>">　インポート画面へ　</a>
+      <a href="jnb/detail/oid/<?php echo f_e($this->data['OemId']); ?>"> JNB登録内容詳細へ戻る　</a>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

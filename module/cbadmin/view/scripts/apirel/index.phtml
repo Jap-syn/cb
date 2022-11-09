@@ -1,0 +1,28 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/apirel/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">APIユーザー - 事業者 関連設定</h3>
+	<ul style="margin: 40px; padding: 0px; padding-left: 20px;">
+	  <li>
+		<a href="apirel/api2ent">APIユーザー → 事業者 関連付け</a>
+	  </li>
+	  <li>
+		<a href="apirel/ent2api">事業者 → APIユーザー 関連付け</a>
+	  </li>
+	</ul>
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

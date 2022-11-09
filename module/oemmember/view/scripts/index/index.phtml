@@ -1,0 +1,195 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/index/page_title.php' );
+?>
+
+<div class="main_contents">
+    <!-- 便利な機能 -->
+    <div class="block_container left_block">
+        <h3>便利な機能</h3>
+<?php
+foreach($this->largeMenus as $menu) {
+    echo "<div class=\"large_menu\" style=\"background-image: url('../{$menu['image_url']}');\">" .
+        "<a href=\"{$menu['href']}\" title=\"{$menu['desc']}\">{$menu['text']}</a>" .
+        "</div>";
+}
+?>
+    </div>
+
+    <!-- 注文件数・お知らせ -->
+    <div class="block_container right_block">
+        <h3>
+            <a id="reload_summary" class="icon_link" href="#" onclick="return false">
+                <img src="../../images/icon_reload_02.gif" />
+            </a>
+            <span style="padding-left: 16px">処理中ご注文</span>
+            <img id="progress_icon" src="../../images/loading_mini_01.gif" style="display:none" />
+        </h3>
+            <span style="clear:both"></span>
+        <div class="order_information">
+            <table class="order_summaries" border="0" cellpadding="0" cellspacing="2">
+                <tr>
+                    <td class="summary_title">与信中件数</td>
+                    <td id="summary_incre_count">--</td>
+                </tr>
+                <tr>
+                    <td class="summary_title">伝票未登録件数</td>
+                    <td id="summary_ready_count">--</td>
+                </tr>
+            </table>
+        </div>
+<?php
+use oemmember\Application;
+
+$oemId = Application::getInstance()->authManager->getUserInfo()->OemId;
+//if(!$oemId) {
+?>
+        <h3>お知らせ</h3>
+        <div class="general_information">
+<?php echo $this->general_information; ?>
+        </div>
+<?php // } ?>
+    </div>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+<script>
+document.getElementsByClassName("large_menu").each( function(menu) {
+    Event.observe( menu, "mouseover", function(evt) {
+        new Element.ClassNames( this ).add( "hover" );
+    }.bindAsEventListener( menu ) );
+
+    Event.observe( menu, "mouseout", function(evt) {
+        new Element.ClassNames( this ).remove( "hover" );
+    }.bindAsEventListener( menu ) );
+
+    Event.observe( menu, "click", function(evt) {
+        Event.stop( evt );
+        var link = this.getElementsByTagName("a")[0];
+        if( link.href ) {
+            window.location.href = link.href;
+        }
+    }.bindAsEventListener( menu ) );
+} );
+
+var OrderSummaryCollector = {
+    _requesting : false,
+
+    _url : "{0}ajax/getOrderSummaries".format( document.getElementsByTagName("base")[0].href ),
+
+    loading : function() {
+        var _self = OrderSummaryCollector;
+
+        _self._requesting = true;
+
+        Element.show( $("progress_icon") );
+
+        return _self;
+    },
+
+    loaded : function() {
+        var _self = OrderSummaryCollector;
+
+        _self._requesting = false;
+
+        Element.hide( $("progress_icon") );
+
+        return _self;
+    },
+
+    resetCounter : function(noData) {
+        $("summary_incre_count", "summary_ready_count").each( function(td) {
+            td.innerHTML = noData ? "--" : "0 件";
+        } );
+        return OrderSummaryCollector;
+    },
+
+    complete : function(transport) {
+        OrderSummaryCollector.loaded();
+
+        var response = transport.responseText.parseJSON();
+        if( response ) {
+            if( response.result ) {
+                OrderSummaryCollector.resetCounter();
+                response.data.each( function(row) {
+                    if( $(row.DataId) ) $(row.DataId).innerHTML = "{0:0} 件".format( row.Count || 0 );
+                } );
+            }
+        }
+    },
+
+    error : function(transport, error) {
+        OrderSummaryCollector.loaded();
+        throw error;
+    },
+
+    load : function() {
+        if( ! OrderSummaryCollector._requesting ) {
+            OrderSummaryCollector.resetCounter(true).loading();
+
+            // chromeでif-modified-sinceヘッダ付与が許容されなくなったのでタイムスタンプクエリ方式に変更(2013.11.19 eda)
+            new Ajax.Request( '{0}?{1}'.format(OrderSummaryCollector._url, new Date().valueOf()), {
+                method : "get",
+                onComplete : this.complete,
+                onException : function(ajax, error) {
+                    OrderSummaryCollector.error( ajax.transport || ajax, error );
+                }
+            } );
+        }
+        return OrderSummaryCollector;
+    }
+}
+Event.observe( window, "load", function(evt) {
+    Event.observe( $("reload_summary"), "click", function(evt) {
+        OrderSummaryCollector.load();
+    }.bindAsEventListener( $("reload_summary") ) );
+
+    OrderSummaryCollector.load();
+
+    Event.observe( document.body, "click", function(evt) {
+        WindowCover.suspend = ( (Event.element(evt) == $("close_overlay")) || (Event.element(evt) == $("close_link")) );
+    }.bindAsEventListener( document.body ) );
+
+    <?php if ($this->afterlogin && $this->defectcnt > 0) { ?>
+        var loginAlert = setInterval(function() {
+            // WindowCover.suspend = ( true );
+            var result = confirm("保留の注文があります。 \n保留の注文データは、登録後 2日後に自動的にキャンセルされます。\n\n次回からこのメッセージを表示しない場合は [OK] を押してください。\nこのメッセージを残す場合は [キャンセル] を押してください。");
+            if (result) {
+                // [OK]ボタンクリック
+                // Ajax通信を行い、現在のメッセージを非表示にする
+                var url = "<?php echo $this->baseUrl; ?>/ajax/defectInvisible";
+                var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+                var res = eval('(' + ajax.transport.responseText + ')');
+
+                if (res['result'] != 1) { return; }// 正しく結果を戻せない時は、何もしないで処理を抜ける
+
+            }
+            clearInterval(loginAlert);
+        }, 100);
+    <?php } ?>
+}.bindAsEventListener( window ) );
+
+</script>
+</html>

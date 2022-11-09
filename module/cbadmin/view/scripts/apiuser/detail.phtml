@@ -1,0 +1,153 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$isValid = $this->apiUser["ValidFlg"] ? true : false;
+$validStatus = $isValid ? '有効' : '無効';
+$statusStyle = $isValid ? 'valid' : 'invalid';
+$toggleUrl = f_path($this->baseUrl, "apiuser/status/id/{$this->apiUser["ApiUserId"]}/to/") .
+  ( $isValid ? 'false' : 'true' );
+$toggleMsg = $isValid ? '無効' : '有効';
+?>
+    <style>
+        td.status {
+            font-weight: bold;
+        }
+        td.valid {
+            background-color : azure !important;
+            color: darkgreen !important;
+        }
+        td.invalid {
+            background-color : lavenderblush !important;
+            color: crimson !important;
+        }
+        .cat_title a {
+            margin-left: 24px;
+        }
+    </style>
+    <script>
+        function confirmStatus(toStatus) {
+            return confirm( "このAPIユーザーを {0} に変更しますか？".format(toStatus) );
+        }
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/apiuser/page_menu.php'); ?>
+    <!-- start contents -->
+    <div id="contents">
+        <h3>APIユーザー詳細情報</h3>
+        <div style="float: left; width: 450px;">
+            <table class="datatable" width="450" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                    <td colspan="2" class="l_data cat_title">【APIユーザー情報－基本情報】
+                        <a href="apiuser/edit/id/<?php echo $this->apiUser["ApiUserId"]; ?>">編集</a>
+                        <a href="<?php echo escape($toggleUrl); ?>" onclick="return confirmStatus('<?php echo $toggleMsg; ?>');">
+                        <?php echo $toggleMsg; ?>にする
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="r_label">状態</td>
+                    <td class="l_data status <?php echo $statusStyle; ?>"><?php echo $validStatus; ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">APIユーザーID</td>
+                    <td class="l_data"><?php echo $this->apiUser["ApiUserId"]; ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">APIユーザー名</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["ApiUserNameKj"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">APIユーザー名カナ</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["ApiUserNameKn"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">登録日</td>
+                    <td class="l_data"><?php echo f_df($this->apiUser["RegistDate"], 'Y年m月d日'); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">サービス開始日</td>
+                    <td class="l_data"><?php echo f_df($this->apiUser["ServiceInDate"], 'Y年m月d日'); ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="l_data">【APIユーザー情報－ご連絡先】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">担当者名</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["CpNameKj"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">担当者名カナ</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["CpNameKn"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">部署名</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["DivisionName"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">メールアドレス</td>
+                    <td class="l_data"><span class="wrap_container"><?php echo escape($this->apiUser["MailAddress"]); ?></span></td>
+                </tr>
+                <tr>
+                    <td class="r_label">連絡先電話番号</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["ContactPhoneNumber"]); ?></td>
+                </tr>
+                <tr>
+                    <td class="r_label">連絡先FAX番号</td>
+                    <td class="l_data"><?php echo escape($this->apiUser["ContactFaxNumber"]); ?></td>
+                </tr>
+            </table>
+        </div>
+        <div style="float: right; width: 400px; margin-right: 50px;">
+            <table class="datatable" width="400" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                    <td colspan="2" class="l_data">【APIユーザーその他の情報】</td>
+                </tr>
+                <tr>
+                    <td class="r_label" style="vertical-align: top;">IPアドレス</td>
+                    <td class="l_data" style="vertical-align: top;">
+                    <?php $ipList = join("\n", explode(';', (string)$this->apiUser["ConnectIpAddressList"])); ?>
+                    <?php echo f_br($ipList); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="r_label" style="vertical-align: top;">備考</td>
+                    <td class="l_data" style="vertical-align: top; height: 150px; overflow: auto;"><?php echo f_br($this->apiUser["Note"]); ?></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="l_data">
+                        【サイト設定情報】　　　
+                        <a href="apirel/api2ent<?php if ($this->oemId != NULL){echo "/oemId/".$this->oemId."/id/".$this->apiUser["ApiUserId"];} ?>">サイト設定情報編集</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width: 75px;">サイトID</th>
+                    <th>サイト名</th>
+                </tr>
+            <?php
+            // count関数対策
+                if( $this->rels != null && !empty($this->rels)) {
+                    foreach($this->rels as $rel) {
+                        $ent_link = f_path( $this->baseUrl, "site/edit/eid/{$rel["EnterpriseId"]}/sid/{$rel["SiteId"]}" );
+            ?>
+                <tr>
+                    <td class="r_data"><a href="<?php echo $ent_link; ?>"><?php echo $rel["SiteId"]; ?></a></td>
+                    <td class="l_data"><a href="<?php echo $ent_link; ?>"><?php echo escape($rel["SiteNameKj"]); ?></a></td>
+                </tr>
+            <?php
+                    }
+                }
+            ?>
+          </table>
+        </div>
+
+        <div style="float: none; clear: both"></div>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+    </div>
+</body>
+</html>

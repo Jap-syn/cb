@@ -1,0 +1,183 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'cbadmin/document_header.php' );
+
+?>
+<style>
+td.l_data span.wrap_container {
+    width: 398px;
+    overflow: hidden;
+    float: left;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<?php echo $this->render('cbadmin/page_header.php'); ?>
+<?php echo $this->render('cbadmin/customer/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>管理顧客詳細情報</h3>
+
+<div class="div01">
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td colspan="2" class="l_data">
+        【基本情報】
+        <a style="margin-left: 12px;" href="customer/managementedit/mcid/<?php echo f_e( $this->mcid ); ?>">　編集　</a>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">管理顧客番号</td>
+      <td class="l_data"><?php echo f_e( $this->mcid ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">顧客名</td>
+      <td class="l_data"><?php echo f_e( $this->data['NameKj'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">顧客名カナ</td>
+      <td class="l_data"><?php echo f_e( $this->data['NameKn'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">郵便番号</td>
+      <td class="l_data"><?php echo f_e( $this->data['PostalCode'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">住所</td>
+      <td class="l_data"><?php echo f_e( $this->data['UnitingAddress'] ); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【連絡先情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label">電話番号</td>
+      <td class="l_data"><?php echo f_e( $this->data['Phone'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data">
+        <span class="wrap_container">
+        <?php echo f_e( $this->data['MailAddress'] ); ?>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【その他】</td>
+    </tr>
+    <tr>
+      <td class="r_label">付帯情報</td>
+      <td class="l_data">
+      <input name="BlackFlg" type="checkbox" disabled="disabled"<?php if( $this->data['BlackFlg'] == 1 ) echo ' checked="checked"'; ?> />ブラック顧客　
+      <input name="GoodFlg" type="checkbox" disabled="disabled"<?php if( $this->data['GoodFlg'] == 1 ) echo ' checked="checked"'; ?> />優良顧客　
+      <input name="ClaimerFlg" type="checkbox" disabled="disabled"<?php if( $this->data['ClaimerFlg'] == 1 ) echo ' checked="checked"'; ?> />クレーマー　
+      <input name="RemindStopFlg" type="checkbox" disabled="disabled"<?php if( $this->data['RemindStopFlg'] == 1 ) echo ' checked="checked"'; ?> />督促ストップ　
+      <input name="IdentityDocumentFlg" type="checkbox" disabled="disabled"<?php if( $this->data['IdentityDocumentFlg'] == 1 ) echo ' checked="checked"'; ?> />身分証アップロード
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">メモ</td>
+      <td class="l_data">
+        <textarea name="Note" rows="3" cols="60" disabled="disabled"><?php echo f_e( $this->data['Note'] ); ?></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【注文・請求情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label">請求残高</td>
+      <td class="l_data"><a href="rwrcptcfm/list/mcid/<?php echo f_e( $this->mcid ); ?>" target="_blank"><?php echo f_nf( nvl( $this->order['SumClaimedBalance'], 0 ), '#,##0' ); ?>　円</a></td>
+    </tr>
+    <tr>
+      <td class="r_label">不払い金合計</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->nonpayment['SumClaimedBalance'], 0 ), '#,##0' ); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">不払い件数</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->nonpayment['Cnt'], 0 ), '#,##0' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">注文金額合計</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->order['SumUseAmount'], 0 ), '#,##0' ); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">注文件数</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->order['Cnt'], 0 ), '#,##0' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">最新注文日付</td>
+      <td class="l_data"><a href="rworder/detail/oseq/<?php echo f_e( $this->lastorder['OrderSeq'] ); ?>" target="_blank"><?php echo f_df( $this->lastorder['RegistDate'], 'Y-m-d' ); ?></a></td>
+    </tr>
+    <tr>
+      <td class="r_label">最新注文支払期限</td>
+      <td class="l_data"><?php echo f_df( $this->lastorder['LimitDate'], 'Y-m-d' ); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【顧客マイページ情報】</td>
+    </tr>
+    <?php if (isset($this->mypageinfos)) { ?>
+    <?php /* 登録あり時 */ ?>
+        <?php $mypageInfoCount = 0; ?>
+        <?php foreach ($this->mypageinfos as $row) { ?>
+            <form name="form<?php echo $mypageInfoCount; ?>" action="<?php echo $row['Action']; ?>" method="post" target="_blank">
+                <input type="hidden" name="form[MailAddress]" value="<?php echo f_e($row['MailAddress']); ?>" />
+                <input type="hidden" name="form[NameSeiKj]" value="<?php echo f_e($row['NameSeiKj']); ?>" />
+                <input type="hidden" name="form[NameMeiKj]" value="<?php echo f_e($row['NameMeiKj']); ?>" />
+                <input type="hidden" name="form[Phone_1]" value="<?php echo f_e($row['Phone_1']); ?>" />
+                <input type="hidden" name="form[Phone_2]" value="<?php echo f_e($row['Phone_2']); ?>" />
+                <input type="hidden" name="form[Phone_3]" value="<?php echo f_e($row['Phone_3']); ?>" />
+
+                <?php if ($mypageInfoCount > 0) { /* セパレータ設定 */ ?>
+                <tr>
+                  <td colspan="2" class="l_data">　</td>
+                </tr>
+                <?php } ?>
+                <tr>
+                  <td class="r_label">ID(メールアドレス)</td>
+                  <td class="l_data"><?php echo f_e( $row['MailAddress'] ); ?>　　<a href="" onclick="document.form<?php echo $mypageInfoCount; ?>.submit();return false;">⇒パスワード再発行</a></td>
+                </tr>
+                <tr>
+                  <td class="r_label">最終ログイン日時</td>
+                  <td class="l_data"><?php echo (!empty($row['LastLoginDate'])) ? f_df( $row['LastLoginDate'], 'Y-m-d H:i:s' ) : ''; ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">パスワード再発行履歴</td>
+                  <td class="l_data">
+                  <?php
+                        if ($row['ReissueHistory'] != '') {
+                            foreach ($row['ReissueHistory'] as $row2) {
+                                echo f_e( $row2['date'] . ' ' . $row2['reason'] ) . '</br>';
+                            }
+                        }
+                  ?>
+                  </td>
+                </tr>
+            </form>
+        <?php     $mypageInfoCount++; ?>
+        <?php } ?>
+    <?php } else { ?>
+    <?php /* 登録なし時 */ ?>
+        <tr>
+          <td class="r_label">ID(メールアドレス)</td>
+          <td class="l_data">未登録</td>
+        </tr>
+        <tr>
+          <td class="r_label">最終ログイン日時</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">パスワード再発行履歴</td>
+          <td class="l_data"></td>
+          </td>
+        </tr>
+    <?php } ?>
+    <tr>
+      <td colspan="2" class="c_data"><button type="button" onclick="location.href='customerInquiry/detail/mcid/<?php echo f_e( $this->mcid );?>'">戻　る</button></td>
+    </tr>
+  </table>
+</div>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div></body>
+</html>

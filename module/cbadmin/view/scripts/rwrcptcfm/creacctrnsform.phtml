@@ -1,0 +1,34 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">振替請求データ作成</h3>
+    <?php echo $this->errormessage; ?>
+    <form name="form" method="post" action="rwrcptcfm/creacctrns">
+      <div id="formdiv">
+        <p><button type="submit">　振替請求データ作成　</button></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

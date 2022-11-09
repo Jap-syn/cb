@@ -1,0 +1,59 @@
+<?php
+use oemadmin\Controller\SearchoController;
+
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+  <div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/searcho/page_menu.php'); ?>
+
+  <!-- start contents -->
+
+  <div class="title"><span>簡易注文検索</span></div>
+
+<?php if($this->noParamsError) { ?>
+	<div class="no-params-error-message"><?php echo f_e(SearchoController::ERR_NO_PARAMS); ?></div>
+<?php } ?>
+    <form name="form" method="post" action="searcho/qsearch">
+      <table class="datatable clear">
+        <tr>
+          <th>項目</th>
+          <th>指定値</th>
+          <th>項目補足</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data"><input type="text" name="order_id" /></td>
+          <td class="l_data">後方一致検索（3桁以上の入力が必要）</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先氏名</td>
+          <td class="l_data"><input type="text" name="name" class="width_300" />
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先電話番号</td>
+          <td class="l_data"><input type="text" name="phone" />
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先住所</td>
+          <td class="l_data"><input type="text" name="address" class="width_300" />
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data"><input type="text" name="mail" class="width_300" />
+          <td class="l_data">前方一致検索</td>
+        </tr>
+      </table>
+      <div class="btncontents"><input type="submit" class="default_btn" value="検　索" /></div>
+    </form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+  <!-- end contents -->
+</body>
+</html>

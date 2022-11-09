@@ -1,0 +1,105 @@
+@CHARSET "UTF-8";
+
+#my_title {
+	width: 400px;
+	font: bold 2.0em 'arial', sans-serif;
+	text-align: left;
+	margin: 5px 0px 5px 25px;
+	padding: 5px 20px 5px 0px;
+	color: #333333;
+	float: left;
+}
+
+// パンくずリスト
+#breadcrumb {
+	float: left;
+}
+
+li {
+	font-size: 14px;
+	display: inline;
+}
+
+#current {
+	border-radius: 8px;
+	border: solid 3px orange;
+	padding: 25px 0px 25px 10px;
+	margin-right: 10px
+}
+
+#msg {
+	font-size: 14px;
+	float: left;
+	margin: 25px 100px 10px 25px;
+	width: 900px;
+}
+
+#inputarea {
+	font-size: 16px;
+	font-weight: bold;
+	float: left;
+	margin: 20px 150px 20px 55px;
+	width: 900px;
+}
+
+#box {
+    outline:#385D8A solid 2px;
+    padding: 13px 5px 13px 5px;
+    margin-right: 10px
+}
+
+.mt_100 {
+    margin-top: 100px;
+}
+
+.mb_10 {
+    margin-bottom: 10px;
+}
+
+.ml_50 {
+    margin-left: 50px;
+}
+
+#terms {
+    margin: 10px 0px 10px 2px;
+    font-size: 14px;
+}
+
+.terms_info {
+    margin: 10px 0px 10px 2px;
+}
+#preregist {
+	float: left;
+    width: 700px;
+    text-align: center;
+}
+#pre_errmsg {
+    width: 300px;
+	border: double 3px firebrick;
+	background-color: lemonchiffon;
+	margin: 10px 50px;
+	padding: 5px 10px;
+	color: crimson;
+}
+#complete {
+    float: left;
+    width: 700px;
+    text-align: center;
+}
+#agreement li {
+  font-size: 12px;
+  display: list-item;
+}
+#agreement .subli {
+  counter-reset: item;
+  list-style: none;
+}
+#agreement .subli li:before {
+  content: "(" counter(item) ")";
+  counter-increment: item;
+  margin-right: 0.5em;
+}
+#agreement .subli li {
+  padding-left: -1.5em;
+  text-indent: -1.5em;
+}

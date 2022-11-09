@@ -1,0 +1,99 @@
+.part_container {
+  margin: 0;
+  margin-bottom: 40px;
+  padding-top: 10px;
+}
+
+dl.count_list {
+  width: 80%;
+  text-align: left;
+  margin: 0 auto;
+}
+
+dl.count_list dt {
+  background-color: #0066ff;
+  color: white;
+  font-weight: bold;
+  line-height: 1.6;
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+dl.count_list dd.count_info {
+  margin-bottom: 20px;
+  margin-left: 0px;
+}
+
+table.count_prop_detail,
+table.count_prop_detail td {
+  border: none 0px;
+  margin: 0px;
+  padding: 0px;
+}
+
+table.count_prop_detail {
+  width: 100%;
+}
+
+table.count_prop_detail td {
+  text-align: left;
+}
+
+table.count_prop_detail td.count_detail {
+  width: 300px;
+  text-align: right;
+}
+table.count_prop_detail td.count_detail b {
+  background-color: lightcyan;
+  padding: 2px 8px;
+}
+
+table.count_prop_detail td.link_container {
+  width: 100px;
+  text-align: center;
+}
+
+table.count_prop_detail td.submit_container label {
+  font-size: small;
+}
+
+table.count_prop_detail td.na_container {
+  font-size: small;
+  color: gray;
+}
+
+form#download_form {
+  display: none;
+}
+
+table.detail_table th,
+table.detail_table td {
+  text-align: left;
+}
+
+#detail_list_table {
+  width: 80%;
+  min-width: 720px;
+  margin: 20px auto;
+}
+
+table.csv_result {
+}
+table.csv_result td.main_col {
+  background-color: lemonchiffon;
+}
+
+table.csv_result td.error_info ul,
+table.csv_result td.error_info ul li {
+  font-weight: normal;
+  padding: 0;
+  margin: 0;
+  font-size: 9pt;
+}
+table.csv_result td.error_info ul li {
+  list-style: inside disc;
+}
+
+.csv_result_title {
+  margin-bottom: 8px;
+}

@@ -1,0 +1,189 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  #contents .error {
+    color: red;
+  }
+</style>
+<script>
+  // 日数比較種類変更時処理
+  function daysCompareTypeChange()
+  {
+    if ($('DaysCompareType') != null && $('DamageProgressDaysTo') != null) {
+      var idx = $('DaysCompareType').selectedIndex;
+      var keys = $('DaysCompareType').options[idx].value.split("_");
+      if (keys[1] == "1") {
+        $('DamageProgressDaysTo').disabled = false;
+      }
+      else {
+        $('DamageProgressDaysTo').disabled = true;
+      }
+    }
+  }
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/payingback/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替精算戻し指示一覧</h3>
+    <div align="center"><font color="red"><b><?php echo $this->Message; ?></b></font></div>
+    <h4>
+      <form id="searchform" name="searchform" method="post" action="payingback/search">
+        <table style="clear:both;" width="862" cellpadding="1" cellspacing="5" border="0">
+          <tr>
+            <td style="width: 10px;"></td>
+            <td>
+              <?php echo $this->DamageProgressDaysType; ?>
+              <input type="text" name="DamageProgressDaysFrom" id="DamageProgressDaysFrom" size="7" value="<?php echo f_e($this->DamageProgressDaysFrom) ?>" />
+              <?php echo $this->DaysCompareType; ?>
+              <input type="text" name="DamageProgressDaysTo" id="DamageProgressDaysTo" size="7" value="<?php echo f_e($this->DamageProgressDaysTo) ?>" />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <?php echo $this->ClaimPattern; ?>
+              <?php echo $this->PrintType; ?>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="submit" name="show_button" id="show_button" size="10" value="　表　示　" />
+            <td>
+          </tr>
+          <?php if (isset($this->PayingBackListCnt)) {?>
+          <tr>
+            <td></td>
+            <td>
+              OEM：<?php echo $this->Oem; ?>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              加盟店ID<input type="text" name="EnterpriseId" id="EnterpriseId" size="15" value="<?php echo f_e($this->EnterpriseId) ?>" />
+              &nbsp;
+              加盟店名<input type="text" name="EnterpriseName" id="EnterpriseName" size="15" value="<?php echo f_e($this->EnterpriseName) ?>" />
+              &nbsp;
+              注文ID<input type="text" name="OrderId" id="OrderId" size="10" value="<?php echo f_e($this->OrderId) ?>" />
+              &nbsp;
+              （部分一致）
+              <input type="submit" name="search_button" id="search_button" size="10" value="　一覧絞込　" />
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><?php echo $this->PayingBackListCnt ?>　件の立替精算済があります。</td>
+          </tr>
+          <?php } ?>
+        </table>
+      </form>
+    </h4>
+    <form id="saveform" name="saveform" method="post" action="payingback/save">
+    <?php if ($this->PayingBackListCnt > 0) { ?>
+      <table class="datatable" style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th>No</th>
+          <th>OEM名</th>
+          <th>加盟店ID</th>
+          <th>加盟店名</th>
+          <th>注文ID</th>
+          <th>任意注文番号</th>
+          <th>購入者</th>
+          <th>注文日</th>
+          <th>伝登日</th>
+          <th>立替締</th>
+          <th>立替<br />済額</th>
+          <th>決済<br />手数料</th>
+          <th>請求<br />手数料</th>
+          <th>入金<br />済額</th>
+          <th>立替戻し<br />金額</th>
+          <th>指示</th>
+        </tr>
+        <?php $i = 0; foreach($this->PayingBackList as $row) { ?>
+        <tr>
+          <td class="r_data"><?php echo $i + 1; ?></td>
+          <td class="c_data"><?php echo $row["OemNameKj"]; ?></td>
+          <td class="c_data"><?php echo $row["EnterpriseId"]; ?></td>
+          <td class="c_data"><?php echo $row["EnterpriseNameKj"]; ?></td>
+          <td class="c_data">
+            <a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>">
+            <?php echo $row["OrderId"]; ?>
+            </a>
+          </td>
+          <td class="c_data"><?php echo $row["Ent_OrderId"]; ?></td>
+          <td class="c_data">
+            <a target="_blank" href="customerinquiry/detail/mcid/<?php echo $row['ManCustId']; ?>">
+            <?php echo $row["NameKj"]; ?>
+            </a>
+          </td>
+          <td class="c_data"><?php echo $row["ReceiptOrderDate"]; ?></td>
+          <td class="c_data"><?php echo $row["OccDate"]; ?></td>
+          <td class="c_data"><?php echo $row["FixedDate"]; ?></td>
+          <td class="r_data"><?php echo $row["ChargeAmount"]; ?></td>
+          <td class="r_data"><?php echo $row["SettlementFee"]; ?></td>
+          <td class="r_data"><?php echo $row["ClaimFee"]; ?></td>
+          <td class="r_data"><?php echo $row["ReceiptAmountTotal"]; ?></td>
+          <td class="r_data"><?php echo $row["PayBackAmount"]; ?></td>
+          <td class="c_data">
+            <input type="hidden" name="list[<?php echo $i; ?>][OrderSeq]" id="list[<?php echo $i; ?>][OrderSeq]" value="<?php echo $row["OrderSeq"]; ?>" />
+            <input type="hidden" name="list[<?php echo $i; ?>][PayBackAmount]" id="list[<?php echo $i; ?>][PayBackAmount]" value="<?php echo $row["PayBackAmount"]; ?>" />
+            <input type="hidden" name="list[<?php echo $i; ?>][EnterpriseId]" id="list[<?php echo $i; ?>][EnterpriseId]" value="<?php echo $row["EnterpriseId"]; ?>" />
+            <input type="hidden" name="list[<?php echo $i; ?>][PayingBackSeq]" id="list[<?php echo $i; ?>][PayingBackSeq]" value="<?php echo $row['PayingBackSeq']; ?>" />
+            <input type="hidden" name="list[<?php echo $i; ?>][instFlg]" id="list[<?php echo $i; ?>][instFlg]" value="<?php echo $row['instFlg']; ?>" />
+            <input type="hidden" name="list[<?php echo $i; ?>][chkInst]" id="list[<?php echo $i; ?>][hidchkInst]" value="off" />
+            <input type="checkbox" name="list[<?php echo $i; ?>][chkInst]" id="list[<?php echo $i; ?>][chkInst]" value="on"
+              <?php echo $row["instFlg"] == "1" ? "checked" : ""; ?> />
+          </td>
+        </tr>
+        <?php $i++; } ?>
+        <tr>
+          <td align="center" colspan="16">
+            <input type="submit" name="save_button" id="save_button" value="　登　録　" />
+          </td>
+        </tr>
+      </table>
+    <?php } ?>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	// ボタン無効化
+	function disable_buttons() {
+		["show_button", "search_button", "save_button"].each(function(id) {
+			if ($(id) != null) {
+				$(id).disabled = true;
+			}
+		});
+	}
+
+	// 表示ボタン押下時
+	if($("show_button") != null) {
+		Event.observe($("show_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+
+	// 一覧絞込ボタン押下時
+	if($("search_button") != null) {
+		Event.observe($("search_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+
+	// 登録ボタン押下時
+	if($("save_button") != null) {
+		Event.observe($("save_button"), "click", function() {
+			setTimeout(disable_buttons, 0);
+		});
+	}
+
+	// 初期化
+	daysCompareTypeChange();
+});
+</script>
+</html>

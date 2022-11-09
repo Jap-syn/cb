@@ -1,0 +1,61 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">振替請求データ（MUFJ）ダウンロード</h3>
+    <form method="post" action="rwrcptcfm/dlacctrnsmufjlist">
+      <div><span style="margin-left: 800px; "><button type="submit">　最新取得　</button></span></div>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>ファイル名</th>
+            <th width="160">ステータス</th>
+            <th width="160">処理日時</th>
+            <th width="160">ダウンロードリンク</th>
+          </tr>
+          <?php if (isset($this->dlacctrnslist)) { ?>
+          <?php foreach ($this->dlacctrnslist as $row) { ?>
+          <tr class="data">
+            <td class="l_data"><?php echo f_e($row['FileName']); ?></td>
+            <td width="160" class="c_data" <?php if ($row['Status'] == 0) { echo 'style="background-color: aqua;"'; } ?>>
+                <?php if (       $row['Status'] == 0) { ?>作成中
+                <?php } else if ($row['Status'] == 1) { ?>作成済
+                <?php } else if ($row['Status'] == 2) { ?><font color="red">作成エラー</font>
+                <?php } else if ($row['Status'] == 3) { ?>請求対象なし
+                <?php } ?>
+            </td>
+            <td width="160" class="c_data"><?php echo f_e($row['RegistDate']); ?></td>
+            <td width="160" class="c_data">
+                <?php if ($row['Status'] == 1) { ?>
+                <a href="rwrcptcfm/dlacctrnsmufj/seq/<?php echo f_e($row['Seq']); ?>">ダウンロード</a>
+                <?php } ?>
+            </td>
+          </tr>
+          <?php } ?>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

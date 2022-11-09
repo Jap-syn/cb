@@ -1,0 +1,33 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwarvlcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">一括着荷確認　完了</h3>
+
+	<div style="margin: 25px">
+		<?php echo sprintf('%s 件の着荷確認が完了しました', number_format($this->process_count)); ?><br />
+		<form id="filter_form" action="rwarvlcfm/filter" method="post" style="margin: 20px 0px">
+			<input type="hidden" name="exp[journalDate]" value="<?php echo f_df($this->exp['journalDate'], 'Y-m-d'); ?>" />
+			<input type="hidden" name="exp[receiptDate]" value="<?php echo f_df($this->exp['receiptDate'], 'Y-m-d'); ?>" />
+			<input type="hidden" name="exp[fixPattern]" value="<?php echo f_e($this->exp['fixPattern']); ?>" />
+			<div style="text-align: center;">
+			  <input id="submit_button" type="submit" value="　一覧に戻る　" />
+			</div>
+		</form>
+	</div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

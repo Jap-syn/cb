@@ -1,0 +1,121 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+textarea {
+	font-size: 12px;
+	height: 300px;
+	width: 550px;
+}
+#in_Div{
+	overflow-y:scroll;
+	overflow-x:hidden;
+	height:465px;
+	width:220px;
+}
+
+-->
+</style>
+<script type="text/javascript">
+<!--
+	function navi()
+	{
+		var selected = $('cls').selectedIndex;
+		var dm = $('cls').options[selected].value;
+		var oemselected = $('OemId').selectedIndex;
+		var oem = $('OemId').options[oemselected].value;
+
+        var h = '<?php echo $this->baseUrl; ?>/gp/mailtf/cls/' + dm + '/OemId/' + oem;
+        location.href = h;
+	}
+
+-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/gp/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>メールテンプレート設定</h3>
+<div id="updated" align="center"><?php echo $this->updated; ?></div>
+<form id="mail" name="form" method="post" action="gp/mailup">
+<input type="hidden" name="Id" id="Id" value="<?php echo $this->data['Id']; ?>" />
+<div align="left">
+
+  <table width="700" style="margin-left:0px;">
+  <tr>
+    <td>
+    <table class="datatable" width="660" cellpadding="1" cellspacing="1" border="0" style="margin:0px 10px;margin-left:15px;>
+    <tbody>
+      <tr align="center">
+        <td class="r_label">テンプレート</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>"><?php echo $this->clsTag; ?></td>
+      </tr>
+      <tr>
+        <td class="r_label">OEM</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>"><?php echo $this->oemTag; ?></td>
+      <tr>
+        <td class="r_label">From - 名称</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>"><input size="60" type="text" name="FromTitle" id="FromTitle" value="<?php echo f_e($this->data['FromTitle']); ?>" />
+      </tr>
+      <tr>
+        <td class="r_label">From - アドレス</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>"><input size="60" type="text" name="FromAddress" id="FromAddress" value="<?php echo f_e($this->data['FromAddress']); ?>" />
+      </tr>
+      <tr>
+        <td class="r_label">表題</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>"><input size="60" type="text" name="Subject" id="Subject" value="<?php echo f_e($this->data['Subject']); ?>" />
+      </tr>
+      <tr>
+        <td class="r_label">本文</td>
+        <td class="l_data<?php if($this->mode == 'oem') echo ' oem'; ?>">
+          <textarea name="Body" id="Body"><?php echo f_e($this->data['Body']); ?></textarea>
+        </td>
+      </tr>
+      <tr align="center">
+        <td colspan="2" class="c_data">
+          <input type="submit" value="　設　定　" />　　　
+        </td>
+      </tr>
+    </tbody>
+    </table>
+    </td>
+
+    <td valign="top"  >
+    <div id="in_Div">
+    <table  class="datatable" width="200" cellpadding="1" cellspacing="1" border="0" style="margin:0px 0px;margin-left:0px;">
+    <tbody style="height:10px; overflow:auto;">
+      <tr align="center">
+        <th bgcolor="gray"><font color="white">項目名</font></th>
+        <th bgcolor="gray"><font color="white">ﾊﾟﾗﾒｰﾀｰ</font></th>
+      </tr>
+        <?php foreach ($this->code as $row) { ?>
+            <tr align="center">
+                <td class="r_label">
+                    <?php echo $row['KeyContent']; ?>
+                </td>
+                <td class="l_data" >
+                    <?php echo $row['Class1'];?>
+                </td>
+            </tr>
+        <?php } ?>
+    </tbody>
+    </table>
+    </div>
+    </td>
+
+  </tr>
+  </table>
+
+</div>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

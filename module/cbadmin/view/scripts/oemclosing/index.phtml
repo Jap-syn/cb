@@ -1,0 +1,149 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<script type="text/javascript">
+    // 支払完了ボタン処理
+    function updateExecdate(OemClaimedSeq) {
+        var url = 'oemclosing/updateexecdate/OemClaimedSeq/' + OemClaimedSeq;
+
+        var ajax = new Ajax.Request(
+            url,{
+                method: 'get',
+                asynchronous: false
+            });
+
+        var res = eval('(' + ajax.transport.responseText + ')');
+        if  (res['status'] != 1) {
+            alert('支払完了処理に失敗しました。 Err=' + res['status']);
+        }
+        $("search").submit();
+    }
+</script>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/oemclosing/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+        <h3 class="contents_title">OEM明細確認</h3>
+        <form name="form" method="post" action="oemclosing/index">
+            <input type="hidden" name="DataCount" id="DataCount" value="<?php echo $this->DataCount; ?>" />
+            <table width="862" cellpadding="1" cellspacing="1" border="0" style="font-size: 12px;">
+                <tbody>
+                <tr>
+                    <td class="l_data">
+                      OEM先　：　
+                      <select name="oemid" id="oemid" >
+                      <?php foreach( $this->oemList as $key => $value ) { ?>
+                          <option value="<?php echo $key . '"'; if( $key == $this->oemid ) { echo ' selected'; } ?>><?php echo $value . '</option>'. "\r\n"; } ?>
+                      </select>
+                    </td>
+                    <?php if( !empty( $this->oemid ) ) { ?>
+                    <td class="r_data">
+                        <a href="oemclosing/dmeisai/oemid/<?php echo f_e($this->oemid) . "/f/" . $this->f . "/t/" . $this->t; ?>">↓CSVダウンロード</a>
+                    </td>
+                    <?php } ?>
+                </tr>
+              </tbody>
+            </table>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                    <td <?php if( !empty( $this->oemid ) ) { echo 'colspan="2"'; } ?>class="l_data">
+                      OEM明細表示範囲　(YYYY-MM-DD)　：　
+                      <input type="text" name="f" id="f" value="<?php echo $this->f; ?>" />～
+                      <input type="text" name="t" id="t" value="<?php echo $this->t; ?>" />
+                      <input style="margin: 0px 20px; " name="search" type="submit" value="　表　示　" />
+                    </td>
+                  </tr>
+                </tbody>
+            </table>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <?php if( !empty( $this->oemid ) ) { ?>
+                <tr>
+                    <td class="l_data"><div id="lbl1">
+                        <span style="color: red;">※OEM締め処理を実行する前に、必要な立替確定が終わっていることを確認してください。</span>
+                    </div>
+                    <div id="cmd1"><a href="oemclosing/closing/oemid/<?php echo f_e($this->oemid) . "/f/" . $this->f . "/t/" . $this->t; ?>" onclick="return confirm('処理を実行してもよろしいですか？');">OEM締め処理</a></div></td>
+                </tr>
+                <?php } ?>
+            </table>
+            <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                    <tr>
+                        <th>仮締め</th>
+                        <th>OEM先名</th>
+                        <th>対象期間</th>
+                        <th>精算総額</th>
+                        <th>精算予定日</th>
+                        <th>精算調整額</th>
+                        <th>支払完了日</th>
+                    </tr>
+                    <!-- count関数対策 -->
+                    <?php
+                        $listCount = 0;
+                        if (!empty($this->list)) {
+                            $listCount = count($this->list);
+                        }
+                        for ($i = 0 ; $i < $listCount ; $i++) { ?>
+                        <input type="hidden" name="OemClaimedSeq<?php echo $i; ?>" id="OemClaimedSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]['OemClaimedSeq']; ?>" />
+                        <tr>
+                            <td class="c_data"><?php if( $this->list[$i]['PayingControlStatus'] == 0 ) { echo '仮'; } else { echo '　'; }  ?></td>
+                            <td class="l_data">
+                                <a href="oemmonthly/settlement/oemid/<?php echo $this->list[$i]['OemId']; ?>/fd/<?php echo $this->list[$i]['SpanFrom'];?>_<?php echo $this->list[$i]['SpanTo'];?>"><?php echo $this->list[$i]['OemNameKj']; ?></a>
+                            </td>
+                            <td class="c_data">
+                                <?php echo $this->list[$i]['SpanFrom']." ～ ".$this->list[$i]['SpanTo']; ?>
+                            </td>
+                            <td class="r_data">
+                                <?php echo  f_nf(nvl($this->list[$i]['FixedTransferAmount'],0),'#,##0'); ?>
+                            </td>
+                            <td class="c_data">
+                                <?php echo $this->list[$i]['SettlePlanDate']; ?>
+                            </td>
+                            <td class="r_data">
+                                <?php echo f_nf(nvl($this->list[$i]['PC_AdjustmentAmount'],0),'#,##0');?>
+                            </td>
+                            <td class="c_data">
+                              <?php if (empty($this->list[$i]['ExecDate']) && $this->list[$i]['PayingControlStatus'] == 1) { ?>
+                              <input type="submit" value="　支払完了　" onClick="return updateExecdate('<?php echo $this->list[$i]['OemClaimedSeq']; ?>');" />
+                              <?php } else { echo $this->list[$i]['ExecDate']; } ?>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </form>
+    </div>
+    <!-- end contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

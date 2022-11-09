@@ -1,0 +1,96 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM先一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <div class="page_nav" style="margin-bottom: -8px; padding-top: 10px; padding-bottom: 14px; text-align: right;">
+          <a class="download_link" href="oem/dcsv">一覧をCSVダウンロード</a>
+        </div>
+        <tbody>
+          <tr>
+            <th rowspan="3">OEMID</th>
+            <th>OEM先名</th>
+            <th>OEM先名カナ</th>
+            <th>キャッチボール営業担当</th>
+            <th>担当者名</th>
+            <th>担当部署</th>
+            <th>連絡先</th>
+            <th>&nbsp;</th>
+          </tr>
+          <tr>
+            <th colspan="2">アクセス識別ID</th>
+            <th colspan="6">備考</th>
+          </tr>
+          <tr>
+            <th colspan="2">立替金振込手数料（同行）</th>
+            <th colspan="6">立替金振込手数料（他行）</th>
+          </tr>
+          <?php foreach ($this->list as $row) { //$row = $this->list[$i]; ?>
+          <tr class="data">
+            <td rowspan="3" class="r_data"><?php echo f_e($row['OemId']); ?></td>
+            <td class="l_data"><a href="oem/detail/oid/<?php echo f_e($row['OemId']); ?>"><?php echo f_e($row['OemNameKj']); ?></a></td>
+            <td class="l_data"><?php echo f_e($row['OemNameKn']); ?></td>
+            <td class="l_data"><?php echo f_e($row['Salesman']); ?></td>
+            <td class="l_data"><?php echo f_e($row['CpNameKj']) . '<br />(' . f_e($row['CpNameKn']) . ')'; ?></td>
+            <td class="l_data"><?php echo f_e($row['DivisionName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['ContactPhoneNumber']); ?></td>
+            <td class="c_data">
+              <a href="oem/edit/oid/<?php echo f_e($row['OemId']); ?>">編集</a><br />
+            </td>
+          </tr>
+          <tr class="data">
+            <td colspan="2" class="l_data"><?php echo strlen($row['AccessId']) ? f_e($row['AccessId']) : ''; ?></td>
+            <td colspan="6" class="l_data"><?php echo strlen($row['Note']) ? f_e($row['Note']) : ''; ?></td>
+          </tr>
+          <tr class="data">
+            <td colspan="2" class="l_data">同行：30,000円未満：<?php echo f_e( nvl( $row['SameFfTcFeeUnderThirtyK'], 0) ); ?>円/30,000円以上：<?php echo f_e( nvl( $row['SameFfTcFeeThirtyKAndOver'], 0 ) ); ?>円</td>
+            <td colspan="6" class="l_data">他行：30,000円未満：<?php echo f_e( nvl( $row['OtherFfTcFeeUnderThirtyK'], 0) ); ?>円/30,000円以上：<?php echo f_e(nvl( $row['OtherFfTcFeeThirtyKAndOver'], 0 ) ); ?>円</td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

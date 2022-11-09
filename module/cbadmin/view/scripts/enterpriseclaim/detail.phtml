@@ -1,0 +1,85 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者別入金明細</h3>
+    <form>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>加盟店ID</th>
+            <th>加盟店名</th>
+            <th>請求日付</th>
+            <th>請求額</th>
+            <th>入金日付</th>
+            <th>入金累計額</th>
+            <th>請求残高</th>
+          </tr>
+          <tr class="data">
+            <td class="c_data" width="50" ><?php echo $this->list['EnterpriseId']; ?></td>
+            <td class="l_data"            ><?php echo $this->list['EnterpriseNameKj']; ?></td>
+            <td class="c_data" width="70" ><?php echo $this->list['ClaimDate']; ?></td>
+            <td class="r_data" width="70" ><?php echo f_nf($this->list['ClaimAmountTotal'], '#,##0'); ?></td>
+            <td class="r_data" width="70" ><?php echo $this->list['ReceiptDate']; ?></td>
+            <td class="r_data" width="70" ><?php echo f_nf($this->list['ReceiptAmountTotal'], '#,##0'); ?></td>
+            <td class="r_data" width="70" ><?php echo f_nf($this->list['ClaimedBalance'], '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table width="500" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th class="c_label" colspan=3>入金明細</td>
+          </tr>
+          <tr>
+            <th>入金日付</th>
+            <th>入金額</th>
+            <th>備考</th>
+          </tr>
+          <?php foreach ($this->receiptList as $row) { ?>
+          <tr class="data">
+            <td class="c_data" width="70" ><?php echo $row['ReceiptDate']; ?></td>
+            <td class="r_data" width="70" ><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+            <td class="l_data" width="360"><?php echo $row['Note']; ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="c_label"><input type="button" name="button" value="　　閉じる　　" onclick="window.close();" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

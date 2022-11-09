@@ -1,0 +1,113 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$this->templateList = $templateList;
+$this->OmeList = $oemList;
+?>
+<script type="text/javascript">
+<!--
+function check()
+{
+    checked = false;
+    templateid = "";
+
+    if( document.form.oemid.options[document.form.oemid.selectedIndex].value == "0" ) {
+        alert( 'OEMが選択されていません。' );
+        return false;
+    }
+
+    for( i = 0; i < document.form.copytemplateseq.length; i++ ) {
+        if( document.form.copytemplateseq[i].checked ) {
+            checked = true;
+            templateid = document.form.copytemplateid[i].value;
+            break;
+        }
+    }
+
+    if( checked == false ) {
+        alert( 'テンプレートが選択されていません。' );
+        return false;
+    }
+
+    // 既存チェック
+    exists = false;
+    for( i = 0; i < document.form.templateid.length; i++ ) {
+        // テンプレートIDが同一で、区分=1、シーケンス=選択したOEM先の行が存在する場合
+        if( document.form.templateid[i].value == templateid ) {
+            if ( document.form.templateclass[i].value == "1"
+                 && document.form.seq[i].value == document.form.oemid.options[document.form.oemid.selectedIndex].value )
+            {
+                exists = true;
+                break;
+            }
+        }
+    }
+    if( exists == true ) {
+        alert( '選択したテンプレートは登録済みです。' );
+        return false;
+    }
+
+    return true;
+}
+-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/template/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">テンプレート一覧</h3>
+    <form name="form" id="form" target="_blank" action="template/edit/mode/add" method="post"" onSubmit="return check()">
+    <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th width="100px">内部ID</th>
+          <th>テンプレート名</th>
+          <th width="80px">区分</th>
+          <th width="200px">名称</th>
+          <th width="200px">使用画面名</th>
+          <th width="30px">指示</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach( $templateList as $template ) { if( $template['TemplateSeq'] ) { ?>
+        <tr class="data">
+          <td class="l_data"><a href="template/edit/mode/edit/templateseq/<?php echo $template['TemplateSeq']; ?>" target="_blank"><?php echo $template['TemplateId'] . '-' . $template['TemplateSeq']; ?></a></td>
+          <td class="l_data"><?php echo $template['TemplateName']; ?></td>
+          <td class="l_data"><?php echo $template['ClassName']; ?></td>
+          <td class="l_data"><?php echo $template['NameKj']; ?></td>
+          <td class="l_data"><?php echo $template['FormName']; ?></td>
+          <td class="c_data">
+          <?php if( $template['TemplateClass'] == 0 ) { echo '<input type="radio" name="copytemplateseq" value="' . $template['TemplateSeq'] . '" />'; }
+          elseif( $template['TemplateClass'] == 1 ) { echo '<a href="template/confirm/templateseq/' . $template['TemplateSeq'] . '">削除</a>'; } ?>
+            <input type="hidden" name="templateid" id="templateid<?php echo $template['TemplateSeq']; ?>" value="<?php echo $template['TemplateId']; ?>" />
+            <input type="hidden" name="templateclass" id="templateclass<?php echo $template['TemplateSeq']; ?>" value="<?php echo $template['TemplateClass']; ?>" />
+            <input type="hidden" name="seq" id="seq<?php echo $template['TemplateSeq']; ?>" value="<?php echo $template['Seq']; ?>" />
+            <?php if( $template['TemplateClass'] == 0 ) { echo '<input type="hidden" name="copytemplateid" value="' . $template['TemplateId'] . '" />'; } ?>
+          </td>
+        </tr>
+        <?php } } ?>
+        <tr>
+          <td colspan="5" class="l_data">OEM先名
+          <select name="oemid" id="oemid">
+            <?php foreach( $oemList as $key => $value ) { echo '<option value="' . $key .'">' . $value . '</option>'; } ?></select>
+          <button type="submit" id="submit">追加</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'cbadmin/page_footer.php' );
+?>
+</div>
+</body>
+</html>

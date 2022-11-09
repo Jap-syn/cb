@@ -1,0 +1,91 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+    <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <?php echo $this->render('oemadmin/paying/page_menu.php'); ?>
+    <div class="title"><span>キャンセル明細</span></div>
+    <?php echo $this->render('oemadmin/paying/menu.phtml'); ?>
+    <form>
+      <table style="clear:both;" width="800" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="14" class="l_data" style="font-size: 16px; font-weight: bold;"><?php echo $this->pcData['EnterpriseNameKj']; ?></td>
+          </tr>
+          <tr>
+            <th>利用プラン</th>
+            <th>前月<br />持越</th>
+            <th>件数</th>
+            <th>立替額</th>
+            <th>決済<br />手数料</th>
+            <th>請求<br />手数料</th>
+            <th>CNL<br />件数</th>
+            <th>CNL<br />金額</th>
+            <th>印紙<br />件数</th>
+            <th>印紙<br />金額</th>
+            <th>振込<br />手数料</th>
+            <th>月額<br />固定費</th>
+            <th>立替<br />戻し額</th>
+            <th>お支払<br />総額</th>
+          </tr>
+          <tr>
+            <td class="c_data"><?php echo $this->codeMaster->getPlanCaption($this->pcData['Plan']); ?></td>
+            <td class="r_data"><?php echo $this->pcData['CarryOver']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['ChargeCount']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['ChargeAmount']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['SettlementFee']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['ClaimFee']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['CancelCount']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['CalcelAmount']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['StampFeeCount']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['StampFeeTotal']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['TransferCommission']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['MonthlyFee']; ?></td>
+            <td class="r_data"><?php echo $this->pcData['PayBackAmount'];/* 立替精算戻し金額 */ ?></td>
+            <td class="r_data"><?php echo $this->pcData['DecisionPayment']; ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>注文日</th>
+            <th>購入者名</th>
+            <th>利用額</th>
+            <th>キャンセル区分</th>
+            <th>キャンセル日</th>
+            <th>キャンセル理由</th>
+            <th>精算額</th>
+          </tr>
+        <?php
+              $listCount = 0;
+              if(!empty($this->list)) {
+                  $listCount = count($this->list);
+              }
+              for ($i = 0 ; $i < $listCount ; $i++) {
+        ?>
+          <tr>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["OrderId"]; ?></a></td>
+            <td class="l_data"><?php echo $this->list[$i]["ReceiptOrderDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["NameKj"]; ?></a></td>
+            <td class="r_data"><?php echo $this->list[$i]["UseAmount"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["CancelPhase"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["CancelDate"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["CancelReason"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["RepayTotal"]; ?></td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </form>
+    <!-- end contents -->
+
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

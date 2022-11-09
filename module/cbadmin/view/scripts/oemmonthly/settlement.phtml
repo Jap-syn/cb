@@ -1,0 +1,330 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+  <script>
+    function insertRow() {
+      var table = document.getElementById( "edittable" );
+      var rows = table.rows.length;
+
+       // 前の行が新規追加行でない場合
+      var beforeRowId = table.rows[ rows - 2 ].id;
+      if (beforeRowId.match( /SerialNumber/ ) != null || beforeRowId == null || beforeRowId == '') {
+        var name = "new_1";
+      } else {
+        var name = beforeRowId.replace( /\d+/, function( i ) { return ++i; } );
+      }
+
+      var row = table.insertRow(rows - 1);
+      row.id = name;
+
+      var button = document.getElementById("item_delete_button").cloneNode(true);
+      button.style.display = "block";
+      button.name = "Delete_" + name;     // Delete_new_x
+      var text = document.createElement( "input" );
+      text.type = "text";
+      text.size = "15";
+      text.name = "OrderId_" + name;      // OrderId_new_x
+      var text2 = document.createElement( "input" );
+      text2.type = "text";
+      text2.size = "15";
+      text2.name = "AdjustmentAmount_" + name;    // AdjustmentAmount_new_x
+      var select = document.getElementById( "ItemCode" ).cloneNode( true );
+      select.name = "ItemCode_" + name;   // ItemCode_new_x
+
+      // 項目の削除
+      var cell0 = row.insertCell(0);
+      cell0.className = "c_data";
+      cell0.appendChild(button);
+
+      // 注文ID
+      var cell1 = row.insertCell( 1 );
+      cell1.className = "c_data";
+      cell1.appendChild( text );
+
+      // 氏名
+      var cell2 = row.insertCell( 2 );
+      cell2.className = "c_data";
+
+      // 科目
+      var cell3 = row.insertCell( 3 );
+      cell3.className = "c_data";
+      cell3.appendChild( select );
+
+      // 調整額
+      var cell4 = row.insertCell( 4 );
+      cell4.className = "c_data";
+      cell4.appendChild( text2 );
+
+      // 登録日時
+      var cell5 = row.insertCell( 5 );
+      cell5.className = "c_data";
+
+      // 登録者
+      var cell6 = row.insertCell( 6 );
+      cell6.className = "c_data";
+    }
+
+    // 行削除
+    function deleteRow(obj) {
+      // 削除ボタンが押された行を取得
+      tr = obj.parentNode.parentNode;
+      // インデックスを取得して行を削除
+      tr.parentNode.deleteRow(tr.sectionRowIndex);
+    }
+  </script>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+    <!-- start contents -->
+    <div id="contents">
+      <h3 class="contents_title">OEM精算書</h3>
+      <form name="form" method="post" action="oemmonthly/settlement">
+        <input type="hidden" name="oemid" value="<?php echo f_e($this->oemInfo['OemId']);?>" />
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_data">
+                <?php echo $this->fixedMonthTag; ?>
+                <input class="default_btn" type="submit" style="margin-top: 1px;" value="　表　示　" />
+                <a class="download_link" href="<?php echo 'pdf/doemmonthlyseisansyo/oemid/'.f_e($this->oemInfo['OemId']).'/fd/'.f_e($this->fd); ?>">↓精算書をPDFダウンロード</a>
+                <a class="download_link" href="<?php echo 'oemmonthly/dseisansyo/oemid/'.f_e($this->oemInfo['OemId']).'/fd/'.f_e($this->fd); ?>">↓精算書をCSVダウンロード</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_label">発行日</td>
+              <td class="r_data"><?php echo f_df($this->settlement['ProcessDate'], 'Y.m.d'); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">OEM先名</td>
+              <td class="r_data"><?php echo f_e($this->oemInfo['OemNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">郵便番号</td>
+              <td class="r_data"><?php echo f_e($this->oemInfo['PostalCode']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">住所</td>
+              <td class="r_data"><?php echo f_e(
+                sprintf('%s%s%s%s',
+                        $this->oemInfo['PrefectureName'],
+                        $this->oemInfo['City'],
+                        $this->oemInfo['Town'],
+                        $this->oemInfo['Building']
+                )
+              ); ?></td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="datatable" width="862" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_label width_400 under">対象期間</td>
+              <td class="c_data under"><?php echo f_e($this->settlement['SpanFrom']."～".$this->settlement['SpanTo']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">利用総額</td>
+              <td class="r_data"><?php echo  f_nf(nvl($this->settlement['UseAmount'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">立替総額</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->settlement['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">精算総額</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->settlement['FixedTransferAmount'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">OEM利益総額</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->settlement['OM_TotalProfit'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <?php if ($this->settlement['DspTaxFlg']) { ?>
+            <tr>
+              <td class="r_label">OEM利益総額消費税</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->settlement['TotalProfitTax'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label under">精算予定日</td>
+              <td class="r_data under"><?php echo f_e($this->settlement['SettlePlanDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">OEM月額固定費</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->settlement['CB_MonthlyFee'],0),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">登録店舗数</td>
+              <td class="r_data"><?php echo nvl($this->settlement['OM_ShopTotal'],0); ?>　件</td>
+            </tr>
+            <tr>
+              <td class="r_label">対象店舗数</td>
+              <td class="r_data"><?php echo nvl($this->settlement['OM_SettleShopTotal'],0); ?>　件</td>
+            </tr>
+            <tr>
+              <td class="r_label">店舗月額固定費</td>
+              <td class="r_data l_height">合計：<?php echo f_nf(nvl($this->settlement['CB_EntMonthlyFee'] + $this->settlement['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+              <br />
+              CB請求額：<?php echo f_nf(nvl($this->settlement['CB_EntMonthlyFee'],0),'#,##0'); ?>　円
+              <br />
+              精算額：<?php echo f_nf(nvl($this->settlement['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+              <br />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">取引件数</td>
+              <td class="r_data"><?php echo nvl($this->settlement['OrderCount'],0); ?>　件</td>
+            </tr>
+            <tr>
+              <td class="r_label">決済手数料</td>
+              <td class="r_data l_height">合計：<?php echo f_nf(nvl($this->settlement['CB_SettlementFee'] + $this->settlement['OM_SettlementFee'],0),'#,##0'); ?>　円
+              <br />
+              CB請求額：<?php echo f_nf(nvl($this->settlement['CB_SettlementFee'],0),'#,##0'); ?>　円
+              <br />
+              精算額：<?php echo f_nf(nvl($this->settlement['OM_SettlementFee'],0),'#,##0'); ?>　円
+              <br />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">請求手数料(別送)</td>
+              <td class="r_data l_height">合計：<?php echo f_nf(nvl($this->settlement['CB_ClaimFeeBS'] + $this->settlement['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+              <br />
+              CB請求額：<?php echo f_nf(nvl($this->settlement['CB_ClaimFeeBS'],0),'#,##0'); ?>　円
+              <br />
+              精算額：<?php echo f_nf(nvl($this->settlement['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+              <br />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">請求手数料(同梱)</td>
+              <td class="r_data l_height">合計：<?php echo f_nf(nvl($this->settlement['CB_ClaimFeeDK'] + $this->settlement['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+              <br />
+              CB請求額：<?php echo f_nf(nvl($this->settlement['CB_ClaimFeeDK'],0),'#,##0'); ?>　円
+              <br />
+              精算額：<?php echo f_nf(nvl($this->settlement['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+              <br />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">キャンセルによる返金(手数料)</td>
+              <td class="r_data l_height">合計返金額：<?php echo f_nf(nvl($this->settlement['CR_TotalAmount'],0),'#,##0'); ?>　円
+              <br />
+              CBからの返金額：<?php echo f_nf(nvl($this->settlement['CR_OemAmount'],0),'#,##0'); ?>　円
+              <br />
+              OEMからの返金額：<?php echo f_nf(nvl($this->settlement['CR_EntAmount'],0),'#,##0'); ?>　円
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">代理店手数料</td>
+              <td class="r_data l_height"><?php echo f_nf(nvl($this->settlement['AgencyFee'],0),'#,##0'); ?>　円
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">印紙代</td>
+              <td class="r_data"> <?php echo f_nf((int)nvl($this->settlement['PC_StampFeeTotal'],0) * (-1),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">店舗振込手数料精算</td>
+              <td class="r_data"> <?php echo f_nf(nvl(abs($this->settlement['PC_TransferCommission']),0),'#,##0'); ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label">その他</td>
+              <td class="r_data"> <?php echo f_nf(nvl($this->settlement['OM_AdjustmentAmount'],0),'#,##0'); ?>　円</td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+      <form name="form" method="post" action="oemmonthly/update">
+        <input type="hidden" name="OemId" value="<?php echo f_e( $this->oemInfo['OemId']); ?>" />
+        <input type="hidden" name="OemClaimedSeq" value="<?php echo f_e( $this->settlement['OemClaimedSeq'] );?>" />
+        <input type="hidden" name="fd" value="<?php echo f_e( $this->fd ); ?>" />
+        <table class="datatable" width="862" id="edittable" cellpadding="1" cellspacing="1" border="0" style="font-size: 12px">
+          <thead>
+            <tr>
+              <th colspan="7">調整額一覧</th>
+            </tr>
+            <tr>
+              <th>項目の削除</th>
+              <th>注文ID</th>
+              <th>氏名</th>
+              <th>科目</th>
+              <th>調整額</th>
+              <th>登録日時</th>
+              <th>登録者</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php if (!empty($this->oemAdjustmentAmount)) { ?>
+          <?php   foreach( $this->oemAdjustmentAmount as $adjustment ) { ?>
+            <tr id="SerialNumber_<?php echo $adjustment['SerialNumber']; ?>">
+              <td class="c_data">
+                <input type="checkbox" id="Delete" name="Delete_<?php echo $adjustment['SerialNumber']; ?>" value="削除"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+                <input type="button" id="item_delete_button" name="item_delete_button_<?php echo $adjust['SerialNumber']; ?>" value="　削除　" onclick="deleteRow(this);"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?> style="display: none; margin-left: 8px;">
+              </td>
+              <td class="c_data">
+                <input type="text" size="15" name="OrderId_<?php echo $adjustment['SerialNumber']; ?>" value="<?php echo f_e( $adjustment['OrderId'] ); ?>"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              </td>
+              <td class="c_data"><?php echo f_e( $adjustment['NameKj']); ?></td>
+              <td class="c_data">
+                <select name="ItemCode_<?php echo $adjustment['SerialNumber']; ?>" id="ItemCode"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+          <?php     foreach( $this->itemCodeList as $itemCode ) { ?>
+                  <option value="<?php echo $itemCode['KeyCode']; ?>"<?php if( $itemCode['KeyCode'] == $adjustment['ItemCode'] ) { echo ' selected="selected"'; } ?>><?php echo $itemCode['KeyContent']; ?></option>
+          <?php     } ?>
+                </select>
+              </td>
+              <td class="c_data">
+                <input type="text" size="15" name="AdjustmentAmount_<?php echo $adjustment['SerialNumber']; ?>" value="<?php echo f_e( $adjustment['AdjustmentAmount'] ); ?>"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              </td>
+              <td class="c_data"><?php echo f_e( $adjustment['RegistDate']); ?></td>
+              <td class="c_data"><?php echo f_e( $adjustment['RegistName']); ?></td>
+            </tr>
+          <?php   } ?>
+          <?php } else { ?>
+            <tr id="SerialNumber_<?php echo $adjustment['SerialNumber']; ?>" style="display: none">
+              <td class="c_data">
+                <input type="button" id="item_delete_button" name="Delete_<?php echo $adjustment['SerialNumber']; ?>" value="　削除　" onclick="deleteRow(this);"<?php if( $this->pcSts['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?> style="margin-left: 8px;">
+              </td>
+
+              <td class="c_data">
+                <input type="text" size="15" name="OrderId_<?php echo $adjustment['SerialNumber']; ?>" value="<?php echo f_e( $adjustment['OrderId'] ); ?>"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              </td>
+              <td class="c_data"><?php echo f_e( $adjustment['NameKj']); ?></td>
+              <td class="c_data">
+                <select name="ItemCode_<?php echo $adjustment['SerialNumber']; ?>" id="ItemCode"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+          <?php     foreach( $this->itemCodeList as $itemCode ) { ?>
+                  <option value="<?php echo $itemCode['KeyCode']; ?>"<?php if( $itemCode['KeyCode'] == $adjustment['ItemCode'] ) { echo ' selected="selected"'; } ?>><?php echo $itemCode['KeyContent']; ?></option>
+          <?php     } ?>
+                </select>
+              </td>
+              <td class="c_data">
+                <input type="text" size="15" name="AdjustmentAmount_<?php echo $adjustment['SerialNumber']; ?>" value="<?php echo f_e( $adjustment['AdjustmentAmount'] ); ?>"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              </td>
+              <td class="c_data"><?php echo f_e( $adjustment['RegistDate']); ?></td>
+              <td class="c_data"><?php echo f_e( $adjustment['RegistName']); ?></td>
+            </tr>
+          <?php } ?>
+            <tr class="data">
+              <td colspan="7" class="l_data">
+                <input type="button" value="行追加" onclick="insertRow();"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table width="862" cellpadding="1" cellspacing="1" border="0" style="font-size: 12px">
+          <tr>
+            <td colspan="7" class="c_data" style="padding-top: 2em;">
+              <input type="submit" value="　更新　"<?php if( $this->settlement['PayingControlStatus'] == 1 ) { echo ' disabled="disabled"'; } ?>>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

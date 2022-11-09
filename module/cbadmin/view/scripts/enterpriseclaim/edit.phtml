@@ -1,0 +1,147 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+
+?>
+<style type="text/css">
+.input_error_message {
+	color: red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者別請求残高入金</h3>
+    <form name="form" method="post" action="enterpriseclaim/save">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>項目</th>
+            <th>指定値</th>
+            <th>項目補足</th>
+          </tr>
+        <tr>
+          <td class="r_label" width="150">入金種類</td>
+          <td class="l_data"><?php echo ($this->list['ClaimClass'] == 1) ? '繰り越し分の入金' : '都度請求分の入金'; ?></td>
+          <td class="l_data" width="200"></td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店ID</td>
+          <td class="l_data"><?php echo $this->list['EnterpriseId']; ?></td>
+          <input type="hidden" name="eid" id="eid" value="<?php echo $this->list['EnterpriseId']; ?>" />
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店名</td>
+          <td class="l_data"><?php echo $this->list['EnterpriseNameKj']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">請求日付</td>
+          <td class="l_data"><?php echo $this->list['ClaimDate']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">請求残高</td>
+          <td class="l_data"><?php echo f_nf($this->list['ClaimedBalance'], '#,##0'); ?>　円</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金日付<font color="red">*</font></td>
+          <td class="data"><input name="receiptDate" type="text" id="receiptDate" value="<?php echo f_e($this->receiptDate); ?>" />
+          <?php show_error_message($this->error['receiptDate']); ?></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 Stt -->
+<?php if (false) { // 会計対応で項目を2つに分割するため削除 ?>
+        <tr>
+          <td class="r_label">入金額<font color="red">*</font></td>
+          <td class="data"><input name="receiptAmount" type="text" id="receiptAmount" value="<?php echo f_e($this->receiptAmount); ?>" />
+          <?php show_error_message($this->error['receiptAmount']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+<?php } ?>
+            <tr>
+              <td class="r_label">入金額(売掛金)<font color="red">*</font></td>
+              <td class="data"><input name="receiptAmountRece" type="text" id="receiptAmountRece" value="<?php echo f_e($this->receiptAmountRece); ?>" />
+              <?php show_error_message($this->error['receiptAmountRece']); ?></td>
+              <td class="l_data"></td>
+            </tr>
+            <tr>
+              <td class="r_label">入金額(未収金)<font color="red">*</font></td>
+              <td class="data"><input name="receiptAmountDue" type="text" id="receiptAmountDue" value="<?php echo f_e($this->receiptAmountDue); ?>" />
+              <?php show_error_message($this->error['receiptAmountDue']); ?></td>
+              <?php show_error_message($this->error['receiptAmount']); ?></td>
+              <td class="l_data"></td>
+            </tr>
+<!-- 2015/09/24 Y.Suzuki Mod 会計対応 End -->
+        <tr>
+          <td class="r_label">科目<font color="red">*</font></td>
+          <td class="data"><?php echo $this->receiptClassTag; ?>
+          <?php show_error_message($this->error['receiptClass']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 Stt -->
+            <tr>
+              <td class="r_label">入金元</td>
+              <td class="data"><?php echo $this->receiptAmountSourceTag; ?>
+              <?php show_error_message($this->error['receiptAmountSource']); ?></td>
+              <td class="l_data">科目「入金」を選択した場合必須</td>
+            </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 End -->
+        <tr>
+          <td class="r_label">備考</td>
+          <td class="data"><input name="note" type="text" id="note" value="<?php echo f_e($this->note); ?>" />
+          <?php show_error_message($this->error['note']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+          <tr class="border">
+            <td colspan="3">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        </tbody>
+          <tr>
+            <td colspan="3" class="l_data">&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="c_label">
+              <input type="submit" id="btnSubmit" value="　　確　定　　" />　
+              <input type="button" name="btnClose" value="　　閉じる　　" onclick="window.close();" />
+            </td>
+          </tr>
+
+      </table>
+    </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script type="text/javascript">
+  Event.observe(window, 'load', function() {
+    onChangeReceiptClass();
+  });
+
+  function onChangeReceiptClass() {
+    // 入金元の有効無効
+    $('receiptAmountSource').disabled = ($('receiptClass').value == 4) ? true : false;
+  }
+</script>
+</html>

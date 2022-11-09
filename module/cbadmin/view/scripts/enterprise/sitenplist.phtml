@@ -1,0 +1,95 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$map = $this->master_map;
+$d = $this->data;
+
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterprise/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>サイト別不払率情報　（加盟店名：<?php echo $this->enterprisenamekj; ?>）</h3>
+<!-- count関数対策 -->
+<?php if (!empty($this->sitenplists)) { ?>
+    <?php foreach ($this->sitenplists as $row) { ?>
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="11" class="data" <?php if ($this->emphasissiteid == $row['siteid']) { ?>style="background-color: #7fffd4;"<?php } ?>>
+          <a href="site/edit/eid/<?php echo f_e($this->enterpriseid); ?>/sid/<?php echo $row['siteid']; ?>" target="_blank"><?php echo $row['sitenamekj']; ?></a>
+          </td>
+        </tr>
+        <?php
+            $npRate1 = ($row['type1']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type1']['cnt'] / $row['type1']['cntall'] * 100);
+            $npRate2 = ($row['type2']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type2']['cnt'] / $row['type2']['cntall'] * 100);
+            $npRate3 = ($row['type3']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type3']['cnt'] / $row['type3']['cntall'] * 100);
+            $npRate4 = ($row['type4']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type4']['cnt'] / $row['type4']['cntall'] * 100);
+            $npRate5 = ($row['type5']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type5']['cnt'] / $row['type5']['cntall'] * 100);
+            $npRate6 = ($row['type6']['cnt'] == 0) ? 0 : sprintf('%.3f', $row['type6']['cnt'] / $row['type6']['cntall'] * 100);
+            $npRateSum1 = ($row['type1']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type1']['sum'] / $row['type1']['sumall'] * 100);
+            $npRateSum2 = ($row['type2']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type2']['sum'] / $row['type2']['sumall'] * 100);
+            $npRateSum3 = ($row['type3']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type3']['sum'] / $row['type3']['sumall'] * 100);
+            $npRateSum4 = ($row['type4']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type4']['sum'] / $row['type4']['sumall'] * 100);
+            $npRateSum5 = ($row['type5']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type5']['sum'] / $row['type5']['sumall'] * 100);
+            $npRateSum6 = ($row['type6']['sum'] == 0) ? 0 : sprintf('%.3f', $row['type6']['sum'] / $row['type6']['sumall'] * 100);
+        ?>
+        <tr>
+          <td class="r_label" rowspan="2">不払率(件数)</td>
+          <td class="c_label" style="width: 65px;">一週間</td>
+          <td class="c_label" style="width: 65px;">一ヶ月</td>
+          <td class="c_label" style="width: 65px;">三ヶ月</td>
+          <td class="c_label" style="width: 65px;">六ヶ月</td>
+          <td class="c_label" style="width: 65px;">一年</td>
+          <td class="c_label" style="width: 65px;">全体</td>
+          <td class="r_label" rowspan="2">サイト収益<br />(過去３ヶ月)</td>
+          <td class="c_label" style="width: 65px;">手数料率</td>
+          <td class="c_label" style="width: 65px;">収益率</td>
+          <td class="c_label" style="width: 65px;">損益額</td>
+        </tr>
+        <tr>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate1) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate1); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate2) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate2); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate3) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate3); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate4) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate4); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate5) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate5); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRate6) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRate6); ?> ％</td>
+          <td class="r_data" style="width: 65px;"><?php echo f_e(sprintf('%.5f', $row['settlementfeerate'])); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if ($row['profitrate'] < 0) { ?> color: red;<?php } ?>"><?php echo ($row['profitrate'] == 0) ? 0 : f_e(sprintf('%.3f', $row['profitrate'])); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if ($row['profitrate'] < 0) { ?> color: red;<?php } ?>"><?php echo f_nf($row['profitandloss'], '#,##0'); ?> 円</td>
+        </tr>
+        <tr>
+          <td class="r_label" rowspan="2">不払率(金額)</td>
+          <td class="c_label" style="width: 65px;">１５日</td>
+          <td class="c_label" style="width: 65px;">６０日</td>
+          <td class="c_label" style="width: 65px;">１２０日</td>
+          <td class="c_label" style="width: 65px;">２１０日</td>
+          <td class="c_label" style="width: 65px;">３９０日</td>
+          <td class="c_label" style="width: 65px;">全体</td>
+          <td class="r_label" rowspan="2">　<br />　</td>
+          <td class="c_label" style="width: 65px;">　</td>
+          <td class="c_label" style="width: 65px;">　</td>
+          <td class="c_label" style="width: 65px;">　</td>
+        </tr>
+        <tr>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum1) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum1); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum2) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum2); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum3) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum3); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum4) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum4); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum5) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum5); ?> ％</td>
+          <td class="r_data" style="width: 65px;<?php if (floor($npRateSum6) >= $this->npRateColorThreshold) { ?> background-color: mistyrose;<?php } ?>"><?php echo f_e($npRateSum6); ?> ％</td>
+          <td class="r_data" style="width: 65px;">　</td>
+          <td class="r_data" style="width: 65px;">　</td>
+          <td class="r_data" style="width: 65px;">　</td>
+        </tr>
+    </table>
+    <?php } ?>
+<?php } ?>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

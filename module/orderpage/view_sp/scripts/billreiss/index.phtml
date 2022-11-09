@@ -1,0 +1,128 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'orderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<script>
+function quitBox( cmd )
+{
+    if( cmd == 'quit' )
+    {
+        open( location, '_self' ).close();
+    }
+    return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'orderpage/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'orderpage/system_message_sp.php' );
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">請求書再発行</div>
+        <div style="font-size: 20px;" id="d_01">再発行前の確認</div>
+        <div id="d_01">
+            <span><?php echo f_e( $this->userInfo ); ?></span><br /><br />
+            <?php if (isset( $this->claimInfo['MypageReissueRequestDate'] ) && ( $this->claimInfo['MypageReissueClass'] == 91 || $this->claimInfo['MypageReissueClass'] == 92) ) { ?>
+            <span class="c_red"><?php echo f_e($this->claimInfo['MypageReissueRequestDate']); ?> に請求書を再発送致しました。
+                <br />再発行のご希望の際は恐れ入りますが、弊社（03-4326-3600)までご連絡お願い致します。
+                <br />下記の口座からもお支払い可能です。
+            </span>
+            <?php } elseif (isset( $this->claimInfo['MypageReissueRequestDate'] ) && ( $this->claimInfo['MypageReissueClass'] != 91 && $this->claimInfo['MypageReissueClass'] != 92 ) ) { ?>
+            <span class="c_red">請求書再発行を受け付け済みです。<br />
+                すみやかに新しい請求書をご送付致しますので、しばしお待ちください。
+            </span>
+            <?php } elseif ($this->claimInfo['ClaimPattern'] > $this->ReIssobj ){?>
+            <span class="c_red">請求書再発行受付の対象期間外です。
+                <br />再発行のご希望の際は恐れ入りますが、弊社（03-4326-3600)までご連絡お願い致します。
+                <br />下記の口座からもお支払い可能です。
+            </span>
+            <?php } elseif ( ( strtotime( $this->claimInfo['F_LimitDate'] ) - strtotime( date( 'Y-m-d' ) ) ) / (3600 * 24) < 0 ) { ?>
+            <span class="c_red">お支払期限を過ぎています。請求書再発行が必要な際はお早めの手続きをお願い致します。</span><br />
+            <span>※ 料金別納郵便配送する為、郵便事情等により遅い場合で発行日より10日程度かかることがございます。<br />
+                (お支払期限を超過致しますと、マイページからの請求書の再発行ができない場合があります。)
+            </span>
+            <?php } elseif ( ( ( strtotime( date( 'Y-m-d')) - strtotime( $this->claimInfo['F_ClaimDate'] ) ) ) / (3600 * 24) >= (!empty( $this->ReClaimCautionMessageB ) ? $this->ReClaimCautionMessageB : 0 )) { ?>
+            <span class="c_red">お支払期限が近付いております。請求書再発行が必要な際はお早めの手続きをお願い致します。</span><br />
+            <span>※ 料金別納郵便配送する為、郵便事情等により遅い場合で発行日より10日程度かかることがございます。</span>
+            <?php } elseif ( ( ( strtotime( date( 'Y-m-d')) - strtotime( $this->claimInfo['F_ClaimDate'] ) ) ) / (3600 * 24) < (!empty( $this->ReClaimCautionMessageB ) ? $this->ReClaimCautionMessageB : 0 )
+                          && ( ( strtotime( date( 'Y-m-d')) - strtotime( $this->claimInfo['F_ClaimDate'] ) ) ) / (3600 * 24) > (!empty($this->ReClaimCautionMessageA) ? $this->ReClaimCautionMessageA : 0 )
+            ) { ?>
+            <span>※ 料金別納郵便配送する為、郵便事情等により遅い場合で発行日より10日程度かかることがございます。</span>
+            <?php } elseif ( ( ( strtotime( date( 'Y-m-d')) - strtotime( $this->claimInfo['F_ClaimDate'] ) ) ) / (3600 * 24) <= (!empty($this->ReClaimCautionMessageA) ? $this->ReClaimCautionMessageA : 0 )) { ?>
+            <span class="c_red">請求書は <?php echo f_e( $this->claimInfo['F_ClaimDate'] ); ?> に発行しておりますので、<br/>到着まで今しばらくお待ちいただけます<br/>でしょうか？</span><br />
+            <span>※ 料金別納郵便配送しております為、<br/>　　郵便事情等により遅い場合で<br/>　　発行日より10日程度かかることがございます。</span>
+            <?php } ?>
+        </div>
+        <form name="form" method="post" action="billreiss/confirm">
+            <input name="orderseq" type="hidden" value="<?php echo f_e( $this->claimInfo['OrderSeq'] ); ?>" />
+            <input type="hidden" id="OrderSeq"  value="<?php echo $this->claimInfo['OrderSeq']; ?>" />
+            <div id="d_01"><span id="d_note">注意事項</span></div>
+            <div id="d_note_info">
+                マイページからの請求書発行は<br/><span class="c_red">初回の再発行のみ</span>となります。
+            </div>
+            <div id="d_01">
+                再発行理由　<span class="c_orange">※必須</span>　　
+                <select name="reason">
+                    <option value="loss">紛失</option>
+                    <option value="nonarrival">請求書未着</option>
+                    <option value="other">その他</option>
+                </select>
+            </div>
+            <div id="d_01" class="c_blue_01"">下記口座からもお支払い可能です。<br/>（請求書発行はご不要です）</div>
+            <div id="d_bank">
+                <span class="c_blue_01">お支払口座情報</span><br />
+                <?php if( $this->accountInfos ) { $accountInfo = $this->accountInfos; ?>
+                　■ 銀行振込口座<br />
+                <div id="bank_info">
+                    銀行名・支店名：<?php echo f_e( $accountInfo['Bk_BankName'] ) . '　' . f_e( $accountInfo['Bk_BranchName'] ); ?><br />
+                    銀行コード：<?php echo f_e( $accountInfo['Bk_BankCode'] ); ?>　　支店コード:<?php echo f_e( $accountInfo['Bk_BranchCode'] ); ?><br />
+                    口座種別：<?php if( $accountInfo['Bk_DepositClass'] == 0 ) { echo '普通'; } else { echo '当座'; } ?>　　
+                    口座番号：<?php echo f_e( $accountInfo['Bk_AccountNumber'] ); ?><br />
+                    口座名義：<?php echo f_e( $accountInfo['Bk_AccountHolder'] ); ?><br />
+                    口座名義カナ：<?php echo f_e( $accountInfo['Bk_AccountHolderKn'] ); ?>
+                </div>
+                　■ 郵便振込口座<br />
+                <div id="bank_info">
+                  記号・番号：<?php echo f_e( $accountInfo['Yu_AccountNumber'] ); ?><br />
+                  口座名義：<?php echo f_e( $accountInfo['Yu_SubscriberName'] ); ?>
+                </div>
+                <?php } ?>
+                <div id="notice">
+                    <ul style="list-style-type:none">
+                        <li>振込手数料はお客様負担になります。</li>
+                        <li>口座番号はご注文毎に異なります。</li>
+                        <li>別のご注文お支払口座へのお振込みや<br />金額変更・合算振込みはご遠慮下さい。</li>
+                        <li>郵便振込でのお支払の場合は<br/>ご依頼主名を必ずご入力下さい。</li>
+                    </ul>
+                </div>
+            </div>
+            <?php if( $this->displayFlg == 1 ) { ?>
+            <div id="d_confirm" >上記確認の上</div>
+            <?php }?>
+            <div style="width: 96%;">
+                <?php if( $this->displayFlg == 1 ) { ?>
+                <input id="red_btn" type="submit" value="請求書発行を続ける" />
+                <?php }?>
+                <br/>
+                <input id="green_btn" type="button" value="閉じる" onclick="return quitBox( 'quit' );" />
+            </div>
+        </form>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'orderpage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>

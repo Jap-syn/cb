@@ -1,0 +1,229 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style>
+    table {
+        width: 900px;
+        border: 1px gray solid;
+    }
+    table.top {
+        background-color: #fff;
+        border-radius: 3px;
+    }
+	.layout_container table.datatable {
+		border: 1px lightgray solid;
+	}
+	table.datatable td.under {
+		border-bottom: 3px solid lightgray;
+	}
+	.l_height {
+		line-height: 17px;
+	}
+	table.margin0 {
+		margin-bottom: 0px;
+	}
+	.scroll {
+		height: 300px;
+		overflow-y: scroll;
+		border: 1px lightgray solid;
+		margin-bottom: 10px;
+	}
+	.scroll table {
+		width: 880px;
+		margin: 0px;
+	}
+	.scroll td {
+		line-height: 14px;
+	}
+	.scrollbar {
+		width: 12px;
+		background-color: lightgray;
+	}
+	.width_120 {
+		width: 120px;
+	}
+	.width_140 {
+		width: 140px;
+	}
+	.width_141 {
+		width: 141px;
+	}
+	.width_160 {
+		width: 160px;
+	}
+	.width_161 {
+		width: 161px;
+	}
+</style>
+</head>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/monthly/page_menu.php'); ?>
+      <div class="title"><span>店舗別精算明細一覧</span></div>
+
+<form name="form" method="post" action="monthly/store">
+  <table class="datatable top">
+	<tbody>
+	  <tr>
+		<td class="l_data">
+		  <?php echo $this->fixedMonthTag; ?>
+		  <input class="default_btn" type="submit" style="margin-top: 1px;" value="　表　示　" />
+		</td>
+	  </tr>
+	</tbody>
+  </table>
+</form>
+
+<div class="layout_container">
+      <table class="datatable width_440">
+        <tbody>
+          <tr>
+			  <td class="r_label width_150 under">対象期間</td>
+			  <td class="c_data under"><?php echo f_e($this->settlement['SpanFrom'])."～".f_e($this->settlement['SpanTo']);?></td>
+		  </tr>
+          <tr>
+			  <td class="r_label">ご利用総額</td>
+			  <td class="r_data"><?php echo  f_nf(nvl($this->settlement['UseAmount'],0),'#,##0'); ?>　円</td>
+		  </tr>
+          <tr>
+			  <td class="r_label">立替総額</td>
+			  <td class="r_data"><?php echo f_nf(nvl($this->settlement['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+		  </tr>
+          <tr>
+			  <td class="r_label">精算総額</td>
+			  <td class="r_data"><?php echo f_nf(nvl($this->settlement['FixedTransferAmount'],0),'#,##0'); ?>　円</td>
+		  </tr>
+          <tr>
+			  <td class="r_label">OEM利益総額</td>
+			  <td class="r_data"><?php echo f_nf(nvl($this->settlement['OM_TotalProfit'],0),'#,##0'); ?>　円</td>
+		  </tr>
+          <tr>
+			  <td class="r_label">精算予定日</td>
+			  <td class="r_data"><?php echo f_e($this->settlement['SettlePlanDate']); ?></td>
+		  </tr>
+        </tbody>
+      </table>
+      <table class="datatable margin0">
+        <tbody>
+          <tr>
+			  <td class="c_label" colspan="2" style="background-color: lightyellow;">対象店舗名</td>
+			  <td class="c_label">対象店舗利用総額</td>
+			  <td class="c_label">対象店舗立替総額</td>
+			  <td class="c_label">対象店舗精算総額</td>
+			  <td class="c_label">OEM手数料総額</td>
+			  <td class="scrollbar"> </td>
+		  </tr>
+		  <tr>
+			  <td class="c_label width_161">店舗月額固定費</td>
+			  <td class="c_label width_120">取引件数</td>
+			  <td class="c_label width_140">決済手数料率</td>
+			  <td class="c_label width_140">決済手数料</td>
+			  <td class="c_label width_140">請求手数料(別送)</td>
+			  <td class="c_label">請求手数料(同梱)</td>
+			  <td class="scrollbar"> </td>
+		  </tr>
+		  <tr>
+			  <td class="c_label">キャンセル返金</td>
+			  <td class="c_label">前月繰越</td>
+			  <td class="c_label">印紙代</td>
+			  <td class="c_label">振込手数料</td>
+			  <td class="c_label">立替精算戻し額</td>
+			  <td class="c_label">精算調整額</td>
+			  <td class="scrollbar"> </td>
+		  </tr>
+        </tbody>
+      </table>
+	<div class="scroll">
+		<?php foreach($this->enterprise_settlement as $value){ ?>
+      <table class="datatable">
+        <tbody>
+          <tr>
+			  <td class="c_data" colspan="2" style="background-color: lightyellow;">
+				<a href="monthly/storedetail/eid/<?php echo $value['EnterpriseId'];?>/fd/<?php echo $value['SpanFrom']."_".$value['SpanTo'];?>">
+					<?php echo f_e($value['EnterpriseId']); ?>：<?php echo f_e($value['EnterpriseNameKj']); ?>
+				</a>
+			  </td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['UseAmount'],0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['FixedTransferAmount'],0) + ($this->addtcflg ? nvl($value['PC_TransferCommission'],0) : 0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['OM_TotalProfit'],0),'#,##0'); ?>　円</td>
+		  </tr>
+		  <tr>
+			  <td class="r_data width_160">合計：<?php echo f_nf(nvl($value['CB_EntMonthlyFee'] + $value['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+			  <br />
+			  CB請求額：<?php echo f_nf(nvl($value['CB_EntMonthlyFee'],0),'#,##0'); ?>　円
+			  <br />
+			  精算額：<?php echo f_nf(nvl($value['OM_EntMonthlyFee'],0),'#,##0'); ?>　円
+			  <br />
+			  </td>
+			  <td class="r_data width_120"><?php echo $value['OrderCount'] ?>　件</td>
+			  <td class="r_data width_140">合計：<?php echo $value['OecSettlementFeeRate'] - 0; ?>　%
+			  <br />
+			  CB決済手数料率：<?php echo $value['OecOemSettlementFeeRate'] - 0; ?>　%
+			  <br />
+			  決済手数料率：<?php echo $value['OecSettlementFeeRate'] - $value['OecOemSettlementFeeRate']; ?>　%
+			  <br />
+			  </td>
+			  <td class="r_data width_140">合計：<?php echo f_nf(nvl($value['CB_SettlementFee'] + $value['OM_SettlementFee'],0),'#,##0'); ?>　円
+			  <br />
+			  CB請求額：<?php echo f_nf(nvl($value['CB_SettlementFee'],0),'#,##0'); ?>　円
+			  <br />
+			  精算額：<?php echo f_nf(nvl($value['OM_SettlementFee'],0),'#,##0'); ?>　円
+			  <br />
+			  </td>
+			  <td class="r_data width_140">合計：<?php echo f_nf(nvl($value['CB_ClaimFeeBS'] + $value['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+			  <br />
+			  CB請求額：<?php echo f_nf(nvl($value['CB_ClaimFeeBS'],0),'#,##0'); ?>　円
+			  <br />
+			  精算額：<?php echo f_nf(nvl($value['OM_ClaimFeeBS'],0),'#,##0'); ?>　円
+			  <br />
+			  </td>
+			  <td class="r_data">合計：<?php echo f_nf(nvl($value['CB_ClaimFeeDK'] + $value['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+			  <br />
+			  CB請求額：<?php echo f_nf(nvl($value['CB_ClaimFeeDK'],0),'#,##0'); ?>　円
+			  <br />
+			  精算額：<?php echo f_nf(nvl($value['OM_ClaimFeeDK'],0),'#,##0'); ?>　円
+			  <br />
+			  </td>
+		  </tr>
+		  <tr>
+			  <td class="r_data">合計：<?php echo f_nf(nvl($value['CR_TotalAmount'],0),'#,##0'); ?>　円
+			  <br />
+			  入金額：<?php echo f_nf(nvl($value['CR_OemAmount'],0),'#,##0'); ?>　円
+			  <br />
+			  費用：<?php echo f_nf(nvl($value['CR_EntAmount'],0),'#,##0'); ?>　円
+			  <br />
+			  </td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['PC_CarryOver'],0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl(abs($value['PC_StampFeeTotal']),0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['PC_TransferCommission'],0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['PayBackAmount'],0),'#,##0'); ?>　円</td>
+			  <td class="r_data"><?php echo f_nf(nvl($value['PC_AdjustmentAmount'],0),'#,##0'); ?>　円</td>
+		  </tr>
+        </tbody>
+      </table>
+		<?php } ?>
+	</div>
+  <!-- end contents -->
+<div style="font-size: 9pt; margin: 0px 8px; float: none; clear: both; width: 870px">
+	※「印紙代合計」とは、購入者様のコンビニ決済によるお支払金額が税込で\54,000以上の場合に発生する印紙代金の合計金額です。
+</div>
+<div class="note">
+	<ul>
+		<li>
+			表示金額はすべて税込金額となっております。
+		</li>
+		<li>
+			決済手数料の1円未満の端数は切捨てとなっております。
+		</li>
+	</ul>
+</div>
+
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

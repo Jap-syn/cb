@@ -1,0 +1,92 @@
+<?php
+use Coral\Coral\CoralOrderUtility;
+
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+$action = $this->currentAction;
+$page_title_prefix = '注文データ検索';
+if ($action == 'qsearch') {
+    $page_title_prefix = '簡易注文データ検索';
+} else if ($action == 'ssearch') {
+    $page_title_prefix = '定型検索';
+}
+?>
+
+</head>
+<body>
+    <!-- start contents -->
+    <div id="contents">
+<?php echo $this->render('oemadmin/page_header.php'); ?>
+<?php echo $this->render('oemadmin/searcho/page_menu.php'); ?>
+ <div class="title"><span><?php echo f_e($page_title_prefix); ?><?php if ($this->page_title) echo f_e(sprintf(' - %s', $this->page_title)); ?></span></div>
+        <div id="result_cnt">
+            該当件数　<?php echo valueFormat($this->item_count, 'number', '#,##0'); ?> 件 /
+            合計利用額　<?php echo number_format($this->total_amount); ?> 円
+        </div>
+        <div class="search_page_nav"><?php echo $this->render('oemadmin/searcho/page_navigation.php'); ?></div>
+        <div class="csvdownload">
+            <form name="dlform" id="dlform" method="post" action="<?php echo f_e($this->dlaction); ?>">
+                <input name="srchparams" type="hidden" value="<?php echo f_e($this->srchparams); ?>" />
+                <a class="download_link" href="" onClick="document.dlform.submit();return false;">検索結果をCSVでダウンロード</a>
+            </form>
+        </div>
+        <div style="clear: both; margin: 5px 0; height: 500px; border: 1px solid gray; overflow-y: scroll; ">
+            <table style="margin: 0px; clear:both;" width="900" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <thead>
+                    <tr>
+                        <th>注文ID</th>
+                        <th>事業者名</th>
+                        <th>サイト名</th>
+                        <th>注文日</th>
+                        <th>氏名</th>
+                        <th>住所</th>
+                        <th>電話番号</th>
+                        <th>メール</th>
+
+                        <th>入金額</th>
+                        <th>入金日</th>
+                        <th>入金方法</th>
+                        <th>利用額</th>
+                        <th>配送方法</th>
+                        <th>ステータス</th>
+                    </tr>
+                </thead>
+                <tbody>
+<?php
+$captionMap = CoralOrderUtility::getStatusCaptions();
+$listCount = 0;
+if(!empty($this->list)) {
+    $listCount = count($this->list);
+}
+for ($i = 0; $i < $listCount; $i++) {
+    $rowClass = CoralOrderUtility::getOrderRowClass($this->list[$i]);
+    $className = "orderstatus_$rowClass";
+    $caption = $captionMap[$rowClass];
+?>
+
+                        <tr class="<?php echo f_e($className); ?>" title="<?php echo f_e(sprintf('[%s]%s', $this->list[$i]['DataStatus'], $caption)); ?>">
+                            <td nowrap class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["OrderId"]); ?></a></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["SiteNameKj"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptOrderDate"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["NameKj"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["UnitingAddress"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["Phone"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["MailAddress"]); ?></td>
+
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptAmount"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptDate"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptClassName"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["UseAmount"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($this->list[$i]["DeliMethodName"]); ?></td>
+                            <td nowrap class="l_data"><?php echo f_e($caption); ?></td>
+                        </tr>
+<?php } ?>
+                </tbody>
+            </table>
+        </div>
+<?php echo $this->render('oemadmin/page_footer.php'); ?>
+    </div>
+    <!-- end contents -->
+</body>
+</html>

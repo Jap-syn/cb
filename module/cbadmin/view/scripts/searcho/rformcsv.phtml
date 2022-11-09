@@ -1,0 +1,360 @@
+<?php
+use cbadmin\Controller\SearchoController;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+dl.error-message {
+  margin: 8px 0px;
+  border: double 3px gray;
+  background-color: mistyrose;
+}
+dl.error-message dt {
+  margin: 4px;
+  margin-bottom: 10px;
+  color: gray;
+}
+dl.error-message dd {
+  margin-left: 40px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: firebrick;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searcho/page_menu.php'); ?>
+  <?php $this->SearchPattern ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">注文検索結果CSV
+    <?php if($this->SearchPattern == "1"){
+        echo "(検索パターン1)";
+    } else if($this->SearchPattern == "2"){
+        echo "(検索パターン2)";
+    } else if($this->SearchPattern == "3"){
+        echo "(検索パターン3)";
+    }?>
+    </h3>
+<?php if($this->SearchExpressionError) { ?>
+    <dl class="error-message">
+      <dt>以下のエラーで検索を実行できませんでした</dt>
+      <dd><?php echo f_e($this->SearchExpressionError); ?></dd>
+    </dl>
+<?php } ?>
+    <form name="formSelectList" method="post" action="searcho/rformcsv" >
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="3">
+          <select name="SearchPattern">
+            <option value="1"<?php echo $this->SearchPattern == "1" ?  "selected" : ""?>>検索パターン1</option>
+            <option value="2"<?php echo $this->SearchPattern == "2" ?  "selected" : ""?>>検索パターン2</option>
+            <option value="3"<?php echo $this->SearchPattern == "3" ?  "selected" : ""?>>検索パターン3</option>
+          </select>
+          <input type = "submit" name="select_button" id="search_button" value="　選択　" />
+          </td>
+        </tr>
+      </table>
+    </form>
+    <form name="form" method="post" action="searcho/rformcsv">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+
+        <?php if($this->SearchPattern == "1") { ?>
+        <tr>
+          <th colspan="3" ><input type= "hidden" name="SearchPattern" id="SearchPattern" value="1"/>検索条件</th>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label" >【請求書発行】</td>
+        </tr>
+          <td class="r_label">支払期限</td>
+          <td class="l_data"><input type="text" name="LimitDateF" id="LimitDateF" />～<input type="text" name="LimitDateT" id="LimitDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【入金】</td>
+        </tr>
+        <tr>
+          <td class="r_label">入金日</td>
+          <td class="l_data"><input type="text" name="ReceiptDateF" id="ReceiptDateF" />～<input type="text" name="ReceiptDateT" id="ReceiptDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <th colspan="3" >抽出項目</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data">注文ID</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金額</td>
+          <td class="l_data"><input type="checkbox" name="ReceiptAmount" id="ReceiptAmount" value="1" <?php echo isset($this->ReceiptAmount)  ?  ' checked="checked"' : "" ?> />入金額</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文金額</td>
+          <td class="l_data"><input type="checkbox" name="UseAmount" id="UseAmount" value="1" <?php echo isset($this->UseAmount)  ?  ' checked="checked"' : "" ?>/>注文金額</td>
+          <td class="l_data"></td>
+        </tr>
+        <?php } else if($this->SearchPattern == "2") {?>
+        <tr>
+          <th colspan="3" ><input type= "hidden" name="SearchPattern" id="SearchPattern" value="2"/>検索条件</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文登録日</td>
+          <td class="l_data"><input type="text" name="RegistDateF" id="RegistDateF" />～<input type="text" name="RegistDateT" id="RegistDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        </tr>
+          <td class="r_label">支払期限</td>
+          <td class="l_data"><input type="text" name="LimitDateF" id="LimitDateF" value= "<?php echo isset($this->LimitDateF) ? $this->LimitDateF : "" ?>" />～<input type="text" name="LimitDateT" id="LimitDateT" value= "<?php echo isset($this->LimitDateT) ? $this->LimitDateT : "" ?>" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <th colspan="3" >抽出項目</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data">注文ID</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文登録日</td>
+          <td class="l_data"><input type="checkbox" name="RegistDate" id="RegistDate" value= "1" <?php echo isset($this->RegistDate)  ?  ' checked="checked"' : "" ?> />注文登録日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文日</td>
+          <td class="l_data"><input type="checkbox" name="ReceiptOrderDate" id="ReceiptOrderDate" value="1" <?php echo isset($this->ReceiptOrderDate)  ?  ' checked="checked"' : "" ?> />注文日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">サイトID</td>
+          <td class="l_data"><input type="checkbox" name="SiteId" id="SiteId" value="1" <?php echo isset($this->SiteId)  ?  ' checked="checked"' : "" ?> />サイトID</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">会社名</td>
+          <td class="l_data"><input type="checkbox" name="EnterpriseNameKj" id="EnterpriseNameKj" value="1"  <?php echo isset($this->EnterpriseNameKj)  ?  ' checked="checked"' : "" ?> />会社名</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者名</td>
+          <td class="l_data"><input type="checkbox" name="NameKj" id="NameKj" value="1"  <?php echo isset($this->NameKj)  ?  ' checked="checked"' : "" ?> />注文者名</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">備考</td>
+          <td class="l_data"><input type="checkbox" name="Incre_Note" id="Incre_Note" value="1"  <?php echo isset($this->Incre_Note)  ?  ' checked="checked"' : "" ?> />備考</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者TEL</td>
+          <td class="l_data"><input type="checkbox" name="Phone" id="Phone" value="1"  <?php echo isset($this->Phone)  ?  ' checked="checked"' : "" ?> />注文者TEL</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者メアド</td>
+          <td class="l_data"><input type="checkbox" name="MailAddress" id="MailAddress" value="1"  <?php echo isset($this->MailAddress)  ?  ' checked="checked"' : "" ?> />注文者メアド</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者住所</td>
+          <td class="l_data"><input type="checkbox" name="UnitingAddress" id="UnitingAddress" value="1"  <?php echo isset($this->UnitingAddress)  ?  ' checked="checked"' : "" ?> />注文者住所</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">配送先住所</td>
+          <td class="l_data"><input type="checkbox" name="DestUnitingAddress" id="DestUnitingAddress" value="1"  <?php echo isset($this->DestUnitingAddress)  ?  ' checked="checked"' : "" ?> />配送先住所</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">初回支払期限</td>
+          <td class="l_data"><input type="checkbox" name="F_LimitDate" id="F_LimitDate" value="1"  <?php echo isset($this->F_LimitDate)  ?  ' checked="checked"' : "" ?> />初回支払期限</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">与信担当者</td>
+          <td class="l_data"><input type="checkbox" name="Incre_DecisionOpId" id="Incre_DecisionOpId" value="1"  <?php echo isset($this->Incre_DecisionOpId)  ?  ' checked="checked"' : "" ?> />与信担当者</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">社内与信スコア</td>
+          <td class="l_data"><input type="checkbox" name="Incre_ScoreTotal" id="Incre_ScoreTotal" value="1"  <?php echo isset($this->Incre_ScoreTotal)  ?  ' checked="checked"' : "" ?> />社内与信スコア</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">審査システムスコア</td>
+          <td class="l_data"><input type="checkbox" name="TotalScore" id="TotalScore" value="1"  <?php echo isset($this->TotalScore)  ?  ' checked="checked"' : "" ?> />審査システムスコア</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金日</td>
+          <td class="l_data"><input type="checkbox" name="ReceiptDate" id="ReceiptDate" value="1"  <?php echo isset($this->ReceiptDate)  ?  ' checked="checked"' : "" ?> />入金日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金額</td>
+          <td class="l_data"><input type="checkbox" name="ReceiptAmountTotal" id="ReceiptAmountTotal" value="1"  <?php echo isset($this->ReceiptAmountTotal)  ?  ' checked="checked"' : "" ?> />入金額</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">キャンセル状態</td>
+          <td class="l_data"><input type="checkbox" name="Cnl_Status" id="Cnl_Status" value="1"  <?php echo isset($this->Cnl_Status)  ?  ' checked="checked"' : "" ?> />キャンセル状態</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">商品名</td>
+          <td class="l_data"><input type="checkbox" name="ItemNameKj" id="ItemNameKj" value="1"  <?php echo isset($this->ItemNameKj)  ?  ' checked="checked"' : "" ?> />商品名</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">商品単価</td>
+          <td class="l_data"><input type="checkbox" name="UnitPrice" id="UnitPrice" value="1"  <?php echo isset($this->UnitPrice)  ?  ' checked="checked"' : "" ?> />商品単価</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">利用額</td>
+          <td class="l_data"><input type="checkbox" name="UseAmount" id="UseAmount" value="1"  <?php echo isset($this->UseAmount)  ?  ' checked="checked"' : "" ?> />利用額</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">審査結果</td>
+          <td class="l_data"><input type="checkbox" name="Incre_Status" id="Incre_Status" value="1"  <?php echo isset($this->Incre_Status)  ?  ' checked="checked"' : "" ?> />審査結果</td>
+          <td class="l_data"></td>
+        </tr>
+        <?php } else if($this->SearchPattern == "3") {?>
+        <tr>
+          <th colspan="3" ><input type= "hidden" name="SearchPattern" id="SearchPattern" value="3"/>検索条件</th>
+        </tr>
+        <tr>
+          <td class="r_label">単一注文金額</td>
+          <td class="l_data"><input type="text" name="UseAmountF" id="UseAmountF" />～<input type="text" name="UseAmountT" id="UseAmountT" /></td>
+          <td class="l_data">以上、以下で入力（以下未入力は以上と＝）</td>
+        </tr>
+        <tr>
+          <td class="r_label">件数条件</td>
+          <td class="l_data"><input type="text" name="Count" id="Count" /></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">総額</td>
+          <td class="l_data"><input type="text" name="UseAmountSUM" id="UseAmountSUM" /></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">督促分類</td>
+          <td class="l_data"><?php echo $this->RemindClassTag; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">超過日数</td>
+          <td class="l_data"><input type="text" name="PastDaysF" id="PastDaysF" />～<input type="text" name="PastDaysT" id="PastDaysT" /></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">支払約束日</td>
+          <td class="l_data"><input type="text" name="PromPayDateF" id="PromPayDateF" />～<input type="text" name="PromPayDateT" id="PromPayDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <th colspan="3" >抽出項目</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data">注文ID</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文日</td>
+          <td class="l_data"><input type="checkbox" name="ReceiptOrderDate" id="ReceiptOrderDate" value="1"  <?php echo isset($this->ReceiptOrderDate)  ?  ' checked="checked"' : "" ?> />注文日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">会社名</td>
+          <td class="l_data"><input type="checkbox" name="EnterpriseNameKj" id="EnterpriseNameKj" value="1"  <?php echo isset($this->EnterpriseNameKj)  ?  ' checked="checked"' : "" ?> />会社名</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者名</td>
+          <td class="l_data"><input type="checkbox" name="NameKj" id="NameKj" value="1"  <?php echo isset($this->NameKj)  ?  ' checked="checked"' : "" ?> />注文者名</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者TEL</td>
+          <td class="l_data"><input type="checkbox" name="Phone" id="Phone" value="1"  <?php echo isset($this->Phone)  ?  ' checked="checked"' : "" ?> />注文者TEL</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者メアド</td>
+          <td class="l_data"><input type="checkbox" name="MailAddress" id="MailAddress" value="1"  <?php echo isset($this->MailAddress)  ?  ' checked="checked"' : "" ?> />注文者メアド</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者郵便番号</td>
+          <td class="l_data"><input type="checkbox" name="PostalCode" id="PostalCode" value="1"  <?php echo isset($this->PostalCode)  ?  ' checked="checked"' : "" ?> />注文者郵便番号</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文者住所</td>
+          <td class="l_data"><input type="checkbox" name="UnitingAddress" id="UnitingAddress" value="1"  <?php echo isset($this->UnitingAddress)  ?  ' checked="checked"' : "" ?> />注文者住所</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">着荷確認日</td>
+          <td class="l_data"><input type="checkbox" name="Deli_ConfirmArrivalDate" id="Deli_ConfirmArrivalDate" value="1"  <?php echo isset($this->Deli_ConfirmArrivalDate)  ?  ' checked="checked"' : "" ?> />着荷確認日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">立替予定日</td>
+          <td class="l_data"><input type="checkbox" name="ExecScheduleDate" id="ExecScheduleDate" value="1"  <?php echo isset($this->ExecScheduleDate)  ?  ' checked="checked"' : "" ?> />立替予定日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">利用額</td>
+          <td class="l_data"><input type="checkbox" name="UseAmount" id="UseAmount" value="1"  <?php echo isset($this->UseAmount)  ?  ' checked="checked"' : "" ?> />利用額</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">商品１名前</td>
+          <td class="l_data"><input type="checkbox" name="ItemNameKj" id="ItemNameKj" value="1"  <?php echo isset($this->ItemNameKj)  ?  ' checked="checked"' : "" ?> />商品１名前</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">審査結果</td>
+          <td class="l_data"><input type="checkbox" name="Incre_Status" id="Incre_Status" value="1"  <?php echo isset($this->Incre_Status)  ?  ' checked="checked"' : "" ?> />審査結果</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">支払約束日</td>
+          <td class="l_data"><input type="checkbox" name="PromPayDate" id="PromPayDate" value="1"  <?php echo isset($this->PromPayDate)  ?  ' checked="checked"' : "" ?> />支払約束日</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">督促分類</td>
+          <td class="l_data"><input type="checkbox" name="RemindClass" id="RemindClass" value="1"  <?php echo isset($this->RemindClass)  ?  ' checked="checked"' : "" ?> />督促分類</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">取りまとめ</td>
+          <td class="l_data"><input type="checkbox" name="CombinedClaimTargetStatus" id="CombinedClaimTargetStatus" value="1"  <?php echo isset($this->CombinedClaimTargetStatus)  ?  ' checked="checked"' : "" ?> />取りまとめ</td>
+          <td class="l_data"></td>
+        </tr>
+        <?php } ?>
+          <td colspan="3" class="c_label">
+          <input type="hidden" name="search_buttonValue" id="search_buttonValue" value="1" />
+          <input type="submit" name="search_button" id="search_button" value="　抽出実行　" />
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+
+$fd = $this->data;
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/regist/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+    <div style="clear: both;" id="my_title">登録情報確認</div>
+    <div class="mt_100">
+        <?php
+        echo $this->render( 'oemmypage/regist/list.php' );
+        ?>
+    </div>
+    <br/>
+    <table class="datatable" width="800" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+        <tr>
+            <td class="member_info" width="30%">名前</td>
+            <td class="data"><span class="f_bold">姓</span>　　<?php echo f_e( $fd['NameSeiKj'] ); ?>　　<span class="f_bold">名</span>　　<?php echo f_e( $fd['NameMeiKj'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">フリガナ</td>
+            <td class="data"><span class="f_bold">セイ</span>　<?php echo f_e( $fd['NameSeiKn'] ); ?>　　<span class="f_bold">メイ</span>　<?php echo f_e( $fd['NameMeiKn'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">性別</td>
+            <td class="data"><?php if( $fd['Sex'] == 1 ) { echo '男'; } else if( $fd['Sex'] == 2 ) { echo '女'; } ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">生年月日</td>
+            <td class="data"><span class="f_bold">西暦</span>　<?php echo f_e( $fd['Birthday_y'] ); ?>　<span class="f_bold">年</span>　<?php echo f_e( $fd['Birthday_m'] ); ?>　<span class="f_bold">月</span>　<?php echo f_e( $fd['Birthday_d'] ); ?>　<span class="f_bold">日</span></td>
+        </tr>
+        <tr>
+            <td class="member_info">郵便番号</td>
+            <td class="data"><?php echo f_e( $fd['PostalCode_1'] ); ?>　-　<?php echo f_e( $fd['PostalCode_2'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">都道府県</td>
+            <td class="data"><?php echo f_e( $fd['PrefectureName'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">住所</td>
+            <td class="data"><?php echo f_e( $fd['Address'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">建物名・部屋番号</td>
+            <td class="data"><?php echo f_e( $fd['Building'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">電話番号</td>
+            <td class="data"><?php echo f_e( $fd['Phone_1'] ); ?>　-　<?php echo f_e( $fd['Phone_2'] ); ?>　-　<?php echo f_e( $fd['Phone_3'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">電話番号(携帯）</td>
+            <td class="data"><?php echo f_e( $fd['MobilePhone_1'] ); ?>　-　<?php echo f_e( $fd['MobilePhone_2'] ); ?>　-　<?php echo f_e( $fd['MobilePhone_3'] ); ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">パスワード</td>
+            <td class="data"><?php for( $i = 0; $i < strlen( $fd['LoginPasswd'] ); $i++ ) { echo '*'; } ?></td>
+        </tr>
+        <tr>
+            <td class="member_info">会員ID（メールアドレス）</td>
+            <td class="data"><?php echo f_e( $fd['MailAddress'] ); ?>
+        </td>
+        </tr>
+        <tr class="data">
+            <form id="saveForm" action="edit/save" method="post">
+                <input name="hash" type="hidden" value="<?php echo f_e( $this->encoded_data ); ?>" />
+                <td colspan="2" align="center"><br/><input id="green_btn" type="submit" value="戻る" onclick="document.forms.saveForm.action='regist/back'" />
+                　<input id="red_btn" type="submit" value="登録　確定" onclick="document.forms.saveForm.action='regist/save'" /></td>
+            </form>
+        </tr>
+    </tbody>
+    </table>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

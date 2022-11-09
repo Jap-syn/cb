@@ -1,0 +1,48 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/entmanagement/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者管理統計</h3>
+    <form name="form" method="post" action="entmanagement/dlcsv">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+        </thead>
+        <tbody>
+          <tr class="data">
+            <td>
+              対象年月：<?php echo $this->yearMonth; ?>
+            </td>
+          </tr>
+          <tr class="data">
+            <td>
+              ファイル種類：<?php echo $this->fileType; ?>
+            </td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <td class="c_data">
+              <input type="submit" value="　ダウンロード　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

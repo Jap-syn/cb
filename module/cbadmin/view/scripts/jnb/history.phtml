@@ -1,0 +1,311 @@
+<?php
+use Zend\Json\Json;
+use models\Table\TableJnbAccount;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$typeMap = array(
+  '1' => '口座オープン',
+  '2' => '口座クローズ',
+  '3' => '口座開放',
+  '4' => '口座強制開放'
+);
+$statusMap = TableJnbAccount::getStatusMap();
+function getOrderStatusString($ds, $cnl, $cr) {
+  if($cnl) return 'キャンセル';
+  if($ds == 91 && in_array($cr, array(3, 4))) {
+    return $cr == 3 ? '与信NG' : '損害確定';
+  }
+  switch($ds) {
+    case '31':
+      return '伝票登録待ち';
+    case '41':
+      return '請求書印刷待ち';
+    case '51':
+      return '入金待ち';
+    case '61':
+      return '一部入金';
+    case '91':
+      return '入金済みクローズ';
+  }
+  return '与信中';
+}
+?>
+<style type="text/css">
+tr.most-recent td {
+  background-color: lemonchiffon;
+}
+tr.nf-history {
+}
+tr.nf-history td {
+  line-height: 1.4;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+tr.nf-deleted-history td {
+  background-color: #d0d0d0;
+}
+tr.nf-receipted-history td {
+  background-color: azure;
+}
+.sb-info {
+  border: solid 1px royalblue;
+  background-color: azure;
+  color: royalblue;
+  padding: 1px 3px;
+  margin: 0 2px 0 8px;
+  font-size: 11px;
+  line-height: 11px;
+  border-radius: 2px;
+}
+</style>
+<script type="text/javascript">
+<?php
+$raw_notification_map = array();
+foreach($this->nfHistory as $his) {
+  $raw_notification_map[$his['NotificationSeq']] = array(
+                                                         'LastProcessDate' => $his['LastProcessDate'],
+                                                         'DeleteFlg' => $his['DeleteFlg'],
+                                                         'RawData' => Json::decode($his['ReceivedRawData'], Json::TYPE_ARRAY));
+}
+?>
+var rawNotifications = <?php echo Json::encode($raw_notification_map); ?>;
+function showRawNotification(nfSeq) {
+  if(rawNotifications) {
+    var data = rawNotifications[nfSeq],
+      buf = [
+        '最終処理日時：{0}'.format(data.LastProcessDate),
+        '',
+        '受信データ',
+        new Json.Formatter(data.RawData)
+      ];
+    if(data.DeleteFlg == 1) buf.unshift('【削除済み】\n');
+    alert(buf.join('\n'));
+  }
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnb/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座利用履歴 -
+      <?php if($this->bySeq) { echo f_e(sprintf('口座SEQ：%s', $this->accSeq)); } else { echo f_e(sprintf('口座：%s', $this->accNum)); } ?>
+    </h3>
+
+  <?php if(!isset($this->account)) { ?>
+    <div class="page_info_message">
+    <?php if($this->bySeq) { ?>
+      口座SEQ '<?php echo f_e($this->accSeq); ?>' は見つかりません
+    <?php } else { ?>
+      口座番号 '<?php echo f_e($this->accNum); ?>' は見つかりません
+    <?php } ?>
+    </div>
+  <?php } else { ?>
+
+    <h4 class="category-title">口座情報</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <tr>
+          <td class="r_label">OEM</td>
+          <td class="l_data">
+          <?php if($this->group['OemId']) { ?>
+            <a href="oem/detail/oid/<?php echo f_e($this->group['OemId']); ?>" target="_blank">
+              <?php echo f_e(sprintf('[%s] %s', $this->group['OemId'], $this->group['OemNameKj'])); ?>
+            </a>
+          <?php } else { ?>
+            <?php echo f_e(sprintf('[%s] %s', $this->group['OemId'], $this->group['OemNameKj'])); ?>
+          <?php } ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">口座グループ</td>
+          <td class="l_data">
+            <a href="jnbgrp/detail/gid/<?php echo f_e($this->group['AccountGroupId']); ?>" target="_blank">
+              <?php echo f_e(sprintf('[%s] %s / %s', $this->group['AccountGroupId'], $this->group['ManageKey'], $this->group['ManageKeyLabel'])); ?>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">口座SEQ</td>
+          <td class="l_data"><?php echo f_e($this->account['AccountSeq']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">支店</td>
+          <td class="l_data">
+            [<?php echo f_e($this->account['BranchCode']); ?>]
+            <?php echo f_e($this->branchMap[$this->account['BranchCode']]['name']); ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label">口座番号</td>
+          <td class="l_data"><?php echo f_e($this->account['AccountNumber']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">口座名義</td>
+          <td class="l_data"><?php echo f_e($this->account['AccountHolder']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">現在の状態</td>
+          <td class="l_data">
+            <?php echo f_e($statusMap[$this->account['Status']]); ?>
+            (<?php echo f_df($this->account['LastStatusChanged'], 'Y年 n月 j日 H:i:s'); ?> 更新)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 class="category-title">利用履歴 (<?php
+    // count関数対策
+      $listCount = 0;
+      if (!empty($this->list)){
+        $listCount = count($this->list);
+      }
+      echo f_nf($listCount, '#,##0'); ?> 件)</h4>
+
+  <?php
+    // count関数対策
+      if(!empty($this->list)) { ?>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th>日時</th>
+          <th>操作</th>
+          <th>対象注文</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php foreach($this->list as $his) { ?>
+        <tr<?php if($his['MostRecent']) echo ' class="most-recent" title="最新履歴"'; ?>>
+          <td class="l_data"><?php echo f_df($his['UsedDate'], 'Y年 n月j日 H:i:s'); ?></td>
+          <td class="l_data">
+            <?php echo f_e($typeMap[$his['Type']]); ?>
+            <?php if(isset($his['CloseMemo']) && strlen($his['CloseMemo'])) { ?>
+            (<?php echo f_e($his['CloseMemo']); ?>)
+            <?php } ?>
+          </td>
+          <td class="l_data">
+            <a href="rworder/detail/oseq/<?php echo f_e($his['OrderSeq']); ?>" target="_blank"><?php echo f_e(sprintf('%s：%s', $his['OrderId'], $his['NameKj'])); ?></a>
+          <?php if($his['Type'] == 1) { ?>
+            <?php
+            $ord_info = getOrderStatusString($his['DataStatus'], $his['Cnl_Status'], $his['CloseReason']);
+            $acc_info = null;
+            if($his['Bk_BranchCode'] && ($his['Bk_ServiceKind'] != 2 || !($his['Bk_BranchCode'] == $this->account['BranchCode'] && $his['Bk_AccountNumber'] == $this->account['AccountNumber']))) {
+              $acc_info = sprintf('%s-%s', $his['Bk_BranchCode'], $his['Bk_AccountNumber']);
+            }
+            $is_sb = isset($his['EnterpriseBillingCode']) && strlen(trim(nvl($his['EnterpriseBillingCode'])));
+            ?>
+            <span style="font-size: 12px">(<?php echo f_e($ord_info); ?><?php if($is_sb) { ?><span class="sb-info">同梱</span><?php } ?>)</span>
+          <?php if($acc_info) { ?>
+            <div style="font-weight: bold; margin-left: 1em; font-size: 12px;">
+              最終請求口座：<?php echo f_e($his['Bk_BankName'].$his['Bk_BranchName']); ?>
+              <?php if($his['Bk_ServiceKind'] == 2) { ?>
+              <a href="jnb/history/account/<?php echo f_e($acc_info); ?>" target="_blank"><?php echo f_e($acc_info); ?></a>
+              <?php } else { ?>
+              <?php echo f_e($acc_info); ?>
+              <?php } ?>
+          <?php } ?>
+          <?php } ?>
+          </td>
+        </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+  <?php } else { ?>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <tr>
+          <td class="l_data">(履歴はありません)</td>
+        </tr>
+      </tbody>
+    </table>
+  <?php } ?>
+
+    <h4 class="category-title">この口座への入金通知履歴 (<?php
+    // count関数対策
+      $nfHistoryCount = 0;
+      if (!empty($this->nfHistory)){
+        $nfHistoryCount = count($this->nfHistory);
+      }
+      echo f_nf($nfHistoryCount, '#,##0'); ?> 件)</h4>
+
+  <?php
+    // count関数対策
+      if(!empty($this->nfHistory)) { ?>
+    <table class="datatable" cellpadding="1" cellspacing="1" border="0" style="margin-top: 0">
+      <thead>
+        <tr>
+          <th style="width: 100px">受信日時</th>
+          <th style="width: 80px">処理状態</th>
+          <th style="width: 100px">振込人名義</th>
+          <th style="width: 140px">仕向銀行</th>
+          <th style="width: 60px">振込金額</th>
+          <th style="width: 140px">入金先注文</th>
+          <th>備考</th>
+          <th style="width: 45px">詳細</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php foreach($this->nfHistory as $his) { ?>
+      <?php $rawData = Json::decode($his['ReceivedRawData'], Json::TYPE_ARRAY); ?>
+      <?php
+      $hisStatusMap = array(
+        '1' => '受信中',
+        '2' => '入金処理待ち',
+        '3' => '手動確定待ち',
+        '9' => '入金処理済み',
+        '-1' => '処理不可',
+        '-9' => '処理対象外'
+      );
+      $rowClass = array(
+        'nf-history'
+      );
+      if($his['DeleteFlg'] || in_array($his['Status'], array(-1, -9))) $rowClass[] = 'nf-deleted-history';
+      if($his['Status'] == 9) $rowClass[] = 'nf-receipted-history';
+      ?>
+        <tr class="<?php echo f_e(join(' ', $rowClass)); ?>"<?php if($his['DeleteFlg']) echo ' title="削除済み"'; ?>>
+          <td class="c_data"><?php echo f_df($his['ReceivedDate'], 'y/m/d H:i:s'); ?></td>
+          <td class="c_data"><?php echo f_e($hisStatusMap[$his['Status']]); ?></td>
+          <td class="l_data"><?php echo f_e(trim($rawData['OutputName'])); ?></td>
+          <td class="l_data"><?php echo f_e(join(' ', array(trim($rawData['RmtBankName']), trim($rawData['RmtBrName'])))); ?></td>
+          <td class="r_data"><?php echo f_nf($his['ReceiptAmount'], '#,##0'); ?></td>
+          <td class="l_data nf-history-order-info">
+          <?php if($his['OrderId']) { ?>
+            <?php $orderInfo = sprintf('%s：%s', $his['OrderId'], $his['NameKj']); ?>
+            <a href="rworder/detail/oseq/<?php echo f_e($his['OrderSeq']); ?>" target="_blank" title="<?php echo f_e($orderInfo); ?>">
+              <?php echo f_e($orderInfo); ?>
+            </a>
+          <?php } else { ?>
+            &nbsp;
+          <?php } ?>
+          </td>
+          <td class="l_data"><?php echo f_e($his['RejectReason']); ?></td>
+          <td class="c_data"><a href="javascript:void(0)" onclick="showRawNotification(<?php echo f_e($his['NotificationSeq']); ?>);return false">詳細...</a></td>
+        </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+  <?php } else { ?>
+    <table class="datatable" cellpadding="1" cellspacing="1" border="0" style="margin-top: 0">
+      <tbody>
+        <tr>
+          <td class="l_data">(入金通知履歴はありません)</td>
+        </tr>
+      </tbody>
+    </table>
+  <?php } ?>
+  <?php } ?>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

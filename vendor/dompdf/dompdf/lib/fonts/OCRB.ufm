@@ -1,0 +1,157 @@
+StartFontMetrics 4.1
+Notice Converted by PHP-font-lib
+Comment https://github.com/PhenX/php-font-lib
+EncodingScheme FontSpecific
+Copyright Matthew Skala (2011); based on code by Norbert Schwarz (1986, 2011)
+FontName OCRB
+FontSubfamily Regular
+UniqueID FontForge 2.0 : OCR B Regular : 27-9-2012
+FullName OCR B Regular
+Version Version 2 
+PostScriptName OCRB
+Weight Medium
+ItalicAngle 0
+IsFixedPitch true
+UnderlineThickness 0
+UnderlinePosition 0
+FontHeightOffset 90
+Ascender 938
+Descender -336
+FontBBox -87 -336 784 938
+StartCharMetrics 141
+U 32 ; WX 723 ; N space ; G 35
+U 33 ; WX 723 ; N exclam ; G 36
+U 34 ; WX 723 ; N quotedbl ; G 140
+U 35 ; WX 723 ; N numbersign ; G 38
+U 36 ; WX 723 ; N dollar ; G 39
+U 37 ; WX 723 ; N percent ; G 40
+U 38 ; WX 723 ; N ampersand ; G 41
+U 39 ; WX 723 ; N quotesingle ; G 42
+U 40 ; WX 723 ; N parenleft ; G 43
+U 41 ; WX 723 ; N parenright ; G 44
+U 42 ; WX 723 ; N asterisk ; G 45
+U 43 ; WX 723 ; N plus ; G 46
+U 44 ; WX 723 ; N comma ; G 47
+U 45 ; WX 723 ; N hyphen ; G 48
+U 46 ; WX 723 ; N period ; G 49
+U 47 ; WX 723 ; N slash ; G 50
+U 48 ; WX 723 ; N zero ; G 51
+U 49 ; WX 723 ; N one ; G 52
+U 50 ; WX 723 ; N two ; G 53
+U 51 ; WX 723 ; N three ; G 54
+U 52 ; WX 723 ; N four ; G 55
+U 53 ; WX 723 ; N five ; G 56
+U 54 ; WX 723 ; N six ; G 57
+U 55 ; WX 723 ; N seven ; G 58
+U 56 ; WX 723 ; N eight ; G 59
+U 57 ; WX 723 ; N nine ; G 60
+U 58 ; WX 723 ; N colon ; G 61
+U 59 ; WX 723 ; N semicolon ; G 62
+U 60 ; WX 723 ; N less ; G 63
+U 61 ; WX 723 ; N equal ; G 64
+U 62 ; WX 723 ; N greater ; G 65
+U 63 ; WX 723 ; N question ; G 66
+U 64 ; WX 723 ; N at ; G 67
+U 65 ; WX 723 ; N A ; G 68
+U 66 ; WX 723 ; N B ; G 69
+U 67 ; WX 723 ; N C ; G 70
+U 68 ; WX 723 ; N D ; G 71
+U 69 ; WX 723 ; N E ; G 72
+U 70 ; WX 723 ; N F ; G 73
+U 71 ; WX 723 ; N G ; G 74
+U 72 ; WX 723 ; N H ; G 75
+U 73 ; WX 723 ; N I ; G 76
+U 74 ; WX 723 ; N J ; G 77
+U 75 ; WX 723 ; N K ; G 78
+U 76 ; WX 723 ; N L ; G 79
+U 77 ; WX 723 ; N M ; G 80
+U 78 ; WX 723 ; N N ; G 81
+U 79 ; WX 723 ; N O ; G 82
+U 80 ; WX 723 ; N P ; G 83
+U 81 ; WX 723 ; N Q ; G 84
+U 82 ; WX 723 ; N R ; G 85
+U 83 ; WX 723 ; N S ; G 86
+U 84 ; WX 723 ; N T ; G 87
+U 85 ; WX 723 ; N U ; G 88
+U 86 ; WX 723 ; N V ; G 89
+U 87 ; WX 723 ; N W ; G 90
+U 88 ; WX 723 ; N X ; G 91
+U 89 ; WX 723 ; N Y ; G 92
+U 90 ; WX 723 ; N Z ; G 93
+U 91 ; WX 723 ; N bracketleft ; G 94
+U 92 ; WX 723 ; N backslash ; G 95
+U 93 ; WX 723 ; N bracketright ; G 96
+U 95 ; WX 723 ; N underscore ; G 98
+U 96 ; WX 723 ; N grave ; G 99
+U 97 ; WX 723 ; N a ; G 100
+U 98 ; WX 723 ; N b ; G 101
+U 99 ; WX 723 ; N c ; G 102
+U 100 ; WX 723 ; N d ; G 103
+U 101 ; WX 723 ; N e ; G 104
+U 102 ; WX 723 ; N f ; G 105
+U 103 ; WX 723 ; N g ; G 106
+U 104 ; WX 723 ; N h ; G 107
+U 105 ; WX 723 ; N i ; G 108
+U 106 ; WX 723 ; N j ; G 109
+U 107 ; WX 723 ; N k ; G 110
+U 108 ; WX 723 ; N l ; G 111
+U 109 ; WX 723 ; N m ; G 112
+U 110 ; WX 723 ; N n ; G 113
+U 111 ; WX 723 ; N o ; G 114
+U 112 ; WX 723 ; N p ; G 115
+U 113 ; WX 723 ; N q ; G 116
+U 114 ; WX 723 ; N r ; G 117
+U 115 ; WX 723 ; N s ; G 118
+U 116 ; WX 723 ; N t ; G 119
+U 117 ; WX 723 ; N u ; G 120
+U 118 ; WX 723 ; N v ; G 121
+U 119 ; WX 723 ; N w ; G 122
+U 120 ; WX 723 ; N x ; G 123
+U 121 ; WX 723 ; N y ; G 124
+U 122 ; WX 723 ; N z ; G 125
+U 123 ; WX 723 ; N braceleft ; G 126
+U 124 ; WX 723 ; N bar ; G 127
+U 125 ; WX 723 ; N braceright ; G 128
+U 161 ; WX 723 ; N exclamdown ; G 17
+U 164 ; WX 723 ; N currency ; G 138
+U 167 ; WX 723 ; N section ; G 137
+U 168 ; WX 723 ; N dieresis ; G 130
+U 175 ; WX 723 ; N macron ; G 25
+U 180 ; WX 723 ; N acute ; G 22
+U 184 ; WX 723 ; N cedilla ; G 27
+U 191 ; WX 723 ; N questiondown ; G 18
+U 196 ; WX 723 ; N Adieresis ; G 134
+U 198 ; WX 723 ; N AE ; G 32
+U 214 ; WX 723 ; N Odieresis ; G 135
+U 216 ; WX 723 ; N Oslash ; G 34
+U 220 ; WX 723 ; N Udieresis ; G 136
+U 223 ; WX 723 ; N germandbls ; G 28
+U 228 ; WX 723 ; N adieresis ; G 131
+U 230 ; WX 723 ; N ae ; G 29
+U 246 ; WX 723 ; N odieresis ; G 132
+U 248 ; WX 723 ; N oslash ; G 31
+U 252 ; WX 723 ; N udieresis ; G 133
+U 305 ; WX 723 ; N dotlessi ; G 19
+U 338 ; WX 723 ; N OE ; G 33
+U 339 ; WX 723 ; N oe ; G 30
+U 567 ; WX 723 ; N dotlessj ; G 20
+U 710 ; WX 723 ; N circumflex ; G 97
+U 711 ; WX 723 ; N caron ; G 23
+U 728 ; WX 723 ; N breve ; G 24
+U 729 ; WX 723 ; N dotaccent ; G 26
+U 732 ; WX 723 ; N tilde ; G 129
+U 915 ; WX 723 ; N Gamma ; G 3
+U 920 ; WX 723 ; N Theta ; G 5
+U 923 ; WX 723 ; N Lambda ; G 6
+U 926 ; WX 723 ; N Xi ; G 7
+U 928 ; WX 723 ; N Pi ; G 8
+U 931 ; WX 723 ; N Sigma ; G 9
+U 933 ; WX 723 ; N Upsilon ; G 10
+U 934 ; WX 723 ; N Phi ; G 11
+U 936 ; WX 723 ; N Psi ; G 12
+U 8486 ; WX 723 ; N Omega ; G 13
+U 8593 ; WX 723 ; N arrowup ; G 14
+U 8595 ; WX 723 ; N arrowdown ; G 15
+U 8710 ; WX 723 ; N increment ; G 4
+EndCharMetrics
+EndFontMetrics

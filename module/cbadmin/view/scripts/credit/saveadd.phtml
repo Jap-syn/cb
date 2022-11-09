@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+<div id="contents">
+<?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+<h3 class="contents_title">与信追加条件更新処理中</h3>
+<?php } else { ?>
+<h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信追加条件更新処理中</h3>
+<?php } ?>
+<p>
+    しばらくお待ちください...
+</p>
+
+<?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+  <form id="redirect_form" action="credit/add/seq/<?php echo f_e($this->PSeq); ?>/category/<?php echo f_e($this->Category); ?>" method="post">
+<?php } else { ?>
+  <form id="redirect_form" action="credit/add/eid/<?php echo f_e($this->EnterpriseId); ?>/seq/<?php echo f_e($this->PSeq); ?>/category/<?php echo f_e($this->Category); ?>" method="post">
+<?php } ?>
+    <input name="hash" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+    <input name="page" type="hidden" value="<?php echo f_e($this->page); ?>" />
+</form>
+<script type="text/javascript">
+    $("redirect_form").submit();
+</script>
+</div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>
+

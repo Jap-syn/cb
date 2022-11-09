@@ -1,0 +1,86 @@
+; セクション database
+; データベースの初期化パラメータを指定します
+[database]
+driver  = Pdo_MySql
+database = coraldb_new01
+username = coraluser
+password = coralmaster
+hostname = aws-a-db1.cirprqejebgf.ap-northeast-1.rds.amazonaws.com
+;port     =
+;charset  =
+;unix_socket =
+
+; セクション auth_manager
+; 認証マネージャの初期化パラメータを指定します。
+[auth_manager]
+; 認証に使用するテーブル名を指定します
+tablename = T_Enterprise
+
+; 認証IDの列名を指定します
+id_column = LoginId
+
+; 認証パスワードの列名を指定します
+password_column = LoginPasswd
+
+; セクション application_global
+; /memberアプリケーションのグローバル設定を定義します
+[application_global]
+; ヘルプコンテンツのURL
+; help_url = /../doc/help
+help_url = http://www.net-b.net/
+
+; ページタイトルの共通プレフィックス
+page_title_prefix = "【後払い.com】後払い決済管理システム"
+
+; ページタイトルのセパレータ
+page_title_separator = " : "
+
+; PHPエラーの出力を行うかのフラグ
+php_display_errors = 0
+
+; デバッグモードフラグ
+debug_mode = 0
+
+; 登録テスト向けに強制リジェクトをするかのフラグ
+; この設定値とdebug_modeの両方を 1 に設定する必要がある
+; force_reject_order = 0
+
+; SMTPサーバ設定
+smtp_server = localhost
+
+; メールの送信先
+; 事業者登録情報変更通知メール
+; mail_address.ent_info_modified = eda@net-b.net
+
+; /apiへの直接アクセスを禁止するかのフラグおよびOEMディレクトリのアクセスを禁止するかのフラグ
+;  OEMサーバ設置時はdeny_api_dirをtrueにし、deny_oem_dirを未設定またはfalseにする
+;  非OEMサーバ設置時はdeny_oem_dirをtrueにし、deny_api_dirを未設定またはfalseにする
+;  ※：deny_api_dirとdeny_oem_dirの両方を有効にし同じ値を設定しないこと！
+;  → この場合はアプリケーションエラーとなる
+;  ※：両方未設定にしてもよいケースは、OEMサーバと非OEMサーバが同一ホストの場合のみにすること！
+;  → OEM向けホスト名の/apiにアクセスできてしまうため
+deny_api_dir = false
+deny_oem_dir = true
+
+; セクション paging
+; ページングに関する設定
+; キーがコントローラ名に一致するように定義
+[paging]
+search = 50
+
+; セクション log
+[log]
+; ログファイルのベース名
+log_name = api_log_%timestamp:Ymd%
+; ログ保存先ディレクトリパス
+log_dir = ./data/log
+; テキストログを使用するか
+use_text_log = true
+; SQLiteログを使用するか（非推奨：少々重い）
+;use_sqlite_log = false
+; 出力バッファログを使用するか（非推奨：すべてechoされてしまう）
+;use_console_log = false
+; ログクラスの内部エラーを記録するログファイルのパス
+;error_log = ./NetB_Log_error.log
+; メッセージフィルタの閾値（デフォルト推奨、デバッグ時は7を指定）
+priority_threshold = 7

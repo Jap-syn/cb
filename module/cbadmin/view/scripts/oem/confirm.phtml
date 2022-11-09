@@ -1,0 +1,539 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$map = $this->master_map;
+$d = $this->data;
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>OEM先登録内容確認</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－基本情報】</td>
+    </tr>
+    <tr>
+      <td class="label">申込日</td>
+      <td class="data"><?php echo f_df($this->data["ApplicationDate"], 'Y/m/d'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">キャッチボール営業担当</td>
+      <td class="data"><?php echo f_e($this->data["Salesman"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">OEM先名</td>
+      <td class="data"><?php echo f_e($this->data["OemNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">OEM先名カナ</td>
+      <td class="data"><?php echo f_e($this->data["OemNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">所在地</td>
+      <td class="data">〒
+        <?php echo f_e($this->data["PostalCode"]); ?><br />
+        <?php echo f_e($this->data["PrefectureName"]); ?><?php echo f_e($this->data["City"]); ?><br />
+        <?php echo f_e($this->data["Town"]); ?><br />
+        <?php echo f_e($this->data["Building"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">代表者氏名</td>
+      <td class="data"><?php echo f_e($this->data["RepNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表者氏名カナ</td>
+      <td class="data"><?php echo f_e($this->data["RepNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表電話番号</td>
+      <td class="data"><?php echo f_e($this->data["Phone"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表FAX番号</td>
+      <td class="data"><?php echo f_e($this->data["Fax"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">アクセス識別ID</td>
+      <td class="data"><?php echo f_e($this->data["AccessId"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">管理者ログインID</td>
+      <td class="data">
+        <?php echo f_e($this->data["EntLoginId"]); ?>
+        <?php if($this->data['isNew']) { ?><div style="font-size: 10px">※：登録確定時に4桁のプレフィックスが追加されます</div><?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">ログインID固有プレフィックス</td>
+      <td class="data"><?php echo f_e($this->data["EntLoginIdPrefix"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">注文ID固有プレフィックス</td>
+      <td class="data"><?php echo f_e($this->data["OrderIdPrefix"]); ?></td>
+    </tr>
+    <tr>
+        <td class="r_label">立替方法</td>
+
+        <td class="l_data">
+            <?php echo f_e($this->payingmethod_name); ?>
+        </td>
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－画面表示設定】</td>
+    </tr>
+    <tr>
+      <td class="label">サービス名称</td>
+      <td class="data"><?php echo f_e($this->data["ServiceName"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">サポート電話番号</td>
+      <td class="data"><?php echo f_e($this->data["ServicePhone"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">サポート時間帯</td>
+      <td class="data">
+        <?php echo f_e($this->data["SupportTime"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">サポートメールアドレス</td>
+      <td class="data"><?php echo f_e($this->data["SupportMail"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">コピーライト</td>
+      <td class="data"><?php echo f_e($this->data["Copyright"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">ヘルプのリンク先</td>
+      <td class="data"><?php echo f_e($this->data["HelpUrl"]); ?></td>
+    </tr>
+
+    <tr>
+      <td class="label">イメージ</td>
+        <td class="data">
+            ロゴ(大)：<?php if(!is_null($this->data['LargeLogo']['image'])){
+                echo '<img src="data:image/jpeg;base64,'.$this->data['LargeLogo']['image'].'">';
+            }?><br />
+            ロゴ(小)：<?php if(!is_null($this->data['SmallLogo']['image'])){
+                echo '<img src="data:image/jpeg;base64,'.$this->data['SmallLogo']['image'].'">';
+            }?><br />
+            印影：<?php if(!is_null($this->data['Imprint']['image'])){
+                echo '<img src="data:image/jpeg;base64,'.$this->data['Imprint']['image'].'">';
+            }?><br />
+
+        </td>
+    </tr>
+    <tr>
+      <td class="label">favicon</td>
+      <td class="data">
+      <?php if($this->data['FavIcon']['type'] == 'empty') { ?>
+        登録しない
+      <?php } else if($this->data['FavIcon']['type'] == 'url') { ?>
+        外部URL：
+        <img src="<?php echo f_e($this->data['FavIcon']['image']); ?>" />
+        <a href="<?php echo f_e($this->data['FavIcon']['image']); ?>" target="_blank">(別ウィンドウで表示）</a>
+      <?php } else { ?>
+        <img src="data:<?php echo f_e(nvl($this->data['FavIcon']['type'], 'image/vnd.microsoft.icon')); ?>;base64,<?php echo f_e($this->data['FavIcon']['image']); ?>" />
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="label">担当者名</td>
+      <td class="data"><?php echo f_e($this->data["CpNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">担当者名カナ</td>
+      <td class="data"><?php echo f_e($this->data["CpNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">部署名</td>
+      <td class="data"><?php echo f_e($this->data["DivisionName"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">メールアドレス</td>
+      <td class="data"><?php echo f_e($this->data["MailAddress"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先電話番号</td>
+      <td class="data"><?php echo f_e($this->data["ContactPhoneNumber"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先FAX番号</td>
+      <td class="data"><?php echo f_e($this->data["ContactFaxNumber"]); ?></td>
+    </tr>
+    <tr>
+        <td class="r_label">事業者情報編集の制限</td>
+        <td class="l_data"><?php echo $this->data['EntAccountEditLimitation'] ? '制限する' : '制限しない'; ?></td>
+    </tr>
+    <tr>
+        <td class="r_label">編集画面追加メッセージ</td>
+        <td class="l_data"><?php echo strlen($this->data['EntAccountAdditionalMessage']) ? f_e($this->data['EntAccountAdditionalMessage']) : '-'; ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【サービス内容】</td>
+    </tr>
+    <tr>
+      <td class="label">サービス開始日</td>
+      <td class="data"><?php echo f_df($this->data["ServiceInDate"], 'Y/m/d'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">標準決済手数料率</td>
+      <td class="data">
+        <?php foreach ($this->plan as $value) {
+                echo $value['PricePlanName']; ?>：<?php echo f_e(nvl(doubleval($this->data["SettlementFeeRate" . $value['PricePlanId']]), 0)); ?>　％<br />
+        <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">標準請求手数料</td>
+      <td class="data">
+          別送：<?php echo f_nf(nvl($this->data["ClaimFeeBS"], 0), '#,##0'); ?>　円<br />
+          同梱：<?php echo f_nf(nvl($this->data["ClaimFeeDK"], 0), '#,##0'); ?>　円<br />
+          口振紙初回登録手数料：<?php echo f_nf(nvl($this->data["FirstCreditTransferClaimFeeOem"],0), '#,##0'); ?>　円<br />
+          口振WEB初回登録手数料：<?php echo f_nf(nvl($this->data["FirstCreditTransferClaimFeeWebOem"],0), '#,##0'); ?>　円<br />
+          口振引落手数料：<?php echo f_nf(nvl($this->data["CreditTransferClaimFeeOem"],0), '#,##0'); ?>　円
+      </td>
+    </tr>
+    <tr>
+      <td class="label">標準店舗月額固定費</td>
+      <td class="data">
+        <?php foreach ($this->plan as $value) {
+                echo $value['PricePlanName']; ?>：<?php echo f_nf(nvl($this->data["EntMonthlyFee". $value['PricePlanId']], 0), '#,##0'); ?>　円<br />
+        <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">月額固定費</td>
+      <td class="data"><?php echo f_nf(nvl($this->data["MonthlyFee"], 0), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="label">次回請求月額固定費</td>
+      <td class="data"><?php echo f_nf(nvl($this->data["N_MonthlyFee"], 0), '#,##0'); ?>　円</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="label">金融機関</td>
+      <td class="data">
+        銀行名：<?php echo f_e($this->data["FfName"]); ?>　銀行番号：<?php echo f_e($this->data["FfCode"]); ?><br />
+        支店名：<?php echo f_e($this->data["FfBranchName"]); ?>　支店番号：<?php echo f_e($this->data["FfBranchCode"]); ?><br />
+        口座種別：<?php $key = 'FfAccountClass'; echo f_e($map[$key][$d[$key]]); ?><br />
+        口座番号：<?php echo f_e($this->data["FfAccountNumber"]); ?><br />
+        口座名義：<?php echo f_e($this->data["FfAccountName"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">振込手数料</td>
+      <td class="data"><?php $key = 'TcClass'; echo f_e($map[$key][$d[$key]]); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【立替金振込手数料】</td>
+    </tr>
+    <tr>
+      <td class="label">同行振込手数料</td>
+      <td class="data">
+      30,000円未満：<?php echo f_e($this->data["SameFfTcFeeUnderThirtyK"]); ?>　円　<br />
+      30,000円以上：<?php echo f_e($this->data["SameFfTcFeeThirtyKAndOver"]); ?>　円　
+      </td>
+    </tr>
+    <tr>
+      <td class="label">他行振込手数料</td>
+      <td class="data">
+      30,000円未満：<?php echo f_e($this->data["OtherFfTcFeeUnderThirtyK"]); ?>　円　<br />
+      30,000円以上：<?php echo f_e($this->data["OtherFfTcFeeThirtyKAndOver"]); ?>　円　
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【全銀フォーマット】</td>
+    </tr>
+    <tr>
+      <td class="label">固定長</td>
+      <td class="data">
+      <?php if($this->data['FixedLengthFlg']) { ?>
+      固定長にする
+      <?php } else { ?>
+      <?php } ?>
+      </td>
+    </tr>
+<!--
+    <tr>
+      <td class="label">消費税表示</td>
+      <td class="data">
+      <?php if($this->data['DspTaxFlg']) { ?>
+      消費税を表示する
+      <?php } else { ?>
+      <?php } ?>
+      </td>
+    </tr>
+-->
+    <tr>
+      <td class="label">委託者コード</td>
+      <td class="data"><?php echo $this->data["ConsignorCode"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">委託者名</td>
+      <td class="data"><?php echo f_e($this->data["ConsignorName"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向金融機関番号</td>
+      <td class="data"><?php echo $this->data["RemittingBankCode"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向金融機関名</td>
+      <td class="data"><?php echo $this->data["RemittingBankName"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向支店番号</td>
+      <td class="data"><?php echo $this->data["RemittingBranchCode"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向支店名</td>
+      <td class="data"><?php echo $this->data["RemittingBranchName"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">預金種目</td>
+      <td class="data"><?php echo $this->data["AccountClass"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">口座番号</td>
+      <td class="data"><?php echo $this->data["AccountNumber"]; ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【その他】</td>
+    </tr>
+    <tr>
+      <td class="label">延滞起算猶予</td>
+      <td class="data"><?php echo f_e($this->data["KisanbiDelayDays"]); ?></td>
+    </tr>
+    <tr>
+        <td class="label">OEM締パターン</td>
+        <td class="data">
+            <?php if ( f_e( $this->data["OemFixedPattern"] ) == 0 ) { echo '日付指定'; } ?>
+            <?php if ( f_e( $this->data["OemFixedPattern"] ) == 1 ) { echo '週締め'  ; } ?>
+        </td>
+    </tr>
+    <tr>
+      <td class="r_label">OEM締日</td>
+      <td class="l_data"><?php if( isset( $this->data["OemFixedDay1"] )   && $this->data["OemFixedDay1"] != ''   ) { echo f_e($this->data["OemFixedDay1"]) . '　日　'; }
+                               if( isset( $this->data["OemFixedDay2"] )   && $this->data["OemFixedDay2"] != ''   ) { echo '／　' . f_e($this->data["OemFixedDay2"]) . '　日　'; }
+                               if( isset( $this->data["OemFixedDay3"] )   && $this->data["OemFixedDay3"] != ''   ) { echo '／　' . f_e($this->data["OemFixedDay3"]) . '　日'; } ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">精算予定日</td>
+      <td class="l_data"><?php if( isset( $this->data["day_week"]) &&  $this->data["day_week"] == 'day'){
+                                  if( isset( $this->data["SettlementDay1"] ) && $this->data["SettlementDay1"] != '' ) { echo f_e($this->data["SettlementDay1"]) . '　日　'; }
+                                  if( isset( $this->data["SettlementDay2"] ) && $this->data["SettlementDay2"] != '' ) { echo '／　' . f_e($this->data["SettlementDay2"]) . '　日　'; }
+                                  if( isset( $this->data["SettlementDay3"] ) && $this->data["SettlementDay3"] != '' ) { echo '／　' . f_e($this->data["SettlementDay3"]) . '　日'; }
+                                } else {
+                                    $week1 = "";
+                                    $week2 = "";
+                                    $week3 = "";
+                                    if( isset( $this->data["SettlementWeek1"] ) && $this->data["SettlementWeek1"] != '' ){
+                                        if($this->data["SettlementWeek1"] == 41){
+                                            $week1 = "締日翌週 月 曜日　";
+                                        }else if($this->data["SettlementWeek1"] == 42){
+                                            $week1 = "締日翌週 火 曜日　";
+                                        }else if($this->data["SettlementWeek1"] == 43){
+                                            $week1 = "締日翌週 水 曜日　";
+                                        }else if($this->data["SettlementWeek1"] == 44){
+                                            $week1 = "締日翌週 木 曜日　";
+                                        }else if($this->data["SettlementWeek1"] == 45){
+                                            $week1 = "締日翌週 金 曜日　";
+                                        }
+                                        echo $week1;
+                                    }
+                                    if( isset( $this->data["SettlementWeek2"] ) && $this->data["SettlementWeek2"] != '' ){
+                                        if($this->data["SettlementWeek2"] == 41){
+                                            $week2 = "締日翌週 月 曜日　";
+                                        }else if($this->data["SettlementWeek2"] == 42){
+                                            $week2 = "締日翌週 火 曜日　";
+                                        }else if($this->data["SettlementWeek2"] == 43){
+                                            $week2 = "締日翌週 水 曜日　";
+                                        }else if($this->data["SettlementWeek2"] == 44){
+                                            $week2 = "締日翌週 木 曜日　";
+                                        }else if($this->data["SettlementWeek2"] == 45){
+                                            $week2 = "締日翌週 金 曜日　";
+                                        }
+                                        echo '／　' . $week2;
+                                    }
+                                    if( isset( $this->data["SettlementWeek3"] ) && $this->data["SettlementWeek3"] != '' ){
+                                        if($this->data["SettlementDay3"] == 41){
+                                            $week3 = "締日翌週 月 曜日　";
+                                        }else if($this->data["SettlementWeek3"] == 42){
+                                            $week3 = "締日翌週 火 曜日　";
+                                        }else if($this->data["SettlementWeek3"] == 43){
+                                            $week3 = "締日翌週 水 曜日　";
+                                        }else if($this->data["SettlementWeek3"] == 44){
+                                            $week3 = "締日翌週 木 曜日　";
+                                        }else if($this->data["SettlementWeek3"] == 45){
+                                            $week3 = "締日翌週 金 曜日　";
+                                        }
+                                        echo '／　' . $week3;
+                                    }
+//                                      { echo f_e($this->data["SettlementDay1"]) . '　日　'; }
+//                                     if( isset( $this->data["SettlementDay1"] ) && $this->data["SettlementDay1"] != '' ) { echo f_e($this->data["SettlementWeek1"]) . '　曜日　'; }
+//                                     if( isset( $this->data["SettlementDay2"] ) && $this->data["SettlementDay2"] != '' ) { echo '／　' . f_e($this->data["SettlementWeek2"]) . '　曜日　'; }
+//                                     if( isset( $this->data["SettlementDay3"] ) && $this->data["SettlementDay3"] != '' ) { echo '／　' . f_e($this->data["SettlementWeek3"]) . '　曜日'; }
+                                }
+                           ?></td>
+    </tr>
+    <tr>
+        <td class="label">OEM締日（週締め）</td>
+        <td class="data">
+            <?php $week = ''; ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 1 ) { $week .= '毎週 月 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 2 ) { $week .= '毎週 火 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 3 ) { $week .= '毎週 水 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 4 ) { $week .= '毎週 木 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 5 ) { $week .= '毎週 金 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 6 ) { $week .= '毎週 土 曜日'; } ?>
+            <?php if ( f_e( $this->data["OemFixedDay_Week"] ) == 7 ) { $week .= '毎週 日 曜日'; } ?>
+            <?php echo $week; ?>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">精算予定日（週締め）</td>
+        <td class="data">
+            <?php $week = '';?>
+            <?php if ( f_e( $this->data["SettlementDay_Week"] ) == 1 ) { $week .= '締日翌週 月 曜日'; } ?>
+            <?php if ( f_e( $this->data["SettlementDay_Week"] ) == 2 ) { $week .= '締日翌週 火 曜日'; } ?>
+            <?php if ( f_e( $this->data["SettlementDay_Week"] ) == 3 ) { $week .= '締日翌週 水 曜日'; } ?>
+            <?php if ( f_e( $this->data["SettlementDay_Week"] ) == 4 ) { $week .= '締日翌週 木 曜日'; } ?>
+            <?php if ( f_e( $this->data["SettlementDay_Week"] ) == 5 ) { $week .= '締日翌週 金 曜日'; } ?>
+            <?php echo $week; ?>
+        </td>
+    </tr>
+    <tr>
+      <td class="label">再請求時の名義</td>
+      <td class="data">
+      <?php if($this->data['ReclaimAccountPolicy']) { ?>
+        再請求以降はキャッチボール名義にする
+      <?php } else { ?>
+        (初回請求と同じ)
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">着荷日タイムマシン禁止</td>
+      <td class="data">
+      <?php if($this->data['TimemachineNgFlg']) { ?>
+        禁止
+      <?php } else { ?>
+
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+       <td class="label">請求書発行履歴</td>
+       <td class="data">
+         <?php echo $this->data['RecordClaimPrintedDateFlg'] ? 'OEM備考に記録' : '記録しない'; ?>
+       </td>
+    </tr>
+    <tr>
+      <td class="label">消費税表示</td>
+      <td class="data">
+      <?php if($this->data['DspTaxFlg']) { ?>
+        消費税を表示する
+      <?php } else { ?>
+
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">振込手数料明細加算</td>
+      <td class="data">
+      <?php if($this->data['AddTcClass']) { ?>
+        振込み手数料を加算する
+      <?php } else { ?>
+
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">備考</td>
+      <td class="data"><?php echo f_e($this->data["Note"]); ?></td>
+    </tr>
+    <tr style="display: none;">
+      <td class="r_label">任意注文番号印刷</td>
+      <td class="l_data">
+      <?php if($this->data['PrintEntOrderIdOnClaimFlg']) { ?>
+        あり
+      <?php } else { ?>
+        なし
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">与信判定基準</td>
+      <td class="l_data"><?php echo f_e($this->credit_criterion[$this->data["CreditCriterion"]]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">与信自動化有効期間</td>
+      <td class="l_data"><?php echo f_e($this->data["AutoCreditDateFrom"]); ?>　～　<?php echo f_e($this->data["AutoCreditDateTo"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">債権移行</td>
+      <td class="l_data">
+      <?php if($this->data['OemClaimTransFlg']) { ?>
+        する
+      <?php } else { ?>
+        しない
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">債権移行基準日数</td>
+      <td class="l_data"><?php echo f_e($this->data["OemClaimTransDays"]); ?>　日</td>
+    </tr>
+    <tr>
+      <td class="label">スタイルシート設定</td>
+      <td class="data"><?php $key = 'StyleSheets'; echo f_e($map[$key][$d[$key]]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">発行元会社名見出し</td>
+      <td class="data">
+      <?php if($this->data['ChangeIssuerNameFlg']) { ?>
+        ご利用明細をCB名義で表示する
+      <?php } else { ?>
+        ご利用明細をCB名義で表示しない
+      <?php } ?>      </td>
+    </tr>
+
+    <tr>
+    <td colspan="2" align="center">
+      <form id="saveForm" action="oem/save" method="post">
+        <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+        <input name="image_uploaded" value="<?php echo $this->imageUploaded ? 1 : 0; ?>"  type="hidden" />
+        <a id="doSave" href="javascript:void(0)">確　認</a>　　　　　<a id="cancelSave" href="javascript:void(0)">戻　る</a>
+      </form>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("doSave"), "click", function() {
+    $("saveForm").submit();
+    return false;
+  });
+  Event.observe($("cancelSave"), "click", function() {
+    $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+    $("saveForm").submit();
+    return false;
+  });
+});
+</script>
+</body>
+</html>

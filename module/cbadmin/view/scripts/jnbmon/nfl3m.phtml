@@ -1,0 +1,158 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#contents table.formtable {
+  margin-bottom: 40px;
+  font-size: 12px;
+  width: auto;
+  width: 265px;
+  margin: 20px 10px;
+  float: left;
+}
+#contents table.formtable tr th,
+#contents table.formtable tr td {
+  font-size: 14px;
+  padding: 0;
+}
+#contents table.formtable tr th {
+  text-align: center;
+  font-weight: bold;
+  background-color: #fff;
+  color: #000;
+}
+#contents table.formtable tr td {
+  background-color: #fff;
+  text-align: right;
+}
+#contents table.formtable tr.title td {
+  text-align: left;
+  font-weight: bold;
+}
+#contents table.formtable tr .sun {
+  background-color: lavenderblush;
+  color: crimson;
+}
+#contents table.formtable tr .sat {
+  background-color: azure;
+  color: royalblue;
+}
+#contents table.formtable tr td.today {
+  background-color: yellowgreen;
+  font-weight: bold;
+  color: #fff;
+}
+#contents table.formtable tr td.out-of-month {
+  font-size: 11px;
+  color: silver;
+  text-align: left;
+  vertical-align: top;
+}
+#contents table.formtable td .date {
+  display: block;
+  width: 19px;
+  height: 19px;
+  line-height: 19px;
+  margin: 4px;
+  padding: 4px 3px 3px 4px;
+}
+#contents table.formtable td .has-data {
+  font-weight: bold;
+  border: solid 1px gold;
+  background-color: cornsilk;
+  border-radius: 14px;
+  margin: 3px;
+}
+#contents table.formtable td .no-data {
+  /*font-size: 12px;*/
+}
+#contents .clear-float {
+  float: none;
+  clear: both;
+  font-size: 0;
+  line-height: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbmon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      直近3ヶ月の通知状況
+    </h3>
+    <div style="margin: 0 25px; text-align: center">
+    <?php foreach($this->list as $data) { ?>
+      <table class="formtable" cellpadding="1" cellspacing="1">
+        <thead>
+          <tr class="title">
+            <td colspan="7"><?php echo f_e(sprintf('%04d年 %02d月', $data['year'], $data['month'])); ?></td>
+          </tr>
+          <tr>
+            <th class="sun">日</th>
+            <th class="mon">月</th>
+            <th class="tue">火</th>
+            <th class="wed">水</th>
+            <th class="thu">木</th>
+            <th class="fri">金</th>
+            <th class="sat">土</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php
+        $first = date('Y-m-d', strtotime(sprintf('%04d-%02d-01', $data['year'], $data['month'])));
+        $begin = date('Y-m-d', strtotime($first) - (86400 * date('w', strtotime($first))));
+        ?>
+        <?php for($w = 0 ; $w < 6; $w++) { ?>
+        <?php if(date('Y-m', strtotime($begin) + (86400 * $w * 7)) > date('Y-m', strtotime($first))) { ?>
+        <?php } else { ?>
+          <tr>
+          <?php for($d = 0; $d < 7; $d++) { ?>
+            <?php $date = date('Y-m-d', strtotime($begin) + (86400 * ($w * 7 + $d))); ?>
+            <?php $out_of_month = ($date < $first || date('Y-m', strtotime($date)) > date('Y-m', strtotime($first))); ?>
+            <?php
+            $css_classes = array(strtolower(date('D', strtotime($date))));
+            if($date == date('Y-m-d') && !$out_of_month) $css_classes[] = 'today';
+            if($out_of_month) $css_classes[] = 'out-of-month';
+            ?>
+            <td class="<?php echo f_e(join(' ', $css_classes)); ?>">
+            <?php if($out_of_month) { ?>
+              <?php echo f_e(date('n/j', strtotime($date))); ?>
+            <?php } else { ?>
+              <?php $dt = sprintf('%2d', date('d', strtotime($date))); ?>
+              <?php if($data[$date]) { ?>
+              <a class="date has-data" href="jnbmon/notifications/date/<?php echo f_e($date); ?>" title="<?php echo f_nf($data[$date], '#,##0'); ?> 件受信">
+                <?php echo f_e($dt); ?>
+              </a>
+              <?php } else { ?>
+              <span class="date no-data">
+                <?php echo f_e($dt); ?>
+              </span>
+              <?php } ?>
+            <?php } ?>
+            </td>
+          <?php } ?>
+          </tr>
+        <?php } ?>
+        <?php } ?>
+        </tbody>
+      </table>
+    <?php } ?>
+      <div class="clear-float"></div>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

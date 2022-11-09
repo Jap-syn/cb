@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title><?php echo $this->title; ?></title>
+<link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdf.css" />
+<script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+<style type="text/css">
+#header1 {
+    font-size: 15px;
+}
+#Line1 {
+    display: inline-block;
+    height: 24px;
+    font-size: 14px;
+    float:left;
+}
+td {
+    height : 16px;
+    font-size: 12px;
+}
+.td-lrt-none {
+    height : 16px;
+    font-size: 12px;
+    border-left-style: none;
+    border-right-style: none;
+    border-top-style: none;
+}
+
+</style>
+<?php
+$oc = $this->row_oemclaimed;
+$oc_sub1 = $this->row_oemclaimed_sub1;
+$oc_sub2 = $this->row_oemclaimed_sub2;
+$oc_sub3 = $this->row_oemclaimed_sub3;
+$oc_sub4 = $this->row_oemclaimed_sub4;
+$oc_sub5 = $this->row_oemclaimed_sub5;
+$oc_sub8 = $this->row_oemclaimed_sub8;
+
+$oem = $this->row_oem;
+
+/* 控除金額内訳[合計]＝控除金額合計 */
+$sum =    nvl($oc['N_MonthlyFeeWithoutTax'],0)
+        + nvl($oc['N_MonthlyFeeTax'],0)
+        + nvl($oc_sub1['SUM_OemMonthlyFee'],0)
+        + nvl($oc_sub1['SUM_OemMonthlyFeeTax'],0)
+        + nvl($oc_sub2['SUM_SettlementFee'],0)
+        + nvl($oc_sub2['SUM_ClaimFeeWithoutTax'],0)
+        + nvl($oc_sub2['SUM_ClaimFeeTax'],0)
+        + nvl($oc['PC_TransferCommission'],0)
+        + nvl($oc_sub3['SUM_StampFee'],0)
+        + nvl($oc_sub5['SUM_AdjustmentAmount'],0)
+        + nvl($oc_sub8['SUM_OemMonthlyFee'],0);
+?>
+</head>
+<body>
+<div id="header" style="width: 1300px;">
+<div id="Line1" style="width: 1300px; height: 40px;"></div>
+<div id="header1" style="width: 420px; float:left;"></div>
+<div id="header1" style="width: 420px; float:left;">収　納　金　計　算　書</div>
+<div id="header1" style="width: 310px; float:left;"><?php echo date('Y', strtotime($oc['ProcessDate'])) - 1988; ?>年　　<?php echo date('n', strtotime($oc['ProcessDate'])); ?>月　　<?php echo date('j', strtotime($oc['ProcessDate'])); ?>日</div>
+<br>
+<div id="Line1" style="width: 1300px; margin-top: 20px;">　　　<?php echo substr($oem['PostalCode'], 0, 3); ?>‐<?php echo substr($oem['PostalCode'], 3, 4); ?></div><br>
+<div id="Line1" style="width: 580px; float:left; margin-top: 20px;">　　　<?php echo $oem['PrefectureName'] . $oem['City'] . $oem['Town']; ?></div>
+<div id="Line1" style="width: 720px; float:left; margin-top: 30px; margin-bottom: 30px;">記</div>
+<br>
+<div id="Line1" style="width: 1300px; float:left; margin-top: -40px;">　　　<?php echo $oem['Building']; ?></div>
+<div id="Line1" style="width: 500px;"></div>
+<div id="Line1" style="width: 800px;">お支払日　　　<?php echo date('Y', strtotime($oc['SettlePlanDate'])) - 1988; ?>年　　<?php echo date('n', strtotime($oc['SettlePlanDate'])); ?>月　　<?php echo date('j', strtotime($oc['SettlePlanDate'])); ?>日</div>
+<br>
+
+<?php /* ブロック１ */ ?>
+<div id="Line1" style="width: 390px; height:  600px; margin-top: -30px;">
+<div id="Line1" style="width: 390px;"></div><br>
+<div id="Line1" style="width: 390px;">　　　<?php echo $oem['OemNameKj']; ?></div><br>
+<div id="Line1" style="width: 360px;">　　　経理担当　御中</div>
+</div>
+
+<?php /* ブロック２ */ ?>
+<div id="Line1" style="width: 420px; height: 600px;">
+<table width="390px" height="108px" cellpadding="1" cellspacing="0">
+  <tr>
+    <td colspan="3" class="td-lrt-none">　</td>
+  </tr>
+  <tr>
+    <td class="c_data" width="180px">収納金額</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_UseAmount'],0) + nvl($oc_sub4['SUM_RepayTotal'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td rowspan="2" class="c_data">収納確定期間</td>
+    <td class="c_data" width="60px">自</td>
+    <td class="c_data"><?php echo date('Y', strtotime($oc['SpanFrom'])) - 1988; ?>年<?php echo date('n', strtotime($oc['SpanFrom'])); ?>月<?php echo date('j', strtotime($oc['SpanFrom'])); ?>日</td>
+  </tr>
+  <tr>
+    <td class="c_data">至</td>
+    <td class="c_data"><?php echo date('Y', strtotime($oc['SpanTo'])) - 1988; ?>年<?php echo date('n', strtotime($oc['SpanTo'])); ?>月<?php echo date('j', strtotime($oc['SpanTo'])); ?>日</td>
+  </tr>
+  <tr>
+    <td class="c_data">控除金額合計</td>
+    <td colspan="2" class="r_data"><?php echo f_nf($sum, '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">振込金額</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_UseAmount'],0) + nvl($oc_sub4['SUM_RepayTotal'],0) - $sum, '#,##0'); ?>　円　</td>
+  </tr>
+</table>
+
+<div id="Line1" style="width: 390px; height: 52px;"></div>
+<table width="390px" height="160px" cellpadding="1" cellspacing="0">
+  <tr>
+    <td colspan="2" class="c_data">お　振　込　先　口　座</td>
+  </tr>
+  <tr>
+    <td class="c_data" width="150px">銀行番号</td>
+    <td class="c_data"><?php echo sprintf('%04d', $oem['FfCode']); ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">銀行名</td>
+    <td class="c_data"><?php echo $oem['FfName']; ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">支店番号</td>
+    <td class="c_data"><?php echo sprintf('%03d', $oem['FfBranchCode']); ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">支店名</td>
+    <td class="c_data"><?php echo $oem['FfBranchName']; ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">預金種目</td>
+    <td class="c_data"><?php echo $this->masters['FfAccountClass'][$oem['FfAccountClass']]; ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">口座番号</td>
+    <td class="c_data"><?php echo $oem['FfAccountNumber']; ?></td>
+  </tr>
+  <tr>
+    <td class="c_data">口座名義人</td>
+    <td class="c_data"><?php echo $oem['FfAccountName']; ?></td>
+  </tr>
+</table>
+</div>
+
+<?php /* ブロック３ */ ?>
+<div id="Line1" style="width: 420px; height:  600px;">
+<table width="390px" height="126px" cellpadding="1" cellspacing="0">
+  <tr>
+    <td colspan="3" class="c_data">収　納　金　額　内　訳</td>
+  </tr>
+  <tr>
+    <td rowspan="2" class="c_data" width="180px">収納確定期間</td>
+    <td class="c_data" width="60px">自</td>
+    <td class="c_data"><?php echo date('Y', strtotime($oc['SpanFrom'])) - 1988; ?>年<?php echo date('n', strtotime($oc['SpanFrom'])); ?>月<?php echo date('j', strtotime($oc['SpanFrom'])); ?>日</td>
+  </tr>
+  <tr>
+    <td class="c_data">至</td>
+    <td class="c_data"><?php echo date('Y', strtotime($oc['SpanTo'])) - 1988; ?>年<?php echo date('n', strtotime($oc['SpanTo'])); ?>月<?php echo date('j', strtotime($oc['SpanTo'])); ?>日</td>
+  </tr>
+  <tr>
+    <td class="c_data">収納件数</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub2['CNT_Row'],0), '#,##0'); ?>　件　</td>
+  </tr>
+  <tr>
+    <td class="c_data">収納金合計</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_UseAmount'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">キャンセル返金件数</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub4['CNT_Row'],0), '#,##0'); ?>　件　</td>
+  </tr>
+  <tr>
+    <td class="c_data">キャンセル返金金額</td>
+    <td colspan="2" class="r_data"><?php echo f_nf(nvl($oc_sub4['SUM_RepayTotal'],0), '#,##0'); ?>　円　</td>
+  </tr>
+</table>
+
+<div id="Line1" style="width: 420px; height: 26px;"></div>
+<table width="390px" height="290px" cellpadding="1" cellspacing="0">
+  <tr>
+    <td colspan="2" class="c_data">控　除　金　額　内　訳</td>
+  </tr>
+  <tr>
+    <td class="c_data" width="180px">基本手数料</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc['N_MonthlyFeeWithoutTax'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">消費税</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc['N_MonthlyFeeTax'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td rowspan="2" class="c_data">店舗月額固定費</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub1['CNT_Row'],0), '#,##0'); ?>　件　</td>
+  </tr>
+  <tr>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub1['SUM_OemMonthlyFee'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">消費税</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub1['SUM_OemMonthlyFeeTax'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td rowspan="2" class="c_data">決済手数料</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub2['CNT_Row'],0), '#,##0'); ?>　件　</td>
+  </tr>
+  <tr>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_SettlementFee'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td rowspan="2" class="c_data">請求手数料</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub2['CNT_Row'],0), '#,##0'); ?>　件　</td>
+  </tr>
+  <tr>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_ClaimFeeWithoutTax'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">消費税</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub2['SUM_ClaimFeeTax'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">振込手数料</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc['PC_TransferCommission'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">印紙代</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub3['SUM_StampFee'],0), '#,##0'); ?>　円　</td>
+  </tr>
+  <tr>
+    <td class="c_data">調整</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub5['SUM_AdjustmentAmount'],0), '#,##0'); ?>　円　</td>
+  </tr>
+    <tr>
+    <td class="c_data">立替マイナス額</td>
+    <td class="r_data"><?php echo f_nf(nvl($oc_sub8['SUM_OemMonthlyFee'],0), '#,##0'); ?>　円　</td>
+  </tr>
+    <tr>
+    <td class="c_data">合計</td>
+    <td class="r_data"><?php echo f_nf($sum, '#,##0'); ?>　円　</td>
+  </tr>
+</table>
+</div>
+
+</body>
+</html>

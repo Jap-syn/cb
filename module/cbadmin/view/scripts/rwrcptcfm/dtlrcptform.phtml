@@ -1,0 +1,463 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">詳細入金処理</h3>
+    <form name="form" id="form" method="post" action="rwrcptcfm/dtlrcptsave">
+      <input type="hidden" id="oseq" name="oseq" value="<?php echo f_e($this->oseq); ?>" />
+      <input type="hidden" id="today" name="today" value="<?php echo $this->today; ?>" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <?php if ($this->status == 0) { ?>
+        <tr>
+          <td colspan="3" class="c_data"><font color="red">本注文に関しては、入金処理はできません</font></td>
+        </tr>
+        <?php } ?>
+        <tr>
+          <td colspan="3" class="data">【注文状況】</td>
+        </tr>
+        <tr>
+          <th width="150">項目</th>
+          <th width="400">指定値</th>
+          <th>項目補足</th>
+        </tr>
+        <tr>
+          <td class="r_label">種類<font color="red">*</font></td>
+          <td class="l_data">入金</td>
+          <td class="l_data"></td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 Stt -->
+        <tr>
+          <td class="r_label">入金元<font color="red">*</font></td>
+          <td class="l_data">
+             <select name="receiptClass" id="receiptClass" onChange="javascript:onChangeReceiptClassMethod('1'); ">
+          <?php foreach ($this->receiptClasses as $value) { ?>
+              <option value="<?php echo $value['KeyCode']; ?>" <?php if ($value['KeyCode'] == $this->receiptClass){ echo "selected";}?>><?php echo $value['KeyContent']; ?></option>
+          <?php } ?>
+            </select>
+          </td>
+          <td class="l_data"></td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 End -->
+        <tr>
+          <td class="r_label">入金方法<font color="red">*</font></td>
+          <td class="l_data">
+<!-- 2015/10/05 Y.Suzuki Mod 会計対応 Stt -->
+            <select name="receiptMethod" id="receiptMethod" onChange="javascript:onChangeReceiptClassMethod('1'); ">
+              <option value="0" selected>-----</option>
+          <?php foreach ($this->receiptMethods as $value) { ?>
+              <option value="<?php echo $value['KeyCode']; ?>" <?php if ($value['KeyCode'] == $this->receiptMethod){ echo "selected";}?>><?php echo $value['KeyContent']; ?></option>
+          <?php } ?>
+            </select>
+            <?php show_error_message($this->error['receiptMethod']); ?>
+<!-- 2015/10/05 Y.Suzuki Mod 会計対応 End -->
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金日<font color="red">*</font></td>
+          <td class="l_data"><input type="text" size="20" name="ReceiptDate" id="ReceiptDate" value="<?php echo f_e($this->ReceiptDate); ?>" />
+            <a href="#" id="ReceiptDate_choose" title="日付を選択" onclick="return false;">
+              <img src="./../images/icon_date_s.gif" alt="日付を選択" />
+            </a>
+          <?php show_error_message($this->error['ReceiptDate']); ?></td>
+          <td class="l_data">YYYY-MM-DD形式で入力します</td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 Stt -->
+        <tr>
+          <td class="r_label">入金予定日</td>
+          <td class="l_data"><input type="text" size="20" name="DepositDate" id="DepositDate" value="<?php echo f_e($this->DepositDate); ?>" />
+            <a href="#" id="DepositDate_choose" title="日付を選択" onclick="return false;">
+              <img src="./../images/icon_date_s.gif" alt="日付を選択" />
+            </a>
+          <?php show_error_message($this->error['DepositDate']); ?></td>
+          <td class="l_data">YYYY-MM-DD形式で入力します</td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 End -->
+        <tr>
+          <td class="r_label">実入金額<font color="red">*</font></td>
+          <td class="l_data"><input type="text" size="20" name="ReceiptAmount" id="ReceiptAmount" value="<?php echo f_e($this->ReceiptAmount); ?>" />
+          <?php show_error_message($this->error['ReceiptAmount']); ?></td>
+          <td class="l_data">入金額を入力します</td>
+        </tr>
+        <tr>
+          <td class="r_label">銀行支店</td>
+          <td class="l_data"><?php echo $this->branchBankTag; ?>
+          <?php show_error_message($this->error['branchBank']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">収納代行</td>
+          <td class="l_data"><?php echo $this->cvsReceiptAgentTag; ?>
+          <?php show_error_message($this->error['cvsReceiptAgent']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 Stt -->
+        <tr>
+          <td class="r_label">詳細入金方法</td>
+          <td class="l_data">
+            <select name="classDetails" id="classDetails" onChange="javascript:onChangeReceiptClassMethod('2'); ">
+              <option value="-1" selected>-----</option>
+          <?php foreach ($this->classDetails as $value) { ?>
+              <option value="<?php echo $value['KeyCode']; ?>" <?php if ($value['KeyCode'] == $this->classDetail){ echo "selected";}?>><?php echo $value['KeyContent']; ?></option>
+          <?php } ?>
+            </select>
+            <?php show_error_message($this->error['classDetails']); ?>
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">口座番号(郵便)</td>
+          <td class="l_data"><?php echo $this->accountNumberTag; ?>
+          <?php show_error_message($this->error['accountNumber']); ?></td>
+          <td class="l_data"></td>
+        </tr>
+<!-- 2015/09/24 Y.Suzuki Add 会計対応 End -->
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data"><?php echo $this->claimdata['OrderId']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">任意注文番号</td>
+          <td class="l_data"><?php echo $this->claimdata['Ent_OrderId']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">ご注文日</td>
+          <td class="l_data"><?php echo $this->claimdata['ReceiptOrderDate']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">ステータス</td>
+          <td class="l_data"><?php echo $this->claimdata['DataStatus']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">利用額</td>
+          <td class="l_data"><?php echo f_nf($this->claimdata['UseAmount'], '#,##0'); ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">請求額</td>
+          <td class="l_data"><?php echo f_nf($this->claimdata['ClaimAmount'], '#,##0'); ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">残金</td>
+          <td class="l_data"><?php echo f_nf($this->claimdata['ClaimedBalance'], '#,##0'); ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">備考</td>
+            <td class="l_data"><textarea rows="3" cols="60" name="ReceiptNote" id="ReceiptNote"><?php echo $this->receiptNote;?></textarea></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金確認メールまたは決済完了メール</td>
+            <td class="l_data">
+              <label for="ReceiptCheckMail1"><input name="ReceiptCheckMail" id="ReceiptCheckMail_1" type="radio" value="1" <?php if ($this->receiptCheckMail == 1) echo 'checked'; ?>>送信する</label>
+              <label for="ReceiptCheckMail0"><input name="ReceiptCheckMail" id="ReceiptCheckMail_0" type="radio" value="0" <?php if ($this->receiptCheckMail == 0) echo 'checked'; ?>>送信しない</label>
+            </td>
+          <td class="l_data"></td>
+        </tr>
+      </table>
+
+      <div style="float: left">
+        <table style="clear:both;" width="680" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td colspan="6" class="data">【入金状況】</td>
+          </tr>
+          <tr>
+            <th width="350">入金形態</th>
+            <th width="120">入金日</th>
+            <th width="70">実入金額</th>
+            <th width="250">入金処理日</th>
+            <th width="250">備考</th>
+            <th width="90">入金取消</th>
+
+          </tr>
+          <?php foreach ($this->receiptList as $row) { ?>
+          <tr>
+            <td class="c_data"><?php echo $row['ReceiptClass']; ?></td>
+            <td class="c_data"><?php echo $row['ReceiptDate']; ?></td>
+            <td class="c_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+            <td class="c_data">&nbsp;<?php echo $row['RegistDate']; ?>&nbsp;</td>
+            <td class="c_data" style="word-break: break-word; text-align: left;"><?php echo $row['ReceiptNote']; ?></td>
+            <td class="c_data"></td>
+          </tr>
+          <?php } ?>
+        </table>
+      </div>
+
+      <div style="float: right">
+        <table>
+          <tr>
+          <?php if ($this->alertcnt > 0) { ?>
+            <td bgcolor="yellow"><b>入金アラートあり</b></td>
+          <?php } else {?>
+            <td>&nbsp;</td>
+          <?php }?>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td><input type="button" id="btnRcptCancel" name="btnRcptCancel" value="　入金取消　" style="width: 100px"<?php if ($this->cnt == 0) { echo "disabled='disabled'"; } ?>></td>
+          </tr>
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;</td>
+            <td><input type="button" id="btnAlertCancel" name="btnAlertCancel" value="　アラート取消　" style="width: 100px"<?php if ($this->alertcnt == 0) { echo "disabled='disabled'"; } ?>></td>
+          </tr>
+        </table>
+      </div>
+
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="c_label">
+          <?php if ($this->status == 1) { ?>
+          <input type="button" id="submit_button" value="　　登　録　　" onclick="onSubmit(this);" />　　
+          <?php } ?>
+          <input type="button" id="btnClose" value="　　閉じる　　" onclick="window.close();" />
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+  var str1 = '<?php echo json_encode($this->str1) ?>';
+  var receiptMethod2 = '<?php echo json_encode($this->receiptMethods2) ?>';
+  Event.observe(window, 'load', function() {
+    onChangeReceiptClassMethod('1');   // 2015/09/24 Y.Suzuki 会計対応 Add
+    new base.UI.DatePicker2('cdpReceiptDate', $('ReceiptDate'), $('ReceiptDate_choose')).format="yyyy-MM-dd";
+    new base.UI.DatePicker2('cdpDepositDate', $('DepositDate'), $('DepositDate_choose')).format="yyyy-MM-dd";
+  });
+
+  // 登録ボタンイベント
+  function onSubmit(btn) {
+    document.getElementById(btn.id).disabled = 'true';
+    var msg = '';
+    if ($(ReceiptDate).value != "") {
+        if ($(ReceiptDate).value.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+            var diff = diffDays($(ReceiptDate).value, $(today).value);
+            if (diff > 30) {
+                msg = '[入金日]';
+            }
+        }
+    }
+    if ($(DepositDate).value != "") {
+        if ($(DepositDate).value.match(/^\d{4}\-\d{2}\-\d{2}$/)) {
+            var diff = diffDays($(DepositDate).value, $(today).value);
+            if (diff > 30) {
+                msg += '[入金予定日]';
+            }
+        }
+    }
+    if (msg.length > 0) {
+        msg += 'が本日の前後30日以内にありません。\n処理を実行してよろしいですか？';
+        if (!window.confirm(msg)) { return; }
+    }
+    $("form").submit();
+  }
+
+  // 日付の差分日数を絶対値で戻す
+  function diffDays(date1Str, date2Str) {
+    var date1 = new Date(date1Str);
+    var date2 = new Date(date2Str);
+    var msDiff = date2.getTime() - date1.getTime();
+    var daysDiff = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    return Math.abs(daysDiff);
+  }
+
+  const selectElement = document.getElementById("receiptClass")
+  selectElement.addEventListener('change', (event) => {
+    if (event.target.value == 0) {
+        document.getElementById("receiptMethod").innerHTML = str1;
+    }
+    if (event.target.value == 9) {
+        document.getElementById("receiptMethod").innerHTML = receiptMethod2;
+    }
+  });
+  
+  //2022/06/09 OMINEXT Add SBPS対応 
+  //各項目の制御を設定する
+  function setDataByReceiptMethod(class2)
+    {
+        var jsonObj = eval('(' + class2.responseText + ')');
+        
+        // 1:銀行：M_Code.CodeId=163 && Class2=1
+        if (jsonObj == 1){
+        	// 銀行支店
+            $('branchBank').disabled = false;
+            // 口座番号(郵便)
+            $('accountNumber').disabled = true;
+            // 詳細入金方法
+            $('classDetails').disabled = true;
+            
+        // 2:郵政：M_Code.CodeId=163 && Class2=2
+        } else if (jsonObj == 2){
+        	// 銀行支店
+            $('branchBank').disabled = true;
+            // 口座番号(郵便)
+            $('accountNumber').disabled = false;
+            // 詳細入金方法
+            $('classDetails').disabled = true;
+            
+        // 99:その他：M_Code.CodeId=163 && Class2=99
+        } else if (jsonObj == 99){
+        	// 銀行支店
+            $('branchBank').disabled = true;
+            // 口座番号(郵便)
+            $('accountNumber').disabled = true;
+            // 詳細入金方法
+            $('classDetails').disabled = false;
+        
+        // 98:届いてから払い：M_Code.CodeId=163 && Class2=98
+        } else if (jsonObj == 98){
+        	// 銀行支店
+            $('branchBank').disabled = true;
+            // 口座番号(郵便)
+            $('accountNumber').disabled = true;
+            // 詳細入金方法
+            $('classDetails').disabled = true;    
+            
+        // 上記以外
+        } else {
+        // 銀行支店
+            $('branchBank').disabled = true;
+            // 口座番号(郵便)
+            $('accountNumber').disabled = true;
+            // 詳細入金方法
+            $('classDetails').disabled = true;
+        }
+
+	      // 詳細入金方法が有効な場合
+	      if (!$('classDetails').disabled) {
+	          // 弁護士入金の場合
+	          if ($('classDetails').value == 4) {
+	              $('branchBank').disabled = false;
+	          }
+	          // 弁護士入金以外の場合
+	          else {
+	              $('branchBank').disabled = true;
+	          }
+	      }
+    }
+
+  //2015/09/24 Y.Suzuki Add 会計対応 Stt
+  // 入金元・入金方法・詳細入金方法変更イベント
+  function onChangeReceiptClassMethod(changeKind) {  
+  
+	//reset
+	$('branchBank').value = "";
+	$('cvsReceiptAgent').value = "";
+	if( changeKind == '1' ){
+  	$('classDetails').value = "";
+	}
+	$('accountNumber').value = "";
+	  
+    // 入金元：収納代行会社 の場合
+    if ($('receiptClass').value == 0) {
+        // 入金方法
+        $('receiptMethod').disabled = false;
+        // 銀行支店
+        $('branchBank').disabled = true;
+        // 収納代行
+        $('cvsReceiptAgent').disabled = false;        
+        // 詳細入金方法
+        $('classDetails').disabled = true;
+        // 口座番号(郵便)
+        $('accountNumber').disabled = true;
+    }
+    // 入金元：その他 の場合
+    else if ($('receiptClass').value == 9) {
+    	// 入金方法
+    	$('receiptMethod').disabled = false;
+    	// 収納代行
+        $('cvsReceiptAgent').disabled = true;
+    	
+    	var url = 'rwrcptcfm/getClass2/keycode/' + $('receiptMethod').value;
+  		var ajax = new Ajax.Request(
+	            url,
+	            {
+	                method: 'GET',
+	                onComplete: setDataByReceiptMethod
+	            }
+	        );
+    }
+
+    // 詳細入金方法が有効な場合
+    if (!$('classDetails').disabled) {
+        // 弁護士入金の場合
+        if ($('classDetails').value == 4) {
+            $('branchBank').disabled = false;
+        }
+        // 弁護士入金以外の場合
+        else {
+            $('branchBank').disabled = true;
+        }
+    }
+  }
+  //2015/09/24 Y.Suzuki Add 会計対応 End
+
+  Event.observe($("btnRcptCancel"), "click", function() {
+    var result = confirm("入金額を 0 にします。よろしいですか？");
+    if (result == true) {
+      var str = Form.serialize('form');   // フォーム内容をシリアライズ
+      var url = "<?php echo $this->baseUrl; ?>/rwrcptcfm/rcptcancel?" + str;
+      var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+      var res = eval('(' + ajax.transport.responseText + ')');
+      if  (res['status'] == 1) {
+        // 成功⇒再描画
+        location.reload(true);
+      } else {
+        // 失敗⇒メッセージ創出
+        alert(res['status']);
+      }
+    }
+  });
+
+  Event.observe($("btnAlertCancel"), "click", function() {
+    var result = confirm("アラートを取り消します。よろしいですか？");
+    if (result == true) {
+      var str = Form.serialize('form');   // フォーム内容をシリアライズ
+      var url = "<?php echo $this->baseUrl; ?>/rwrcptcfm/alertcancel?" + str;
+      var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+      var res = eval('(' + ajax.transport.responseText + ')');
+      if  (res['status'] == 1) {
+        // 成功⇒再描画
+        location.reload(true);
+      } else {
+        // 失敗⇒メッセージ創出
+        alert(res['status']);
+      }
+    }
+  });
+</script>
+</html>

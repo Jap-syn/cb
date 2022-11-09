@@ -1,0 +1,882 @@
+<?php
+use Coral\Base\BaseGeneralUtils;
+use Coral\Coral\CoralOrderUtility;
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+?>
+<style type="text/css">
+<!--
+.blackcredit .target_cell {
+	background-color: #444444;
+	color: #ffffff;
+}
+
+.blackcredit .target_cell2 {
+	background-color: #cccccc;
+	color: #000000;
+}
+
+SELECT {
+	font-size: 11px;
+}
+
+.record_nav,
+a.record_nav:link,
+a.record_nav:hover,
+a.record_nav:visited,
+a.record_nav:active {
+	padding : 1px 10px;
+	border: solid 1px white;
+	margin: 0px 2px;
+}
+
+span.record_nav {
+	color : gray;
+	cursor: default;
+}
+
+a.record_nav:hover {
+	color: royalblue;
+	border-color: gray;
+}
+
+.searchf_information {
+	margin: 0;
+}
+
+.sb-his-mark {
+	position: absolute;
+	right: 4px;
+	bottom: 4px;
+	padding: 0 8px;
+	background-color: azure;
+	color: steelblue;
+	border: solid 2px steelblue;
+	font-size: 11px;
+	border-radius: 3px;
+	line-height: 1.5;
+	cursor: default;
+}
+#contents td.multi-line {
+	line-height: 1.2;
+	padding: 2px 0 2px 5px;
+}
+a.jnb-acc-info {
+	display: block;
+	background-color: azure;
+	color: navy;
+	border-radius: 4px;
+	margin: 4px;
+	padding: 2px;
+	font-size: 10px;
+	border: solid 2px royalblue;
+	font-size: 12px;
+	font-weight: bold;
+	color: blue;
+	text-align: center;
+}
+body.oem-order-info #wrapper,
+body.oem-order-info #wrapper > div {
+	background-color: #ff9966;
+}
+-->
+</style>
+</head>
+<body <?php if(nvl($this->row['OEM_OemNameKj'], '') != '') echo ' class="oem-order-info"'; ?>>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      <span style="clear: both; float: none;">履歴照会　(<?php echo f_e($this->row['ORD_OrderId']); ?>　／　<span id="oseq"><?php echo f_e($this->row['OrderSeq']); ?></span>)</span>
+
+    <?php echo "　　　　　　　　　　　　"; ?>
+    <?php if (!is_null($this->link_previous)) { ?>
+    <a href="<?php echo $this->link_previous; ?>">前履歴</a>　
+    <?php } else { ?>
+    <?php echo "　　　　　"; ?>
+    <?php } ?>
+    <?php if (!is_null($this->link_next)) { ?>
+    <a href="<?php echo $this->link_next; ?>">次履歴</a>　
+    <?php } ?>
+    </h3>
+    <!-- 左肩の基本情報 -->
+<?php
+$captionMap = CoralOrderUtility::getStatusCaptions();
+$saiken = $this->others['Status']['Cnl_ReturnSaikenCancelFlg'];
+$rowClass = CoralOrderUtility::getOrderRowClass( $this->others['Status'] , $saiken);
+$className = "orderstatus_$rowClass";
+$orderStatus = Json::decode($this->row['StatusCaption'], Json::TYPE_ARRAY);
+$dataStatus = $orderStatus['DataStatus'];
+$closeReason = $orderStatus['CloseReason'];
+?>
+    <div id="div01">
+      <!-- 注文IDなど -->
+      <div id="div01_1" class="<?php echo f_e($className); ?>">
+        <table style="width: 300px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td width="90" class="r_label">注文ID</td>
+              <td class="l_data">
+                <?php echo f_e($this->row['ORD_OrderId']); ?>
+                <span style="margin: 0px 0px 0px 5px; color: red; font-size: 12px; font-weight: bold"><?php if ($this->row['ORD_OutOfAmends'] == 1) { echo '補償外案件'; } ?></span>
+              </td>
+            </tr>
+            <?php if (nvl($this->row['OEM_OemNameKj'], '') != '') { ?>
+            <tr>
+              <td class="r_label">OEM任意番号</td>
+              <td class="l_data" ><?php echo f_e($this->row['ORD_Oem_OrderId']); ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label">任意注文番号</td>
+              <td class="l_data" style="word-break: break-all"><?php echo f_e($this->row['ORD_Ent_OrderId']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label" <?php if (!$this->isInTerm) echo "style='background-color:teal;color:white'"; ?>>注文登録日時</td>
+              <td class="l_data"  <?php if (!$this->isInTerm) echo "style='background-color:teal;color:white'"; ?>><?php echo f_e($this->row['ORD_RegistDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label" <?php if (!$this->isInTerm) echo "style='background-color:teal;color:white'"; ?>>ご注文日</td>
+              <td class="l_data"  <?php if (!$this->isInTerm) echo "style='background-color:teal;color:white'"; ?>><?php echo f_e($this->row['ORD_ReceiptOrderDate']); ?></td>
+            </tr>
+            <?php if (nvl($this->row['ORD_ServiceExpectedDate'], '') != '') { ?>
+            <tr>
+              <td class="r_label">役務提供予定日</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_ServiceExpectedDate']); ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label">ステータス</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_DataStatus']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">与信返信日時</td>
+              <td class="l_data"><?php echo f_e($this->row['CJM_ProcessingDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">利用額</td>
+              <td class="l_data"><?php echo f_nf($this->row['ORD_UseAmount'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">注文状態</td>
+              <td class="l_data"><b><?php echo f_e($captionMap[$rowClass]); ?></b></td>
+            </tr>
+            <tr>
+              <td class="r_label">取りまとめ</td>
+              <td class="l_data">
+              <?php
+              if ($this->row['ORD_CombinedClaimTargetStatus'] == '91' || $this->row['ORD_CombinedClaimTargetStatus'] == '92') {
+                  echo ($this->row['ORD_CombinedClaimParentFlg'] == 1) ? '取りまとめ代表注文' : '取りまとめ注文';
+              }
+              else { echo '---'; }
+              ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">代表注文ID</td>
+              <td class="l_data">
+              <?php
+              if ($this->row['ORD_CombinedClaimTargetStatus'] == '91' || $this->row['ORD_CombinedClaimTargetStatus'] == '92') {
+                  echo $this->row['ORD_CombinedClaimParentOrderId'];
+              }
+              else { echo '---'; }
+              ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">口座振替利用</td>
+              <td class="l_data">
+                <?php
+                if (isset($this->others['Reserve']['CreditTransferRequestFlg'])) {
+                    if ($this->others['Reserve']['CreditTransferRequestFlg'] == '1') {
+                        echo '利用する（WEB申込み）';
+                    } else if ($this->others['Reserve']['CreditTransferRequestFlg'] == '2') {
+                        echo '利用する（紙面申込み）';
+                    } else {
+                        echo '利用しない';
+                    }
+                } else {
+                    echo '利用しない';
+                }
+                ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">トラッキングID</td>
+              <td class="l_data">
+                <?php
+                if (isset($this->others['Reserve']['ExtraPayType'])) {
+                    if ($this->others['Reserve']['ExtraPayType'] == 1) {
+                        echo $this->others['Reserve']['ExtraPayKey'];
+                    } else {
+                        echo '---';
+                    }
+                } else {
+                    echo '---';
+                }
+                ?>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- コマンド郡 -->
+      <div id="command">
+        <table>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="sepecifyBlack" id ="specifyBlack" value="ブラック登録""/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="sepecifyExcellent" id ="specifyExcellent" value="優良顧客登録"/></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="reissueClaim" id ="reissueClaim" value="初回請求再発行""/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="reclaimact" id ="reclaimact" value="再請求"/></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="cancelOp" id ="cancelOp" value="キャンセル申請""/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="cancelCancel" id ="cancelCancel" value="キャンセル取消"/></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="sppay" id ="sppay" value="臨時立替""/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="revival" id ="revival" value="立替精算戻し"/></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="revival" id ="revival" value="与信NG復活""/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="edit" id ="edit" value="編　集""/></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="cancelConfirmArrival" id ="cancelConfirmArrival" value="着荷確認取消"/></td>
+            <td><input style="visibility:hidden; width: 100px;" type="button" name="returnMail" id ="returnMail" value="請求書不達"/></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+      <form>
+
+      <!-- 請求先 -->
+      <div id="div01_2">
+        <table id="customertable" style="width: 540px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="4" class="l_data">請求先</td>
+            </tr>
+            <tr>
+              <td width="55" class="r_label target_cell">氏名</td>
+              <td width="120" class="l_data target_cell2 multi-line"><?php echo f_e($this->row['CUS_NameKj']); ?></td>
+              <td width="45" class="r_label target_cell">カナ</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_NameKn']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell">郵便番号</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_PostalCode']); ?></td>
+              <td class="r_label target_cell">住所</td>
+              <td class="l_data target_cell2 multi-line"><?php echo f_e($this->row['CUS_UnitingAddress']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell"></td>
+              <td class="l_data target_cell2"></td>
+              <td class="r_label target_cell">住所カナ</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_AddressKn']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell">加盟店顧客</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_EntCustId']); ?></td>
+              <td class="r_label target_cell">顧客STS</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CustomerStatus']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell">電話番号</td>
+              <td class="l_data target_cell2 multi-line"><?php echo f_e($this->row['CUS_Phone']); ?><br>
+                キャリア：<?php echo $this->others['Carrier']; ?>
+              </td>
+              <td class="r_label target_cell">E-mail</td>
+              <td class="l_data target_cell2 multi-line"><?php echo f_e($this->row['CUS_MailAddress']); ?><br>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell">職業</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_Occupation']); ?></td>
+              <td class="r_label target_cell">法人名</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_CorporateName']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label target_cell">部署名</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_DivisionName']); ?></td>
+              <td class="r_label target_cell">担当者名</td>
+              <td class="l_data target_cell2"><?php echo f_e($this->row['CUS_CpNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">与信関連</td>
+              <td colspan="3" class="l_data"><?php echo f_e($this->row['CreditInfo']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">立替</td>
+              <td colspan="3" class="l_data">
+              <input disabled="disabled" type="checkbox" <?php if ($this->row['ORD_Chg_NonChargeFlg'] == 1) { echo 'checked'; } ?> />立替除外
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 配送先 -->
+      <?php if ($this->row['ORD_AnotherDeliFlg'] == 1) { ?>
+      <div id="div01_3">
+        <table style="width: 540px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="4" class="l_data">配送先</td>
+            </tr>
+            <tr>
+              <td width="55" class="r_label">氏名</td>
+              <td width="120" class="l_data"><?php echo f_e($this->row['DEL_DestNameKj']); ?></td>
+              <td width="45" class="r_label">カナ</td>
+              <td class="l_data"><?php echo f_e($this->row['DEL_DestNameKn']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">郵便番号</td>
+              <td class="l_data"><?php echo f_e($this->row['DEL_PostalCode']); ?></td>
+              <td class="r_label">住所</td>
+              <td class="l_data"><?php echo f_e($this->row['DEL_UnitingAddress']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号</td>
+              <td class="l_data"><?php echo f_e($this->row['DEL_Phone']); ?></td>
+              <td class="data"></td>
+              <td class="data"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <?php } ?>
+
+      <!-- 不払い管理 -->
+      <div id="div01_3">
+        <table style="width: 540px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="7" style="background-color: #ffe3ff; font-weight: bold;" class="c_label">不　払　い　管　理</td>
+            </tr>
+            <tr>
+              <td class="r_label" style="width: 60px;">超過日数</td>
+              <td class="r_data" style="width: 80px;"><?php echo is_null($this->row['PastDays']) ? '*** 日' : (f_e($this->row['PastDays'] . ' 日')); ?></td>
+              <td class="r_label" style="width: 70px;">簡易備考</td>
+              <td class="l_data" style="width: 80px;"><?php echo f_e($this->row['ORD_BriefNote']); ?></td>
+              <td colspan="3" class="c_label">追加連絡先</td>
+            </tr>
+            <tr>
+              <td class="r_label">督促分類</td>
+              <td class="l_data"><?php echo $this->others['RemindClass']; ?></td>
+              <td class="r_label">督促除外</td>
+              <td class="l_data"><?php if ($this->row['MAN_RemindStopFlg'] == 1) { echo 'する'; } else { echo 'しない'; } ?></td>
+              <td class="c_label">TEL</td>
+              <td class="c_label">備考</td>
+              <td class="c_label">状態</td>
+            </tr>
+            <tr>
+              <td rowspan="3" class="r_label">最終督促</td>
+              <td class="l_data"></td>
+              <td class="r_label">訪問済</td>
+              <td class="l_data"><input disabled="disabled" type="checkbox" name="VisitFlg" id="VisitFlg" <?php if ($this->row['ORD_VisitFlg'] == 1) { echo 'checked'; } ?> /></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_Cinfo1']); ?></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_CinfoNote1']); ?></td>
+              <td class="l_data"><?php echo $this->others['CinfoStatus1']; ?></td>
+            </tr>
+            <tr>
+              <td class="l_data"><?php echo f_e($this->row['ORD_FinalityRemindDate']); ?></td>
+              <td class="r_label">入金遅れ日数</td>
+              <td class="r_data"><?php echo is_null($this->row['ReceiptPastDays']) ? '*** 日' : (f_e($this->row['ReceiptPastDays'] . ' 日')); ?></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_Cinfo2']); ?></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_CinfoNote2']); ?></td>
+              <td class="l_data"><?php echo $this->others['CinfoStatus2']; ?></td>
+            </tr>
+            <tr>
+              <td class="l_data"></td>
+              <td class="r_label">最終回収手段</td>
+              <td class="l_data"><?php echo $this->others['FinalityCollectionMean']; ?></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_Cinfo3']); ?></td>
+              <td class="l_data"><?php echo f_e($this->row['CUS_CinfoNote3']); ?></td>
+              <td class="l_data"><?php echo $this->others['CinfoStatus3']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">支払約束日</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_PromPayDate']); ?></td>
+              <td rowspan="2" class="r_label">請求ストップ</td>
+              <td colspan="4" class="l_data"><?php echo f_e($this->row['ORD_ClaimStopReleaseDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">住民票</td>
+              <td class="l_data"><?php echo $this->others['ResidentCard']; ?></td>
+              <td colspan="4" class="l_data">
+              <input disabled="disabled" type="checkbox" name="LetterClaimStopFlg" id="LetterClaimStopFlg" <?php if ($this->row['ORD_LetterClaimStopFlg'] == 1) { echo 'checked'; } ?> />　紙　
+              <input disabled="disabled" type="checkbox" name="MailClaimStopFlg" id="MailClaimStopFlg" <?php if ($this->row['ORD_MailClaimStopFlg'] == 1) { echo 'checked'; } ?> />　メール　
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">手書き手紙</td>
+              <td class="l_data"><?php echo $this->others['LonghandLetter']; ?></td>
+              <td class="r_label">架電</td>
+              <td colspan="4" class="l_data">
+              <input disabled="disabled" type="checkbox" name="Tel30DaysFlg" id="Tel30DaysFlg" <?php if ($this->row['ORD_Tel30DaysFlg'] == 1) { echo 'checked'; } ?> />　30日　
+              <input disabled="disabled" type="checkbox" name="Tel90DaysFlg" id="Tel90DaysFlg" <?php if ($this->row['ORD_Tel90DaysFlg'] == 1) { echo 'checked'; } ?> />　90日　
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">OEM債権移管日</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_OemClaimTransDate']); ?></td>
+              <td class="r_label">貸倒確定日</td>
+              <td colspan="4" class="l_data"><?php echo f_e($this->row['ORD_Dmg_DecisionDate']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 右肩の事業者と購入商品の情報 -->
+    <div id="div02">
+      <div><span style="margin-left: 240px; "><input style="visibility:hidden; margin-bottom: 5px; " type="submit" value="　更　新　" /></span></div>
+      <!-- 事業者情報 -->
+      <div id="div02_1">
+        <table style="width: 310px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td colspan="2" class="l_data">事業者情報</td>
+            </tr>
+            <?php if (nvl($this->row['OEM_OemNameKj'], '') != '') { ?>
+            <tr>
+              <td class="r_label">OEM先名</td>
+              <td class="l_data"><?php echo f_e($this->row['OEM_OemNameKj']); ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label" style="width: 100px;">事業者名</td>
+              <td class="l_data"><?php echo f_e($this->row['ENT_EnterpriseNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">購入サイト</td>
+              <td class="l_data"><?php echo f_e($this->row['SIT_SiteNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">担当者名</td>
+              <td class="l_data"><?php echo f_e($this->row['ENT_CpNameKj']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">電話番号</td>
+              <td class="l_data"><?php echo f_e($this->row['ENT_ContactPhoneNumber']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 商品情報 -->
+      <div id="div02_2">
+        <table style="width: 310px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <th style="width: 160px;">購入品目</th>
+              <th style="width: 50px;">単価</th>
+              <th style="width: 40px;">数量</th>
+              <th>小計</th>
+            </tr>
+            <?php
+            // count関数対策
+              $orderItemCount = 0;
+              if (!empty($this->others['OrderItemInfo'])) {
+              $orderItemCount = count($this->others['OrderItemInfo']);
+              }
+              for ($i = 0 ; $i < $orderItemCount ; $i++) { ?>
+            <?php     $item = $this->others['OrderItemInfo'][$i]; ?>
+            <tr>
+              <td class="l_data"><?php echo f_e( $item['ItemNameKj']); ?></td>
+              <td class="r_data"><?php echo f_nf($item['UnitPrice'], '#,##0'); ?></td>
+              <td class="r_data"><?php echo f_e( number_format($item['ItemNum'], $this->others['Reserve']['DispDecimalPoint'])); ?></td>
+              <td class="r_data"><?php echo f_nf($item['SumMoney'], '#,##0'); ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td colspan="3" class="r_label">送料</td>
+              <td class="r_data"><?php echo f_nf($this->row['DeliveryFee'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">手数料</td>
+              <td class="r_data"><?php echo f_nf($this->row['SettlementFee'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">外税額</td>
+              <td class="r_data"><?php echo (!is_null($this->row['ExTaxAmount'])) ? f_nf($this->row['ExTaxAmount'], '#,##0') : '---'; ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">利用額合計</td>
+              <td class="r_data"><?php echo f_nf($this->row['TotalSumMoney'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">再請求追加手数料</td>
+              <td class="r_data"><?php echo f_nf($this->row['ReclaimFee'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">他取りまとめ額</td>
+              <td class="r_data">
+              <?php
+              if ($this->row['ORD_CombinedClaimTargetStatus'] == '91' || $this->row['ORD_CombinedClaimTargetStatus'] == '92') {
+                  echo ($this->row['ORD_CombinedClaimParentFlg'] == 1) ? f_nf($this->row['OtherCombinedAmount'], '#,##0') : '---';
+              }
+              else { echo '---'; }
+              ?>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">請求合計</td>
+              <td class="r_data"><?php echo f_nf($this->row['TotalClaimMoney'], '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">入金済額</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->row['ORD_InstallmentPlanAmount'],0), '#,##0'); ?></td>
+            </tr>
+            <tr>
+              <td colspan="3" class="r_label">残高</td>
+              <td class="r_data"><?php echo f_nf(nvl($this->row['CLM_ClaimedBalance'],0), '#,##0'); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="padding-left: 575px;">
+        【　備　考　】<br/>
+          <textarea style="font-size:12px; background-color: #eee; color: #666;" name="Note" id="Note" cols="45" rows="9" readonly="readonly"><?php echo f_e($this->row['ORD_Incre_Note']); ?></textarea>
+      </div>
+      <div style="padding-left: 575px;">
+        【　審査システム結果　】<br/>
+          <textarea style="font-size:12px; background-color: #eee; color: #666;" name="JudgeNote" id="JudgeNote" cols="45" rows="2" readonly="readonly"><?php echo f_e($this->row['JudgeSystemResult']); ?></textarea>
+      </div>
+    </div>
+
+    <div id="title1">【　OEM先備考　】</div>
+    <div style="padding-left: 20px;">
+         <textarea style="font-size:12px; background-color: #eee; color: #666; width: 862px; height: 45px;" name="OmeNote" id="OmeNote" cols="100" rows="2" readonly="readonly"><?php echo f_e($this->row['ORD_Oem_Note']); ?></textarea>
+    </div>
+    <div id="title1">通常注文処理</div>
+    <!-- 注文の進捗 -->
+    <div id="div03">
+      <div id="div03_1">
+        【与信】
+        <table style="width: 148px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td style="width: 50px;" class="r_label">クラス</td>
+              <td class="l_data"><?php echo f_e($this->others['IncreArClass']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">与信点数</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_Incre_ScoreTotal'])."/".f_e($this->row['CJR_TotalScore']); ?>点</td>
+            </tr>
+            <tr>
+              <td class="r_label">社内与信</td>
+              <td class="l_data"><?php if ($this->row['ORD_Incre_Status'] == 1) { echo 'OK'; } else if ($this->row['ORD_Incre_Status'] == -1) { echo 'NG'; } else { echo ''; } ; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">DMI与信</td>
+              <td class="l_data"><?php if ($this->row['ORD_Dmi_Status'] == 1) { echo 'OK'; } else if ($this->row['ORD_Dmi_Status'] == -1) { echo 'NG'; } else { echo ''; } ; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">与信日</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_Dmi_DecisionDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">結果理由</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_Dmi_ResponseNote']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="div03_arrow1"><img src="../images/arrow1.gif" /></div>
+      <div id="div03_2">
+        【伝票番号】
+        <table style="width: 148px; table-layout: fixed" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td style="width: 50px;" class="r_label">登録日</td>
+              <td class="l_data" style="width: 85px;"><?php echo f_df($this->row['ITM_Deli_JournalIncDate'], 'Y-m-d'); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">配送方法</td>
+              <td class="l_data"><?php echo f_e($this->others['DeliMethodName']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">伝票番号</td>
+              <td class="l_data multi-line" style="word-wrap: break-word;"><?php echo f_e($this->row['ITM_Deli_JournalNumber']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="div03_arrow2"><img src="../images/arrow1.gif" /></div>
+      <div id="div03_3" style="position: relative">
+        【請求】
+        <span style="font-size: 11px; margin-left: 4px;">
+            <?php if($this->others['claimCount'] > 0) { ?>
+				累計<?php echo f_nf($this->others['claimCount'], '#,##0'); ?>回
+            <?php } else { ?>
+                履歴なし
+            <?php } ?>
+        </span>
+
+        <table style="width: 148px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td style="width: 70px;" class="r_label">初回請求日</td>
+              <td class="l_data"><?php echo f_e($this->row['CLM_F_ClaimDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">初回請求期限</td>
+              <td class="l_data"><?php echo f_e($this->row['CLM_F_LimitDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">請求日</td>
+              <td class="l_data"><?php echo f_e($this->row['CLM_ClaimDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">請求期限</td>
+              <td class="l_data"><?php echo f_e($this->row['CLM_LimitDate']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="div03_arrow3"><img src="../images/arrow1.gif" /></div>
+      <div id="div03_4">
+        【着荷確認】
+        <table style="width: 148px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td style="width: 60px;" class="r_label">確認日</td>
+              <td class="l_data"><?php echo f_df($this->row['ORD_Deli_ConfirmArrivalDate'], 'Y-m-d'); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">確認結果</td>
+              <td class="l_data"><?php if ($this->row['ORD_Deli_ConfirmArrivalFlg'] == 1) { echo '確認済'; } else if ($this->row['ORD_Deli_ConfirmArrivalFlg'] == -1) { echo '未確認'; } else { echo ''; } ; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">立替クリア</td>
+              <td class="l_data"><?php echo f_e($this->row['PAS_ClearConditionDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">立替締め日</td>
+              <td class="l_data"><?php echo f_e($this->row['ORD_Chg_FixedDate']); ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">立替予定日</td>
+              <td class="l_data"><?php echo f_e($this->row['PAC_ExecScheduleDate']); ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="div03_arrow4"><img src="../images/arrow1.gif" /></div>
+      <div id="div03_5">
+        【入金確認】
+        <table style="width: 148px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <?php $showReceiptFlg = ($dataStatus == 91 && ($closeReason == 1 || $closeReason == 2) && nvl($this->row['CLM_ClaimedBalance'], 1) <= 0); ?>
+            <tr>
+              <td style="width: 50px;" class="r_label">入金日</td>
+              <td class="l_data"><?php echo ($showReceiptFlg) ? f_df($this->row['REC_ReceiptDate'], 'Y-m-d') : ''; ?></td>
+            </tr>
+            <tr>
+              <td style="width: 50px;" class="r_label">確定日</td>
+              <td class="l_data"><?php echo ($showReceiptFlg) ? f_df($this->row['REC_ReceiptProcessDate'], 'Y-m-d') : ''; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">入金方法</td>
+              <td class="l_data"><?php if ($showReceiptFlg) { echo $this->row['KeyContent']; } ; ?></td>            </tr>
+            <tr>
+              <td class="r_label">入金額</td>
+              <td class="r_data"><?php echo ($showReceiptFlg) ? empty($this->row['ORD_InstallmentPlanAmount']) ? '' : f_nf($this->row['ORD_InstallmentPlanAmount'], '#,##0') : ''; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">金額差異</td>
+              <td class="r_data"><?php echo ($showReceiptFlg) ? f_nf($this->row['CLM_ClaimedBalance'], '#,##0') : ''; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">印紙代</td>
+              <td class="r_data"><?php echo  ($showReceiptFlg) ? f_nf($this->row['STF_StampFee'], '#,##0') : ''; ?></td>
+            </tr>
+            <tr>
+              <td style="width: 50px;" class="r_label">CB入金日</td>
+              <td class="l_data"><?php echo ($showReceiptFlg) ? f_e($this->row['REC_DepositDate']) : ''; ?></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 特殊処理 -->
+    <div id="div04">
+
+    <!-- 備考 -->
+      <div id="div04b">
+        <div id="title2">メール履歴</div>
+        <div id="div04_2">
+        【送信】
+          <table class="ddtable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr>
+                <th width="205">メールタイトル</th>
+                <th width="90">送信日時</th>
+              </tr>
+              <?php foreach ($this->others['MailInfo'] as $row) { ?>
+              <tr>
+                <td class="l_data"><?php echo $others['master']['mail'][$row['MailTemplateId']]; ?></td>
+                <td class="l_data"><?php echo f_e($row['SendDate']); ?></td>
+              </tr>
+              <?php } ?>
+              </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="div04b" style="margin-bottom: 15px">
+	    <div id="title2">特殊処理</div>
+        <!-- 再請求履歴 -->
+        <div id="div04_2">
+	      【再請求】
+          <table class="ddtable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr>
+                <th width="55">パターン</th>
+                <th width="80">発行日</th>
+                <th width="80">期限日</th>
+                <th width="80">追加手数料</th>
+              </tr>
+              <tr>
+                <td class="r_label">再請求1</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim1a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim1b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim1c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求2</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim2a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim2b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim2c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求3</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim3a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim3b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim3c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求4</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim5a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim5b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim5c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求5</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim6a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim6b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim6c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求6</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim7a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim7b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim7c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">再請求7</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim8a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim8b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim8c']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">内容証明</td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim4a']); ?></td>
+                <td class="c_data"><?php echo f_e($this->others['reclaim4b']); ?></td>
+                <td class="r_data"><?php echo f_e($this->others['reclaim4c']); ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- キャンセル処理 -->
+        <div id="div04_3">
+          【キャンセル処理】
+          <table class="ddtable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr>
+                <td width="80" class="r_label">キャンセル日</td>
+                <td width="150" class="c_data"><?php echo f_e($this->row['CNL_CancelDate']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">キャンセル理由</td>
+                <td class="l_data multi-line"><?php echo f_e($this->others['CancelReasonCode']); ?></td>
+              </tr>
+            </tbody>
+          </table>
+          【メール送信】
+          <table class="ddtable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr>
+                <td width="80" class="r_label">直前メール</td>
+                <td width="150" class="l_data"><?php echo f_e($this->row['ORD_MailPaymentSoonDate']); ?></td>
+              </tr>
+              <tr>
+                <td class="r_label">未確認メール</td>
+                <td class="l_data"><?php echo f_e($this->row['ORD_MailLimitPassageDate']); ?>  　<?php if ($this->row['ORD_MailLimitPassageCount'] > 0) { echo '累積：' . $this->row['ORD_MailLimitPassageCount'] . '回';} ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 事業者備考 -->
+        <div style="clear: both;">
+          【事業者備考】
+          <table class="ddtable" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tbody>
+              <tr>
+                <td class="l_data"><div style="background-color: #eee; color: #666; min-height: 24px; border: solid 1px #ddd; white-space: pre; width: 540px; word-wrap: break-word; overflow-wrap: break-word; overflow: auto;" readonly="readonly"><?php echo f_e($this->row['ORD_Ent_Note']); ?></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <?php if (($this->row['ORD_CombinedClaimTargetStatus']==91 || $this->row['ORD_CombinedClaimTargetStatus']==92) && (nvl($this->row['ORD_CombinedParentOrderSeq'],'') != '' )) { ?>
+        <div style="clear: both;">
+          【請求取りまとめ元】
+          <table class="ddtable" cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+              <tr>
+                <td class="l_data"><?php echo f_e($this->row['ORD_CombinedParentOrderSeq']); ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <?php }?>
+        <?php if (($this->row['ORD_CombinedClaimTargetStatus']==91 || $this->row['ORD_CombinedClaimTargetStatus']==92) && (nvl($this->row['ORD_CombinedOrderSeq'],'') != '' )) { ?>
+        <div style="clear: both;">
+          【請求取りまとめ先】
+          <table class="ddtable" cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+              <tr>
+                <td class="l_data"><?php echo f_e($this->row['ORD_CombinedOrderSeq']); ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <?php }?>
+      </div>
+    </div>
+
+  <!-- end contents -->
+  </form>
+
+  <div style="float: none; clear: both; font-weight: bold; text-align: center;"><!-- <?php echo f_e($this->backNavi); ?> --></div>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</body>
+</html>

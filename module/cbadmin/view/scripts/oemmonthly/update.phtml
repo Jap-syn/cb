@@ -1,0 +1,28 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<?php if( empty( $this->errors ) ) { ?>
+<h3>調整額更新完了</h3>
+<?php } else { ?>
+<h3>調整額更新エラー</h3>
+<?php } ?>
+<?php foreach( $this->errors as $error ) { ?>
+<h4><?php echo f_e($error); ?></h4><br />
+<?php } ?>
+<center>
+<a href="oemmonthly/settlement/oemid/<?php echo f_e($this->OemId); ?>/fd/<?php echo f_e($this->fd); ?>">OEM月次明細画面へ</a>
+</center>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

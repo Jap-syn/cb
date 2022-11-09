@@ -1,0 +1,31 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+      <?php
+      if ($this->usedTodo2Pay == false) {?>
+          <h3 class="contents_title">キャンセル処理（申請）</h3>
+          <?php
+      } else {?>
+          <h3 class="contents_title">キャンセル処理（確定）</h3>
+      <?php }
+      ?>
+    <h4>
+      <span style="color: red;"><?php echo $this->msg; ?></span>
+      <span style="padding: 10px 50px;"><a href="<?php echo f_e($this->urlDetail); ?>"><?php echo $this->urlCaption; ?></a></span>
+    </h4>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

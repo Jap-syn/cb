@@ -1,0 +1,59 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages)
+{
+  if (empty($messages)) return;
+  if (!is_array($messages)) $messages = array($messages);
+  $list = array();
+  foreach ($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+
+<script type="text/javascript">
+</script>
+
+<style>
+  ul.errors {
+      border: solid 1px silver;
+      color: crimson;
+      background-color: lemonchiffon;
+      font-size: 10pt;
+      padding: 4px !important;
+      padding-left: 24px !important;
+    }
+  ul.errors li.error {
+    margin : 0px !important;
+  }
+</style>
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <!-- start #wrapper -->
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>【届いてから払い登録】</h3>
+      <ul class="errors">
+        <li>請求代行プラン利用の加盟店または請求取りまとめモードや口振を設定する加盟店なので、届いてから払い方法は登録できません。</li>
+      </ul>
+      <div style="display: flex; justify-content: center;">
+          <a href="site/list/eid/<?php echo f_e($this->EnterpriseId); ?>"  class="tabs" >
+              <input type="button" id="btnCancel" name="btnCancel" value="戻る" style="margin-bottom: 7px; width: 74px;" />
+          </a>
+      </div>
+    </div><!-- end #contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+  
+
+</body>
+
+</html>

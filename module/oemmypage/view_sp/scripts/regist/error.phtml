@@ -1,0 +1,37 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/regist/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message_sp.php' );
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">エラー</div>
+        <?php
+        echo $this->render( 'oemmypage/regist/list_sp.php' );
+        ?>
+        <div id="msg" class="f_bold">すでに会員登録が完了しています。<br />
+        マイページ登録完了時に、<br />
+        会員IDのメールアドレスに届いている<br />
+        登録完了メールをご確認ください。</div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+
+  <!-- start contents -->
+  <div id="contents">
+    <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <?php echo $this->render('oemadmin/paying/page_menu.php'); ?>
+    <div class="title"><span>立替予測</span></div>
+    <table class="datatable">
+      <tbody>
+        <tr>
+          <td class="l_data" style="background-color: lightgoldenrodyellow;">今日は　<?php echo $this->genzai; ?>　です。</td>
+        </tr>
+      </tbody>
+    </table>
+    <form name="form" method="post" action="paying/execcharge">
+      <input type="hidden" name="DecisionDate" id="DecisionDate" />
+      <table class="datatable">
+        <tbody>
+          <tr>
+            <th>立替予定日</th>
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替予測額</th>
+            <th>事業者計</th>
+            <th>立替予測総額</th>
+          </tr>
+        <?php foreach ( $this->list as $key => $value) { ?>
+        <?php   for ($loop = 1; $loop <= $this->numSimePtn; $loop++) { ?>
+        <?php     if ($loop == 1) { ?>
+          <tr>
+            <td rowspan="<?php echo $this->numSimePtn;?>" class="c_data"><?php echo $value["ExecScheduleDate"]; ?></a></td>
+            <td class="c_data"><?php echo $value["P1NM"]; ?></td>
+            <td class="c_data"><?php echo $value["P1FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P1CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P1PAY"], 'number', '#,##0'); ?></td>
+            <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+            <td rowspan="<?php echo $this->numSimePtn;?>" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+          </tr>
+        <?php     } else { ?>
+          <tr>
+            <td class="c_data"><?php echo $value["P" . $loop . "NM"]; ?></td>
+            <td class="c_data"><?php echo $value["P" . $loop . "FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P" . $loop . "CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P" . $loop . "PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+        <?php     } ?>
+        <?php   } ?>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </form>
+    <!-- end contents -->
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者別請求残高入金</h3>
+    <?php if ($this->errorCount == 0) { ?>
+    <h4>入金処理を完了しました。</h4>
+    <?php } else { ?>
+    <h4 style="color: red;">
+      <?php echo $this->errorCount; ?> 入金処理に失敗しました。以下の事由が考えられます。
+      <ul>
+        <li>出入金履歴に不整合がある</li>
+        <li>その他データベーストラブル等</li>
+      </ul>各種設定を見直してください
+    </h4>
+    <?php } ?>
+    <h4><a href="<?php echo f_e($this->link); ?>">事業者別入金明細へ</a></h4>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

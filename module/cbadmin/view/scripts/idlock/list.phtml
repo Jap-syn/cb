@@ -1,0 +1,70 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$title_prefix = $this->level == 'client' ? 'クライアント' : 'ID';
+?>
+<script type="text/javascript">
+function doRelease(seq) {
+  var url = [
+	(document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+	'idlock',
+	'<?php echo $this->level == 'client' ? 'cllockrelease' : 'idlockrelease'; ?>',
+	'seq',
+	seq
+  ].join('/');
+  if(confirm('ロック解除を実行しますか？')) {
+	document.getElementsByClassName('release-action').each(function(ele) {
+	  ele.style.visibility = 'hidden';
+	});
+	window.location.href = url;
+  }
+  return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/idlock/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+	<?php echo $this->render('cbadmin/idlock/error_info.php'); ?>
+    <h3 class="contents_title"><?php echo f_e($title_prefix); ?>レベルロックアウト一覧</h3>
+  <?php if($this->level == 'id' && !$this->id_lockout_enabled) { ?>
+	<div class="information">※：IDレベルロックアウトは現在無効になっています</div>
+  <?php } ?>
+  <?php if($this->level == 'client' && !$this->cl_lockout_enabled) { ?>
+	<div class="information">※：クライアントレベルロックアウトは現在無効になっています</div>
+  <?php } ?>
+  <?php if($this->lockout_time_enabled) { ?>
+	<div class="information">※：このページに表示されている各アカウントは、「自動解除」の時間に自動的にロック解除されます</div>
+  <?php } ?>
+  <?php foreach($this->apps as $key => $config) { ?>
+	<?php $app = $key == 'oemmember' ? 'member' : $key; ?>
+	<h4 class="category-title"><?php echo f_e($config['label']); ?></h4>
+	<table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+	  <thead>
+		<tr class="<?php echo f_e($this->level); ?>-level-row<?php if($this->lockout_time_enabled) echo ' show-release-time'; ?>"><?php echo $this->render(sprintf('cbadmin/idlock/%s_header.php', $app)); ?></tr>
+	  </thead>
+	  <tbody>
+  <?php if(count($this->list[$key])) { ?>
+	  <?php foreach($this->list[$key] as $row) { ?>
+	  <?php $this->assign('row', $row); ?>
+		<tr class="<?php echo f_e($this->level); ?>-level-row<?php if($this->lockout_time_enabled) echo ' show-release-time'; ?>"><?php echo $this->render(sprintf('cbadmin/idlock/%s_row.php', $app)); ?></tr>
+	  <?php } ?>
+  <?php } else { ?>
+	<?php $cols = $key == 'oemadmin' ? 6 : 7; if(!$this->lockout_time_enabled) $cols--; ?>
+		<tr class="<?php echo f_e($this->level); ?><?php if($this->lockout_time_enabled) echo ' show-release-time'; ?>">
+		  <td colspan="<?php echo f_e($cols); ?>" class="l_data no-items">ロック中のアカウントはありません</td>
+		</tr>
+  <?php } ?>
+	  </tbody>
+	</table>
+  <?php } ?>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

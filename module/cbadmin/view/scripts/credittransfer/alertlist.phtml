@@ -1,0 +1,74 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+    #message {
+        margin: 0px 25px 0px;
+        border: 1px solid #999999;
+    }
+</style>
+<script type="text/javascript">
+    function SubmitBefore(seq) {
+        var res = confirm("更新を許可しますがよろしいですか？");
+        if( res == true ) {
+            // OKなら移動
+            window.location.href = "/cbadmin/credittransfer/merge/seq/"+seq;
+        }
+    }
+</script>
+<script type="text/javascript">
+    function Submitdelete(seq,OrderId) {
+        var res = confirm(`${OrderId}を削除してもよろしいですか？`);
+        if( res == true ) {
+            // OKなら移動
+            window.location.href = "/cbadmin/credittransfer/alertlist"+`?seq=${seq}`;
+        }
+    }
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">口座振替アラート一覧</h3>
+    <div id="message">&nbsp;&nbsp;<?php echo sizeof($this->datas); ?>件</div>
+    <h5 style="text-align: right"><a href="/cbadmin/credittransfer/alertlist?csv=1">↓CSV出力ダウンロード</a></h5>
+    <form name="form" method="post" >
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <th>注文ID</th>
+          <th>事業者ID</th>
+          <th>加盟店名</th>
+          <th>加盟店顧客番号</th>
+          <th>顧客名</th>
+          <th>比較対象</th>
+          <th>アラート内容</th>
+          <th>補足情報</th>
+          <th>操作</th>
+        <?php $i = 0; foreach ($this->datas as $data) { ?>
+          <tr class="data">
+            <td class="c_data"><a href="/cbadmin/rworder/detail/oseq/<?php echo f_e($data['OrderSeq']); ?>" target="_blank"><?php echo f_e($data['OrderId']); ?></a></td>
+            <td class="c_data"><a href="/cbadmin/enterprise/detail/eid/<?php echo f_e($data['EnterpriseId']); ?>" target="_blank"><?php echo f_e($data['EnterpriseId']); ?></a></td>
+            <td class="c_data"><?php echo f_e($data['EnterpriseNameKj']); ?></td>
+            <td class="c_data"><a href="/cbadmin/customer/memberdetail/ecseq/<?php echo f_e($data['EntCustSeq']); ?>" target="_blank"><?php echo f_e($data['EntCustId']); ?></a></td>
+            <td class="c_data"><?php echo f_e($data['比較対象']); ?></td>
+            <td class="c_data"><?php echo f_e($data['NameKj']); ?></td>
+            <td class="l_data">顧客名が誤っている</td>
+            <td class="c_data"><a href="/cbadmin/rworder/detail/oseq/<?php echo f_e($data['補足情報seq']); ?>" target="_blank"><?php echo f_e($data['補足情報']); ?></a></td>
+              <td class="c_data" width="90"><a href="javascript:SubmitBefore(<?php echo f_e($data['Seq']); ?>);">更新許可</a>&nbsp;&nbsp;<a href="javascript:Submitdelete(<?php echo f_e($data['Seq']); ?>,'<?php echo f_e($data['OrderId']); ?>');">削除</a></td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

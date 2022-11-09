@@ -1,0 +1,115 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">履歴一覧</h3>
+    <form name="form" method="post" action="rwrcptcfm/dtlrcptsave">
+    <div align="center">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <?php if (!$this->odrRow) { ?>
+        <tr>
+          <td colspan="3" class="c_data"><font color="red">本注文には履歴がありません。</font></td>
+        </tr>
+        <?php } else { ?>
+        <tr>
+          <td colspan="2" class="data">【注文状況】</td>
+        </tr>
+        <tr>
+          <th width="200">項目</th>
+          <th>値</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data"><?php echo $this->odrRow['ORD_OrderId']; ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">任意注文番号</td>
+          <td class="l_data"><?php echo $this->odrRow['ORD_Ent_OrderId']; ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">注文登録日時</td>
+          <td class="l_data"><?php echo $this->odrRow['ORD_RegistDate']; ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">ご注文日</td>
+          <td class="l_data"><?php echo $this->odrRow['ORD_ReceiptOrderDate']; ?></td>
+        </tr>
+        <?php } ?>
+      </table>
+      </div>
+
+      <?php if ($this->odrRow) { ?>
+      <div align="center">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td colspan="2" class="data">【履歴】</td>
+        </tr>
+        <tr>
+          <th width="200">更新日時</th>
+          <th>状態</th>
+        </tr>
+        <?php foreach ($this->odrList as $row) { ?>
+        <tr>
+          <td class="c_label"><?php echo $row['RegistDate']; ?></td>
+          <td class="l_data"><a target="_blank" href="rworderhist/detail/hseq/<?php echo $row['HistorySeq']; ?>"><?php echo $row['HistoryReasonStr']; ?></a></td>
+        </tr>
+        <?php } ?>
+      </table>
+      </div>
+      <?php } ?>
+
+      <div align="center">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td class="c_label">
+          <input type="button" id="btnClose" value="　　閉じる　　" onclick="window.close();" />
+          </td>
+        </tr>
+      </table>
+      </div>
+
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+	onChangeReceiptMethod();
+});
+
+function onChangeReceiptMethod() {
+	// 銀行支店の有効無効（銀行入金を選択していない場合は無効化）
+    $('branchBank').disabled = ($('receiptMethod').value == 1) ? false : true;
+	// 収納代行の有効無効（コンビニ入金を選択していない場合は無効化）
+    $('cvsReceiptAgent').disabled = ($('receiptMethod').value == 0) ? false : true;
+}
+</script>
+</html>

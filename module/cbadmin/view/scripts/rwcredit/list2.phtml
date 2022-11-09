@@ -1,0 +1,1287 @@
+<?php
+use cbadmin\Application;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+.oneorder {
+	clear: both;
+	margin: 5px 0px;
+	font-size: 11px;
+	margin-bottom: 5px;
+}
+
+.redscore {
+}
+
+.redscore .target_cell {
+	background-color: #ffe3ff;
+}
+
+.bluescore {
+}
+
+.bluescore .target_cell {
+	background-color: #e3ffff;
+}
+
+.chkaddress {
+	margin: 0px;
+	margin-bottom: 3px;
+}
+/* [paging] */
+#bottom_page_nav {
+	margin-top: -15px;
+	margin-bottom: 25px;
+}
+
+#bottom_page_nav .page_nav {
+	float: none;
+	clear: both;
+	border-bottom-width: 1px;
+}
+/* radio button set */
+.radio_set {
+	clear: both;
+	float: none;
+	padding: 0px 8px;
+}
+
+.radio_set label {
+	border: none 0px;
+	padding: 2px 4px;
+	float: left;
+	width: 60px;
+	font-weight: normal;
+}
+
+.radio_set label.selected {
+	font-weight: bold;
+}
+label.out_of_amends {
+	font-size: 14px;
+	padding: 0px 4px;
+	padding-right: 10px;
+	border: solid silver 0px;
+	border-left-width: 1px;
+	float: right;
+}
+td.np_data {
+	line-height: 110%;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+-->
+</style>
+<script type="text/javascript">
+<!--
+    /*
+     * 電話結果選択
+     */
+	function getRcPoint(tnum)
+	{
+		var point = eval('(<?php echo $this->rcPoints; ?>)');
+
+		var selected = $('RealCallResult' + tnum).selectedIndex;
+		var realCodeResult = $('RealCallResult' + tnum).options[selected].value;
+
+		// recalc score total
+		var npoint = parseInt($('rcs' + tnum).innerHTML);
+		var scoret = parseInt($('scoret' + tnum).innerHTML);
+		var rpoint = parseInt(point[realCodeResult]);
+		var result = scoret - npoint + rpoint;
+
+		$('rcs' + tnum).innerHTML = point[realCodeResult];
+		$('scoret' + tnum).innerHTML = result;
+
+		changeScoreColor(tnum, result);
+	}
+
+    /*
+     * メール送信結果選択
+     */
+	function getRsPoint(tnum)
+	{
+		var point = eval('(<?php echo $this->rsPoints; ?>)');
+
+		var selected = $('RealSendMailResult' + tnum).selectedIndex;
+		var realCodeResult = $('RealSendMailResult' + tnum).options[selected].value;
+
+		// recalc score total
+		var npoint = parseInt($('rsms' + tnum).innerHTML);
+		var scoret = parseInt($('scoret' + tnum).innerHTML);
+		var rpoint = parseInt(point[realCodeResult]);
+		var result = scoret - npoint + rpoint;
+
+		$('rsms' + tnum).innerHTML = point[realCodeResult];
+		$('scoret' + tnum).innerHTML = result;
+
+		changeScoreColor(tnum, result);
+	}
+
+    /*
+     * 与信点数変更に伴う色の変更
+     */
+	function changeScoreColor(elenum, point)
+	{
+		var redpoint = <?php echo $this->redPoint; ?>;
+		var bluepoint = <?php echo $this->bluePoint; ?>;
+
+		//alert(bluepoint);
+		//var ele = Element.ClassNames('oneorder_' + elenum);
+		//ele.remove('bluescore');
+		//ele.remove('redscore');
+		//alert(ele);
+
+		if (point >= bluepoint)
+		{
+			$('oneorder_' + elenum).className = 'oneorder bluescore';
+			//ele.add('bluescore');
+		}
+		else if (point <= redpoint)
+		{
+			$('oneorder_' + elenum).className = 'oneorder redscore';
+			//ele.add('redscore');
+		}
+		else
+		{
+			$('oneorder_' + elenum).className = 'oneorder';
+		}
+	}
+
+    /*
+     * チェックメール送信
+     */
+	function sendCheck(oseq)
+	{
+		var url = '<?php echo $this->urlSendCheck; ?>';
+		url += '/oseq/' + oseq;
+
+		var ajax = new Ajax.Request(
+			url,
+			{
+				method: 'get',
+				asynchronous: false
+			});
+
+		var res = eval('(' + ajax.transport.responseText + ')');
+		if  (res['status'] == 1)
+		{
+			alert('チェックメールを送信しました。');
+		}
+		else
+		{
+			alert('チェックメール送信に失敗しました。 Err=' + res['status']);
+		}
+	}
+
+	/*
+	 * 類似住所検索
+	 */
+	function chkaddr(n, oseq)
+	{
+        <?php
+        /**
+         * phase3 #86の適用により、このchkaddr関数のシグニチャは変更されている。
+         *
+         * chkaddrの第二引数で受け取っていた請求先郵便番号を廃止し、第一引数"n"から
+         * 直接請求先・配送先郵便番号を取得するように変更。
+         *
+         */
+        ?>
+		var output = $("chkaddress{0}".format(n));
+        // サーチボタンのID
+		var button = $("srch{0}".format(n));
+        var button2 = $("srch{0}_2".format(n));
+
+        // 請求先郵便番号
+        var postalCode = (function() {
+            var el = $( "postalcode_1_{0}".format(n) );
+            return el ? el.innerHTML.stripTags().replace( /[^\d\-]/g, "" ) : null;
+        })();
+        // 配送先郵便番号
+        var destPostalCode = (function() {
+            var el = $( "postalcode_2_{0}".format(n) );
+            return el ? el.innerHTML.stripTags().replace( /[^\d\-]/g, "" ) : null;
+        })();
+        // 請求先電話番号
+         var phone = (function() {
+            var el = $( "phone_1_{0}".format(n) );
+            return el ? el.innerHTML.stripTags().replace( /[^\d\-]/g, "" ) : null;
+        })();
+        // 配送先電話番号
+         var destPhone = (function() {
+            var el = $( "phone_2_{0}".format(n) );
+            return el ? el.innerHTML.stripTags().replace( /[^\d\-]/g, "" ) : null;
+        })();
+        // サーチボタンの状態変更関数
+        function setButtonState(value, disabled) {
+            [ button, button2 ].each( function(id) {
+                if( $(id) ) {
+                    Object.extend( $(id), {
+                        value : value || $(id).value,
+                        disabled : disabled
+                    } );
+                }
+            } );
+        }
+
+		if ($(output).innerHTML == '')
+		{
+            setButtonState( "問合中", true );
+
+			$(output).innerHTML = "<img src='<?php echo $this->baseUrl; ?>/../images/loading_bar1.gif' style='opacity: .5; filter:alpha(Opacity=50); -moz-opacity: .5'/>";
+			// 問い合わせ先URLの構築
+            // 配送先情報の有無でパラメータが変化する
+            var url = "<?php echo $this->urlChkAddress; ?>/oseq/{0}/pcode/{1}{2}".format(
+				oseq,
+                encodeURI(postalCode),
+                destPostalCode ? encodeURI("/pcode2/{0}".format( destPostalCode )) : ""
+			);
+
+            // Ajax処理完了時に呼び出されるハンドラ
+			var complete_handler = function(xhr) {
+                setButtonState( "閉", false );
+			};
+
+            // 非同期処理実行
+			var ajax = new Ajax.Request(
+				url,
+				{
+					method: 'get',
+					onComplete : function(xhr) {
+						Object.extend( $(output).style, {
+							height : "0px",
+							overflow : "hidden"
+						} );
+						$(output).innerHTML = ajax.transport.responseText;
+						var size = bytefx.$size( $(output) );
+						var w = size ? size.width : "auto";
+						var h = /類似する住所の注文はありませんでした/.test( ajax.transport.responseText ) ?
+							20 : 100;
+						bytefx.size( $(output), { width : w, height : h, $width : w, width$ : w }, 80, function () {
+							Object.extend( $(output).style, {
+								width : "", height: "", overflow : ""
+							} );
+						} );
+					},
+					onSuccess : complete_handler,
+					onFailure : complete_handler,
+					onException : function(request, exception) {
+						alert( exception );
+						complete_handler();
+					}
+				});
+		}
+		else
+		{
+            setButtonState( null, true );
+
+			var size = bytefx.$size( $(output) );
+			var w = size ? size.width : "auto";
+			bytefx.size( $(output), { width : w, height : 0, $width : w, width$ : w }, 90, function() {
+                setButtonState( "サーチ", false );
+
+				$(output).innerHTML = "";
+				Object.extend( $(output).style, {
+					width: "auto", height : "auto"
+				} );
+			} );
+		}
+	}
+
+    /**
+     * 郵便番号からの住所検索
+     *
+     * @param Number n 1注文をページ内で識別するインデックス
+     * @param Number kind 1が請求先、2が配送先
+     */
+    function parsePostalCode(n, kind) {
+        var dest_id = "postal_search_result_{0}_{1}".format(kind, n);
+        var btn_id = "parse_postal_{0}_{1}".format(kind, n);
+
+        if( Element.visible($(dest_id)) ) {
+            // 問い合わせ結果をすでに表示済みの場合は単に隠す
+            $(btn_id).disabled = true;
+            var size = bytefx.$size( $(dest_id) );
+            var w = size ? size.width : "auto";
+            bytefx.size( $(dest_id), { width : w, height : 0, $width : w, width$ : w }, 90, function() {
+                Object.extend( $(btn_id), {
+                    innerHTML : "住所検索",
+                    disabled : false
+                } );
+                $(dest_id).innerHTML = "";
+                Object.extend( $(dest_id).style, {
+                    width : "auto", height : "auto", display : "none"
+                } );
+            } );
+        } else {
+            var postal_code = $("postalcode_{0}_{1}".format(kind, n)).innerHTML.replace( /[^0-9０-９]/g, "" );
+            var url = "<?php echo $this->baseUrl; ?>/rwcredit/parsepostal/postalcode/{0}".format( postal_code );
+
+            // ボタンの表示を変更
+            Object.extend( $(btn_id), {
+                innerHTML : "問合中",
+                disabled : true
+            } );
+            // Ajax通信完了の終了処理
+            var complete_handler = function(xhr) {
+                Object.extend( $(btn_id), {
+                    innerHTML : "閉",
+                    disabled : false
+                } );
+            };
+
+            new Ajax.Request( url, {
+                method : "get",
+                onComplete : function(xhr) {
+                    Object.extend( $(dest_id).style, {
+                        height : "0px",
+                        overflow : "hidden",
+                        display : ""
+                    } );
+                    var result_info = eval( "({0})".format( xhr.responseText ) );
+                    if( result_info.result != "OK" ) {
+                        $(dest_id).innerHTML = "検索でエラーが発生しました： {0}".format( result_info.reason );
+                    } else {
+                        var list = document.createElement("ul");
+                        result_info.list.each( function(item) {
+                            var li = document.createElement("li");
+                            li.innerHTML = '<span class="postal_code">{0}</span><span class="address">{1}</span>'.format( item.postal_code, item.address );
+                            list.appendChild(li);
+                        } );
+                        $(dest_id).appendChild(list);
+                    }
+
+                    var size = bytefx.$size( $(dest_id) );
+                    var w = size ? size.width : "auto";
+                    var h = result_info.result == "OK" ? 40 : 20;
+                    bytefx.size( $(dest_id), { width : w, height : h, $width : w, width$ : w }, 80, function() {
+                        Object.extend( $(dest_id).style, {
+                            width : "", height : "", overflow : ""
+                        } );
+                    } );
+                },
+                onSuccess : complete_handler,
+                onFailure : complete_handler,
+                onException : function(request, exception) {
+                    alert( exception );
+                    oncomplete_handler();
+                }
+            } );
+        }
+    }
+
+    /**
+     * 更新意思ありのチェックボックス
+     *
+     */
+    function checkIwill(num)
+    {
+    	if ($('Iwill' + num).checked)
+    	{
+    		$('RealCallResult' + num).disabled = false;
+    		$('PhoneHistory' + num).disabled = false;
+    		$('eDen' + num).disabled = false;
+    		$('RealSendMailResult' + num).disabled = false;
+    		$('Incre_Status' + num + '1').disabled = false;
+    		$('Incre_Status' + num + '2').disabled = false;
+    		$('Incre_Status' + num + '3').disabled = false;
+    		$('Incre_Note' + num).disabled = false;
+    		$('reserveReason' + num).disabled = false;    // 保留理由
+    		$('btnfixednote' + num).disabled = false;
+
+    		$('iwillcap' + num).style.color = "red";
+    		$('iwillcap' + num).style.fontWeight = "bold";
+
+			var chk = $("OutOfAmends{0}".format(num));
+			chk.disabled = false;
+			Object.extend( $("LabelOutOfAmends{0}".format(num)).style, {
+				color : chk.checked ? "red" : "",
+				backgroundColor : chk.checked ? "mistyrose" : "",
+				fontWeight : chk.checked ? "bold" : "",
+				paddingRight : chk.checked ? "4px" : ""
+			} );
+    	}
+    	else
+    	{
+    		$('RealCallResult' + num).disabled = true;
+    		$('PhoneHistory' + num).disabled = true;
+    		$('eDen' + num).disabled = true;
+    		$('RealSendMailResult' + num).disabled = true;
+    		$('Incre_Status' + num + '1').disabled = true;
+    		$('Incre_Status' + num + '2').disabled = true;
+    		$('Incre_Status' + num + '3').disabled = true;
+    		$('Incre_Note' + num).disabled = true;
+    		$('reserveReason' + num).disabled = true;     // 保留理由
+    		$('btnfixednote' + num).disabled = true;
+
+    		$('iwillcap' + num).style.color = "gray";
+    		$('iwillcap' + num).style.fontWeight = "normal";
+
+			var chk = $("OutOfAmends{0}".format(num));
+			chk.disabled = true;
+			Object.extend( $("LabelOutOfAmends{0}".format(num)).style, {
+				color : chk.checked ? "rosybrown" : "gray",
+				backgroundColor : chk.checked ? "lavenderblush" : "",
+				fontWeight : chk.checked ? "bold" : "",
+				paddingRight : chk.checked ? "4px" : ""
+			} );
+    	}
+    }
+
+
+	/*
+	 * ジンテック表示／非表示切り替え
+	 */
+	function jintecvisible(n)
+	{
+        // ボタンのID
+		var button = $("jintec{0}".format(n));
+		var detail = $("jintec_detail{0}".format(n));
+
+		if (button.value == "表示")
+		{
+			// 表示する
+			button.value = "非表示";
+			detail.style.display = "";
+		} else {
+			// 非表示にする
+			button.value = "表示";
+			detail.style.display = "none";
+		}
+	}
+
+-->
+</script>
+
+</head>
+<body onUnload="unloadFixedNoteSelectForm();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwcredit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title"><?php echo f_e($this->title); ?><?php echo isset($this->pager) ? $this->pager->getTotalItems() : $this->listcount; ?>　件<?php if (isset($this->title_notice)) { echo  $this->title_notice; } ?></h3>
+    <form name="form" method="post" action="<?php echo $this->postaction; ?>">
+    <div id="orders">
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <?php if ($this->elTime['count'] > 0) { ?>
+    <tr>
+      <td colspan="2" class="data" style="background-color: yellow"><font size="5" color="red"><b><?php echo $this->elTime['time']; ?>分以上経過した注文が<?php echo $this->elTime['count']; ?>件あります！</b></font><br>
+      <font color="red"><?php echo $this->elTime['OrderId']; ?></font></td>
+    </tr>
+    <?php } ?>
+    <?php if ($this->money['count'] > 0) { ?>
+    <tr>
+      <td colspan="2" class="data" style="background-color: yellow"><font size="5" color="red"><b><?php echo $this->money['price']; ?>万円以上の注文が<?php echo $this->money['count']; ?>件あります！</b></font><br>
+      <font color="red"><?php echo $this->money['OrderId']; ?></font></td>
+    </tr>
+    <?php } ?>
+    </table>
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="2" class="data">事業者ID　<input name="loginid" style="width: 150px" value="<?php echo f_e($this->loginid); ?>" /><input type="submit" value="　検　索　" /></td>
+      </tr>
+      <tr>
+        <td class="c_label" style="width: 120px">全体統一<br>備考</td>
+        <td class="data"><?php echo $this->codemstNote85_0;  ?></td>
+      </tr>
+    </table>
+    </div>
+    </form>
+	<!-- ページナビゲーション -->
+	<?php echo $this->render('cbadmin/page_navigation.php'); ?>
+
+	<!-- 一括操作ボタン -->
+    <div class="page_nav" style="border-top-width: 1px">
+		一括操作
+    	<button id="check_all_address" type="button">全サーチ</button>
+    	<button id="all_i_will" type="button">Yes, I will ALL !!!</button>
+    	<button id="all_jintec" type="button">ジンテック全件表示</button>
+    </div>
+
+    <form name="form" method="post" action="rwcredit/donejudge">
+      <input type="hidden" name="osecs" id="osecs" value="<?php echo $this->osecs;?>" />
+      <div id="orders">
+        <?php
+        // count関数対策
+          $listCount1 = 0;
+          if (!empty($this->list)) {
+          $listCount1 = count($this->list);
+          }
+          for ($i = 0 ; $i < $listCount1 ; $i++) { ?>
+        <div id="oneorder_<?php echo $i; ?>" class="oneorder <?php echo $this->list[$i]['ScoreStyle']; ?>">
+          <div class="od1">
+            <div class="od1_1">
+              <!-- 事業者名のところ -->
+              <?php echo $this->list[$i]["OrderSeqHidden"]; ?>
+              <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+				<tr>
+					<td width="52px" class="r_label">注文ID</td>
+					<td colspan="5" class="l_data" style="font-size: 16px;">
+						<?php
+						$chk = $this->list[$i]['OutOfAmends'];
+						$chkId = 'OutOfAmends' . $i;
+						$labelStyle = $chk ?
+							'color: rosybrown; background-color: lavenderblush; font-weight: bold; padding-right: 4px;' :
+							'color: gray;';
+						$chkAttr = $chk ? 'checked="checked"' : '';
+						?>
+						<label id="Label<?php echo $chkId; ?>" class="out_of_amends" style="<?php echo $labelStyle; ?>">
+							<input type="checkbox" class="out_of_amends_check" id="<?php echo $chkId; ?>" name="<?php echo $chkId; ?>" value="1" <?php echo $chkAttr; ?> disabled="disabled" />
+							補償外案件
+						</label><span style="float: none; clear: both;"></span>
+                        <a target="_blank" href="rworder/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["OrderId"]); ?></a>　　　　　　　
+                        <u><span id="RealtimeClockArea<?php echo $i ?>"></span></u>
+                        <?php if ($this->list[$i]['T_OrderClass'] == 1 ) { ?><font color="green">(テスト注文)</font><?php } ?>
+					</td>
+				</tr>
+                <tr style="display: none">
+                  <td width="52px" class="r_label">更新意志</td>
+                  <td colspan="5" class="l_data"><label>    <input type="checkbox" name="Iwill<?php echo $i; ?>" id="Iwill<?php echo $i; ?>" value="yes" onChange="checkIwill(<?php echo $i; ?>);" /><span id="iwillcap<?php echo $i; ?>" style="font-size: 12px; color: gray">    Yes, I will !!    </span></label></td>
+                </tr>
+                <tr>
+                  <td width="52px" class="r_label">注文日</td>
+                  <td class="l_data" style="font-size: 12px;"><?php echo f_e($this->list[$i]["ReceiptOrderDate"]); ?></td>
+                  <td width="52px" class="r_label">登録日時</td>
+                  <td colspan="3" class="l_data" style="font-size: 12px;"><?php echo f_e($this->list[$i]["RegistDate"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">事業者名</td>
+                  <td class="l_data">
+					<a target="_blank" href="enterprise/detail/eid/<?php echo f_e($this->list[$i]['EnterpriseId']); ?>">
+				    <?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?>
+					</a>
+					<input type="hidden" id="EnterpriseId<?php echo $i; ?>" name="EnterpriseId<?php echo $i; ?>" value="<?php echo $this->list[$i]['EnterpriseId']; ?>" />
+				  </td>
+                  <td class="r_label">担当者</td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["CpNameKj"]); ?></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_AtnEnterpriseScore"]); ?></td>
+                  <td class="l_data"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_AtnEnterpriseNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_AtnEnterpriseNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="r_label">サイト名</td>
+                  <td class="l_data" style="line-height: 1.5">
+                    <a target="_blank" href="site/edit/eid/<?php echo f_e($this->list[$i]['EnterpriseId']); ?>/sid/<?php echo f_e($this->list[$i]['SiteId']); ?>">
+                      <?php echo f_e($this->list[$i]["SiteNameKj"]); ?>
+                    </a>
+                    <input type="hidden" id="SiteId<?php echo $i; ?>" name="SiteId<?php echo $i; ?>" value="<?php echo $this->list[$i]['SiteId']; ?>" />
+				  </td>
+                  <td class="r_label">TEL</td>
+                  <td colspan="3" class="l_data"><?php echo f_e($this->list[$i]["ContactPhoneNumber"]); ?></td>
+                </tr>
+                <tr>
+				  <?php
+				  $ent = $this->entInfo->find($this->list[$i]['EnterpriseId']);
+				  ?>
+                  <td class="r_label">簡易備考</td>
+                  <td colspan="5" class="l_data" style="background-color: lemonchiffon;"><?php
+				  if( $ent ) {
+					echo f_br($ent['Memo']);
+				  } else {
+					echo 'oops !! &nbsp;';
+				  }
+				  ?></td>
+                </tr>
+              </table>
+              <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="c_label np_data" style="width: 78px">3ヶ月未払い<br />(保証/無保証)</td>
+                  <td class="c_label np_data" style="width: 68px">3ヶ月請求数</td>
+                  <td class="c_label np_data" style="width: 78px">3ヶ月不払率<br />(保証/無保証)</td>
+                  <td class="c_label np_data" style="width: 78px">全体未払い<br />(保証/無保証)</td>
+                  <td class="c_label np_data" style="width: 64px">全体請求数</td>
+                  <td class="c_label np_data" style="width: 78px">全体不払率<br />(保証/無保証)</td>
+                </tr>
+                <tr>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpMolecule3']); ?>　件<br />
+					<?php echo f_e(sprintf('(%s / %s)', $ent['NpGuaranteeMolecule3'], $ent['NpNoGuaranteeMolecule3'])); ?>
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpDenominator3']); ?>　件
+				  </td>
+				  <?php if(floor($ent['NpRate3']) >= $this->npRateColorThreshold) { ?>
+					<td class="r_data np_data denominator_backcolor">
+				  <?php } else { ?>
+				    <td class="r_data np_data">
+				  <?php } ?>
+				  <?php if(($ent['NpRate3']) < 100) {
+						echo f_br(doubleval($ent['NpRate3'])); ?>　％
+					<?php } else {
+						echo 100 ?>　％
+					<?php	}?><br />
+				  <?php echo f_e(sprintf('(%s / %s)', doubleval($ent['NpGuaranteeRate3']), doubleval($ent['NpNoGuaranteeRate3']))); ?>
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpMoleculeAll']); ?>　件<br />
+					<?php echo f_e(sprintf('(%s / %s)', $ent['NpGuaranteeMoleculeAll'], $ent['NpNoGuaranteeMoleculeAll'])); ?>
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpDenominatorAll']); ?>　件
+				  </td>
+				  <?php if(floor($ent['NpRateAll']) >= $this->npRateColorThreshold) { ?>
+					<td class="r_data np_data denominator_backcolor">
+				  <?php } else { ?>
+				    <td class="r_data np_data">
+				  <?php } ?>
+					<?php if(($ent['NpRateAll']) < 100) {
+						echo f_br(doubleval($ent['NpRateAll'])); ?>　％
+					<?php } else {
+						echo 100 ?>　％
+					<?php	}?><br />
+					<?php echo f_e(sprintf('(%s / %s)', doubleval($ent['NpGuaranteeRateAll']), doubleval($ent['NpNoGuaranteeRateAll']))); ?>
+				  </td>
+                </tr>
+              </table>
+              <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="c_label np_data" style="width: 78px">3ヶ月NG数</td>
+                  <td class="c_label np_data" style="width: 68px">3ヶ月注文数</td>
+                  <td class="c_label np_data" style="width: 78px">3ヶ月NG率</td>
+                  <td class="c_label np_data" style="width: 78px">全体NG数</td>
+                  <td class="c_label np_data" style="width: 64px">全体注文数</td>
+                  <td class="c_label np_data" style="width: 78px">全体NG率</td>
+                </tr>
+                <tr>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpNgMolecule3']); ?>　件
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpNgDenominator3']); ?>　件
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br(doubleval($ent['NpNgRate3'])); ?>　％
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpNgMoleculeAll']); ?>　件
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br($ent['NpNgDenominatorAll']); ?>　件
+				  </td>
+                  <td class="r_data np_data">
+					<?php echo f_br(doubleval($ent['NpNgRateAll'])); ?>　％
+				  </td>
+                </tr>
+              </table>
+			  <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+			    <tr>
+				  <td class="c_label np_data" style="width: 136px">平均利用額（与信OKのみ）</td>
+				  <td class="c_label np_data" style="width: 136px">平均利用額（全体）</td>
+				  <td class="c_label np_data" style="width: 41px">返却数</td>
+				  <td class="c_label np_data" style="width: 41px">返却率</td>
+				  <td class="c_label np_data" style="width: 49px">手数料率</td>
+				  <td class="c_label np_data" style="width: 41px">利益率</td>
+				</tr>
+			    <tr>
+				  <td class="r_data np_data">
+				    <?php echo nvl($ent['NpOrderCountOk'], 0) ? f_br(number_format($ent['NpAverageAmountOk'] / $ent['NpOrderCountOk'])) : '0'; ?> 円
+				  </td>
+				  <td class="r_data np_data">
+				    <?php echo nvl($ent['NpOrderCountTotal'], 0) ? f_br(number_format($ent['NpAverageAmountTotal'] / $ent['NpOrderCountTotal'])) : '0'; ?> 円
+				  </td>
+				  <td class="r_data np_data">
+				    <?php echo f_br($this->list[$i]["saikenCount"]); ?> 　件
+				  </td>
+				  <td class="r_data np_data">
+				    <?php echo nvl($ent['NpNgDenominatorAll'], 0) ? f_br(round(($this->list[$i]["saikenCount"] / $ent['NpNgDenominatorAll']) * 10000,0) / 100) : '0'; ?> 　％
+				  </td>
+				  <td class="r_data np_data">
+				    <?php echo doubleval(nvl($this->list[$i]['SettlementFeeRate'], 0)); ?> 　％
+				  </td>
+				  <td class="r_data np_data">
+				    <?php echo doubleval(nvl($this->list[$i]['Profitability'], 0)); ?> 　％
+				  </td>
+			    </tr>
+              </table>
+            </div>
+            <div class="od1_2">
+              <!-- 請求先のところ -->
+              <div id="od_caption">請求先</div>
+              <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td width="52px" class="r_label" rowspan="2">氏名</td>
+                  <td colspan="2" class="l_data target_cell" style="line-height: 130%;"><?php echo escape($this->list[$i]["NameKn"], true, '-'); ?></td>
+                  <td class="r_data target_cell" rowspan="2"><?php echo f_e($this->list[$i]["Incre_NameScore"]); ?></td>
+                  <td class="l_data target_cell" rowspan="2"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_NameNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_NameNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="l_data target_cell"><a target="_blank" href="customerinquiry/detail/custid/<?php echo f_e($this->list[$i]["CustomerId"]); ?>"><?php echo f_e($this->list[$i]["NameKj"]); ?></a></td>
+                </tr>
+                <tr>
+                  <td rowspan="2" class="r_label">
+                    住所<br /><?php /* 類似住所検索ボタン */ ?>
+                    <input id="srch<?php echo $i; ?>" style="font-size: 11px; width:40px;" type="button" value="サーチ" onClick="chkaddr(<?php echo $i; ?>, <?php echo f_e($this->list[$i]["OrderSeq"]); ?>);" />
+                  </td>
+                  <td colspan="2" class="l_data target_cell">
+                        <div>
+                            <span id="postalcode_1_<?php echo $i; ?>">〒<a target="_blank" href="searcho/qsearch?registdate=30&postalcode=<?php echo f_e($this->list[$i]["PostalCode"]); ?>"><?php echo f_e($this->list[$i]["PostalCode"]); ?></a></span>
+                            　<?php echo f_e($this->list[$i]["PostalCodeKn"]); ?>
+                        </div>
+                  </td>
+                  <td class="r_data target_cell"><?php echo f_e($this->list[$i]["Incre_PostalCodeScore"]); ?></td>
+                  <td class="l_data target_cell"><?php echo f_e($this->list[$i]["Incre_PostalCodeNote"]); ?></td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="l_data target_cell"><a target="_blank" href="http://maps.google.co.jp/maps?q=<?php echo f_e($this->list[$i]["UnitingAddress"]); ?>"><?php echo f_e($this->list[$i]["UnitingAddress"]); ?></a></td>
+                  <td class="r_data target_cell"><?php echo f_e($this->list[$i]["Incre_AddressScore"]); ?></td>
+                  <td class="l_data target_cell"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_AddressNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_AddressNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="r_label">電話</td>
+                  <td class="l_data target_cell"><span id="phone_1_<?php echo $i; ?>"><a target="_blank" href="searcho/qsearch?registdate=30&phonelink=<?php echo f_e($this->list[$i]["Phone"]); ?>"><?php echo f_e($this->list[$i]["Phone"]); ?></a></span><?php echo f_e($this->list[$i]["Incre_ArTel_Caption"]); ?></td>
+                  <td class="r_data target_cell">
+                    <span style="display: none;"><?php echo $this->list[$i]["realCallResultTag"]; ?></span>
+                    <span style="margin-left: 5px;">履歴：<?php echo $this->list[$i]["PhoneHistoryTag"]; ?></span>
+                    <span style="margin-left: 5px;">e電：<?php echo $this->list[$i]["eDenTag"]; ?></span>
+                  </td>
+                  <td class="r_data target_cell"><?php echo f_e($this->list[$i]["Incre_TelScore"]); ?></td>
+                  <td class="l_data target_cell"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_TelNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_TelNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="r_label">ジンテック</td>
+                  <td colspan="4" class="l_data target_cell">
+                    <input id="jintec<?php echo $i; ?>" style="font-size: 11px; width:40px;" type="button" value="表示" onClick="jintecvisible(<?php echo $i; ?>);" /><br>
+                    <table id="jintec_detail<?php echo $i; ?>" style="display: none; width: 382px;">
+                        <col style="width: 70px;">
+                        <col >
+                        <col style="width: 70px;">
+                        <col >
+                        <tr>
+                            <td class="l_label">加入期間</td>
+                            <td class="l_data target_cell"><?php echo f_e($this->list[$i]["JintecDetail"]["month"]); ?></td>
+                            <!-- ↓↓↓将来枠のため設定値なし -->
+                            <td class="l_label">局番辞書</td>
+                            <td class="l_data target_cell">---</td>
+                            <!-- ↑↑↑将来枠のため設定値なし -->
+                        </tr>
+                        <tr>
+                            <td class="l_label">移転先</td>
+                            <td class="l_data target_cell"><?php echo f_e($this->list[$i]["JintecDetail"]["movetel"]); ?></td>
+                            <!-- ↓↓↓将来枠のため設定値なし -->
+                            <td class="l_label">都道府県</td>
+                            <td class="l_data target_cell">---</td>
+                            <!-- ↑↑↑将来枠のため設定値なし -->
+                        </tr>
+                        <tr>
+                            <td class="l_label">キャリア</td>
+                            <td class="l_data target_cell"><?php echo f_e($this->list[$i]["JintecDetail"]["carrier"]); ?></td>
+                            <td class="l_label">検索数</td>
+                            <td class="l_data target_cell"><?php echo f_e($this->list[$i]["JintecDetail"]["count"]); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="l_label">注意事項</td>
+                            <td class="l_data target_cell"><?php echo f_e($this->list[$i]["JintecDetail"]["attention"]); ?></td>
+                            <!-- ↓↓↓将来枠のため設定値なし -->
+                            <td class="l_label">利用状況</td>
+                            <td class="l_data target_cell">---</td>
+                            <!-- ↑↑↑将来枠のため設定値なし -->
+                        </tr>
+                        <tr>
+                            <!-- ↓↓↓将来枠のため設定値なし -->
+                            <td class="l_label">電話帳</td>
+                            <td class="l_data target_cell" colspan="3">---</td>
+                            <!-- ↑↑↑将来枠のため設定値なし -->
+                        </tr>
+                        <tr>
+                            <!-- ↓↓↓将来枠のため設定値なし -->
+                            <td class="l_label">履歴</td>
+                            <td class="l_data target_cell" colspan="3"><textarea style="font-size: 11px; width: 300px; resize: vertical;" name="jintec_rireki<?php echo $i; ?>" id="jintec_rireki<?php echo $i; ?>" cols="60" rows="3" disabled></textarea></td><!-- 将来枠のため設定値なし -->
+                            <!-- ↑↑↑将来枠のため設定値なし -->
+                        </tr>
+
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="r_label">メール</td>
+                  <td colspan="2" class="l_data target_cell"><?php echo f_e($this->list[$i]["MailAddress"]); ?></td>
+                  <td class="r_data target_cell"><?php echo f_e($this->list[$i]["Incre_MailDomainScore"]); ?></td>
+                  <td class="l_data target_cell"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_MailDomainNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_MailDomainNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="r_label">職業</td>
+                  <td colspan="4" class="l_data target_cell"><?php echo f_e($this->Customer[$i]["Occupation"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">法人名</td>
+                  <td colspan="4" class="l_data target_cell"><?php echo f_e($this->Customer[$i]["CorporateName"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">部署名</td>
+                  <td colspan="4" class="l_data target_cell"><?php echo f_e($this->Customer[$i]["DivisionName"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">担当者名</td>
+                  <td colspan="4" class="l_data target_cell"><?php echo f_e($this->Customer[$i]["CpNameKj"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">履歴照会</td>
+                  <td colspan="4" class="l_data target_cell">
+                  <a target="_blank" href="rworderhist/list/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>">履歴照会</a>
+                  </td>
+                </tr>
+                <tr style="display: none;">
+                  <td class="r_label">リアル送信チェック<input style="font-size: 11px;" type="button" value="送信" onClick="javascript:sendCheck('<?php echo f_e($this->list[$i]["OrderSeq"]); ?>');" /></td>
+                  <td class="l_data target_cell"><?php echo $this->list[$i]["realSendMailResultTag"]; ?></td>
+                  <td class="r_data target_cell"><span id="rsms<?php echo $i; ?>"><?php echo f_e($this->list[$i]["RealSendMailScore"]); ?></span></td>
+                  <td class="l_data target_cell"></td>
+                </tr>
+              </table>
+            </div>
+            <div class="od1_3">
+              <!-- 配送先のところ -->
+              <?php if ($this->list[$i]["AnotherDeliFlg"] == 1) { ?>
+              <div id="od_caption">配送先</div>
+              <table style="width: 450px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td width="52px" class="r_label" rowspan="2">氏名</td>
+                  <td class="l_data" style="line-height: 130%;"><?php echo escape($this->list[$i]["DestNameKn"], true, '-'); ?></td>
+                  <td class="r_data" rowspan="2"><?php echo f_e($this->list[$i]["Incre_DestNameScore"]); ?></td>
+                  <td class="l_data" rowspan="2"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_DestNameNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_DestNameNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["DestNameKj"]); ?></td>
+                </tr>
+                <tr>
+                  <td rowspan="2" class="r_label">
+                    住所<br /><?php /* 類似住所検索ボタン */ ?>
+                    <input id="srch<?php echo $i; ?>_2" style="font-size: 11px; width:40px;" type="button" value="サーチ" onClick="chkaddr(<?php echo $i; ?>, <?php echo f_e($this->list[$i]["OrderSeq"]); ?>);" />
+                  </td>
+                  <td class="l_data">
+                        <div>
+                            <span id="postalcode_2_<?php echo $i; ?>">〒<a target="_blank" href="searcho/qsearch?registdate=30&postalcode=<?php echo f_e($this->list[$i]["DestPostalCode"]); ?>"><?php echo f_e($this->list[$i]["DestPostalCode"]); ?></a></span>
+                            　<?php echo f_e($this->list[$i]["DestPostalCodeKn"]); ?>
+                        </div>
+                  </td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_DestPostalCodeScore"]); ?></td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["Incre_DestPostalCodeNote"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="l_data"><a target="_blank" href="http://maps.google.co.jp/maps?q=<?php echo f_e($this->list[$i]["DestUnitingAddress"]); ?>"><?php echo f_e($this->list[$i]["DestUnitingAddress"]); ?></a></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_DestAddressScore"]); ?></td>
+                  <td class="l_data"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_DestAddressNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_DestAddressNote"]); ?></span></td>
+                </tr>
+                <tr>
+                  <td class="r_label">住所相違</td>
+                  <td class="l_data"></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_SameCnAndAddrScore"]); ?></td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["Incre_SameCnAndAddrNote"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">電話</td>
+                  <td class="l_data"><span id="phone_2_<?php echo $i; ?>"><a target="_blank" href="searcho/qsearch?registdate=30&phonelink=<?php echo f_e($this->list[$i]["DestPhone"]); ?>"><?php echo f_e($this->list[$i]["DestPhone"]); ?></a></span></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_DestTelScore"]); ?></td>
+                  <td class="l_data"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["Incre_DestTelNote"]); ?>');" onmouseout="tooltip.hide();"><?php echo f_e($this->list[$i]["ShortIncre_DestTelNote"]); ?></span></td>
+                </tr>
+              </table>
+              <?php } ?>
+              <table style="width: 450px; margin-top: 3px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td width="80px" class="c_label">事業者備考</td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["Ent_Note"]); ?></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="od2">
+            <div class="od2_1">
+              <!-- 商品のところ -->
+              <table style="width: 400px;" class="ddtable" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <th>購入品目</th>
+                  <th>単価</th>
+                  <th>数量</th>
+                  <th>小計</th>
+                  <th>点数</th>
+                  <th>備考</th>
+                </tr>
+                <?php
+                // count関数対策
+                  $listCount2 = 0;
+                  if (!empty($this->list[$i]["items"])) {
+                  $listCount2 = count($this->list[$i]["items"]);
+                  }
+                  for ($j = 0 ; $j < $listCount2 ; $j++) { ?>
+                <tr>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["items"][$j]['ItemNameKj']); ?></td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["items"][$j]['UnitPrice'], '#,##0'); ?></td>
+                  <td class="r_data"><?php echo f_e(number_format($this->list[$i]["items"][$j]['ItemNum'], $this->list[$i]["DispDecimalPoint"])); ?></td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["items"][$j]['SumMoney'], '#,##0'); ?></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["items"][$j]['Incre_Score']); ?></td>
+                  <td class="l_data"><span class="hotspot" onmouseover="tooltip.show('<?php echo f_e($this->list[$i]["items"][$j]['Incre_Note']); ?>');" onmouseout="tooltip.hide();"><?php echo f_e(mb_strimwidth($this->list[$i]["items"][$j]['Incre_Note'], 0, 43,"...", 'UTF-8')); ?></span></td>
+                </tr>
+                <?php } ?>
+                <tr>
+                  <td colspan="3" class="r_label">送料</td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["deliveryFee"], '#,##0'); ?></td>
+                  <td class="r_data"></td>
+                  <td class="l_data"></td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="r_label">手数料</td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["settlementFee"], '#,##0'); ?></td>
+                  <td class="r_data"></td>
+                  <td class="l_data"></td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="r_label">外税額</td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["exTax"], '#,##0'); ?></td>
+                  <td class="r_data"></td>
+                  <td class="l_data"></td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="r_label">合計</td>
+                  <td class="r_data"><?php echo f_nf($this->list[$i]["totalSumMoney"], '#,##0'); ?></td>
+                  <td class="r_data"><?php echo f_e($this->list[$i]["Incre_BorderScore"]); ?></td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["Incre_BorderNote"]); ?></td>
+                </tr>
+              </table>
+            <!--
+            </div>
+            <div class="od2_2">
+            -->
+              <!-- コマンドのところ -->
+              <table class="command" cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="r_label">与信結果属性</td>
+                  <td class="l_data"><?php echo f_e($this->list[$i]["IncreArLongCaption"]); ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">与信点数</td>
+                  <td class="l_data target_cell">
+                    <span id="scoret<?php echo $i; ?>"><?php echo f_e($this->list[$i]["Incre_ScoreTotal"]); ?></span>点
+                  </td>
+                </tr>
+                <tr>
+                  <td class="r_label">審査システム点数  </td>
+                  <td class="l_data target_cell">
+                    <span id="scoret<?php echo $i; ?>"><?php echo f_e($this->list[$i]["Judge_System_Point"]); ?></span>点
+                  </td>
+                </tr>
+                <tr>
+                  <td class="r_label">ジンテック  </td>
+                  <td class="l_data target_cell">
+                    <span id="jintect<?php echo $i; ?>"><?php echo f_e($this->list[$i]["JintecResult"]); ?></span>&nbsp;<span style="font-size: 11px"><?php echo $this->list[$i]["JintecManualJudgeFlg"]; ?></span>
+
+                  </td>
+                </tr>
+                <tr>
+                  <td class="r_label">審査結果</td>
+                  <td class="l_data"><?php echo $this->list[$i]["CreditJudgeTag"]; ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">保留理由</td>
+                  <td class="l_data"><?php echo $this->list[$i]["reserveReasonTag"]; ?></td>
+                </tr>
+                <tr>
+                  <td class="r_label">NG理由</td>
+                  <td class="l_data"><?php echo $this->list[$i]["NgReasonTag"]; ?></td>
+                </tr>
+                </table>
+              <table  cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="l_data">【備考】</td>
+                </tr>
+                <tr>
+                  <td class="l_data">
+                    <textarea style="font-size: 11px; width: 385px;" name="Incre_Note<?php echo $i; ?>" id="Incre_Note<?php echo $i; ?>" cols="60" rows="3" disabled><?php echo f_e($this->list[$i]["Incre_Note"]); ?></textarea>
+                  </td>
+                </tr>
+              </table>
+              <table  cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="l_data">【審査システム結果】</td>
+                </tr>
+                <tr>
+                  <td class="l_data">
+                    <textarea style="font-size: 11px; width: 385px; background-color: #eee; color: #666;" name="Judge_System_remarks<?php echo $i; ?>" id="Judge_System_remarks<?php echo $i; ?>" cols="60" rows="2" readonly="readonly" maxlength="100"><?php echo f_e($this->list[$i]["Judge_System_remarks"]); ?></textarea>
+                  </td>
+                </tr>
+              </table>
+              <table  cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="l_data">【社内審査結果】</td>
+                </tr>
+                <tr>
+                  <td class="l_data">
+                    <textarea style="font-size: 11px; width: 385px; background-color: #eee; color: #666;" name="IncreSnapShotString<?php echo $i; ?>" id="IncreSnapShotString<?php echo $i; ?>" cols="60" rows="2" readonly="readonly" maxlength="100"><?php echo f_e($this->list[$i]["IncreSnapShotString"]); ?></textarea>
+                  </td>
+                </tr>
+              </table>
+              <table  cellpadding="1" cellspacing="1" border="0">
+                <tr>
+                  <td class="l_data">　</td>
+                </tr>
+                <tr>
+                  <td class="l_data">
+                  <input type="button" name="btnfixednote<?php echo $i; ?>" id="btnfixednote<?php echo $i; ?>" value="　定型入力　" onclick="openFixedNoteSelectForm('gp/selfixednote/usetype/2/noteno/<?php echo $i; ?>','frmfixednote2',<?php echo $this->list[$i]["OrderSeq"]; ?>, 400, 190); return false;" disabled />　
+                  <input type="button" value="不払い率検索" onclick="window.open('enterprise/sitenplist/eid/<?php echo $this->list[$i]['EnterpriseId']; ?>/sid/<?php echo $this->list[$i]['SiteId']; ?>')" /></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+		  <div style="float: none; clear: both;"></div>
+         </div>
+        <div id="chkaddress<?php echo $i; ?>" class="chkaddress" style="clear: both;"></div>
+        <div class="border"></div>
+        <?php } ?>
+      </div>
+	  <!-- ページナビゲーション -->
+      <div id="bottom_page_nav">
+      <?php
+$this->droplist_id = 'page_nav_page_list_2';
+echo $this->render('cbadmin/page_navigation.php');
+?>      </div>
+      <div style="text-align: center; margin-bottom: 10px;">
+        <input type="submit" value="　　　　社内与信確定　　　　" />
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+Event.observe( window, "load", function() {
+	var colors = {
+		"color" : { "-1" : "red", "0" : "dimgray", "1" : "blue" },
+		"background" : { "-1" : "lavenderblush", "0" : "whitesmoke", "1" : "aliceblue" }
+	};
+	document.getElementsByClassName( "radio_set", $("orders") ).each( function(element) {
+		if( ! /span/i.test( element.tagName ) ) throw $continue;
+		Event.observe( element, "click", function(evt) {
+			if( ! /input/i.test( Event.element(evt).tagName ) ) return;
+			$A( this.getElementsByTagName("input") ).each( function(input) {
+				var label = input.parentNode;
+				if( /label/i.test( label.tagName ) ) {
+					label.style.color = input.checked ? colors.color[input.value] : "";
+					label.style.backgroundColor = input.checked ? colors.background[input.value] : "";
+
+					new Element.ClassNames( label )[ input.checked ? "add" : "remove" ]("selected");
+				}
+			} );
+		}.bindAsEventListener(element) );
+	} );
+
+	Event.observe($("check_all_address"), "click", function() {
+		$("check_all_address").disabled = true;
+		chkalladdr( function() {
+			$("check_all_address").disabled = false;
+		} );
+	} );
+	Event.observe($("all_i_will"), "click", function() {
+
+        // 一度ｸﾘｯｸされた後は、反応不要
+        if ($("all_i_will").style.color == "red") { return; }
+
+        // (Ajax)自身が与信可能(排他制御)かの判定
+        var url = "<?php echo $this->baseUrl; ?>/rwcredit/iscanlock/osecs/" + $("osecs").value;
+        var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+        var res = eval('(' + ajax.transport.responseText + ')');
+        if  (res['status'] == 1) {
+
+            // (Ajax)与信排他制御テーブルへの登録(与信開始アクション)
+            url = "<?php echo $this->baseUrl; ?>/rwcredit/dolock/osecs/" + $("osecs").value;
+            ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+            res = eval('(' + ajax.transport.responseText + ')');
+            if  (res['status'] == 1) {
+            	$("all_i_will").style.color = "red";
+            	chkallIwill();
+            }
+            else {
+            	alert(res['status']);
+            }
+        }
+        else {
+
+            if (window.confirm(res['status'])) {
+
+                // (Ajax)与信排他制御テーブルへの登録(与信開始アクション)
+                url = "<?php echo $this->baseUrl; ?>/rwcredit/dolock/osecs/" + $("osecs").value;
+                ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+                res = eval('(' + ajax.transport.responseText + ')');
+                if  (res['status'] == 1) {
+                	$("all_i_will").style.color = "red";
+                	chkallIwill();
+                }
+                else {
+                	alert(res['status']);
+                }
+            }
+            else { ; }// キャンセル時は処理無しの明示
+        }
+
+        // NG理由 表示設定
+        <?php
+        // count関数対策
+          $listCount3 = 0;
+          if (!empty($this->list)) {
+          $listCount3 = count($this->list);
+          }
+          for ($i = 0 ; $i < $listCount3 ; $i++) { ?>
+        document.getElementById("Incre_Status<?php echo $i ?>1").onclick = function() {
+        	document.getElementById("NgReason<?php echo $i ?>").disabled = true;
+        }
+        document.getElementById("Incre_Status<?php echo $i ?>2").onclick = function() {
+        	document.getElementById("NgReason<?php echo $i ?>").disabled = true;
+        }
+        document.getElementById("Incre_Status<?php echo $i ?>3").onclick = function() {
+        	<?php if ($this->list[$i]['ShowNgReason'] == 1) { ?>
+        	document.getElementById("NgReason<?php echo $i ?>").disabled = false;
+        	<?php } else { ?>
+        	document.getElementById("NgReason<?php echo $i ?>").disabled = true;
+        	<?php } ?>
+        }
+        <?php } ?>
+
+	});
+
+	Event.observe($("all_jintec"), "click", function() {
+		$("all_jintec").disabled = true;
+		<?php
+    // count関数対策
+    $listCount4 = 0;
+    if (!empty($this->list)) {
+    $listCount4 = count($this->list);
+    }
+    for ($i = 0 ; $i < $listCount4 ; $i++) { ?>
+    // ボタンのID
+		var button = $("jintec<?php echo $i; ?>");
+		var detail = $("jintec_detail<?php echo $i; ?>");
+		button.value = "非表示";
+		detail.style.display = "";
+		<?php } ?>
+		$("all_jintec").disabled = false;
+	} );
+
+	document.getElementsByClassName("out_of_amends_check").each( function(chk) {
+		Event.observe( chk, "click", function(evt) {
+			var num = this.id.replace(/OutOfAmends/, "");
+			checkIwill(num);
+		}.bindAsEventListener(chk) );
+	} );
+} );
+
+function chkalladdr(callback) {
+	if( ! (chkalladdr.idList instanceof Array) ) {
+		var list = $R(0, <?php echo Application::getInstance()->paging_conf['rwcredit']; ?>).map( function(i) {
+			var id = "srch{0}".format(i);
+			return $(id) ? i : null;
+		} ).compact();
+		chkalladdr.idList = list;
+	}
+	if( chkalladdr.timer != null ) {
+		clearTimeout( chkalladdr.timer );
+		chkalladdr.timer = null;
+	}
+	var i = 0, max = chkalladdr.idList.length;
+	chkalladdr.timer = setTimeout( function() {
+		var caption = $("srch{0}".format(i)).innerHTML;
+		if( caption == "問合中" ) {
+			// 検索中/検索後の場合はやりなおし
+			chkalladdr.timer = setTimeout( arguments.callee, 250 );
+		} else {
+			// シーケンス取得
+			var seq = $("OrderSeq{0}".format(i)).value;
+
+			var interval = 100;
+			if( $("chkaddress{0}".format(i)).innerHTML == "" ) {
+				// 検索実行時のみインデックスを進める
+				chkaddr(i++, seq);
+			} else {
+				// 結果を閉じる場合はインデックスを進めない
+				// ＝ 次回もこのシーケンスに対する処理
+				chkaddr(i, seq);
+				interval = 0;
+			}
+			if( i < max ) {
+				chkalladdr.timer = setTimeout( arguments.callee, interval );
+			} else {
+				chkalladdr.timer = null;
+				( callback || Prototype.K )();
+			}
+		}
+	}, 100 );
+}
+
+function chkallIwill() {
+	if( ! (chkallIwill.idList instanceof Array) ) {
+		var list = $R(0, <?php echo Application::getInstance()->paging_conf['rwcredit']; ?>).map( function(i) {
+			var id = "Iwill{0}".format(i);
+			return $(id) ? id : null;
+		} ).compact();
+		chkallIwill.idList = list;
+	}
+	var i = 0, max = chkallIwill.idList.length;
+	setTimeout( function() {
+		var id = chkallIwill.idList[i];
+		var suspended = (function() {
+			return $("Incre_Status{0}2".format(id.replace(/^Iwill/, ""))).checked;
+		})();
+	    if( ! $(chkallIwill.idList[i]).checked ) {
+			$(chkallIwill.idList[i]).click();
+		}
+		i++;
+		if( i < max ) {
+			setTimeout( arguments.callee, 100 );
+		}
+	}, 100 );
+}
+
+function padZero(num) {
+	if(num < 10) {
+		return "0" + num;
+	} else {
+		return num;
+	}
+}
+
+function toHms(t) {
+    var isTypeRemain = (t < 7200) ? true : false;       // 残り時間で表記か？
+    var wkt = (isTypeRemain) ? (7200 - t) : (t - 7200);
+
+    var hms = "";
+    var h = wkt / 3600 | 0;
+    var m = wkt % 3600 / 60 | 0;
+    var s = wkt % 60;
+
+    return ((isTypeRemain) ? "残り時間" : "超過時間") + " " + padZero(h) + ":" + padZero(m);
+}
+
+<?php
+    // count関数対策
+      $timeCount = 0;
+      if (!empty($this->time)) {
+      $timeCount = count($this->time);
+      }
+      for ($i = 0 ; $i < $timeCount ; $i++) { ?>
+var cnt<?php echo $i ?> = <?php echo $this->time[$i]["diff"]; ?>;
+<?php } ?>
+
+function showClock() {
+	<?php
+    // count関数対策
+        $timeCount = 0;
+        if (!empty($this->time)) {
+        $timeCount = count($this->time);
+        }
+        for ($i = 0 ; $i < $timeCount ; $i++) { ?>
+	cnt<?php echo $i ?>++;
+	var msg = toHms(cnt<?php echo $i ?>);
+	document.getElementById("RealtimeClockArea<?php echo $i ?>").style.fontSize = "9pt";
+	document.getElementById("RealtimeClockArea<?php echo $i ?>").innerHTML = msg;
+    if (cnt<?php echo $i ?> > 5400) {
+        // 90分(5400秒)経過時は赤文字
+        document.getElementById("RealtimeClockArea<?php echo $i ?>").style.color = "red";
+    }
+	<?php } ?>
+}
+setInterval('showClock()',1000);
+</script>
+</html>

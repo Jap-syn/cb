@@ -1,0 +1,78 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<style>
+#inputarea {
+    font-size: 14px;
+    font-weight: bold;
+    float: left;
+    margin: 5px 20px 0px 20px;
+    width: 100%;
+}
+#inputarea1 {
+    float: left;
+    margin: 0px 20px 0px 20px;
+    width: 100%;
+}
+</style>
+<script>
+function back() {
+    document.getElementById('form').action = 'login/reissue';
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再発行確認</h5>
+    <div id="d_01" style="margin-left: 20px;">
+        <span style="font-weight: normal;">下記の内容で間違いがなければ、「登録」ボタンを押してください。</span><br /><br />
+    </div>
+
+    <form name="form" id="form" method="post" action="login/reissuecomplete">
+        <input type="hidden" name="customerid" value="<?php echo f_e($this->customerid); ?>" />
+        <input type="hidden" name="form[MailAddress]" value="<?php echo f_e($this->formdata['MailAddress']); ?>" />
+        <input type="hidden" name="form[NameSeiKj]" value="<?php echo f_e($this->formdata['NameSeiKj']); ?>" />
+        <input type="hidden" name="form[NameMeiKj]" value="<?php echo f_e($this->formdata['NameMeiKj']); ?>" />
+        <input type="hidden" name="form[Phone_1]" value="<?php echo f_e($this->formdata['Phone_1']); ?>" />
+        <input type="hidden" name="form[Phone_2]" value="<?php echo f_e($this->formdata['Phone_2']); ?>" />
+        <input type="hidden" name="form[Phone_3]" value="<?php echo f_e($this->formdata['Phone_3']); ?>" />
+        <div id="inputarea">メールアドレス</div>
+        <div id="inputarea1"><?php echo f_e($this->formdata['MailAddress']); ?></div>
+        <div id="inputarea" style="margin-top: 15px;">名前</div>
+        <div id="inputarea1"><?php echo f_e($this->formdata['NameSeiKj'] . $this->formdata['NameMeiKj']); ?></div>
+        <div id="inputarea" style="margin-top: 15px;">電話番号</div>
+        <div id="inputarea1"><?php echo f_e($this->formdata['Phone_1'] . '-' . $this->formdata['Phone_2'] . '-' . $this->formdata['Phone_3']); ?></div>
+        <table width="300px">
+            <tr class="data">
+                <td align="center"><br /><input id="goto_button" type="submit" value="登録する" /></td>
+            </tr>
+            <tr class="data">
+                <td align="center"><br /><input id="backto_button" type="submit" value="戻る" onclick="back();" /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer_sp.php' );
+?>
+
+</div></body>
+</html>

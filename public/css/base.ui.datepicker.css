@@ -1,0 +1,165 @@
+.base_ui_datepicker {
+	width: 180px;
+	height: 140px;
+	font-size: 9pt;
+	background-color: transparent;
+	border: none 0px;
+	padding: 0px;
+	margin: 0px;
+}
+.base_ui_datepicker table.header {
+	width: 100%;
+	background-color: white;
+	border: solid 1px silver;
+	border-bottom-width: 0px;
+}
+
+.base_ui_datepicker table.header th,
+.base_ui_datepicker table.header td {
+	border: none 0px;
+}
+
+.base_ui_datepicker table.body {
+	width: 100%;
+	background-color: white;
+	cursor: pointer;
+	border: solid 1px silver;
+	border-top-width: 0px;
+}
+
+.base_ui_datepicker table.body th {
+	border: solid 0px orange;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+}
+
+.base_ui_datepicker table.body td {
+	border: solid 1px white;
+}
+
+.base_ui_datepicker table.header .prev_year,
+.base_ui_datepicker table.header .prev_month,
+.base_ui_datepicker table.header .next_year,
+.base_ui_datepicker table.header .next_month {
+	width: 20px;
+	height: 20px;
+	cursor : pointer;
+	text-align: center;
+	background-color: white;
+	background-repeat: no-repeat;
+	background-position: 2px 2px;
+}
+
+.base_ui_datepicker table.header .prev_year {
+	background-image: url('../images/prev_year.gif');
+}
+
+.base_ui_datepicker table.header .prev_month {
+	background-image: url('../images/prev_month.gif');
+}
+
+.base_ui_datepicker table.header .next_month {
+	background-image: url('../images/next_month.gif');
+}
+
+.base_ui_datepicker table.header .next_year {
+	background-image: url('../images/next_year.gif');
+}
+
+.base_ui_datepicker table.header .prev_year_a {
+	background-image: url('../images/prev_year_active.gif');
+}
+
+.base_ui_datepicker table.header .prev_month_a {
+	background-image: url('../images/prev_month_active.gif');
+}
+
+.base_ui_datepicker table.header .next_month_a {
+	background-image: url('../images/next_month_active.gif');
+}
+
+.base_ui_datepicker table.header .next_year_a {
+	background-image: url('../images/next_year_active.gif');
+}
+
+.base_ui_datepicker table.header .title {
+	text-align: center;
+	color: dimgray;
+	font-weight:bold;
+	cursor: default;
+}
+
+.base_ui_datepicker table.body .header_row {
+	color: brown;
+	cursor: default;
+}
+
+.base_ui_datepicker table.body .week_row {
+}
+
+.base_ui_datepicker table.body .week_row td {
+	border: solid 1px white;
+	text-align: right;
+	padding: 1px 2px;
+}
+
+.base_ui_datepicker table.body .week_row td.hover {
+	background-color: lightcyan;
+	border: solid 1px blue;
+	padding: 1px 2px;
+}
+
+.base_ui_datepicker table.body .date {
+	color: dimgray;
+}
+
+.base_ui_datepicker table.body .other_month,
+.base_ui_datepicker table.body .other_month {
+	background-color: white;
+	border-color: white;
+}
+
+.base_ui_datepicker table.body td.selected {
+	border: solid 1px orange;
+	background-color: lemonchiffon;
+	color: black;
+}
+
+.base_ui_datepicker table.body .holiday {
+	color: red;
+}
+
+.base_ui_datepicker table.body .saturday {
+	color: blue;
+}
+
+.base_ui_datepicker table.body .other_month {
+	cursor: default;
+}
+
+.base_ui_datepicker table.body .calendar_command_bar {
+	padding: 2px 4px;
+	border: none 0px;
+	border-top: solid 1px orange;
+	background-color: white;
+	text-align: right;
+	font-size: 8pt;
+}
+
+.base_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:link,
+.base_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:hover,
+.base_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:active,
+.base_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:visited {
+	color: dimgray;
+	text-decoration: none;
+	padding: 1px 3px;
+	border: solid 1px white;
+	font-size: 8pt;
+	margin: 0px;
+}
+
+.base_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:hover {
+	background-color: lightcyan;
+	color: black;
+	border-color: blue;
+}

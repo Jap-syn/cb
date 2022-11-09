@@ -1,0 +1,120 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+
+$error = $this->exception;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	'エラーが発生しました。エラーが頻発する場合は、システム管理者へご連絡ください。'
+);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+?>
+	<ul class="errorInfo">
+	<li><?php echo f_e($error->getMessage()); ?><pre><?php echo f_e($error->getTraceAsString()); ?></pre></li>
+<?php
+/*
+foreach($this->errorList as $error) {
+	$e = new Exception();
+?>
+		<li><?php echo f_e($error->getMessage()); ?><pre><?php echo f_e($error->getTraceAsString()); ?></pre></li>
+<?php
+}
+*/
+?>
+	</ul>
+</div>
+</body>
+</html>
+
+
+<?php /*?>
+
+
+<h1><?php echo $this->translate('An error occurred') ?></h1>
+<h2><?php echo $this->message ?></h2>
+
+<?php if (isset($this->display_exceptions) && $this->display_exceptions): ?>
+
+<?php if(isset($this->exception) && $this->exception instanceof Exception): ?>
+<hr/>
+<h2><?php echo $this->translate('Additional information') ?>:</h2>
+<h3><?php echo get_class($this->exception); ?></h3>
+<dl>
+    <dt><?php echo $this->translate('File') ?>:</dt>
+    <dd>
+        <pre class="prettyprint linenums"><?php echo $this->exception->getFile() ?>:<?php echo $this->exception->getLine() ?></pre>
+    </dd>
+    <dt><?php echo $this->translate('Message') ?>:</dt>
+    <dd>
+        <pre class="prettyprint linenums"><?php echo $this->escapeHtml($this->exception->getMessage()) ?></pre>
+    </dd>
+    <dt><?php echo $this->translate('Stack trace') ?>:</dt>
+    <dd>
+        <pre class="prettyprint linenums"><?php echo $this->escapeHtml($this->exception->getTraceAsString()) ?></pre>
+    </dd>
+</dl>
+<?php
+    $e = $this->exception->getPrevious();
+    if ($e) :
+?>
+<hr/>
+<h2><?php echo $this->translate('Previous exceptions') ?>:</h2>
+<ul class="unstyled">
+    <?php while($e) : ?>
+    <li>
+        <h3><?php echo get_class($e); ?></h3>
+        <dl>
+            <dt><?php echo $this->translate('File') ?>:</dt>
+            <dd>
+                <pre class="prettyprint linenums"><?php echo $e->getFile() ?>:<?php echo $e->getLine() ?></pre>
+            </dd>
+            <dt><?php echo $this->translate('Message') ?>:</dt>
+            <dd>
+                <pre class="prettyprint linenums"><?php echo $this->escapeHtml($e->getMessage()) ?></pre>
+            </dd>
+            <dt><?php echo $this->translate('Stack trace') ?>:</dt>
+            <dd>
+                <pre class="prettyprint linenums"><?php echo $this->escapeHtml($e->getTraceAsString()) ?></pre>
+            </dd>
+        </dl>
+    </li>
+    <?php
+        $e = $e->getPrevious();
+        endwhile;
+    ?>
+</ul>
+<?php endif; ?>
+
+<?php else: ?>
+
+<h3><?php echo $this->translate('No Exception available') ?></h3>
+
+<?php endif ?>
+
+<?php endif ?>
+*/

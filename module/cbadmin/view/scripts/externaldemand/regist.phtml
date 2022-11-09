@@ -1,0 +1,29 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/externaldemand/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">外部督促出力ファイルの取り込み(SMS)</h3>
+    <h4 style="height: 200px; border: solid 1px #dddddd;">
+    <form name="form" id="form" action="externaldemand/confirm" method="post" enctype="multipart/form-data">
+    <input name="Csv_File" type="file" size="60" />　<input name="submit" type="submit" value="　登録実行　" />
+    </form>
+    </h4>
+  </div>
+  <!-- end contents -->
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'cbadmin/page_footer.php' );
+?>
+</div>
+</body>
+</html>

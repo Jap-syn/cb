@@ -1,0 +1,196 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new
+Date();a=s.createElement(o),
+
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-71083479-1', 'auto');
+  ga('send', 'pageview');
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message_sp.php' );
+// check if has spapp2 on URL
+$check = strpos($_SERVER['QUERY_STRING'], 'spapp2');
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="Tlogin_area">
+    <h5 style="line-height:30px;">注文情報確認ページ<?php if (isset($this->accessid)) { ?><BR>(期限付きログイン)<?php } ?></h5>
+    <table>
+        <tr>
+        <td style="font-size: 12px ;font-weight: normal">
+    ※ ログイン後に表示されるページにて、請求書の再発行依頼ができます。
+    </td>
+        </tr>
+    <tr>
+        <td class="l_area" style="font-size: 12px ;font-weight: normal">
+        ※ ログインすると、<?php if ($this->OemId == 3) { echo "セイノー後払い"; }
+        elseif ($check === 0) { echo "届いてから払い"; }
+        else { echo "後払いドットコム"; } ?>にて、ご注文を頂いた商品を確認することができます。
+    </td>
+        </tr>
+    <tr>
+        <td class="l_area" style="font-size: 12px ;font-weight: normal">
+    ※ ログインに使用する「お電話番号」は、ご注文時に登録した電話番号です。
+    </td>
+        </tr>
+    <tr>
+        <td class="l_area" style="font-size: 12px ;font-weight: normal">
+        <?php if (isset($this->accessid)) { ?>
+    ※ このページは、有効期限が切れると利用できなくなります。 その際は、請求書に記載されている情報を元に<a href="<?php echo $this->KochiraUrl; ?>"><U>こちらから</U></a>へアクセスしてください。
+        <?php } else { ?>
+    ※ パスワード は、請求書の「払込受領票」 ページ内に記載されています。
+        <?php } ?>
+    </td>
+        </tr>
+    <tr>
+            <td class="l_area">&nbsp;</td>
+        </tr>
+    </table>
+</div>
+
+<div id="login_area">
+
+<?php if( !empty( $this->mvCodeMsgs) ){ ?>
+    <table width="300px">
+        <?php foreach( array_reverse( $this->mvCodeMsgs) as $message ) { ?>
+        <tr>
+            <td class="l_area"><?php echo $message; ?></td>
+            <td ></td>
+        </tr>
+        <?php } ?>
+
+    </table>
+<?php } ?>
+
+    <form name="login_form" method="post" action="login/auth">
+    <table width="300px">
+        <tr>
+            <td class="l_area">お電話番号：<font style="font-size: 12px ;font-weight: normal">(注文時に登録したお電話番号)</font></td>
+            <td ></td>
+        </tr>
+        <tr>
+            <td class="l_area"><input id="login_id" name="login_id" size="33" style="height:20px" type="text" value="" placeholder="例）0312340000" /></td>
+            <td class="l_area"></td>
+        </tr>
+        <tr>
+            <td class="l_area" style="font-size: 12px ;font-weight: normal">※ 数字のみを入力してください。 -(ハイフン)は不要です。</td>
+            <td class="l_area">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="l_area" style="font-size: 12px ;font-weight: normal">
+            ※ 注文時に登録したお電話番号を正確に入力し、「ログイン」 ボタンを押してください。
+            </td>
+            <td class="l_area">&nbsp;</td>
+        </tr>
+        <?php if (!isset($this->accessid)) { ?>
+        <tr>
+            <td class="l_area">パスワード</td>
+        </tr>
+        <tr>
+            <td class="l_area"><input id="password" name="password" type="password" size="33" style="height:20px" /></td>
+        </tr>
+        <?php } ?>
+        <tr>
+            <td>　</td>
+        </tr>
+        <?php if( !empty( $this->loginMessages ) ){ ?>
+        <?php foreach( array_reverse( $this->loginMessages ) as $message ) { ?>
+        <tr>
+            <td style="color:red ; padding-left:8%" ><?php echo $message; ?></td>
+        </tr>
+        <?php } ?>
+        <?php } ?>
+        <?php if (strpos($_SERVER['REQUEST_URI'], 'accountlock') !== false) { ?>
+        <tr>
+            <td colspan="2" align="center"><font color="red">
+            <?php
+            if (strpos($_SERVER['REQUEST_URI'], '/seino-financial/') === 0) {
+                // (セイノーフィナンシャル)
+                echo "ログイン エラー回数が規定回数を超えました。 <br>";
+                echo "セキュリティ保護のため、ログインを制限しています。<br>";
+                echo "制限を解除するためには、お手数ですがサポート<br>";
+                echo "センターまでお電話にてお問い合わせください。<br>";
+                echo "サポートセンター電話番号： <br>";
+                echo "TEL: 03-4326-3610（10:00 ～ 18:00）";
+            }
+            else if (strpos($_SERVER['REQUEST_URI'], '/estore/') === 0) {
+                // (Eストアー)
+                echo "ログイン エラー回数が規定回数を超えました。 <br>";
+                echo "セキュリティ保護のため、ログインを制限しています。<br>";
+                echo "制限を解除するためには、お手数ですがサポート<br>";
+                echo "センターまでお電話にてお問い合わせください。<br>";
+                echo "サポートセンター電話番号： <br>";
+                echo "TEL: 0570-05-1210（10:00 ～ 18:00）";
+            }
+            else if (strpos($_SERVER['REQUEST_URI'], '/smbcfs/') === 0) {
+                // (SMBC)
+                echo "ログイン エラー回数が規定回数を超えました。 <br>";
+                echo "セキュリティ保護のため、ログインを制限しています。<br>";
+                echo "制限を解除するためには、お手数ですがサポート<br>";
+                echo "センターまでお電話にてお問い合わせください。<br>";
+                echo "サポートセンター電話番号： <br>";
+                echo "TEL: 0120-667-690（10:00 ～ 18:00）";
+            }
+            else if (strpos($_SERVER['REQUEST_URI'], '/base/') === 0) {
+                // (BASE)
+                echo "ログイン エラー回数が規定回数を超えました。 <br>";
+                echo "セキュリティ保護のため、ログインを制限しています。<br>";
+                echo "制限を解除するためには、お手数ですがサポート<br>";
+                echo "センターまでお電話にてお問い合わせください。<br>";
+            }
+            else {
+                // (直営[その他])
+                echo "ログイン エラー回数が規定回数を超えました。 <br>";
+                echo "セキュリティ保護のため、ログインを制限しています。<br>";
+                echo "制限を解除するためには、お手数ですがサポート<br>";
+                echo "センターまでお電話にてお問い合わせください。<br>";
+                echo "サポートセンター電話番号： <br>";
+                echo "TEL: 0120-667-690（10:00 ～ 18:00）";
+            }
+            ?>
+            </font>
+            </td>
+        </tr>
+        <?php } ?>
+        <tr>
+            <td>　</td>
+        </tr>
+        <tr>
+            <td align="center"><input id="submit_button" type="submit" value="ログイン" /></td>
+        </tr>
+    </table>
+    <?php if (isset($this->accessid)) { ?>
+        <input id="accessid" name="accessid" type="hidden" value="<?php echo $this->accessid; ?>" />
+    <?php } ?>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>
+

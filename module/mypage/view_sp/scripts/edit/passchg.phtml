@@ -1,0 +1,92 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+
+$fd = $this->data;
+?>
+<style>
+.biko {
+    font-size: 12px ;
+    font-weight: normal;
+    margin: 5px 0px 5px 25px;
+}
+
+.psw {
+    height:20px;
+    margin: 5px 0px 5px 0px;
+}
+
+</style>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">パスワード変更</div>
+        <?php if( !empty( $this->error ) ) { ?>
+        <div id="errmsg">
+            <?php foreach( $this->error as $error ) echo f_e( $error ) . '<br />';  ?>
+        </div>
+        <?php } ?>
+        <form name="form" method="post" action="edit/passchgconfirm">
+        <table width="96%" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr>
+                    <td class="member_info">会員ID（メールアドレス）</td>
+                <tr/>
+                <tr>
+                    <td class="data"><?php echo f_e( $fd['MailAddress'] ); ?>
+                    <input name="form[MailAddress]" type="hidden" id="MailAddress" value="<?php echo f_e( $fd['MailAddress'] ); ?>" /></td>
+                </tr>
+                <tr>
+                    <td class="member_info">現在のパスワード</td>
+                <tr/>
+                <tr>
+                    <td class="data"><input size="35" class="psw" name="form[LoginPasswd]" type="password" id="LoginPasswd" value="" />
+                </tr>
+                <tr>
+                    <td class="member_info2">
+                        新しいパスワード<br />
+                        <span class="biko">※半角英数記号<?php echo f_e( $fd['PasswdCount'] ); ?>文字以上（英数記号混同）</span>
+                    </td>
+                <tr/>
+                <tr>
+                    <td class="data"><input size="35" class="psw" name="form[NewLoginPasswd]" type="password" id="NewLoginPasswd" value="" />
+                </tr>
+                <tr>
+                    <td class="member_info2">
+                        新しいパスワード（確認）<br />
+                        <span class="biko">※半角英数記号<?php echo f_e( $fd['PasswdCount'] ); ?>文字以上（英数記号混同）</span>
+                    </td>
+                <tr/>
+                <tr>
+                    <td class="data"><input size="35" class="psw" name="form[NewLoginPasswd2]" type="password" id="NewLoginPasswd2" value="" />
+                </tr>
+                <tr><td class="data"><input id="red_btn" type="submit" value="変更" /></td></tr>
+            </tbody>
+        </table>
+        </form>
+        <?php
+            echo $this->render( 'mypage/menu.php' );
+        ?>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>

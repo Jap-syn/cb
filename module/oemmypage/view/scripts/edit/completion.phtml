@@ -1,0 +1,39 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">変更完了</div>
+        <?php
+        echo $this->render( 'oemmypage/menu.php' );
+        ?>
+        <div id="d_01">ご登録内容の変更を受け付けました。</div>
+        <div id="edit_completion">
+            <br/>
+            <input id="green_btn" type="button" value="トップへ" onclick="window.location.href='index/index'"  />
+        </div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

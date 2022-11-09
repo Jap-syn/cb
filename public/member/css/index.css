@@ -1,0 +1,227 @@
+﻿/* メイン領域 */
+.main_contents {
+	margin: 4px 0px 40px 0px;
+	padding: 10px 0px;
+	height: 300px;
+}
+
+/* ブロックコンテナ */
+.block_container {
+	width: 40%;
+	float: left;
+	padding: 0px;
+	margin: 10px 0px;
+	overflow: hidden;
+}
+
+/* IE6以外 */
+html > body .left_block {
+	margin-left: 8%;
+	margin-right: 2%;
+}
+
+/* IE6のみ */
+* html .left_block {
+	margin-left: 5%;
+	margin-right: 2%;
+}
+
+/* 右側ブロックコンテナ */
+.right_block {
+	margin-left: 1%;
+	margin-right: 0;
+}
+/* ブロックコンテナタイトル */
+.block_container h3 {
+	margin: 0px;
+	text-align: center;
+	background-color: #7F9E40;
+	color: white;
+	padding: 1px 4px;
+	font-size: 14pt;
+}
+
+/* ブロック内要素 */
+.large_menu,
+.general_information,
+.order_information {
+	border: solid 1px silver;
+	background-color: white;
+	color: black;
+	margin: 2px 0px;
+}
+
+/* 注文件数情報 */
+.order_information {
+	padding: 0px;
+	height: 82px;
+	overflow: hidden;
+}
+
+.order_summaries {
+	border: none 0px;
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+	color: dimgray;
+}
+
+.order_summaries .summary_title {
+	padding: 0px 8px;
+	vertical-align: middle;
+	text-align: left;
+	background-color: #D7E4BC;
+	width: 35%;
+	font-size: 12pt;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+#summary_incre_count,
+#summary_ready_count {
+	padding: 0px 10px;
+	font-size: 14pt;
+	font-weight: bold;
+	text-align: right;
+}
+
+/* 件数ロード中 */
+img#progress_icon {
+	position: absolute;
+}
+
+a#reload_summary {
+	float: right;
+	border: none 0px;
+	margin: 0px;
+	padding: 0px;
+	padding-top: 2px;
+}
+
+a#reload_summary:link,
+a#reload_summary:hover,
+a#reload_summary:visited,
+a#reload_summary:active {
+	color: silver;
+	font-size: 8pt;
+	text-decoration: none;
+}
+a#reload_summary:hover {
+	color: white;
+	text-decoration: underline;
+}
+
+a#reload_summary img {
+	border: none 0px;
+}
+
+/* 件数リロード */
+
+/* お知らせ */
+.general_information {
+	padding: 4px;
+	height: 154px;
+	overflow: auto;
+}
+
+/* 「便利な機能」メニュー */
+.large_menu {
+	font-size: 15pt;
+	font-weight: bold;
+	padding: 20px 6px 2px 70px;
+	height: 44px;
+	overflow: hidden;
+	background-position: 3px 49%;
+	background-repeat: no-repeat;
+}
+
+.large_menu a,
+.large_menu a:link,
+.large_menu a:hover,
+.large_menu a:visited,
+.large_menu a:active {
+	color: black;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.large_menu.hover {
+	background-color: lemonchiffon;
+	padding-right: 2px;
+	border-right: solid 6px #2F7332;
+}
+
+.large_menu.hover a {
+	color: royalblue;
+}
+
+.large_menu a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+/* 注文件数サマリ */
+/*
+#order_summaries {
+	width: 250px;
+	height: 80px;
+	border: solid 1px silver;
+	background-color: lemonchiffon;
+	position: absolute;
+	right: 4px;
+}
+*/
+
+/* ダウンロードページ */
+table.download_links {
+	margin: 20px;
+	font-size: 11pt;
+	border: solid gray;
+	border-width: 1px 0px 0px 1px;
+}
+
+table.download_links td.caption,
+table.download_links td.link,
+table.download_links td.desc {
+	height: 40px;
+	padding: 4px 8px;
+	margin: 0px;
+	border: solid gray;
+	border-width: 0px 1px 1px 0px;
+	vertical-align: middle;
+}
+
+table.download_links td.caption {
+	width: 230px;
+	font-size: 12pt;
+	background-color: #D7E4BC;
+}
+
+table.download_links td.link {
+	width: 80px;
+	padding-left: 16px;
+}
+
+table.download_links td.desc {
+	background-color: lightyellow;
+	color: #303560;
+	vertical-align: top;
+}
+
+table.download_links td a:link,
+table.download_links td a:hover,
+table.download_links td a:active,
+table.download_links td a:visited {
+	text-decoration: none;
+	color: royalblue;
+	padding-right: 18px;
+	background-image: url('../../images/icon_download_s.gif');
+	background-position: right 50%;
+	background-repeat: no-repeat;
+}
+
+table.download_links td a:hover {
+	color: blue;
+	text-decoration: underline;
+}

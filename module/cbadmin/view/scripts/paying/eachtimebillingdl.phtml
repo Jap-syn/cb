@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title><?php echo $this->title; ?></title>
+<link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdf.css" />
+<script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+</head>
+<body>
+<?php
+$isfirst = true;
+foreach($this->datas as $row) {
+$this->data = $row;
+$this->mineData = $this->mines[$row['Seq']];
+?>
+<?php if ($isfirst) { ?>
+<div id="header">
+<?php $isfirst = false; } else { ?>
+<div id="header" style="page-break-before: always;">
+<?php } ?>
+<div id="header1">
+ご請求先　<?php echo f_e( $this->data['EnterpriseNameKj'] ); ?>　様<br />
+　　　　　<span style="font-size: 10px"><?php echo f_e( $this->data['PostalCode'] ); ?></span><br />
+　　　　　<?php echo f_e( $this->data['Address'] ); ?>
+</div>
+<div id="header2">
+<span style="font-size: 12px;">発行日：<?php echo f_df( $this->decisionDate, 'Y.m.d' ); ?></span><br /><br />
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/Atobarai_logo.gif" alt="後払いドットコム" width="138" height="25" /></span><br />
+株式会社キャッチボール<br />
+140-0002　東京都品川区東品川2-2-24<br />
+天王洲セントラルタワー 12F
+</div>
+</div>
+<div id="greet">
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+立替締め日：<?php echo date( 'Y/m/d', strtotime( $this->data['FixedDate'] ) ) . '(' . date( 'y/m/d', strtotime( $this->data['ExecScheduleDate'] ) ); ?>締め日分)の<br />
+ご利用明細は以下の通りです。
+</div>
+<div id="title">【ご請求内容】</div>
+<table width="1000px" cellpadding="1" cellspacing=0" id="datatable">
+<tr><td class="r_data" width="50%">立替締め日</td>
+<td class="c_data" width="50%"><?php echo date( 'Y/m/d', strtotime( $this->data['FixedDate'] ) ) . '(' . date( 'y/m/d', strtotime( $this->data['ExecScheduleDate'] ) ); ?> 締め日分)</td></tr>
+<tr><td class="r_data" width="50%">お取引件数</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['ChargeCount'], 0 ), '#,##0' ); ?>　件</td></tr>
+<tr><td class="r_data" width="50%">ご利用総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['ChargeAmount'] , 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">決済手数料合計</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['SettlementFee'], 0 ), '￥ #,##0' ); ?><br />
+<?php if( $this->mineData['HasMine'] ) { ?>
+<tr><td class="r_data" width="50%">請求手数料合計<br />(内自社印刷分)</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['ClaimFee'], 0 ), '￥ #,##0' ); ?><br />
+<?php echo '(' . f_nf( nvl( $this->mineData['ClaimFee'], 0 ), '￥ #,##0' ) . ')'; ?></td></tr>
+<?php } else { ?>
+<tr><td class="r_data" width="50%">請求手数料合計</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['ClaimFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%">印紙代合計（※）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['StampFeeTotal'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">月額固定費</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['MonthlyFee'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">前回持越し分（固定費）</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['CarryOver'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">キャンセル返金分</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['CalcelAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">口座振込手数料</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['TransferCommission'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">立替精算戻し額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['PayBackAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">精算調整額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['AdjustmentAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data2" width="50%">手数料等合計金額</td>
+<td class="r_data2" width="50%"><?php echo f_nf( nvl( $this->data['ClaimAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%">差引ご請求総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data['TotalAmount'], 0 ), '￥ #,##0' ); ?></td></tr>
+</table>
+<div id="footer" style="width: 1200px;">
+※　「印紙代合計」とは、購入者様のコンビニ決済によるお支払金額が2014年3月31日以前に発行された請求書は税込で￥31,500以上、<br />
+　　2014年4月1日以降に発行された請求書は税込で￥54,000以上の場合に発生する印紙代金の合計金額です。<br /><br />
+※　表示金額はすべて税込金額となっております。<br /><br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+<?php } ?>
+</body>
+</html>

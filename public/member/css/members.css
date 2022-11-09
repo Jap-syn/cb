@@ -1,0 +1,699 @@
+/* グローバル */
+* {
+	font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "ＭＳ Ｐゴシック", "Osaka", sans-serif;
+}
+
+/* ボディ */
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: white;
+	color: black;
+}
+
+/* テキストフィールド/テキストボックス */
+input, textarea {
+	font-size: 10pt;
+}
+
+/* フォーム */
+form {
+	margin: 0px;
+	padding: 0px;
+}
+
+/* ページヘッダ */
+.application_header {
+	margin: 0px;
+	padding: 10px 4px 0px 4px;;
+	font-size: 22pt;
+	text-align: center;
+	color: black;
+	border: solid #2F7332 0px;
+	border-bottom-width: 5px;
+	clear: both;
+	height: 43px;
+}
+
+/* ページタイトル */
+.page_title {
+	text-align: center;
+	font-size: 18pt;
+	padding: 8px 0px 4px 0px;
+}
+
+.page_title .message {
+	font-size: 14pt;
+	color: gray;
+}
+
+img#app_logo {
+	width: 160px;
+	height: 30px;
+	position: absolute;
+	left: 5px;
+	top: 12px;
+	border: none 0px;
+}
+
+img#support_info {
+	width: 161px;
+	height: 38px;
+	border: none 0px;
+	position: absolute;
+	right: 96px;
+	/*top: 8px;*/
+	top: 2px;
+}
+
+img#secure_seal {
+	width: 90px;
+	height: 50px;
+	border: none 0px;
+	position: absolute;
+	right: 2px;
+	top: 1px;
+}
+
+/* ヘッダ部のメールアドレス */
+a#mailto,
+a#mailto:link,
+a#mailto:hover,
+a#mailto:visited,
+a#mailto:active {
+	position: absolute;
+	right: 96px;
+	font-size: 8pt;
+	top: 41px;
+	color: royalblue;
+	text-decoration: none;
+	font-weight: normal;
+	border: none 0px;
+	padding: 0px 2px 0px 13px;
+	background-image: url( '../../images/mailto_01.gif' );
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+/* ログアウト */
+a#logout_menu,
+a#logout_menu:link,
+a#logout_menu:hover,
+a#logout_menu:visited,
+a#logout_menu:active {
+	border: solid 1px #2F7332;
+	float: right;
+	text-decoration: none;
+	color: white;
+}
+a#logout_menu:hover {
+	text-decoration: underline;
+}
+
+/* ヘッダメニュー */
+.header_menu {
+}
+
+.header_menu h3 {
+	margin: 0px;
+	color: white;
+	background-color: #2F7332;
+	font-size: 10pt;
+	font-weight: normal;
+	border: none 0px;
+	padding: 2px 4px 4px 4px;
+	height: 16px;
+}
+
+.header_menu ul,
+.header_menu ul li {
+	list-style: none;
+}
+
+.header_menu ul {
+	margin: 0px;
+	padding: 0px;
+	height: 46px;
+}
+
+.header_menu ul li {
+	float: left;
+	margin: 0px 1px 0px 0px;
+	padding: 2px 2px 2px 0px;
+	width: 13.65%;
+	height: 38px;
+	text-align: center;
+	overflow: hidden;
+	background-color: white;
+	color: black;
+	border: solid 1px silver;
+	cursor: default;
+}
+
+.menu_title {
+	font-size: 12pt;
+	font-weight: bold;
+	overflow: hidden;
+	white-space: nowrap;
+	margin-bottom: 3px;
+}
+
+a.header_menu_item,
+a.header_menu_item:link,
+a.header_menu_item:hover,
+a.header_menu_item:visited,
+a.header_menu_item:active {
+	color: black;
+	text-decoration: none;
+}
+
+a.header_menu_item:hover {
+	text-decoration: underline;
+	color: red;
+}
+
+.menu_description {
+	font-size: 8pt;
+	color: gray;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.header_menu ul li.has_submenu .menu_description {
+	background-image: url( '../../images/submenu_arrow.gif' );
+	background-position: right center;
+	background-repeat: no-repeat;
+}
+
+.header_menu ul li.hover {
+	background-color: lemonchiffon;
+/*	border-color: lemonchiffon gray gray lemonchiffon;*/
+	padding-right: 0px;
+	border-right: solid #2F7332 3px;
+}
+
+.header_menu ul li.hover .menu_description {
+	color: #444;
+}
+
+.header_menu ul li.hover a.header_menu_item:link,
+.header_menu ul li.hover a.header_menu_item:visited,
+.header_menu ul li.hover a.header_menu_item:active {
+	color: royalblue;
+}
+
+.header_menu ul li.hover a.header_menu_item:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+/* サブメニュー */
+.submenu_container {
+	position: absolute;
+	overflow: visible;
+	text-align: left;
+	padding: 0px;/* 3px 2px 3px 2px;*/
+	background-color: white;
+	color: black;
+	border: solid 1px;
+	border-color: silver dimgray dimgray silver;
+	cursor: default;
+	white-space: nowrap;
+}
+
+.submenu_container a:link,
+.submenu_container a:hover,
+.submenu_container a:visited,
+.submenu_container a:active {
+	display: block;
+	white-space: nowrap;
+	padding: 4px 12px;
+	font-size: 10pt;
+	color: dimgray;
+	text-decoration: none;
+	border: solid white;
+	border-width: 1px 4px 1px 0px;
+	width: auto;
+}
+
+.submenu_container a:hover {
+	color: blue;
+	text-decoration: underline;
+	background-color: lemonchiffon;
+	border-color: silver;
+	border-right-color: #2F7332;
+}
+
+/* フッタメニュー */
+.footer_menu {
+	font-size: 12px !important;
+	text-align: center;
+	padding: 4px 0px;
+}
+
+.footer_menu a,
+.footer_menu a:link,
+.footer_menu a:hover,
+.footer_menu a:visited,
+.footer_menu a:active {
+	font-size: 12px !important;
+	color: black;
+	padding: 2px 4px;
+	text-decoration: none;
+}
+
+.footer_menu a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+/* ページフッタ */
+#application_footer {
+	font-size: 10pt;
+	text-align: center;
+	padding: 4px;
+	color: white;
+	background-color: dimgray;
+}
+
+/* セッションメッセージ */
+#system_messages {
+	position: absolute;
+	top: 60px;
+	right: 10px;
+	width: 300px;
+	padding: 4px;
+	font-size: 14pt;
+	font-weight: bold;
+	line-height: 110%;
+	border: solid 1px crimson;
+	background-color: lemonchiffon;
+	color: red;
+	overflow: auto;
+	-moz-opacity: .8;
+	opacity: .8;
+	filter: alpha(opacity=80);
+}
+
+.system_message {
+	padding: 2px 4px;
+}
+
+.system_message_toolbar {
+	font-size: 8pt;
+	font-weight: normal;
+	text-align: right;
+	line-height: 100%;
+	border-top: solid 1px silver;
+	padding: 2px;
+	margin-bottom: -4px;
+}
+
+a.system_message_toolbutton:link,
+a.system_message_toolbutton:hover,
+a.system_message_toolbutton:visited,
+a.system_message_toolbutton:active {
+	text-decoration: none;
+	color: dimgray;
+}
+
+a.system_message_toolbutton:hover {
+	color: blue;
+}
+
+/* 補足情報 */
+.information_container {
+	border: solid 1px black;
+	padding: 4px;
+	margin: 2px 4px;
+}
+
+ul.information {
+	margin: 0px;
+}
+
+/* noscriptメッセージ */
+.no_script_message {
+	padding: 8px;
+	border: solid 1px black;
+	font-size: 16pt;
+	background-color: lightyellow;
+	color: climson;
+}
+
+/* フォームフィールド */
+input.unfocused,
+textarea.unfocused,
+select.unfocused {
+	background-color: ghostwhite;
+}
+
+input.focused,
+textarea.focused,
+select.focused {
+	background-color: white;
+}
+
+input.disabled,
+textarea.disabled,
+select.disabled {
+	background-color: silver;
+}
+
+/* コマンドバー */
+.command_bar {
+	margin: 12px 0px 0px;
+	padding: 3px 0px;
+	border: solid 0px lightslategray;
+	border-top-width: 1px;
+	background-color: aliceblue;
+	height: 28px;
+}
+
+.command_bar .button_container {
+	float: right;
+	font-size: 10pt;
+	font-weight: normal;
+	text-align: right;
+	margin: 4px 4px 0px 0px;
+	padding: 3px;
+}
+
+.command_bar .title {
+	margin-left: 8px;
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+span.command,
+a.command:link,
+a.command:hover,
+a.command:visited,
+a.command:active {
+	border: solid 1px aliceblue;
+	padding: 2px 4px;
+	text-decoration: none;
+	color: black;
+	font-size: 9pt;
+}
+
+a.command:hover {
+	background-color: ghostwhite;
+	border-color: lightslategray;
+	color: blue;
+}
+
+/* コマンドバー内のボタンはアイコン分パディングを取る */
+.button_container a.command {
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* ページナビゲーションバー */
+.nav_bar {
+	margin: 0px -8px 2px -8px;
+	padding: 2px 15px 1px 20px;
+	border: solid 0px silver;
+	border-top-width: 1px;
+	background-color: ghostwhite;
+	font-size: 11pt;
+	height: 20px;
+}
+.nav_bar .command,
+.nav_bar .command:link,
+.nav_bar .command:active,
+.nav_bar .command:visited {
+	border-color: ghostwhite;
+}
+
+.nav_bar a.command:hover {
+	border-color: lightslategray;
+}
+.nav_bar span.command {
+	color: silver;
+}
+
+.nav_bar span#page_list {
+	text-align: right;
+	width: 32px;
+	padding: 2px 4px 2px 18px;
+	background-image: url('../../images/icon_dropdown.gif');
+	background-position: 2px 50%;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	border: solid 1px gainsboro;
+}
+/* 注文登録・伝票登録共通のボタン */
+a#linkToCsv {
+	background-image: url('../../images/icon_csv_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#linkToRegist {
+	background-image: url('../../images/icon_regist_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#confirmed {
+	background-image: url('../../images/icon_confirmed_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#rollback {
+	background-image: url('../../images/icon_canceled_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 個別伝票登録固有のボタン */
+a#toggleNgItem {
+	background-image: url('../../images/icon_hide_item_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 検索結果のボタン */
+a#search, a#search_new {
+	background-image: url('../../images/icon_search_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#download {
+	background-image: url('../../images/icon_download_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 注文詳細のボタン */
+a#backTo {
+	background-image: url('../../images/icon_action_back_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#requestCancel {
+	background-image: url('../../images/icon_canceled_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#beginEdit {
+	background-image: url('../../images/icon_regist_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#re_order {
+	background-image: url(../../images/icon_csv_s.gif);
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 登録情報画面のボタン */
+a#changePassword {
+	background-image: url('../../images/icon_password_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+a#viewInfo {
+	background-image: url('../../images/icon_view_info_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 注文修正画面のボタン */
+a#back_to_detail {
+	background-image: url('../../images/icon_canceled_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 注文修正確認画面のボタン */
+a#back_to_form {
+	background-image: url('../../images/icon_undo_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 検索結果カラムの編集 */
+a#column_edit {
+	background-image: url('../../images/icon_column_custo_s.gif');
+	padding-left: 20px;
+	background-position: 4px 50%;
+	background-repeat: no-repeat;
+}
+
+/* 事業者向けメッセージ */
+.information_message {
+	border :solid 1px dimgray;
+	background-color: white;
+	color: black;
+	padding: 2px;
+	font-size: 11pt;
+}
+.information_message .message_title {
+	padding: 2px 8px;
+	background-color: firebrick;
+	color: white;
+	font-weight: bold;
+	font-size: 10pt;
+	margin-bottom: 2px;
+}
+.information_message .message_core {
+	font-size: 10pt;
+	padding: 0px 2px;
+}
+
+/* クイック検索バー */
+.quick_serach_bar {
+	float: right;
+	margin-top: -4px;
+	padding-top: 2px;
+	margin-right: 8px;
+	padding-right: 8px;
+	border-right: solid 1px white;
+}
+
+#quick_search_form {
+	font-size: 8pt;
+	margin: 0px;
+	padding: 0px;
+	display: inline;
+}
+
+#quick_search_form input,
+#quick_search_form button {
+	font-size: 8pt;
+	margin: 0px;
+}
+
+#quick_search_form input {
+	border: solid 1px crimson;
+}
+
+#quick_search_form button {
+	border: solid 1px crimson;
+	background-color: coralpink;
+	padding: 1px 2px;
+}
+
+#quick_search_key {
+	width: 80px;
+}
+
+/* デバッグウィンドウ */
+.debug_window {
+	position: absolute;
+	width: 400px;
+	padding: 2px;
+	border: solid 1px dimgray;
+	background-color: aliceblue;
+	opacity: .9;
+	-moz-opacity: .9;
+	filter: alpha(opacity=90);
+}
+
+.debug_window .debug_title {
+	font-size: 9pt;
+	text-align: right;
+	background-color: royalblue;
+	color: white;
+	font-weight: bold;
+	padding: 1px 3px;
+}
+
+.debug_window .debug_title a:link,
+.debug_window .debug_title a:hover,
+.debug_window .debug_title a:active,
+.debug_window .debug_title a:visited {
+	font-weight: bold;
+	color: white;
+	border: solid 1px royalblue;
+	text-decoration: none;
+	padding: 0px 2px;
+	margin-right: 2px;
+}
+
+.debug_window .debug_title a:hover {
+	border: solid 1px white;
+}
+.debug_window .debug_messages {
+	height: 200px;
+	border: solid 2px silver;
+	background-color: white;
+	font-size: 9pt;
+	font-family: monospace;
+	padding: 2px;
+	overflow: auto;
+	white-space: nowrap;
+}
+
+.debug_window .debug_command_bar {
+	padding: 2px 4px;
+	border: solid 1px gray;
+	color: ghostwhite;
+	font-size: 8pt;
+}
+
+.debug_window .debug_command,
+.debug_window .debug_command_exec {
+	font-size: 9pt;
+	border: solid 1px dimgray;
+}
+
+.debug_window .debug_command {
+	width: 300px;
+}
+
+.important-message {
+	width: 80%;
+	overflow: auto;
+	margin: 10px auto;
+	background-color: lemonchiffon;
+	color: crimson;
+	font-size: 16px;
+	font-weight: bold;
+	border: double 3px crimson;
+	padding: 8px;
+}

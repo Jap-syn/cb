@@ -1,0 +1,289 @@
+/* メインコンテンツ領域 */
+.main_contents {
+	height: auto;
+}
+
+/* 注文フォーム（基本情報） */
+form#order_form {
+	margin: 1em 0px;
+	padding: 8px;
+	display: block;
+	clear: both;
+}
+
+form#order_form h3 {
+	margin: 1em 0 0 0;
+}
+
+/* テーブルクラス */
+.order_items {
+	border: solid silver;
+	border-width: 1px 0px 0px 1px;
+}
+
+table.order_input_form {
+	width: 90%;
+}
+
+.order_items th,
+.order_items td {
+	padding: 4px;
+	vertical-align: middle;
+	font-size : 10pt;
+	border: solid 1px #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+.order_items th {
+	background-color: #7F9E40;
+	color: white;
+	font-weight: bold;
+}
+
+.order_item th.item_name {
+	background-color: #999999;
+}
+
+.order_items .submit_item {
+	text-align: center;
+}
+
+td.item_name {
+	width: 100px;
+	background-color: #D7E4BC;
+	text-align: center;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+td.item_value {
+	width: 420px;
+}
+
+td.item_help {
+	background-color: lightyellow;
+	color: #303560;
+}
+
+
+tr.must_row td.item_name {
+	background-image: url('../../images/order_item_must.png');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	padding-top: 12px;
+	padding-bottom: 12px;
+}
+
+.items_table {
+}
+
+.items_table th.item_name {
+	background-color: #7F9E40;
+}
+
+.items_table td,
+.items_table td.item_name {
+	background-color: #ddedff;
+}
+
+.items_table tr.extra_item_row td,
+.items_table tr.extra_item_row td.item_name {
+	background-color: #84beff;
+}
+
+tr.validate_error,
+tr.validate_error td,
+tr.validate_error td.item_name,
+tr.validate_error td.item_value,
+tr.validate_error td.item_help {
+	background-color: lavenderblush;
+}
+
+tr.validate_error td.item_name {
+	background-color: pink;
+	font-weight: bold;
+/*	color: yellow;*/
+}
+
+/* 合計金額テーブル */
+table.total_receipt,
+table.total_receipt * {
+	font-size: 12pt;
+}
+
+table.total_receipt td.item_value,
+table.total_receipt td.item_help {
+	text-align: center;
+	padding: 4px;
+}
+
+table.total_receipt td.item_value input {
+	text-align: right;
+}
+
+table.total_receipt td.item_help {
+	font-weight: bold;
+	color: coral;
+}
+
+/* submitボタンのコンテナ領域 */
+center.submit_area,
+center.submit_area * {
+	font-size: 14pt;
+}
+
+center.submit_area {
+	margin-top: 20px;
+}
+
+/* 検証エラー情報のコンテナ領域 */
+.error_info_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_info_container h4,
+ul.error_info_list {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: pink;
+}
+
+.error_info_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: brown;
+}
+
+ul.error_info_list {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: lavenderblush;
+}
+
+ul.error_info_list li {
+	cursor: pointer;
+	color: brown;
+}
+
+ul.error_info_list li.hover {
+	color: red;
+	text-decoration: underline;
+}
+
+/* 任意番号警告用のコンテナ領域 */
+.error_ent_check {
+	font-size: 12pt;
+	padding: 2px 8px;
+	margin-left:650px;
+}
+
+.error_ent_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_ent_container h4,
+ul.error_ent_table {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: yellow;
+}
+
+.error_ent_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: black;
+}
+
+ul.error_ent_table {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: khaki;
+}
+
+/* 確認情報のコンテナ領域 */
+.confirmation_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.confirmation_container h4,
+ul.confirmation_list {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: gold;
+}
+
+.confirmation_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: brown;
+}
+
+ul.confirmation_list {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: lemonchiffon;
+}
+
+ul.confirmation_list li {
+	cursor: default;
+	color: brown;
+}
+
+ul.confirmation li.hover {
+	color: dimgray;
+	text-decoration: underline;
+}
+
+/* モーダルダイアログ */
+.base_ui_modaldialog {
+	background-color: aliceblue;
+}
+
+/* 住所選択ダイアログのコンテンツ */
+#address_select_dialog {
+	text-align: center;
+	padding: 8px;
+}
+
+#address_list {
+	width: 95%;
+}
+
+#address_select_dialog .info_container {
+	height: 36px;
+	padding: 3px 2px;
+	overflow: hidden;
+	text-align: left;
+}
+
+#address_selection_info {
+	height: 30px;
+	border: solid 1px silver;
+	padding: 2px;
+	font-size: 9pt;
+	color: dimgray;
+	background-color: ghostwhite;
+	overflow: hidden;
+}
+
+#address_select_dialog .dlg_buttons {
+	padding: 4px;
+	padding-bottom: 1px;
+	margin-top: 4px;
+	border-top: groove 2px;
+}
+
+.dlg_buttons button {
+	width: 90px;
+	height: 23px;
+}
+

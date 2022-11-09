@@ -1,0 +1,47 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">初回請求再発行</h3>
+    <h4>
+      <div style="color: red;">
+      <?php if(isset($this->error)) { ?>
+        以下のエラーにより処理できませんでした。
+        <ul>
+          <li><?php echo f_e(sprintf('%s (%s)', $this->error->getMessage(), get_class($this->error))); ?></li>
+        </ul>
+        以下の原因が考えられます。設定などを見直してください。
+        <ul>
+          <li>請求期限が過去日になる</li>
+          <li>OEM先の請求口座情報が未登録</li>
+          <li>その他データベースエラー等</li>
+        </ul>
+      <?php } else if(isset($this->rcount)) { ?>
+        未印刷の請求履歴データが <?php echo f_e($this->rcount); ?> 件存在しているため処理できませんでした。
+      <?php } else { ?>
+        以下のいずれかの理由で処理されませんでした。設定などを見直してください。
+        <ul>
+          <li>未印刷の請求履歴データが存在する</li>
+          <li>請求期限が過去日になる</li>
+          <li>OEM先の請求口座情報が未登録</li>
+          <li>その他データベースエラー等</li>
+        </ul>
+      <?php } ?>
+      </div>
+      <div style="margin-top: 18px"><a href="<?php echo $this->urlDetail; ?>">注文詳細へ</a></div>
+    </h4>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<?php
+use orderpage\Application;
+
+// よくある質問リンク
+$row = Application::getInstance()->dbAdapter->query(" SELECT KeyContent FROM MV_Code WHERE CodeId = 103 AND KeyCode = 0 ")->execute(null)->current();
+$linkFAQ = ($row) ? $row['KeyContent'] : '';
+
+// HTMLヘッダ
+echo $this->render( 'orderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+
+$order = $this->order;
+
+$list = $this->list;
+
+$myURL = (((isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && $_SERVER["HTTP_X_FORWARDED_PROTO"] == "https") ? "https://" : "http://")  . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+$myURL = str_replace("/smbc_res/1", null, $myURL);
+$myURL = str_replace("/smbc_res/2", null, $myURL);
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'orderpage/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'orderpage/system_message_sp.php' );
+
+// 請求期限コメント
+$paymentLimitComment = '';
+$limitDate = '';
+if( $this->orderStatus['Cnl_Status'] >= 1 ) {
+    $paymentLimitComment = '<font class="c_blue_02">キャンセル受付済みです。</font>';
+
+} else {
+    if( $this->orderStatus['DataStatus'] < 51 ) {
+    $paymentLimitComment = '請求書発行準備中です。お手数ですがしばらくお待ち下さい。';
+
+    } else if ( ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) || !empty($order['ReceiptClassName']) ) {
+        $paymentLimitComment = '<font class="c_blue_01">お支払いありがとうございます。またのご利用をお待ちしています。</font>';
+
+    } else if( $this->orderStatus['Rct_Status'] == 0 || ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) ) {
+        if ( !empty( $order['PromPayDate'] ) ) {
+            $days = strtotime( $order['PromPayDate'] ) - strtotime( date( 'Y-m-d') );
+            $limitDate = f_df( $order['PromPayDate'], 'Y/m/d' );
+        } else {
+            $days = strtotime( $order['MAXLimitDate'] ) - strtotime( date( 'Y-m-d' ) );
+            $limitDate = f_df( $order['MAXLimitDate'], 'Y/m/d' );
+        }
+        if( $days >= 0 ) {
+            $day = ( $days / (60 * 60 * 24) );
+            $paymentLimitComment = '支払期限は '. $limitDate. ' です。';
+
+        } else if( $days < 0 ) {
+            $day = ( ( $days * -1 ) / (60 * 60 * 24) );
+            $paymentLimitComment = '支払期限を'. $day. '日過ぎています。<br />速やかなお支払いをお願い致します。';
+        }
+    }
+}
+?>
+<?php /* 請求履歴.届いてから払い利用フラグ = 1 かつ 注文_会計.口座振替申込区分 = 0 */
+if ( !( $order['PaymentAfterArrivalFlg'] == 1 && $order['CreditTransferRequestFlg'] == 0) ) {
+?>
+<div>
+    <table>
+        <tr>
+            <td><div id="menu_btn_sp"><a href="index/index"><span>ご購入<br/>情報</span></a></div></td>
+            <td><div id="menu_btn_sp"><a href="<?php echo ($this->registFlg == 1 ? $this->baseUrl : str_replace( '/orderpage', '/mypage', $this->baseUrl ) ) . $this->link; ?>" target="_blank"><span><?php echo $this->linkName; ?></span></a></div></td>
+            <?php if ($linkFAQ != '') { ?>
+            <td><div id="menu_btn_sp"><a href="<?php echo $linkFAQ; ?>"><span>よくある<br/>質問</span></a></div></td>
+            <?php } ?>
+        </tr>
+    </table>
+</div>
+<?php } ?>
+<!-- start contents -->
+<div id="contents">
+    <?php if( isset($list['ErrorMessage']) ) { ?>
+    <pre>
+    <br>
+    <font class="c_blue_02" size ="4"><?php echo $list['ErrorMessage'];?></font>
+    <br>
+    </pre>
+    <?php } ?>
+    <?php if( !empty( $order['Url_Credit'] ) ) { ?>
+    <div style="clear: both;" id="my_title">口座情報登録</div>
+    <div id="order_detail">
+        <fieldset style="border: 1px solid red; width: 98%; text-align: left; margin-left: 10px;">
+            <legend class="c_blue_02" style="">　お手続きはこちら　</legend>
+            <META http-equiv="Content-Type" content="text/html; charset=shift_jis">
+            <form name="UrlCreditForm" id="UrlCreditForm" method="POST" action="<?php echo $order['Url_Credit']; ?>" accept-charset="Shift_JIS" target="_blank" style="width: 98%">
+                <table width="98%" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="l_data" width="25%">
+                                <input type="text" readonly="readonly" tabindex="-1" style="line-height: 12px; font-size: 12px; margin-bottom:50px; width: 45%; height: 12px; text-align: left; border: 0;" value="氏名カナ">
+                                <input type="text" readonly="readonly" tabindex="-1" style="line-height: 12px; font-size: 12px; margin-bottom:50px; width: 45%; height: 12px; text-align: right; border: 0;" value="必須" class="c_red">
+                            </td>
+                            <td class="l_data" width="75%">
+                                <半角カナ><br>
+                                信用金庫の口座を登録する場合に口座名義として使用されます。<br>
+                                姓と名の間には半角スペースを入れてください。<br>
+                                <INPUT type="text" name="bill_kana" id="bill_kana" maxlength="60" style="margin-top: 5px" value="<?php echo $list['ConvertNameKn']; ?>" placeholder="例）ｱﾄﾊﾞﾗｲ ﾀﾛｳ" onblur="javascript:isHanConvert();">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table width="98%" cellpadding="1" cellspacing="1" border="0">
+                    <tbody>
+                        <tr>
+                            <td width="25%"></td>
+                            <td width="75%" class="l_data">
+                                これより先はSMBCファイナンスサービス(株)のページに遷移します<br>
+                                <!-- 01: バージョン (必須, 3桁数固定) -->
+                                <INPUT type="hidden" name="version"                 value="130">
+                                <!-- 02: 決済手段区分     「01：口座振替」-->
+                                <INPUT type="hidden" name="bill_method"             value="01">
+                                <!-- 03: 決済種類コード    「0101：口座振替」 -->
+                                <INPUT type="hidden" name="kessai_id"               value="0101">
+                                <!-- 04: 契約コード (必須, 7桁数固定)-->
+                                <INPUT type="hidden" name="shop_cd"                 value="<?php echo $list['shop_cd']; ?>">
+                                <!-- 05: 収納企業コード -->
+                                <INPUT type="hidden" name="syuno_co_cd"             value="<?php echo $list['syuno_co_cd']; ?>">
+                                <!-- 06: 拠点コード : ブランク設定-->
+                                <INPUT type="hidden" name="kyoten_cd"               value="">
+                                <!-- 07: ショップパスワード  TODO:-->
+                                <INPUT type="hidden" name="shop_pwd"                value="<?php echo $list['shop_pwd']; ?>">
+                                <!-- 08: 契約補助番号 -->
+                                <INPUT type="hidden" name="shoporder_no"            value="">
+                                <!-- 09: 上書可否区分 -->
+                                <INPUT type="hidden" name="koushin_kbn"             value="0">
+                                <!-- 10: 顧客番号 (必須, 12桁数固定) -->
+                                <INPUT type="hidden" name="bill_no"                 value="<?php echo str_pad($list['EntCustSeq'], 12, 0, STR_PAD_LEFT);?>">
+                                <!-- 11: 顧客名 -->
+                                <INPUT type="hidden" name="bill_name"               value="<?php echo $list['ConvertNameKj']; ?>">
+                                <!-- 13: 顧客生年月日 -->
+                                <INPUT type="hidden" name="bill_birthday"           value="">
+                                <!-- 14: 顧客性別 -->
+                                <INPUT type="hidden" name="bill_seibetsu"           value="">
+                                <!-- 15: 顧客郵便番号 -->
+                                <INPUT type="hidden" name="bill_zip"                value="">
+                                <!-- 16: 顧客住所１ -->
+                                <INPUT type="hidden" name="bill_adr_1"              value="">
+                                <!-- 17: 顧客住所２ -->
+                                <INPUT type="hidden" name="bill_adr_2"              value="">
+                                <!-- 18: 顧客住所３ -->
+                                <INPUT type="hidden" name="bill_adr_3"              value="">
+                                <!-- 19: 顧客住所４ -->
+                                <INPUT type="hidden" name="bill_adr_4"              value="">
+                                <!-- 20: 顧客住所５ -->
+                                <INPUT type="hidden" name="bill_adr_5"              value="">
+                                <!-- 21: 顧客電話番号 -->
+                                <INPUT type="hidden" name="bill_phon"               value="">
+                                <!-- 22: 顧客メールアドレス -->
+                                <INPUT type="hidden" name="bill_mail"               value="">
+                                <!-- 23: 顧客メールアドレス区分 -->
+                                <INPUT type="hidden" name="bill_mail_kbn"           value="">
+                                <!-- 項番 24～項番 33 はクレジットで利用する項目であるため,口座振替受付のみの場合は不要項目 -->
+                                <INPUT type="hidden" name="seikyuu_kaishi_ym"       value="">                <!-- 24: 請求開始年月 -->
+                                <INPUT type="hidden" name="seikyuu_shuryo_ym"       value="">                <!-- 25: 請求終了年月 -->
+                                <INPUT type="hidden" name="seikyuu_kingaku1"        value="">                <!-- 26: 請求金額（初回） -->
+                                <INPUT type="hidden" name="seikyuu_kingaku2"        value="">                <!-- 27: 請求金額（2 回目以降）  -->
+                                <INPUT type="hidden" name="seikyuu_hoho"            value="">                <!-- 28: 請求方法 -->
+                                <INPUT type="hidden" name="tokutei_tsuki1"          value="">                <!-- 29: 特定月１ -->
+                                <INPUT type="hidden" name="seikyuu_kin_tokutei1"    value="">                <!-- 30: 請求金額（特定月１） -->
+                                <INPUT type="hidden" name="tokutei_tsuki2"          value="">                <!-- 31: 特定月２ -->
+                                <INPUT type="hidden" name="seikyuu_kin_tokutei2"    value="">                <!-- 32: 請求金額（特定月２） -->
+                                <INPUT type="hidden" name="seikyuu_kin_hengaku"     value="">                <!-- 33: 請求金額（変額） -->
+                                <!-- 34: 受付ヘッダ文言１ -->
+                                <INPUT type="hidden" name="shop_msg_1"              value="">
+                                <!-- 35: 受付ヘッダ文言２ -->
+                                <INPUT type="hidden" name="shop_msg_2"              value="">
+                                <!-- 36: 遷移先ＵＲＬ -->
+                                <INPUT type="hidden" name="shop_link"               value="<?php echo ($myURL ."/smbc_res/1") ; ?>">
+                                <!-- 37: 結果通知ＵＲＬ -->
+                                <INPUT type="hidden" name="shop_res_link"           value="<?php echo ($myURL ."/smbc_res/1") ; ?>">
+                                <!-- 38: エラー時遷移先ＵＲＬ -->
+                                <INPUT type="hidden" name="shop_error_link"         value="<?php echo ($myURL ."/smbc_res/2") ; ?>">
+                                <!-- 39: リダイレクト区分 -->
+                                <INPUT type="hidden" name="redirect_kbn"            value="1">
+                                <!-- 40: リダイレクト秒数 -->
+                                <INPUT type="hidden" name="redirect_sec"            value="5">
+                                <!-- 41: ショップ名称 -->
+                                <INPUT type="hidden" name="shop_name"               value="<?php echo $list['ConvertSiteNameKj']; ?>">
+                                <!-- 42: ショップ連絡先電話番号 -->
+                                <INPUT type="hidden" name="shop_phon"               value="">
+                                <!-- 43: ショップ連絡先電話番号表示区分-->
+                                <INPUT type="hidden" name="shop_phon_hyoji_kbn"     value="0">
+                                <!-- 44: ショップ連絡先メールアドレス -->
+                                <INPUT type="hidden" name="shop_mail"               value="">
+                                <!-- 45: ショップ連絡先メールアドレス表示区分 -->
+                                <INPUT type="hidden" name="shop_mail_hyoji_kbn"     value="0">
+                                <!-- 46: ボタン表示文言 -->
+                                <INPUT type="hidden" name="modoru_btn_name"         value="">
+                                <!-- 47: ハッシュ値 -->
+                                <INPUT type="hidden" name="fs"                      value="">
+                                <div id="lable_05">
+                                    <button type="button" id="d_02" style="width: 180px; background-color: #E4EDD1;" onclick="javascript:isHanChkAndTrans();">次へ</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="l_data">
+                                <div style="width: 98%">
+                                    ※口座登録が完了するまでは、(株)キャッチボールの発行する請求書にてお支払いをお願いいたします。<br>
+                                    ※口座登録は、ご購入店毎に必要になります。
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </fieldset>
+    </div>
+    <?php } ?>
+
+    <?php if( $order['RequestStatus'] == 2  && $order['CreditTransferRequestFlg'] == 1) { ?>
+    <div style="clear: both;" id="my_title">登録済み口座情報</div>
+    <div  id="d_01">
+        銀行名：<?php echo $order['FfName'] ?><br>
+        支店名：<?php echo $order['FfBranchName'] ?><br>
+        預金種目：<?php echo $order['FfAccountClassKeyContent'] ?><br>
+        口座番号：<?php echo $order['FfAccountNumber'] ?><br>
+        <br>
+        ※口座情報を変更したい場合は、よくある質問から<br>
+        　弊社カスタマーサポートへお問い合わせください。<br>
+    </div>
+    <?php } ?>
+
+<?php /* 請求履歴.届いてから払い利用フラグ = 1 かつ 注文_会計.口座振替申込区分 = 0 */
+if( $order['PaymentAfterArrivalFlg'] == 1 && $order['CreditTransferRequestFlg'] == 0) {
+?>
+    <div id="bill_info">
+        <div id="my_title_white">ご購入情報とお支払方法</div>
+        <div style="clear: both; margin: 5px 5px 5px 5px;">
+            <div id="lbl_01">注文日：<?php echo f_df( $order['ReceiptOrderDate'], 'Y/m/d' ); ?></div>
+            <div id="lbl_03" style="font-size: 16px;">
+                購入店名：<?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { echo f_e( $order['SiteNameKj'] ); } else { echo f_e( $order['EnterpriseNameKj'] ); } ?>
+            </div>
+            <div id="d_06">
+                ご請求金額　　<?php echo f_nf( nvl( $this->orderClaimAmount, 0 ), '\#,##0' ); ?>
+                <?php if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { ?></br>ご請求残　　 　<?php echo f_nf( nvl( $order['ClaimedBalance'], 0 ), '\#,##0' ); ?><?php } ?>
+            </div>
+        </div>
+    </div>
+    <div id="d_08">
+        <span class="c_red"><?php echo $paymentLimitComment; ?></span>
+        <?php if ( isset($this->accessKeyValidToDate) ) { ?>
+            <br>注文マイページ有効期限：<?php echo date('Y/m/d', strtotime( $this->accessKeyValidToDate )); ?>
+        <?php } ?>
+    </div>
+<?php /* 入金方法名が未設定の場合 */
+    if ( empty($order['ReceiptClassName']) ) {
+        echo $this->render( 'orderpage/index/peyment_credit_sp.php' );
+    } else {
+ ?>
+    <div style="margin: 10px 0px 10px 0px; background-color: #F0F0F0;">
+        <div id="d_08" >ご利用いただいたお支払方法</div>
+        <table id="CreditSettlementForm" name="CreditSettlementForm" width="98%" style="padding: 0px 0px 0px 30px; margin: 0px;">
+            <tr>
+                <td colspan="2"><?php echo $order['ReceiptClassName']; ?></td>
+            </tr>
+            <tr>
+                <td><?php echo '決済確定日：'. f_df( $order['ReceiptDate'], 'Y-m-d' ); ?></td>
+                <?php if ( !is_null($order['CancelDate']) ) { ?>
+                    <td><?php echo 'キャンセル日：'. f_df( $order['CancelDate'], 'Y-m-d' ); ?></td>
+                    <?php $order['CreditSettlementButton'] = 2; ?>
+                <?php } ?>
+       <?php if ( $order['CreditSettlementButton'] == 1 ) { ?>
+       			<td rowspan="2">
+                    <INPUT type="hidden" name="OrderSeq"  value="<?php echo $order['OrderSeq']; ?>">
+                    <div id="d_07" style="width:92%">
+                        <button id="submit1" type="button" class="d_07"><?php echo $order['CreditSettlementButtonName']; ?></button>
+                    </div>
+                </td>  
+       <?php } ?>   
+            </tr>
+        </table>
+    </div>
+<?php
+    }
+ ?>
+
+    <div id="order_info">
+        <div id="lbl_03">
+        注文ID：<?php echo f_e( $order['OrderId'] ); ?><br />
+        <?php if( !empty( $order['Ent_OrderId'] )){ ?>購入店注文番号：<?php echo f_e( $order['Ent_OrderId'] ); ?><br /><?php } ?>
+        <?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { ?>
+        <div id="lable_03">
+            <?php
+            if(strpos( $order['Url'], "http://") !== false or strpos( $order['Url'], "https://") !== false) {?>
+                <a href="<?php echo $order['Url']; ?>" target="_blank" float="center">購入店ページへ</a>
+            <?php } else {?>
+                <a href="//<?php echo $order['Url']; ?>" target="_blank" float="center">購入店ページへ</a>
+            <?php }
+            ?>
+        </div>
+        <?php } ?>
+        </div>
+    </div>
+
+<?php } else { ?>
+
+    <div style="clear: both;" id="my_title">ご購入情報</div>
+
+    <div id="lbl_01">注文日：<?php echo f_df( $order['ReceiptOrderDate'], 'Y/m/d' ); ?></div>
+    <div id="d_01">
+        <span class="c_red"><?php echo $paymentLimitComment; ?></span>
+        <?php if ( isset($this->accessKeyValidToDate) ) { ?>
+            <br>注文マイページ有効期限：<?php echo date('Y/m/d', strtotime( $this->accessKeyValidToDate )); ?>
+        <?php } ?>
+    </div>
+    <div  id="d_01"><span class="c_blue_01">
+    <?php if( ( $this->orderStatus['DataStatus'] >= 51 ) && ( $this->orderStatus['Cnl_Status'] == 0 ) && ( $this->orderStatus['Rct_Status'] == 0 || ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) ) )  {
+            if( !empty( $order['MypageReissueRequestDate'] ) && ( $order['MypageReissueClass'] != 91 && $order['MypageReissueClass'] != 92 ) ) { ?>
+        請求書再発行を受け付け済みです。<br />速やかに新しい請求書をご送付致しますのでしばらくお待ちください。
+        <?php } else if( !empty( $order['MypageReissueRequestDate'] ) && ( $order['MypageReissueClass'] == 91 || $order['MypageReissueClass'] == 92 ) ) { ?>
+        <?php echo f_df( $order['MAXClaimDate'], 'Y/m/d' ); ?>に請求書を再発送致しました。
+    <?php } } ?>
+        </span>
+    </div>
+    <div id="order_info">
+        <div id="lbl_03">
+        注文ID：<?php echo f_e( $order['OrderId'] ); ?><br />
+        <?php if( !empty( $order['Ent_OrderId'] )){ ?>購入店注文番号：<?php echo f_e( $order['Ent_OrderId'] ); ?><br /><?php } ?>
+        購入店名：<?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { echo f_e( $order['SiteNameKj'] ); } else { echo f_e( $order['EnterpriseNameKj'] ); } ?>
+        <?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { ?>
+        <div id="lable_03">
+            <?php
+            if(strpos( $order['Url'], "http://") !== false or strpos( $order['Url'], "https://") !== false) {?>
+                <a href="<?php echo $order['Url']; ?>" target="_blank" float="center">購入店ページへ</a>
+            <?php } else {?>
+                <a href="//<?php echo $order['Url']; ?>" target="_blank" float="center">購入店ページへ</a>
+            <?php }
+            ?>
+        </div>
+        <?php } ?>
+        </div>
+    </div>
+    
+    <div id="bill_info">
+        <div style="clear: both;">
+            <div id="d_03">
+                ご請求金額　　<?php echo f_nf( nvl( $this->orderClaimAmount, 0 ), '\#,##0' ); ?>
+                <hr/>
+                <?php if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { ?>ご請求残　　 　<?php echo f_nf( nvl( $order['ClaimedBalance'], 0 ), '\#,##0' ); ?><?php } ?>
+            </div>
+            <div id="d_04">
+                <table class="tb_04" style="margin: 5px;">
+                    <tr>
+                        <td>請求書：<?php if( empty( $order['MAXClaimDate'] ) ) { echo '未発行'; } else { echo '発行済み'; } ?></td>
+                        <td>発行日：<?php if( empty( $order['MAXClaimDate'] ) ) { echo '－'; } else { echo f_df( $order['MAXClaimDate'], 'Y-m-d' ); } ?></td>
+                    </tr>
+                    <tr>
+                        <td>お支払：<?php if( $this->orderStatus['Cnl_Status'] >= 1 ) { echo '<font class="c_blue_02">キャンセル済み</font>'; }
+                            else { if( $this->orderStatus['DataStatus'] < 51 ) { echo 'ご請求前'; } else if( $this->orderStatus['Rct_Status'] != 1 ) { echo '<font class="c_red">未入金</font>'; }
+                            else if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { echo '<font class="c_red">残あり</font>'; }
+                            else if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) { echo '<font class="c_blue_01">支払済み</font>'; } } ?>
+                        </td>
+                        <td><?php if ( ( $this->orderStatus['Cnl_Status'] == 0 ) && ( $this->orderStatus['DataStatus'] >= 51 ) && ( ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) || ( $this->orderStatus['Rct_Status'] != 1 ) )) {
+                                if( !empty( $order['PromPayDate'] ) ) { echo '約束日：' . $order['PromPayDate'] . '<br />'; }
+                                else { echo '期限日：' . $order['MAXLimitDate'] . '<br />'; } }
+                            if( ( $this->orderStatus['Cnl_Status'] == 0 ) && ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) ) { echo 'お支払日：' . $order['MAXReceiptDate'] . '<br />'; }
+                            if( $this->orderStatus['Cnl_Status'] >= 1 ) { echo 'キャンセル日：' . $order['CancelDate'] . '<br />'; } ?>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="cust_info">
+        <div id="info_title">ご請求先</div>
+        <table width="98%" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr><td class="f_bold" width="25%">郵便番号</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['PostalCode'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['UnitingAddress'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">ご請求先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['NameKj'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['Phone'] ); ?></td></tr>
+            <?php if( !empty( $this->custInfo['MailAddress'] )){ ?><tr><td class="f_bold" width="25%">メール</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['MailAddress'] ); ?></td></tr><?php } ?>
+          </tbody>
+        </table>
+    </div>
+
+<?php } ?>
+    <div id="order_detail">
+        <table width="98%" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+            <tr>
+                <th class="th_01" width="55%">購入した商品</th>
+                <th class="th_01" width="15%">単価</th>
+                <th class="th_01" width="15%">点数</th>
+                <th class="th_01" width="15%">小計</th>
+            </tr>
+            <?php foreach( $this->orderItems as $orderItem ) { ?>
+            <?php if( $orderItem['DataClass'] == 1 ) { ?>
+            <tr>
+                <td class="l_data"><?php echo $orderItem['ItemNameKj']; ?><?php if ($this->orderStatus['Cnl_Status'] == 0) {echo $orderItem['Cnl_Status'] == 0 ? '' : '<font color="red">(キャンセル済)</font>';} ?></td>
+                <td class="r_data"><?php if( !empty( $orderItem['UnitPrice'] ) ) { echo f_nf( nvl( $orderItem['UnitPrice'], 0 ), '#,##0' ); } ?></td>
+                <td class="r_data"><?php if( !empty( $orderItem['UnitPrice'] ) ) { echo f_nf( nvl( $orderItem['ItemNum'], 0 ), '#,##0' ); } ?></td>
+                <td class="r_data"><?php echo f_nf( nvl( $orderItem['SumMoney'], 0 ), '#,##0' ); ?></td>
+            </tr>
+            <?php } } if( !empty( $this->sumCarriage ) ) { ?>
+            <tr>
+                <td class="l_data">送料</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage, 0 ), '#,##0' ); ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage, 0 ), '#,##0' ); ?></td>
+            </tr>
+            <?php } if( !empty( $this->sumSettlementFee ) ) { ?>
+            <tr>
+                <td class="l_data">決済手数料</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee, 0 ), '#,##0' ); ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee, 0 ), '#,##0' ); ?></td>
+            </tr>
+            <?php } if( !empty( $this->sumTax ) ) { ?>
+            <tr>
+                <td class="l_data">税額</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumTax, 0 ), '#,##0' ); ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( nvl( $this->sumTax, 0 ), '#,##0' ); ?></td>
+            </tr>
+            <?php } if( !empty( $order['ClaimFee'] ) ) { ?>
+            <tr>
+                <td class="l_data">再請求手数料</td>
+                <td class="r_data"><?php echo $order['ClaimFee']; ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( $order['ClaimFee'], '#,##0' ); ?></td>
+            </tr>
+            <?php } if( !empty( $order['DamageInterestAmount'] ) ) { ?>
+            <tr>
+                <td class="l_data">遅延損害金</td>
+                <td class="r_data"><?php echo $order['DamageInterestAmount']; ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( $order['DamageInterestAmount'], '#,##0' ); ?></td>
+            </tr>
+            <?php } if( !empty( $order['AdditionalClaimFee'] ) ) { ?>
+            <tr>
+                <td class="l_data" >追加請求手数料</td>
+                <td class="r_data"><?php echo $order['AdditionalClaimFee']; ?></td>
+                <td class="r_data">1</td>
+                <td class="r_data"><?php echo f_nf( $order['AdditionalClaimFee'], '#,##0' ); ?></td>
+            </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+<?php
+/* 請求履歴.届いてから払い利用フラグ = 1 かつ 注文_会計.口座振替申込区分 = 0 */
+if( $order['PaymentAfterArrivalFlg'] == 1  && $order['CreditTransferRequestFlg'] == 0) {
+?>
+	<div id="bill_info">
+        <div style="clear: both;">
+            <div id="d_04">
+                <table class="tb_04" style="margin: 5px;">
+                    <tr>
+                        <td>請求書：<?php if( empty( $order['MAXClaimDate'] ) ) { echo '未発行'; } else { echo '発行済み'; } ?></td>
+                        <td>発行日：<?php if( empty( $order['MAXClaimDate'] ) ) { echo '－'; } else { echo f_df( $order['MAXClaimDate'], 'Y-m-d' ); } ?></td>
+                    </tr>
+                    <?php if ( empty($order['ReceiptClassName']) ) { ?>
+                    <tr>
+                        <td>お支払：<?php if( $this->orderStatus['Cnl_Status'] >= 1 ) { echo '<font class="c_blue_02">キャンセル済み</font>'; }
+                            else { if( $this->orderStatus['DataStatus'] < 51 ) { echo 'ご請求前'; } else if( $this->orderStatus['Rct_Status'] != 1 ) { echo '<font class="c_red">未入金</font>'; }
+                            else if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { echo '<font class="c_red">残あり</font>'; }
+                            else if( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) { echo '<font class="c_blue_01">支払済み</font>'; } } ?>
+                        </td>
+                        <td><?php if ( ( $this->orderStatus['Cnl_Status'] == 0 ) && ( $this->orderStatus['DataStatus'] >= 51 ) && ( ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) || ( $this->orderStatus['Rct_Status'] != 1 ) )) {
+                                if( !empty( $order['PromPayDate'] ) ) { echo '約束日：' . $order['PromPayDate'] . '<br />'; }
+                                else { echo '期限日：' . $order['MAXLimitDate'] . '<br />'; } }
+                            if( ( $this->orderStatus['Cnl_Status'] == 0 ) && ( $this->orderStatus['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) ) { echo 'お支払日：' . $order['MAXReceiptDate'] . '<br />'; }
+                            if( $this->orderStatus['Cnl_Status'] >= 1 ) { echo 'キャンセル日：' . $order['CancelDate'] . '<br />'; } ?>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div id="cust_info">
+        <div id="info_title">ご請求先</div>
+        <table width="98%" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr><td class="f_bold" width="25%">郵便番号</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['PostalCode'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['UnitingAddress'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">ご請求先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['NameKj'] ); ?></td></tr>
+            <tr><td class="f_bold" width="25%">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['Phone'] ); ?></td></tr>
+            <?php if( !empty( $this->custInfo['MailAddress'] )){ ?><tr><td class="f_bold" width="25%">メール</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $this->custInfo['MailAddress'] ); ?></td></tr><?php } ?>
+          </tbody>
+        </table>
+    </div>
+<?php
+}
+
+if( $this->orderStatus['DataStatus'] == 51 && empty( $this->orderStatus['Cnl_Status'] ) ) {
+    /* 請求履歴.届いてから払い利用フラグ = 1 かつ 注文_会計.口座振替申込区分 = 0 */
+    if( $order['PaymentAfterArrivalFlg'] == 1  && $order['CreditTransferRequestFlg'] == 0) {
+        if ( empty($order['ReceiptClassName']) ) {
+?>
+    <div id="d_07" style="width:92%"><button type="button" onclick="window.open('billreiss/index?oseq=<?php echo $order['OrderSeq']; ?>', '_blank');">請求書の再発行</button></div>
+<?php
+        }
+    } else {
+ ?>
+    <div id="d_02" style="width:92%"><button type="button" onclick="window.open('billreiss/index?oseq=<?php echo $order['OrderSeq']; ?>', '_blank');">請求書の再発行</button></div>
+ <?php
+    }
+}
+ ?>
+    <INPUT type="hidden" id="orderseq"  value="<?php echo $order['OrderSeq']; ?>" />
+    <div id="deli_info">
+        <?php $j = 1;
+            $deliListCount = 0;
+            if( !empty( $this->deliList ) ){
+                $deliListCount = count( $this->deliList );
+            }
+            if( $deliListCount > 1 ) {
+            foreach( $this->deliList as $deliDest  ) { ?>
+            <div id="info_title">お届け先<?php echo $j++; ?></div>
+            <input type="hidden" value="<?php echo $deliDest[0]['OrderSeq']; ?>" />
+            <table width="98%" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr><td class="f_bold" width="25%">郵便番号</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDest[0]['PostalCode'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDest[0]['UnitingAddress'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">お届け先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDest[0]['DestNameKj'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDest[0]['Phone'] ); ?></td></tr>
+            </tbody>
+            </table>
+            <table width="98%" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+                <tr>
+                  <th class="th_01">お届け商品</th>
+                  <th class="th_01">点数</th>
+                </tr>
+            </thead>
+            <?php foreach ( $deliDest as $syhn ) { ?>
+            <tbody>
+                <tr>
+                    <td class="l_data"><?php echo $syhn['ItemNameKj']; ?></td>
+                    <td class="r_data"><?php if( !empty( $syhn['UnitPrice'] ) ) { echo f_nf( nvl( $syhn['ItemNum'], 0 ), '#,##0' ); } ?></td>
+                </tr>
+            </tbody>
+            <?php } ?>
+            </table>
+            <?php } } else { $deliList = $this->deliList[$order['OrderSeq']][0]; ?>
+            <div id="info_title">お届け先</div>
+            <table width="98%" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr><td class="f_bold" width="25%">郵便番号</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliList['PostalCode'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliList['UnitingAddress'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">お届け先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliList['DestNameKj'] ); ?></td></tr>
+                <tr><td class="f_bold" width="25%">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliList['Phone'] ); ?></td></tr>
+            </tbody>
+            </table>
+            <?php } ?>
+    </div>
+
+</div>
+<!-- end contents -->
+<?php
+// 共通メニュー
+echo $this->render( 'orderpage/menu_sp.php' );
+
+// 共通ページフッタ
+echo $this->render( 'orderpage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+<script type="text/javascript">
+
+function isHanConvert(){
+    var str = Form.serialize('UrlCreditForm');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/index/isValidNameKn";
+    var ajax = new Ajax.Request( url, {method: 'get', parameters: str, asynchronous: false } );
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    document.getElementById('bill_kana').value = res['bill_kana'];
+}
+function isHanChkAndTrans(){
+    var str = Form.serialize('UrlCreditForm');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/index/isValidNameKn";
+    var ajax = new Ajax.Request( url, {method: 'get', parameters: str, asynchronous: false } );
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    document.getElementById('bill_kana').value = res['bill_kana'];
+
+    if(res['bill_kana_msg'] != null && res['bill_kana_msg'] != ''){
+        alert(res['bill_kana_msg']);
+        return;
+    }
+
+    document.charset='Shift_JIS';
+    document.UrlCreditForm.submit();
+
+}
+
+<?php
+if( $order['PaymentAfterArrivalFlg'] == 1 && $order['CreditTransferRequestFlg'] == 0 && $order['CreditSettlementButton'] == 1
+) {
+?>
+Event.observe($("submit1"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('CreditSettlementForm');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/receiptpdfoutput/jobparamset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // PDF出力処理
+    var url = "<?php echo $this->baseUrl; ?>/receiptpdfoutput/printSp";
+    var ref = window.open( url );
+
+    // PDF出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+
+});
+<?php } ?>
+
+</script>
+</html>

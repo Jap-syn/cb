@@ -1,0 +1,145 @@
+<?php
+use models\Logic\Validation\LogicValidationResult;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.error_message {
+    color: red;
+}
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+ <?php $data = $this->expressions; ?>
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信条件新規登録</h3>
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信条件新規登録</h3>
+    <?php } ?>
+    <!-- count関数対策 -->
+    <?php if(isset($this->error_messages) && !empty($this->error_messages) > 0 || isset($this->validationResults) && !empty($this->validationResults)) { ?>
+    <h4>※：入力に不備があります。登録内容を見直してください。 <br>
+            以下のデータの入力に不備があったため、データは更新されませんでした。</h4>
+    <ul class="error_info_container">
+    <!--<php foreach($this->error_messages as $info) { ?>
+        <li class="error_message" onclick="highlight_error('<php echo f_e($info['seq']); ?>')"><php echo f_e($info['message']); ?></li>
+    <php } }?-->
+    <!-- // count関数対策 -->
+    <?php if(!empty($this->error_messages)){ ?>
+        <?php foreach($this->error_messages as $error) { ?>
+	       <font color="red"><li><?php echo escape($error); ?></li></font>
+	    <?php } ?>
+    <?php } ?>
+<?php } ?>
+    </ul>
+  <?php
+    /**
+     * @var LogicValidationResult
+     */
+    $vr = $this->validationResults;
+    if($vr == null) $vr = new LogicValidationResult();
+
+    $data = $this->data;
+
+    echo $this->render('cbadmin/credit/validation_error_handler.php');
+    ?>
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <form name="form" method="post" action="credit/confirm">
+    <?php } else { ?>
+    <form name="form" method="post" action="credit/confirm/eid/<?php echo f_e($this->EnterpriseId); ?>">
+    <?php } ?>
+      <table width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+        <tr>
+        <td class="l_data" colspan="5">
+          <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+            <div align="right"><a href= "credit/importform" >CSV取込（登録・修正）</a></div>
+          <?php } else { ?>
+            <div align="right"><a href= "credit/importform/eid/<?php echo f_e($this->EnterpriseId); ?>" >CSV取込（登録・修正）</a></div>
+          <?php } ?>
+        </td>
+        </tr>
+        </thead>
+
+        <tr class="l_data">
+            <th>項目種別</th>
+            <th>検索方法</th>
+            <th>条件文字列</th>
+            <th>コメント</th>
+            <th>ポイント</th>
+        </tr>
+
+        <tbody>
+            <tr>
+                <td class="c_data">
+                    <select id="credit_category" name="expressions[Category]">
+                        <?php foreach($this->categoryName as $key => $row) { ?>
+                          <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+                            <?php if($row['Code'] != 6 && $row['Code'] != 7){?>
+                            <option value="<?php echo f_e($row['Code']); ?>"<?php if($row['Code'] == $this->expressions['Category']) echo ' selected="selected"'; ?>><?php echo f_e($row['Caption']); ?></option>
+                            <?php } ?>
+                          <?php } else { ?>
+                            <?php if($row['Code'] != 5 && $row['Code'] != 6 && $row['Code'] != 7){?>
+                            <option value="<?php echo f_e($row['Code']); ?>"<?php if($row['Code'] == $this->expressions['Category']) echo ' selected="selected"'; ?>><?php echo f_e($row['Caption']); ?></option>
+                            <?php } ?>
+                          <?php } ?>
+                        <?php } ?>
+                    </select>
+                </td>
+                <td class="c_data">
+                    <select id="search_pattern" name="expressions[SearchPattern]">
+                        <?php foreach($this->searchPattern as $key => $row) { ?>
+                            <option value="<?php echo f_e($row['Code']); ?>"<?php if($row['Code'] == $this->expressions['SearchPattern']) echo ' selected="selected"'; ?>><?php echo f_e($row['Caption']); ?></option>
+                        <?php } ?>
+                    </select>
+                </td>
+                <td class="c_data">
+                    <input id="credit_cstring" name="expressions[Cstring]" type="text" value="<?php echo f_e($this->expressions['Cstring']); ?>" maxlength="4000" />
+                </td>
+                <td class="c_data">
+                    <input id="credit_comment" name="expressions[Comment]" type="text" value="<?php echo f_e($this->expressions['Comment']); ?>" maxlength="255" />
+                </td>
+                <td class="c_data">
+                    <input id="credit_score" name="expressions[Point]" type="text" value="<?php echo f_e($this->expressions['Point']); ?>" style="text-align:right" />
+                </td>
+            </tr>
+        </tbody>
+      </table>
+          <!--
+              ボタン類
+            -->
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr align="center">
+            <td>
+              <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == ''  ) { ?>
+                <input type="submit" value="　確認　" />　　　
+                <!-- <input type="button" value="　戻る　" onClick="javascript:location.href='.'; "/>-->
+                <a href="credit/pointform">戻　る</a>
+              <?php } else { ?>
+                <input type="submit" value="　確認　" />　　　
+              <?php } ?>
+            </td>
+          </tr>
+        </table>
+   </form>
+  </div>
+  <!-- end contents -->
+<script type="text/javascript">
+Event.observe(window, "load", function() {
+    Event.observe($("cancel_button"), "click", function() {
+        window.location.href = Application.calcPath("credit/new");
+    });
+});
+</script>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

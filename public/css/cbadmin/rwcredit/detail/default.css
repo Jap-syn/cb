@@ -1,0 +1,36 @@
+@CHARSET "UTF-8";
+
+#credittotalcaption {
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	border: thin solid #333333;
+	float: left;
+	padding: 5px;
+	width: 160px;
+	margin-left: 25px;
+}
+
+#credittotalpoint {
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	border: thin solid #333333;
+	float: left;
+	padding: 5px;
+	width: 80px;
+	margin-left: 25px;
+}
+
+#telnotice {
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	float: right;
+	padding: 5px;
+	width: 100px;
+	margin-right: 25px;
+	background-color: #ff3333;
+	color: #ffffff;
+}
+

@@ -1,0 +1,114 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+<!-- start contents -->
+<div id="contents">
+<h3>事業者登録完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">事業者名</td>
+    <td class="data"><?php echo $this->data["EnterpriseNameKj"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">事業者名カナ</td>
+    <td class="data"><?php echo $this->data["EnterpriseNameKn"]; ?></td>
+  </tr>  <tr>
+    <td class="label">ログインID</td>
+    <td class="data"><?php echo $this->data["LoginId"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">パスワード</td>
+    <td class="data"><?php echo $this->data["LoginPasswd"]; ?></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="c_data"><a href="site/list/eid/<?php echo $this->eid; ?>">サイト登録へ</a></td>
+  </tr>
+  <!-- 
+  <tr>
+    <td>所在地</td>
+    <td>〒
+    <?php echo $this->data["PostalCode"]; ?>
+    <?php echo $this->data["PrefectureName"]; ?>
+    <br />
+    <?php echo $this->data["City"]; ?>
+    <?php echo $this->data["Town"]; ?>
+    <br />
+    <?php echo $this->data["Building"]; ?></td>
+  </tr>
+  <tr>
+    <td>電話番号</td>
+    <td><?php echo $this->data["Phone"]; ?></td>
+  </tr>
+  <tr>
+    <td>FAX番号</td>
+    <td><?php echo $this->data["Fax"]; ?></td>
+  </tr>
+  <tr>
+    <td>業種</td>
+    <td><?php echo $this->data["Industry"]; ?></td>
+  </tr>
+  <tr>
+    <td>利用プラン</td>
+    <td><?php echo $this->data["Plan"]; ?></td>
+  </tr>
+  <tr>
+    <td>月額固定費</td>
+    <td><?php echo $this->data["MonthlyFee"]; ?></td>
+  </tr>
+  <tr>
+    <td>決済上限額</td>
+    <td><?php echo $this->data["SettlementAmountLimit"]; ?></td>
+  </tr>
+  <tr>
+    <td>決済手数料</td>
+    <td><?php echo $this->data["SettlementFeeRate"]; ?></td>
+  </tr>
+  <tr>
+    <td>締め日パターン</td>
+    <td><?php echo $this->data["FixPattern"]; ?></td>
+  </tr>
+  <tr>
+    <td>金融機関</td>
+    <td><?php echo $this->data["FfName"]; ?>／<?php echo $this->data["FfCode"]; ?>／<?php echo $this->data["FfBranchName"]; ?>
+    ／<?php echo $this->data["FfBranchCode"]; ?>／<?php echo $this->data["FfAccountClass"]; ?>／<?php echo $this->data["FfAccountNumber"]; ?>
+    ／<?php echo $this->data["FfAccountName"]; ?>
+    </td>
+  </tr>
+  <tr>
+    <td>担当者名</td>
+    <td><?php echo $this->data["CpNameKj"]; ?></td>
+  </tr>
+  <tr>
+    <td>担当者名カナ</td>
+    <td><?php echo $this->data["CpNameKn"]; ?></td>
+  </tr>
+  <tr>
+    <td>部署名</td>
+    <td><?php echo $this->data["DivisionName"]; ?></td>
+  </tr>
+  <tr>
+    <td>メールアドレス</td>
+    <td><?php echo $this->data["MailAddress"]; ?></td>
+  </tr>
+  <tr>
+    <td>連絡先電話番号</td>
+    <td><?php echo $this->data["ContactPhoneNumber"]; ?></td>
+  </tr>
+  <tr>
+    <td>備考</td>
+    <td><?php echo $this->data["Note"]; ?></td>
+  </tr>
+-->
+</table>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

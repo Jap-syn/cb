@@ -1,0 +1,154 @@
+@CHARSET "UTF-8";
+
+
+#wrapper {
+    width: 172mm;
+    height: 251mm;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	border: 1px solid blue;
+	background: #ffffff;
+	color: #333333;
+	font: 1.0em/150% 'arial', sans-serif;
+}
+
+/* header */
+#header {
+	float: left;
+	width: 922px;
+	/*height: 80px;*/
+	margin: 0px;
+	padding: 0px;
+	background: #ffffff;
+}
+
+#header #title {
+	margin: 20px 0px 0px 30px;
+	padding: 0px;
+	color: #333333;
+	font: bold 2.5em 'arial black', sans-serif;
+	text-align: left;
+}
+
+#header #title a {
+	color: #333333;
+}
+
+#header div#description {
+	margin: 5px 0px 0px 30px;
+	padding: 0px;
+	color: #666666;
+	font-size: 1.2em;
+	text-align: right;
+}
+
+#header div#titleimg {
+	float: left;
+}
+
+#header div#loginstatus {
+	margin: 13px 0px 0px 30px;
+	padding: 0px;
+	color: #666666;
+	/*font-size: 1.2em;*/
+	text-align: right;
+}
+
+#header div#loginstatus a {
+	padding-left: 30px;
+	padding-right: 40px;
+}
+
+#header img {
+	padding: 10px;
+}
+
+/* contents */
+#contents {
+	float: left;
+	width: 1000px;
+	background: #ffffff;
+	color: #333333;
+	text-align: left;
+}
+
+/* footer */
+#footer {
+	clear: both;
+	width: 1020px;
+	height: 30px;
+	margin: 0px;
+	padding: 10px 0px 0px;
+	border: 1px solid #cfcfcf;
+	background: #F0F0F0;
+	color: #222222;
+	font-size: 1.0em;
+	text-align: center;
+}
+
+#system_messages {
+	position: absolute;
+	top: 60px;
+	right: 10px;
+	width: 300px;
+	padding: 4px;
+	font-size: 14pt;
+	font-weight: bold;
+	line-height: 110%;
+	border: solid 1px crimson;
+	background-color: lemonchiffon;
+	color: red;
+	overflow: auto;
+	-moz-opacity: .8;
+	opacity: .8;
+	filter: alpha(opacity=80);
+}
+
+.system_message {
+	padding: 2px 4px;
+}
+
+.system_message_toolbar {
+	font-size: 8pt;
+	font-weight: normal;
+	text-align: right;
+	line-height: 100%;
+	border-top: solid 1px silver;
+	padding: 2px;
+	margin-bottom: -4px;
+}
+
+a.system_message_toolbutton:link,
+a.system_message_toolbutton:hover,
+a.system_message_toolbutton:visited,
+a.system_message_toolbutton:active {
+	text-decoration: none;
+	color: dimgray;
+}
+
+a.system_message_toolbutton:hover {
+	color: blue;
+}
+
+
+/* カラー（赤） */
+.c_red {
+    color: red;
+}
+
+.c_orange{
+    color: orange;
+}
+
+.c_blue_01{
+    color: #1E90FF;;
+}
+
+.c_blue_02{
+    color: #0070C0;;;
+}
+
+/*bold*/
+.f_bold {
+    font-weight: bold;
+}

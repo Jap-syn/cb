@@ -1,0 +1,84 @@
+<?php
+$totalAdjustmentAmount = 0;     // 総調整額
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM精算明細（調整金明細）</h3>
+      <table style="font-size: 12px;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+            <td class="r_data">
+              <a class="download_link" href="<?php echo 'oemmonthly/dadjustmentamount/oemid/'.f_e($this->oemInfo['OemId']).'/eid/'.f_e($this->entInfo['EnterpriseId']).'/fd/'.f_e($this->fd); ?>">↓CSVダウンロード</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+<?php if( !count( $this->list ) ) { ?>
+<h4>明細はありません。</h4>
+<?php } else { ?>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>立替締日</th>
+            <th>注文ID</th>
+            <th>任意注文番号</th>
+            <th>購入者</th>
+            <th>注文日</th>
+            <th>科目</th>
+            <th>精算<br />調整額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          $i = 0;
+          // count関数対策
+          $listCount = 0;
+          if (!empty($this->list)) {
+              $listCount = count($this->list);
+          }
+          for ($j=0; $j<$listCount; $j++) {
+              $row = $this->list[$j];
+          ?>
+          <tr>
+            <td class="c_data"><?php echo (++$i); ?></td>
+            <td class="c_data"><?php echo f_df( $row['FixedDate'], 'Y/m/d' ); ?></td>
+            <td class="c_data"><?php if( $row['OrderSeq'] ) { ?><a target="_blank" href="rworder/detail/oseq/<?php echo f_e( $row['OrderSeq'] ); ?>"><?php echo f_e( $row['OrderId'] ); ?></a><?php } else { echo f_e( $row['OrderId'] ); } ?></td>
+            <td class="c_data"><?php echo f_e( $row['Ent_OrderId'] ); ?></td>
+            <td class="l_data"><?php echo f_e( $row['NameKj'] ); ?></td>
+            <td class="c_data"><?php echo f_df( $row['ReceiptOrderDate'], 'Y/m/d' ); ?></td>
+            <td class="l_data"><?php echo f_e( $row['kamoku'] ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['AdjustmentAmount'], 0 ), '#,##0' ); ?></td>
+          </tr>
+          <?php
+              $totalAdjustmentAmount += (int)$row['AdjustmentAmount'];
+          }
+          ?>
+
+          <tr class="summary">
+            <td class="seq_col r_data" colspan="7">お取引先計</td>
+            <td class="money_col total_col r_data"><?php echo f_nf( nvl( $totalAdjustmentAmount, 0 ), '\ #,##0' ); ?></td>
+          </tr>
+
+        </tbody>
+      </table>
+<?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

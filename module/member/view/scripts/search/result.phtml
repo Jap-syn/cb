@@ -1,0 +1,332 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+
+$viewHelper = new CoralViewHelperValueFormat();
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<style type="text/css">
+.main_contents {
+	height: auto;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<?php /***** 検索条件表示エリア *****/ ?>
+<?php if (isset($this->siteNameKj)) { ?>
+<h3>サイト名：<?php echo $this->siteNameKj; ?></h3>
+<?php } ?>
+
+<div class="expression_list" id="expressionList">
+	<div class="title">
+		<a id="toggleList" class="command" href="#" onclick="return false" title="検索条件の詳細表示を切り替えます">切替</a>
+		検索条件：
+		<span id="expressionSummary">
+			<?php $cntSearchExpressions = 0;
+			      if (!empty($this->searchExpressions)) {
+			          $cntSearchExpressions = count( $this->searchExpressions );
+			      }
+			?>
+			<?php echo ' → ' . $cntSearchExpressions . ' 個の条件が指定されています'; ?>
+		</span>
+	</div>
+	<script>$("expressionSummary").style.display = "none";</script>
+	<ul>
+<?php
+if( !empty( $this->searchExpressions) ) {
+	foreach( $this->searchExpressions as $expression ) {
+		echo '<li>' . $viewHelper->valueFormat( $expression ) . '</li>' . "\n";
+	}
+} else {
+	echo "<li>(すべての取引)</li>";
+}
+?>
+	</ul>
+</div>
+<div class="expression_list" id="expressionList2">
+	<div class="title">
+		<a id="sortList" class="command" ></a>
+		表示順：
+		<span id="expressionSummary">
+			<?php if(empty($this->sorting) || $this->sorting == 0) {
+				echo ' → 新しい注文順';
+			}
+            else if( $this->sorting == 1 ) {
+			    echo ' → 古い注文日順';
+			}
+            else if( $this->sorting == 2 ) {
+			    echo ' → 新しい注文番号順';
+			}
+            else if( $this->sorting == 3 ) {
+			    echo ' → 古い注文番号順';
+			} ?>
+		</span>
+	</div>
+	</div>
+<script>
+// 検索条件表示の切替
+Object.extend( $("expressionList") , {
+	init : function() {
+		this.trigger = $("toggleList");
+		this.summary = $("expressionSummary");
+		this.titleBar = document.getElementsByClassName( "title", this )[0];
+		this.listRoot = this.getElementsByTagName("ul")[0];
+
+		this.initControl();
+
+		this.collapse();
+	},
+	initControl : function() {
+		var _self = this;
+		Event.observe( this.trigger, "click", function(evt) {
+			this.toggle();
+		}.bindAsEventListener( this ) );
+	},
+	expand : function() {
+		Element.show( this.listRoot );
+		Element.hide( this.summary );
+		this.titleBar.style.borderBottomWidth = "1px";
+		this.trigger.innerHTML = "詳細を隠す";
+	},
+	collapse : function() {
+		Element.hide( this.listRoot );
+		Element.show( this.summary );
+		this.titleBar.style.borderBottomWidth = "0px";
+		this.trigger.innerHTML = "詳細を表示";
+	},
+	toggle : function() {
+		this[ this.isExpanded() ? "collapse" : "expand" ]();
+	},
+	isExpanded : function() {
+		return Element.visible( this.listRoot );
+	}
+} ).init();
+</script>
+<?php
+/***** メインコンテンツ *****/
+?>
+
+<div class="main_contents">
+<?php
+/***** コマンドバー *****/
+// ヒットがあったか
+$hasResults = $this->totalCount > 0 ? true : false;
+
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	$hasResults ?
+		$this->totalCount . ' 件の履歴が見つかりました' :
+		'ご指定の条件の履歴が見つかりませんでした',
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'search_new',
+				CoralViewCommandBarButton::OPTION_HREF => 'search/search',
+				CoralViewCommandBarButton::OPTION_TEXT => '新規検索',
+				CoralViewCommandBarButton::OPTION_TITLE => '検索画面へ戻ります。検索条件はクリアされます'
+			)
+		),
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'search',
+				CoralViewCommandBarButton::OPTION_HREF => 'search/search',
+				CoralViewCommandBarButton::OPTION_TEXT => '再検索',
+				CoralViewCommandBarButton::OPTION_TITLE => '検索条件を保ったまま検索画面へ戻ります'
+			)
+		)
+	)
+);
+if( $hasResults ) {
+	$commandBar->addButton(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'download',
+				CoralViewCommandBarButton::OPTION_HREF => 'search/download',
+				CoralViewCommandBarButton::OPTION_TEXT => '結果をダウンロード',
+				CoralViewCommandBarButton::OPTION_TITLE => '結果をCSVファイルでダウンロードできます'
+			)
+		)
+	);
+}
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+/***** ページナビゲーション *****/
+if( $hasResults && $this->pager->getTotalPage() > 1 ) {
+	$prev_cmd = $this->current_page > 1 ?
+		'<a href="#" class="command" id="show_prev_page" onclick="return false;">前のページ</a>' :
+		'<span class="command" id="show_prev_page">前のページ</span>';
+
+	$next_cmd = $this->current_page < $this->pager->getTotalPage() ?
+		'<a href="#" class="command" id="show_next_page" onclick="return false;">次のページ</a>' :
+		'<span class="command" id="show_next_page">次のページ</span>';
+
+	$indices = $this->pager->getIndexRange( $this->current_page, true );
+?>
+<div class="nav_bar">
+	<span style="float: right; font-size: 9pt; margin-top: 2px;">
+	<?php
+	echo "<span id=\"page_list\">{$this->current_page}</span> / " . $this->pager->getTotalPage() . " ページ {$prev_cmd}　{$next_cmd}";
+	?>
+	</span>
+	<?php echo "{$this->totalCount}件中 {$indices[0]} ～ {$indices[1]} 件目を表示"; ?>　
+	<script>
+	$("show_prev_page", "show_next_page").each( function(link) {
+		if( link == null || ! /a/i.test(link.tagName) ) throw $continue;
+		var page = <?php echo $this->current_page; ?>;
+		Event.observe( link, "click", function(evt) {
+			$("current_search_conditions").action = "search/result";
+			$("Page").value = this.id == "show_prev_page" ? page - 1 : page + 1;
+			$("current_search_conditions").submit();
+		}.bindAsEventListener( link ) );
+	} );
+	Event.observe( window, "load", function() {
+		var list = $R( 1, <?php echo $this->pager->getTotalPage(); ?> ).map( function(i) {
+			return { value : i, text : "{0} ページ".format(i) };
+		});
+		var droplist = new base.UI.CustomList( $("page_list"), $("page_list"), list, "left", 7 );
+		Object.extend( droplist, {
+			onchange : function(item, index, list) {
+				var value = item.value;
+				if( value == $("page_list").innerHTML || value < 1 ) return;
+				$("page_list").innerHTML = value;
+				setTimeout( function() {
+					$("current_search_conditions").action = "search/result";
+					$("Page").value = value;
+					$("current_search_conditions").submit();
+				}, 0 );
+			},
+			onshow : function(list) {
+				var value = parseInt( $("page_list").innerHTML );
+				value = isNaN( value ) ? -1 : value;
+				list.selectByValue( value );
+			}
+		});
+
+		window.DropdownList1 = droplist;
+
+		// モーダルダイアログの初期化
+		getCancelDialog().close();
+	} );
+	</script>
+</div>
+<?php
+}
+
+/***** 結果テーブル *****/
+echo $this->render('member/search/search_result_table.php');
+
+// 再検索用フォームをレンダリング
+echo $this->render('member/search/search_back_form.php');
+
+// キャンセルダイアログ
+echo $this->render( 'member/search/request_cancel.php' );
+?>
+
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php
+if( $hasResults ) {
+?>
+<script>
+// 結果テーブルをスクロール可能にする
+Event.observe( window, "load", function(evt) {
+	new base.UI.TableEx( document.getElementsByClassName( "search_items" )[0], { height : 280 } );
+}.bindAsEventListener( window ) );
+<?php
+/*
+// データ行のロールオーバーイベント
+document.getElementsByClassName("item_row").findAll( function(ele) {
+	return /^tr$/i.test( ele.tagName );
+} ).each( function(row) {
+	Event.observe( row, "mouseover", function(evt) {
+		new Element.ClassNames( this ).add( "hover" );
+		Event.stop( evt );
+	}.bindAsEventListener( row ), false );
+	Event.observe( row, "mouseout", function(evt) {
+		new Element.ClassNames( this ).remove( "hover" );
+		Event.stop( evt );
+	}.bindAsEventListener( row ), false );
+} );
+*/
+?>
+
+// 詳細表示リンクの構築
+function showDetail(link) {
+<?php
+/*
+	try {
+		var id = /id\/(.+)$/.exec( link.href )[1];
+		if( id ) {
+			var form = $("current_search_conditions");
+			form.action = "search/detail";
+
+			var idField = Object.extend( document.createElement("input"), {
+				name : "id",
+				type : "hidden",
+				value : id
+			} );
+			form.appendChild( idField );
+			form.submit();
+		}
+	} finally {
+		return false;
+	}
+*/
+?>
+	return true;
+}
+function NoGuaranteeChange(seq)
+{
+	var flag = confirm("この注文を無保証(お客様の入金をもって、お立替)に変更してもよろしいですか？\n\n伝票番号登録処理までをAPIで連携されている場合、店舗様にて無保証変更や与信保留での注文修正を行われた際、連携が途切れる場合がございます。\n\n請求書取りまとめサービスご利用の場合、無保証のご注文は取りまとまらず個別での発行となります。");
+	if (flag == true ) {
+		var url = "<?php echo $this->baseUrl; ?>/search/noguarantee/OrderSeq/" + seq;
+		var ajax = new Ajax.Request(
+				url,
+				{
+					method: 'get',
+					asynchronous: false
+				});
+	} else {
+		return false;
+	}
+	Object.extend( $("current_search_conditions"), {
+		action : "search/result"
+	} ).submit();
+}
+</script>
+<?php
+}
+?>
+</html>

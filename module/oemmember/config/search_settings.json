@@ -1,0 +1,266 @@
+{
+	"NameKj" : {
+		"group" : "customer",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) 新宿　太郎、新宿太郎、太郎",
+		"control" : "simple_text"
+	},
+	"NameKn" : {
+		"group" : "customer",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) シンジュク　タロウ、シンジュクタロウ、タロウ",
+		"control" : "simple_text"
+	},
+	"UnitingAddress" : {
+		"group" : "customer",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) 東京都新宿区、新宿",
+		"control" : "simple_text"
+	},
+	"ReceiptOrderDate" : {
+		"group" : "order",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"OrderId" : {
+		"group" : "order",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、半角英数字でご入力ください。 例) AK10000000<br />「直接指定」の場合、後方一致で検索されます。<br />「範囲指定」の場合、入力した値が数値のみの場合は注文IDの数値部分で検索されます。",
+		"control" : "text_span"
+	},
+	"Ent_OrderId" : {
+		"group" : "order",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、半角英数字でご入力ください。 例) AK10000000<br />「直接指定」の場合、部分一致で検索されます。",
+		"control" : "text_span"
+	},
+	"SiteId" : {
+		"group" : "customer",
+		"type" : "equal",
+		"help" : "リストから受付サイトを選択してください。未選択の場合はすべての受付サイトが対象になります。<br />サイトを選択した場合のみ、CSVのレイアウト設定が可能です。",
+		"control" : "list"
+	},
+	"OrderItemNames" : {
+		"group" : "order",
+		"type" : "like",
+		"help" : "部分一致で検索します。全角でご入力ください。",
+		"control" : "simple_text"
+	},
+	"DestNameKj" : {
+		"group" : "order",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) 新宿　花子、新宿花子、花子",
+		"control" : "simple_text"
+	},
+	"DestNameKn" : {
+		"group" : "order",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) シンジュク　ハナコ、シンジュクハナコ、ハナコ",
+		"control" : "simple_text"
+	},
+	"DestUnitingAddress" : {
+		"group" : "order",
+		"type" : "like concat",
+		"help" : "部分一致で検索します。全角でご入力ください。空白文字は無視されます。 例) 東京都新宿区、新宿",
+		"control" : "simple_text"
+	},
+	"IncreStatus" : {
+		"group" : "order",
+		"type" : "equal",
+		"help" : "リストから審査結果を選択します。 未選択の場合は審査結果にかかわらず対象になります。",
+		"control" : "list"
+	},
+	"UseAmount" : {
+		"group" : "order",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、カンマを含めずに半角の数字のみでご入力ください。 例) 10000",
+		"control" : "text_span"
+	},
+	"Ent_Note" : {
+		"group" : "order",
+		"type" : "like",
+		"help" : "部分一致で検索します。",
+		"control" : "simple_text"
+	},
+	"Deli_JournalIncDate" : {
+		"group" : "delivery",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"Deli_DeliveryMethod" : {
+		"group" : "delivery",
+		"type" : "equal",
+		"help" : "リストから配送会社を選択します。 未選択の場合はすべての配送会社が対象になります。",
+		"control" : "list"
+	},
+	"Deli_JournalNumber" : {
+		"group" : "delivery",
+		"type" : "like",
+		"help" : "部分一致で検索されます。半角の英数字でご入力ください。",
+		"control" : "journalnumber"
+	},
+	"ExecScheduleDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"ApprovalDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"MailAddress" : {
+		"group" : "customer",
+		"type" : "like",
+		"help" : "部分一致で検索します。半角の英数字・記号でご入力ください。 例）ato-barai.com",
+		"control" : "simple_text"
+	},
+	"RealCancelStatus" : {
+		"group" : "other",
+		"type" : "in values",
+		"help" : "検索したい状態をチェックしてください。 複数選択が可能です。",
+		"control" : "checkboxes"
+	},
+	"EntCustId" : {
+		"group" : "customer",
+		"type" : "like",
+		"help" : "部分一致で検索します。",
+		"control" : "simple_text"
+	},
+	"ServiceExpectedDate" : {
+		"group" : "order",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"ClaimSendingClass" : {
+		"group" : "order",
+		"type" : "in values",
+		"help" : "検索したい状態をチェックしてください。 未選択の場合は全件が対象になります。",
+		"control" : "checkboxes"
+	},
+	"Deli_JournalNumberAlert" : {
+		"group" : "delivery",
+		"type" : "in values",
+		"help" : "注文登録が実施されたが、発送伝票番号が長期（1カ月以上）登録されていないものを検索します。",
+		"control" : "checkboxes"
+	},
+	"RegistDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"OutOfAmends" : {
+		"group" : "other",
+		"type" : "in values",
+		"help" : "検索したい状態をチェックしてください。 未選択の場合は全件が対象になります。",
+		"control" : "checkboxes"
+	},
+	"CancelReasonCode" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストからキャンセル理由を選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"ArrivalConfirmAlert" : {
+		"group" : "other",
+		"type" : "in values",
+		"help" : "発送伝票番号が登録されているが、着荷の確認が長期間（1カ月以上）取れていないものを検索します。",
+		"control" : "checkboxes"
+	},
+	"Phone" : {
+		"group" : "customer",
+		"type" : "like phone",
+		"help" : "部分一致で検索されます。 半角数字でご入力ください。 ハイフンは無視されます。",
+		"control" : "simple_text"
+	},
+	"DestPhone" : {
+		"group" : "order",
+		"type" : "like phone",
+		"help" : "部分一致で検索されます。 半角数字でご入力ください。 ハイフンは無視されます。",
+		"control" : "simple_text"
+	},
+	"IsWaitForReceipt" : {
+		"group" : "other",
+		"type" : "in values",
+		"help" : "検索したい状態をチェックしてください。 未選択の場合は全件が対象になります。",
+		"control" : "checkboxes"
+	},
+	"ReceiptDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "お客様がお支払いした日で検索を行います。",
+		"control" : "date_span"
+	},
+	"NgNoGuaranteeChange" : {
+		"group" : "order",
+		"type" : "in values",
+		"help" : "検索したい状態をチェックしてください。 未選択の場合は全件が対象になります。",
+		"control" : "checkboxes"
+	},
+	"CancelReason" : {
+		"group" : "other",
+		"type" : "like",
+		"help" : "部分一致で検索します。",
+		"control" : "simple_text"
+	},
+	"CreditTransferRequestFlg" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストから口座振替申込区分を選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"RequestStatus" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストから申込ステータスを選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"RequestSubStatus" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストから申込サブステータスを選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"RequestCompDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "「直接指定」と「範囲指定」から指定方法を選択し、「2007/08/28」の書式で、半角の数字でご入力ください。 例) 2007/08/28",
+		"control" : "date_span"
+	},
+	"CreditTransferMethod1" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストから口座振替を選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"CreditTransferMethod2" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "リストから初回申込用紙発行を選択します。 未選択の場合は全件が対象になります。",
+		"control" : "list"
+	},
+	"ReceiptClass" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "お客様の入金方法を選択します。 未選択の場合は全件が対象となります。",
+		"control" : "list"
+	},
+	"ReceiptProcessDate" : {
+		"group" : "other",
+		"type" : "between",
+		"help" : "弊社がお客様の入金確認ができた日で検索を行います。",
+		"control" : "date_span"
+	},	
+	"ExtraPayKey" : {
+		"group" : "other",
+		"type" : "equal",
+		"help" : "届いてから払いで支払いが完了した注文を SB PaymentServiceのトラッキングIDで検索します。完全一致で検索します。",
+		"control" : "simple_text"
+	}
+}

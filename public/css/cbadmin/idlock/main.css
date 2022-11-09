@@ -1,0 +1,62 @@
+#contents table.datatable {
+    width: 862px;
+    background-color: #ddd;
+    margin: 0 25px 20px 25px;
+}
+#contents h4.category-title {
+    width: 840px;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-right: 0;
+    border: solid #ddd 1px;
+    border-bottom-width: 0;
+}
+#contents .information {
+	margin: 5px 25px;
+	font-size: 14px;
+	border: solid 1px #ddd;
+	background-color: ghostwhite;
+	padding: 5px 25px;
+}
+#contents ul.error-list {
+	font-size: 13px;
+	background-color: lemonchiffon;
+	color: crimson;
+	border: double 3px crimson;
+	list-style: none;
+	padding: 5px;
+	margin: 15px 25px;
+}
+table.datatable .id-col {
+	width: 110px;
+}
+table.datatable .name-col {
+	width: 243px;
+}
+table.datatable .dual-name-col {
+	width: 486px;
+}
+table.datatable .datetime-col {
+	width: 86px;
+}
+table.datatable .hash-col {
+	width: 100px;
+}
+table.datatable .release-time {
+	display: none;
+}
+table.datatable .action-col {
+	width: 75px;
+}
+table.datatable tr.show-release-time .name-col {
+	width: 200px;
+}
+table.datatable tr.show-release-time .dual-name-col {
+	width: 400px;
+}
+table.datatable tr.show-release-time .release-time {
+	display: table-cell;
+}
+table.datatable .no-items {
+	color: #888;
+}

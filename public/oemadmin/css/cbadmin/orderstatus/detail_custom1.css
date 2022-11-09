@@ -1,0 +1,141 @@
+/**
+ * 注文ステータスによる色分け for 注文詳細画面
+ *----------------------------------------------------------*/
+
+/* 与信NG */
+.orderstatus_close_ng td {
+	color: black;
+	background-color: whitesmoke;
+}
+.orderstatus_close_ng td.label,
+.orderstatus_close_ng td.l_label,
+.orderstatus_close_ng td.r_label,
+.orderstatus_close_ng td.c_label,
+.orderstatus_close_ng td.l_label2,
+.orderstatus_close_ng td.r_label2,
+.orderstatus_close_ng td.c_label2 {
+	color: ghostwhite;
+	background-color: #839fe6;
+}
+
+/* キャンセル */
+.orderstatus_close_cancel td {
+	color: black;
+	background-color: honeydew;
+}
+.orderstatus_close_cancel td.label,
+.orderstatus_close_cancel td.l_label,
+.orderstatus_close_cancel td.r_label,
+.orderstatus_close_cancel td.c_label,
+.orderstatus_close_cancel td.l_label2,
+.orderstatus_close_cancel td.r_label2,
+.orderstatus_close_cancel td.c_label2 {
+	color: ghostwhite;
+	background-color: #88aa88;
+}
+
+/* キャンセル申請 */
+.orderstatus_request_cancel td {
+	color: black;
+	background-color: honeydew;
+}
+.orderstatus_request_cancel td.label,
+.orderstatus_request_cancel td.l_label,
+.orderstatus_request_cancel td.r_label,
+.orderstatus_request_cancel td.c_label,
+.orderstatus_request_cancel td.l_label2,
+.orderstatus_request_cancel td.r_label2,
+.orderstatus_request_cancel td.c_label2 {
+	color: ghostwhite;
+	background-color: #88aa88;
+}
+
+/* 支払済み(期限内) */
+.orderstatus_receipted_normal td.label,
+.orderstatus_receipted_normal td.l_label,
+.orderstatus_receipted_normal td.r_label,
+.orderstatus_receipted_normal td.c_label,
+.orderstatus_receipted_normal td.l_label2,
+.orderstatus_receipted_normal td.r_label2,
+.orderstatus_receipted_normal td.c_label2 {
+	color: black;
+	background-color: #dbfefe;
+}
+
+/* 支払済み(期限超過) */
+.orderstatus_receipted_damaged td {
+	color: black;
+	background-color: ghostwhite;
+}
+.orderstatus_receipted_damaged td.label,
+.orderstatus_receipted_damaged td.l_label,
+.orderstatus_receipted_damaged td.r_label,
+.orderstatus_receipted_damaged td.c_label,
+.orderstatus_receipted_damaged td.l_label2,
+.orderstatus_receipted_damaged td.r_label2,
+.orderstatus_receipted_damaged td.c_label2 {
+	color: black;
+	background-color: #e3c7fa;
+}
+
+/* 支払済み(期限内:過剰入金) */
+.orderstatus_receipted_normal_excesspayment td {
+    color: black;
+    background-color: #c8ffff;
+}
+.orderstatus_receipted_normal_excesspayment td.label,
+.orderstatus_receipted_normal_excesspayment td.l_label,
+.orderstatus_receipted_normal_excesspayment td.r_label,
+.orderstatus_receipted_normal_excesspayment td.c_label,
+.orderstatus_receipted_normal_excesspayment td.l_label2,
+.orderstatus_receipted_normal_excesspayment td.r_label2,
+.orderstatus_receipted_normal_excesspayment td.c_label2 {
+    background-color: #00ffff;
+}
+
+/* 支払済み(期限超過:過剰入金) */
+.orderstatus_receipted_damaged_excesspayment td {
+    color: black;
+    background-color: #c8ffff;
+}
+.orderstatus_receipted_damaged_excesspayment td.label,
+.orderstatus_receipted_damaged_excesspayment td.l_label,
+.orderstatus_receipted_damaged_excesspayment td.r_label,
+.orderstatus_receipted_damaged_excesspayment td.c_label,
+.orderstatus_receipted_damaged_excesspayment td.l_label2,
+.orderstatus_receipted_damaged_excesspayment td.r_label2,
+.orderstatus_receipted_damaged_excesspayment td.c_label2 {
+    background-color: #00ffff;
+}
+
+/* 未入金 */
+.orderstatus_noreceipt_normal td {
+	color: black;
+	background-color: seashell;
+}
+.orderstatus_noreceipt_normal td.label,
+.orderstatus_noreceipt_normal td.l_label,
+.orderstatus_noreceipt_normal td.r_label,
+.orderstatus_noreceipt_normal td.c_label,
+.orderstatus_noreceipt_normal td.l_label2,
+.orderstatus_noreceipt_normal td.r_label2,
+.orderstatus_noreceipt_normal td.c_label2 {
+	color: firebrick;
+	background-color: #ffde8e;
+}
+
+/* 不払い */
+.orderstatus_noreceipt_damaged td {
+	color: black;
+	background-color: lavenderblush;
+}
+.orderstatus_noreceipt_damaged td.label,
+.orderstatus_noreceipt_damaged td.l_label,
+.orderstatus_noreceipt_damaged td.r_label,
+.orderstatus_noreceipt_damaged td.c_label,
+.orderstatus_noreceipt_damaged td.l_label2,
+.orderstatus_noreceipt_damaged td.r_label2,
+.orderstatus_noreceipt_damaged td.c_label2 {
+	color: firebrick;
+	background-color: #ffcae6;
+}

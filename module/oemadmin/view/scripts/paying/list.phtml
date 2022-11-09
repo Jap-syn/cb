@@ -1,0 +1,109 @@
+<?php
+use models\View\ViewChargeConfirm;
+use oemadmin\Application;
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+
+$mdlViewChargeConfirm = new ViewChargeConfirm(Application::getInstance()->dbAdapter);
+if($this->advancesFl){
+	$col = 9;
+}else{
+	$col = 8;
+}
+?>
+
+</head>
+<script type="text/javascript">
+</script>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+    <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <?php echo $this->render('oemadmin/paying/page_menu.php'); ?>
+    <div class="title"><span>立替確認</span></div>
+    <table class="datatable">
+      <tbody>
+        <tr>
+          <td class="l_data" style="background-color: lightgoldenrodyellow;">今日は　<?php echo $this->genzai; ?>　です。</td>
+        </tr>
+      </tbody>
+    </table>
+    <form name="form" method="post" action="paying/execcharge">
+      <input type="hidden" name="DecisionDate" id="DecisionDate" />
+      <input type="hidden" name="ExecScheduleDate" id="ExecScheduleDate" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>立替確定日</th>
+            <th>立替予定日
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替額</th>
+            <th>事業者計</th>
+            <th>立替総額</th>
+          <?php if($col == 9){ ?>
+            <th>立替実行確認</th>
+          <?php } ?>
+          </tr>
+        <?php foreach($this->list as $key => $value) { ?>
+          <tr>
+            <td rowspan="<?php echo $this->count ?>" class="c_data">
+              <?php echo $value["DecisionDate"]; ?>
+            </td>
+            <td rowspan="<?php echo $this->count ?>" class="c_data">
+              <a href="paying/dlist3/d/<?php echo isset($value["DecisionDate"]) ? $value["DecisionDate"] : 0; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>">
+                <?php echo $value["ExecScheduleDate"]; ?>
+              </a>
+            </td>
+          <?php for ($i = 1; $i <= $this->count; $i++) { ?>
+          <?php   $fildnamenm = 'P' . $i . 'NM' ?>
+          <?php   $fildnamefd = 'P' . $i . 'FD' ?>
+          <?php   $fildnamecnt = 'P' . $i . 'CNT' ?>
+          <?php   $fildnamepay = 'P' . $i . 'PAY' ?>
+          <?php   if ($i == 1) {?>
+            <td class="c_data"><?php echo $value[$fildnamenm]; ?></td>
+            <td class="c_data"><?php echo $value[$fildnamefd]; ?></td>
+            <td class="r_data"><?php echo $value[$fildnamecnt]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value[$fildnamepay], 'number', '#,##0'); ?></td>
+          <?php   } ?>
+          <?php } ?>
+            <td rowspan="<?php echo $this->count ?>" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+            <td rowspan="<?php echo $this->count ?>" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+          <?php if($col == 9){ ?>
+            <td rowspan="<?php echo $this->count ?>" class="c_data">
+          <?php  if ($mdlViewChargeConfirm->isPayingDataDownLoad($value['SeqList'])) { ?>
+              <a class="default_btn" href="paying/transdatadl/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>">振込データＤＬ</a>
+          <?php  } ?>
+          <?php } ?>
+          </td>
+          </tr>
+          <?php for ($i = 1; $i <= $this->count; $i++) { ?>
+          <?php   $fildnamenm = 'P' . $i . 'NM' ?>
+          <?php   $fildnamefd = 'P' . $i . 'FD' ?>
+          <?php   $fildnamecnt = 'P' . $i . 'CNT' ?>
+          <?php   $fildnamepay = 'P' . $i . 'PAY' ?>
+          <?php   if ($i != 1) {?>
+            <tr>
+              <td class="c_data"><?php echo $value[$fildnamenm]; ?></td>
+              <td class="c_data"><?php echo $value[$fildnamefd]; ?></td>
+              <td class="r_data"><?php echo $value[$fildnamecnt]; ?></td>
+              <td class="r_data"><?php echo valueFormat($value[$fildnamepay], 'number', '#,##0'); ?></td>
+            </tr>
+          <?php   } ?>
+          <?php } ?>
+            <tr class="border">
+            <td colspan="<?php echo $col ?>">
+              <img src="../../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </form>
+    <!-- end contents -->
+
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

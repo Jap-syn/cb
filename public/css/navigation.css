@@ -1,0 +1,34 @@
+#navigation{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px coral solid;
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 90%;
+    width: 890px;
+}
+#navigation ul{
+    padding: 0px;
+    margin: 0px;
+}
+#navigation ul li {
+    display: inline;
+    margin: 0 1em;
+}
+#navigation ul li a {
+    font-family: "Trebuchet MS", sans-serif;
+    text-decoration: none;
+    color: black;
+}
+#navigation ul li a:hover{
+    border-bottom: dotted 1px black; 
+}
+#navigation .current {
+    background-color: tomato;
+    color: white;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+#navigation .current a{
+    color: white;
+}

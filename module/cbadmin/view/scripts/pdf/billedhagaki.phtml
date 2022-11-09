@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title><?php echo $this->title; ?></title>
+    <link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdfhagaki.css" />
+    <script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+  </head>
+  <body>
+    <?php foreach($this->datas as $data) { ?>
+    <div style="position: relative; width: 1370px; height: 660px;">
+    <!-- 宛先 -->
+    <div style="position: absolute; top: 0px; left: 0px;">
+    <span style="top: 10px; left: 120px; width: 350px; height: 36px; line-height: 16px;" class="wb" ><?php echo f_e($data['Ent_OrderId']); ?></span>
+    <span style="top: 170px; left: 50px; width: 350px;"><?php echo $data['PostalCode']; ?></span>
+    <span style="top: 200px; left: 50px; width: 400px; height: 55px; line-height: 16px;" class="wb"><?php echo f_e($data['UnitingAddress']); ?></span>
+    <span style="top: 250px; left: 50px;"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 270px; left: 50px; width: 400px;" class="strcut"><?php echo f_e($data['NameKj']); ?></span>
+    <span style="top: 300px; left: 50px;"><img src="<?php echo $data['Yubin']; ?>" /></span>
+    <span style="top: 480px; left: 30px; font-size: 9px;"><?php echo f_e($data['MypageUrl']); ?></span>
+    <span style="top: 430px; left: 400px;"><img src="<?php echo $data['QrCode']; ?>" /></span>
+    <span style="top: 500px; left: 100px; width: 300px; height: 40px; font-size: 12px; line-height: 12px;" class="wb"><?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 550px; left: 100px; width: 300px; font-size: 11px;"><?php echo $data['PrintPost']; ?></span>
+    <span style="top: 563px; left: 100px; width: 300px; font-size: 11px;" class="strcut"><?php echo f_e($data['PrintAddress']); ?></span>
+    <span style="top: 576px; left: 100px; width: 300px; font-size: 11px;" class="strcut"><?php echo f_e($data['PrintName']); ?></span>
+    <span style="top: 589px; left: 100px; width: 300px; font-size: 11px;"><?php echo $data['PrintTel']; ?></span>
+    </div>
+    <!-- 請求書 兼 払込表 -->
+    <div style="position: absolute; top: 0px; left: 0px;">
+    <?php if ($data['ClaimPattern'] >= 4) {?>
+    <span style="top: 50px; left: 520px;"><?php echo $data['ReIssueCount']; ?>回目のご請求です</span>
+    <?php } ?>
+    <span style="top: 80px; left: 520px; width: 150px; height: 25px; font-size: 12px; line-height: 12px;" class="wb"><?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 95px; left: 750px; width: 150px; font-size: 12px;"><?php echo $data['ContactPhoneNumber']; ?></span>
+    <span style="top: 150px; left: 520px; width: 200px; font-size: 13px;" class="c_data"><?php echo date( 'Y年m月d日', strtotime( $data['ReceiptOrderDate'] ) ); ?></span>
+    <span style="top: 150px; left: 730px; width: 100px; font-size: 13px;" class="l_data strcut"><?php echo f_e($data['NameKj']); ?></span>
+    <span style="top: 150px; left: 830px; width: 100px; font-size: 13px;" class="r_data"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 200px; left: 520px; width: 200px;" class="c_data"><?php echo f_nf( $data['BilledAmt'], '#,##0' ); ?></span>
+    <span style="top: 200px; left: 730px; width: 200px;" class="c_data"><?php echo date( 'Y年m月d日', strtotime( $data['LimitDate'] ) ); ?></span>
+    <?php if (strlen($data['Ean128']) > 0) {?>
+    <span style="top: 290px; left: 650px;"><img src="<?php echo $data['Ean128']; ?>" /></span>
+    <span style="top: 340px; left: 650px; width: 300px; font-size: 8px;"><?php echo $data['Cv_BarcodeString1']; ?></span>
+    <span style="top: 350px; left: 650px; width: 300px; font-size: 8px;"><?php echo $data['Cv_BarcodeString2']; ?></span>
+    <?php } else {?>
+    <span style="top: 290px; left: 650px; width: 300px; font-size: 13px;" class="wb"><?php echo $data['Cv_BarcodeData']; ?></span>
+    <?php } ?>
+    <span style="top: 390px; left: 650px; width: 300px; font-size: 13px;" class="strcut"><?php echo f_e($data['Bk_BankName']); ?>　<?php echo f_e($data['Bk_BranchName']); ?></span>
+    <span style="top: 410px; left: 650px; width: 300px; font-size: 13px;"><?php echo $data['Bk_DepositClass'] == 0 ? '普通預金' : '当座預金'; ?>　<?php echo $data['Bk_AccountNumber']; ?></span>
+    <span style="top: 430px; left: 650px; width: 300px; font-size: 13px;" class="strcut"><?php echo f_e($data['Bk_AccountHolderKn']); ?></span>
+    <span style="top: 580px; left: 530px; width: 200px;" class="strcut"><?php echo f_e($data['BillInq1']); ?></span>
+    <span style="top: 600px; left: 530px; width: 200px;"><?php echo f_e($data['BillInq2']); ?></span>
+    <span style="top: 620px; left: 530px; width: 200px;"><?php echo f_e($data['BillInq3']); ?></span>
+    </div>
+    <!-- 取扱店舗控 -->
+    <div style="position: absolute; top: 0px; left: 0px;">
+    <span style="top: 80px; left: 970px; width: 90px; height: 40px; font-size: 12px; line-height: 12px;" class="wb"><?php echo f_e($data['NameKj']); ?></span>
+    <span style="top: 170px; left: 970px; font-size: 11px;"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 220px; left: 970px; width: 90px; height: 40px; font-size: 12px; line-height: 12px;" class="wb"><?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 290px; left: 970px; width: 90px; font-size: 12px;" class="strcut"><?php echo f_e($data['CbName']); ?></span>
+    <span style="top: 350px; left: 970px; width: 90px; font-size: 12px;" class="c_data"><?php echo f_nf( $data['BilledAmt'], '#,##0' ); ?></span>
+    <span style="top: 465px; left: 970px; width: 90px; font-size: 11px;" class="strcut"><?php echo f_e($data['BillInq1']); ?></span>
+    <span style="top: 480px; left: 970px; width: 120px; font-size: 11px;"><?php echo f_e($data['BillInq2']); ?></span>
+    <span style="top: 495px; left: 970px; width: 90px; font-size: 11px;"><?php echo f_e($data['BillInq3']); ?></span>
+    </div>
+    <!-- 払込受領表 -->
+    <div style="position: absolute; top: 0px; left: 0px;">
+    <span style="top: 80px; left: 1120px; width: 110px; font-size: 13px;" class="l_data strcut"><?php echo f_e($data['NameKj']); ?></span>
+    <span style="top: 80px; left: 1240px; width: 110px; font-size: 13px;" class="r_data"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 110px; left: 1120px; width: 110px; font-size: 12px;" class="strcut"><?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 155px; left: 1120px; width: 220px; font-size: 12px;" class="strcut"><?php echo f_e($data['Accept1'] . '　' . $data['Accept2']); ?></span>
+    <span style="top: 200px; left: 1240px; width: 110px; font-size: 12px;" class="c_data"><?php echo f_e($data['MypageToken']); ?></span>
+    <?php for ($i = 1; $i <= 15; $i++) {
+        $top = 245 + (($i - 1) * 15);
+    ?>
+    <span style="top: <?php echo $top; ?>px; left: 1120px; width: 100px; font-size: 11px;" class="l_data strcut"><?php echo f_e($data['ItemNameKj_' . $i]); ?></span>
+    <span style="top: <?php echo $top; ?>px; left: 1220px; width: 30px; font-size: 11px;" class="r_data strcut"><?php echo $data['ItemNum_' . $i]; ?></span>
+    <span style="top: <?php echo $top; ?>px; left: 1250px; width: 50px; font-size: 11px;" class="r_data strcut"><?php echo f_nf( $data['UnitPrice_' . $i], '#,##0' ); ?></span>
+    <span style="top: <?php echo $top; ?>px; left: 1300px; width: 50px; font-size: 11px;" class="r_data strcut"><?php echo f_nf( $data['SumMoney_' . $i], '#,##0' ); ?></span>
+    <?php } ?>
+    <span style="top: 470px; left: 1120px; width: 100px; font-size: 11px;"><?php echo f_nf( nvl($data['TotalItemPrice'], 0), '#,##0' ); ?></span>
+    <span style="top: 470px; left: 1300px; width: 50px; font-size: 11px;" class="r_data"><?php echo f_nf( nvl($data['ChargeFee'], 0), '#,##0' ); ?></span>
+    <?php if ($data['ClaimPattern'] >= 2 && (nvl($data['ClaimFee'], 0) + nvl($data['AdditionalClaimFee'], 0)) > 0) { ?>
+    <span style="top: 485px; left: 1120px; width: 100px; font-size: 11px;">再発行手数料</span>
+    <span style="top: 485px; left: 1170px; width: 50px; font-size: 11px;" class="r_data"><?php echo f_nf( nvl($data['ClaimFee'], 0) + nvl($data['AdditionalClaimFee'], 0), '#,##0' ); ?></span>
+    <?php } ?>
+    <span style="top: 485px; left: 1300px; width: 50px; font-size: 11px;" class="r_data"><?php echo f_nf( nvl($data['CarriageFee'], 0), '#,##0' ); ?></span>
+    <span style="top: 500px; left: 1120px; width: 100px; font-size: 11px;">(消費税 <?php echo f_nf( nvl($data['TaxAmount'], 0), '#,##0' ); ?>)</span>
+    <span style="top: 500px; left: 1300px; width: 50px; font-size: 11px;" class="r_data"><?php echo f_nf( $data['BilledAmt'], '#,##0' ); ?></span>
+    <?php if ($data['ItemsCount'] > 15 ) {?>
+    <span style="top: 515px; left: 1300px; width: 50px; font-size: 11px;" class="r_data">(合計<?php echo $data['ItemsCount'] ; ?>点)</span>
+    <?php } ?>
+    </div>
+    </div>
+    <?php } ?>
+  </body>
+</html>
+

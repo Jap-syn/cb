@@ -1,0 +1,109 @@
+<?php
+use cbadmin\Controller\SearchoController;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+.no-params-error-message {
+	border: solid 1px firebrick;
+	color: maroon;
+	background-color: mistyrose;
+	width: 862px;
+	margin: 5px 25px;
+	padding: 8px;
+	font-size: 16px;
+	font-weight: bold;
+}
+</style>
+<script type="text/javascript">
+// URLジャンプ
+function jumpUrl(n) {
+	if      (n == 1) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/qform";}
+	else if (n == 2) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/form" ;}
+	else if (n == 3) { location.href = "<?php echo ($this->baseUrl . '/'); ?>searcho/sform";}
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searcho/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+    <input type="radio" name="rbtnsrch" checked>簡易注文検索　
+    <input type="radio" name="rbtnsrch" onClick="jumpUrl(2)">注文検索　
+    <input type="radio" name="rbtnsrch" onClick="jumpUrl(3)">定型注文検索　
+    </h3>
+<?php if($this->noParamsError) { ?>
+	<div class="no-params-error-message"><?php echo f_e(SearchoController::ERR_NO_PARAMS); ?></div>
+<?php } ?>
+    <form name="form" method="post" action="searcho/qsearch">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th style="width: 150px">項目</th>
+          <th style="width: 480px">指定値</th>
+          <th>項目補足</th>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data"><input type="text" name="order_id" id="search_order_id" /></td>
+          <td class="l_data">後方一致検索（3桁以上の入力が必要）</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先氏名</td>
+          <td class="l_data"><input type="text" name="name" id="search_name" size="50"/></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先電話番号</td>
+          <td class="l_data"><input type="text" name="phone" id="search_phone" /></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求先住所</td>
+          <td class="l_data"><input type="text" name="address" id="search_address" size="50" /></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data"><input type="text" name="mail" id="search_search" size="50" /></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">配送先電話番号</td>
+          <td class="l_data"><input type="text" name="deliphone" id="search_deliphone" /></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">配送先住所</td>
+          <td class="l_data"><input type="text" name="deliaddress" id="search_deliaddress" size="50" /></td>
+          <td class="l_data">前方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求金額</td>
+          <td class="l_data">
+            <input type="text" name="claim_amount_from" id="search_amount_f" size="10" />
+            ～
+            <input type="text" name="claim_amount_to" id="search_amount_t" size="10" />
+          </td>
+          <td class="l_data">範囲指定検索　※：この項目を指定した場合入金待ち注文のみに絞り込まれます</td>
+        </tr>
+
+        <tr>
+          <td colspan="3" class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="c_label"><input type="submit" value="　検　索　" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

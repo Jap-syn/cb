@@ -1,0 +1,169 @@
+; セクション database
+; データベースの初期化パラメータを指定します
+[database]
+driver  = Pdo_MySql
+;database = coraldb_test03
+database = coraldb_new01
+username = coraluser
+password = coralmaster
+hostname = aws-a-db1.cirprqejebgf.ap-northeast-1.rds.amazonaws.com
+;port     =
+;charset  =
+;unix_socket =
+
+; セクション db_for_printing
+; 印刷ツール向けのDB初期化パラメータを指定します（オプション）
+; 印刷ツールからの情報取得要求に対しては、databaseセクションの設定値を
+; 上書きマージして返却するため、必要な項目のみ指定すればOK
+;[db_for_printing]
+;adapter = Pdo_MySql
+;params.host = coral.atobarai.localdomain
+;params.dbname = coraldb_test99
+;params.username = dbuser
+;params.password = dbuserpassword
+
+; セクション tools
+; Javascriptなどから利用するサービスURL
+[tools]
+; 郵便番号検索
+url.searchzip = /tools/searchzip.php
+; 電話コール結果に関するポイントの取得
+url.realcallscore = /cbadmin/generalsvc/cprc
+; リアル送信チェックに関するポイントの取得
+url.realsendmailscore = /cbadmin/generalsvc/cprsm
+; 与信用チェックメール送信
+url.sendcheck = /cbadmin/generalsvc/sendcheck
+; 事業者審査結果メール送信
+url.sendexam = /cbadmin/generalsvc/sendexam
+; 事業者宛　送達確認用メール送信
+url.sendtest = /cbadmin/generalsvc/sendtest
+; 備考更新
+url.unote = /cbadmin/generalsvc/unote
+; ブラック登録
+url.registblk = /cbadmin/generalsvc/registblk
+; 優良顧客登録
+url.registexc = /cbadmin/generalsvc/registexc
+; 類似住所検索
+url.chkaddress = /cbadmin/generalsvc/chkaddress
+; 請求書不達メール送信
+url.returnbill = /cbadmin/generalsvc/sendreturnbill
+; 類似住所検索時の検索文字数
+prop.chkaddrstrnum = 9
+
+; 類似住所検索結果および着荷確認画面の色分け用CSSファイル名
+; css/orderstats 内の拡張子を除いた名前を指定する
+; この項目が未設定の場合は「default」に読み替えられる
+orderstatus.style = default
+
+; セクション auth_manager
+; 認証マネージャの初期化パラメータを指定します。
+[auth_manager]
+; 認証に使用するテーブル名を指定します
+tablename = T_OemOperator
+; 認証IDの列名を指定します
+id_column = LoginId
+; 認証パスワードの列名を指定します
+password_column = LoginPasswd
+; 認証マネージャのログ出力の有効・無効を設定します
+;log_enabled = true
+
+; セクション alt_auth_settings
+; 認証マネージャ向けの代理ログイン関連設定です。
+;  サブキー「singlecolon」でOMEアカウントでの代理認証、
+;  「doublecolon」でCBアカウントでの代理認証を設定します
+[alt_auth_settings]
+; CBアカウントでの代理認証に使用する認証テーブル名を指定します
+doublecolon.table = T_Operator
+; CBアカウントでの代理認証に使用する認証IDの列名を指定します
+doublecolon.id_col = LoginId
+; CBアカウントでの代理認証に使用する認証パスワードの列名を指定します
+doublecolon.psw_col = LoginPasswd
+
+; セクション business
+[business]
+; 支払期限は請求日の↓日後
+pay.limitdays = 14
+pay.limitdays2 = 10
+; 遅延損害金利率
+pay.damagerate = 14.6
+; 再請求1への遅延損害金適用を無視するか
+;pay.ignore_damage_for_reclaim1 = true
+
+; セクション mail
+[mail]
+; SMTP
+smtp = localhost
+; 文字セット
+charset = ISO-2022-JP
+
+; セクション upload
+; ファイルアップロードに関する設定
+[upload]
+; アップロードディレクトリのルートパス
+;root_directory =
+
+; セクション printing
+; 印刷ツールに関する設定
+[printing]
+; 印刷ツールのエクスポート機能を有効にするかのフラグ
+;client.enable_export = false
+; エクスポート完了後のコミットを手動で行うかのフラグ
+;client.manual_commit = false;
+; エクスポートファイルのアップロード先ディレクトリ
+; uploadセクションのroot_directoryからの相対パスで記述する
+;upload_directory = printing_explorted
+; エクスポートファイル名のプレフィックス設定
+;prefix.wellnet = wellnet_csv
+
+; セクション paging
+; ページングに関する設定
+; キーがコントローラ名に一致するように定義
+[paging]
+rwarvlcfm = 10
+rwcredit = 20
+rwdmi = 100
+searchf = 200
+
+; セクション log
+[log]
+; ログファイルのベース名
+;log_name = oemadmin_log_%timestamp:Ymd%
+; ログ保存先ディレクトリパス
+;log_dir = .
+; テキストログを使用するか
+;use_text_log = true
+; SQLiteログを使用するか（非推奨：少々重い）
+;use_sqlite_log = false
+; 出力バッファログを使用するか（非推奨：すべてechoされてしまう）
+;use_console_log = false
+; ログクラスの内部エラーを記録するログファイルのパス
+;error_log = ./NetB_Log_error.log
+; メッセージフィルタの閾値（デフォルト推奨、デバッグ時は7を指定）
+;priority_threshold = 7
+
+; セクション ent_sbsettings
+; 事業者向け同梱ツール関連の設定
+[ent_sbsettings]
+; 同梱ツール関連の設定を有効にするか
+;enable_settings = true
+
+; セクション at_payment
+[at_payment]
+; コンビニ用企業コード
+corp_code = 7116
+; 郵便振替用顧客番号
+cust_num = 152
+; 印紙代精算
+enable_stamp_fee = true
+
+; セクション credit_judge
+; 与信処理関連の設定
+[credit_judge]
+; 与信に加算点を設定する事業者
+enterpriseid = 3772
+
+[cj_api]
+; ファイル保存ディレクトリ
+;save_dir = /home/coralweb/cjapi_savedir/
+; 送信先URL
+;send_url = http://202.94.134.244:8044/ILUYoshin/Inspect.asmx/CreditInspection

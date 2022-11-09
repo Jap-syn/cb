@@ -1,0 +1,80 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/paying/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替予測</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        今日は　<?php echo $this->genzai; ?>　です。<br />
+      </div>
+    </div>
+    <form name="form" method="post" action="paying/execcharge">
+      <input type="hidden" name="DecisionDate" id="DecisionDate" />
+      <?php foreach($this->list as $oem_key=>$oem_data){?>
+        <table style="clear:both;" class="datatable" cellpadding="1" cellspacing="0" border="0">
+            <td class="c_data">
+                <span style="color: red;"><?php if($oem_key == 0){ echo "キャッチボール加盟店";}else{ echo $this->oem_data[$oem_key]['OemNameKj']."/".$this->oem_data[$oem_key]['PayingMethodName'];}?></span>
+            </td>
+        </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>立替予定日</th>
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替予測額</th>
+            <th>事業者計</th>
+            <th>立替予測総額</th>
+            <th>データ取得</th>
+          </tr>
+          <?php foreach($oem_data as $key=>$value){?>
+          <tr>
+            <td rowspan="3" class="c_data"><a href="paying/forecast2detail/e/<?php echo $value["ExecScheduleDate"]; ?>/oemid/<?php echo $oem_key;?>"><?php echo $value["ExecScheduleDate"]; ?></a></td>
+            <td class="c_data">毎週</td>
+            <td class="c_data"><?php echo $value["P1FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P1CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P1PAY"], 'number', '#,##0'); ?></td>
+            <td rowspan="3" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+            <td rowspan="3" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+            <td rowspan="3" class="c_data">
+              <a href="paying/forecastdatadl/e/<?php echo $value["ExecScheduleDate"]; ?>/oemid/<?php echo $oem_key;?>">予測データＤＬ</a>
+            </td>
+          </tr>
+          <tr>
+            <td class="c_data">月２回</td>
+            <td class="c_data"><?php echo $value["P2FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P2CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P2PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr>
+            <td class="c_data">月末</td>
+            <td class="c_data"><?php echo $value["P3FD"]; ?></td>
+            <td class="r_data"><?php echo $value["P3CNT"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($value["P3PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+        <?php } ?>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

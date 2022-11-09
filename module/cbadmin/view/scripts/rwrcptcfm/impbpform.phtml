@@ -1,0 +1,47 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">銀行・郵便局入金CSVインポート</h3>
+    <form name="form" enctype="multipart/form-data" method="post" action="rwrcptcfm/impbp">
+      <div id="formdiv">
+        <table>
+          <tr>
+            <td align="left">モード</td>
+            <td align="left">
+              <input type="radio" name="mode" value="1" checked />銀行
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <input type="radio" name="mode" value="2" />郵便局
+            </td>
+          </tr>
+          <tr>
+            <td align="left">銀行・郵便局入金CSVファイル&nbsp;&nbsp;</td>
+            <td align="left"><input type="file" name="cres" size="80" /></td>
+          </tr>
+        </table>
+        <p><button type="submit">　　インポート　　</button></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>収納代行会社一覧</h3>
+      <div id="message" align="center"><?php echo $this->msg; ?></div>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_data" colspan="8">【収納代行会社一覧】</td>
+            </tr>
+            <tr>
+              <th>加入者固有コード</th>
+              <th>加入者固有名称</th>
+              <th>利用サイト数</th>
+              <th>LINE使用可否区分</th>
+              <th>LINE申込日</th>
+              <th>LINE利用開始日</th>
+              <th>楽天銀行利用可否区分</th>
+              <th>FamiPay利用可否区分</th>
+            </tr>
+            <?php foreach ($this->sscDataList as $row) { ?>
+            <tr>
+              <td class="r_data"><?php echo f_e($row['SubscriberCode']); ?></td>
+              <td class="l_data"><?php echo f_e($row['SubscriberName']); ?></td>
+              <td class="r_data"><?php echo f_e($row['siteCnt']); ?>件</td>
+              <td class="c_data"><?php if ($row['LinePayUseFlg'] == 1) { echo "可"; } elseif ($row['LinePayUseFlg'] == 0) { echo "不可"; } else { echo "未申請"; }?></td>
+              <td class="c_data"><?php echo f_e($row['LineApplyDate']); ?></td>
+              <td class="c_data"><?php echo f_e($row['LineUseStartDate']); ?></td>
+              <td class="c_data"><?php if ($row['RakutenBankUseFlg'] == 1) { echo "可"; } else { echo "不可"; }?></td>
+              <td class="c_data"><?php if ($row['FamiPayUseFlg'] == 1) { echo "可"; } else { echo "不可"; }?></td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td style="padding: 2px 0px">
+                <input type="button" id="close_button" onclick="window.close();" value="閉じる" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div><!-- end #contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+</body>
+</html>

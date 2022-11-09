@@ -1,0 +1,335 @@
+[
+    {
+        "field" : "MailAddress",
+        "title" : "メールアドレス",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "OemNameKj",
+        "title" : "OEM名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "PostalCode",
+        "title" : "所在地－郵便番号",
+        "converterName" : "Zipcode",
+        "args" : [
+            "-"
+        ],
+        "disabled" : false
+    },
+    {
+        "field" : "PrefectureName",
+        "title" : "所在地－都道府県",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "City",
+        "title" : "所在地－市区郡",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Town",
+        "title" : "所在地－町域",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Building",
+        "title" : "所在地－建物",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "ContactPhoneNumber",
+        "title" : "連絡先電話",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "CpNameKj",
+        "title" : "担当者名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "OemId",
+        "title" : "OEMID",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "ApplicationDate",
+        "title" : "申込日",
+        "converterName" : "Date",
+        "args" : [
+            "Y/m/d"
+        ],
+        "disabled" : false
+    },
+    {
+        "field" : "ServiceInDate",
+        "title" : "サービス開始日",
+        "converterName" : "Date",
+        "args" : [
+            "Y/m/d"
+        ],
+        "disabled" : false
+    },
+    {
+        "field" : "RegistDate",
+        "title" : "登録日",
+        "converterName" : "Date",
+        "args" : [
+            "Y/m/d"
+        ],
+        "disabled" : false
+    },
+    {
+    "field" : "PayingMethod",
+        "title" : "立替方法",
+        "converterName" : "Bool",
+        "args" : [
+            "OEM立替",
+            "CB立替"
+        ],
+        "disabled" : false
+    },
+    {
+        "field" : "OemNameKn",
+        "title" : "OEM名かな",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "ServiceName",
+        "title" : "サービス名称",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "ServicePhone",
+        "title" : "サポート電話番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "SupportTime",
+        "title" : "サポート時間帯",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "SupportMail",
+        "title" : "サポートメールアドレス",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Copyright",
+        "title" : "コピーライト",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "HelpUrl",
+        "title" : "ヘルプのリンク先",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+
+    {
+        "field" : "RepNameKj",
+        "title" : "代表者氏名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "RepNameKn",
+        "title" : "代表者氏名かな",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Phone",
+        "title" : "代表電話番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Fax",
+        "title" : "代表FAX番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Salesman",
+        "title" : "担当営業",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfName",
+        "title" : "金融機関－金融機関名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfCode",
+        "title" : "金融機関－金融機関番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfBranchName",
+        "title" : "金融機関－支店名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfBranchCode",
+        "title" : "金融機関－支店番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfAccountNumber",
+        "title" : "金融機関－口座番号",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "FfAccountClass",
+        "title" : "金融機関－口座種別",
+        "converterName" : "Master",
+        "args" : [
+            "AccountClass"
+        ],
+        "disabled" : false
+    },
+    {
+        "field" : "FfAccountName",
+        "title" : "金融機関－口座名義",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "TcClass",
+        "title" : "金融機関－振込手数料",
+        "converterName" : "Master",
+        "args" : [
+            "TcClass"
+        ],
+        "disabled" : false
+    },
+	{
+		"field" : "SameFfTcFeeUnderThirtyK",
+		"title" : "同行振込手数料30,000円未満",
+		"converterName" : "Default",
+		"args" : [],
+		"disabled" : false
+	},
+	{
+		"field" : "SameFfTcFeeThirtyKAndOver",
+		"title" : "同行振込手数料30,000円以上",
+		"converterName" : "Default",
+		"args" : [],
+		"disabled" : false
+	},
+	{
+		"field" : "OtherFfTcFeeUnderThirtyK",
+		"title" : "他行振込手数料30,000円未満",
+		"converterName" : "Default",
+		"args" : [],
+		"disabled" : false
+	},
+		{
+		"field" : "OtherFfTcFeeThirtyKAndOver",
+		"title" : "他行振込手数料30,000円以上",
+		"converterName" : "Default",
+		"args" : [],
+		"disabled" : false
+	},
+    {
+        "field" : "CpNameKn",
+        "title" : "担当者名かな",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "DivisionName",
+        "title" : "部署名",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "ContactFaxNumber",
+        "title" : "連絡先FAX",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "Note",
+        "title" : "備考",
+        "converterName" : "FlatLine",
+        "args" : [],
+        "disabled" : false
+    },
+    {
+        "field" : "PrefectureCode",
+        "title" : "所在地－都道府県コード",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : true
+    },
+    {
+        "field" : "InvalidatedDate",
+        "title" : "無効年月日",
+        "converterName" : "Date",
+        "args" : [
+            "Y/m/d"
+        ],
+        "disabled" : true
+    },
+    {
+        "field" : "InvalidatedReason",
+        "title" : "無効理由",
+        "converterName" : "Default",
+        "args" : [],
+        "disabled" : true
+    }
+]

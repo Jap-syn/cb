@@ -1,0 +1,220 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$currentTitle = $this->mode == 'edit' ? 'APIユーザー変更' : 'APIユーザー登録';
+?>
+	<style>
+	ul.errors {
+		border: solid 1px silver;
+		color: crimson;
+		background-color: lemonchiffon;
+		font-size: 10pt;
+		padding: 4px !important;
+		padding-left: 24px !important;
+	}
+	ul.errors li.error {
+		margin : 0px !important;
+	}
+	#ip_help_toggle,
+	#ip_help_toggle:link,
+	#ip_help_toggle:hover,
+	#ip_help_toggle:visited,
+	#ip_help_toggle:active {
+		font-size: 11px;
+		padding: 2px 4px;
+	}
+	#ip_help_toggle:hover {
+		background-color: white;
+		color: royalblue;
+	}
+	#ip_help {
+		white-space: pre;
+		font-size: 12px;
+		padding: 2px;
+		border: solid 1px silver;
+		background-color: ghostwhite;
+		color: #444;
+		position: absolute;
+		width: 380px;
+		height: 220px;
+		text-align: left;
+		line-height: 120%;
+		overflow: visible;
+		opacity : .9;
+	}
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/apiuser/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3><?php echo $currentTitle; ?></h3>
+
+<?php 
+// count関数対策
+if( !empty($this->errorMessages)) { ?>
+<ul class="errors"><?php foreach($this->errorMessages as $error) { ?>
+	<li><?php echo escape($error); ?></li>
+<?php } ?></ul>
+<?php } ?>
+
+<form id="edit_form" action="apiuser/confirm" method="post">
+  <input id="ApiUserId" name="data[ApiUserId]" type="hidden" value="<?php echo f_e($this->apiUser['ApiUserId']); ?>" />
+  <input id="isNew" name="isNew" type="hidden" value="<?php echo f_e($this->isNew); ?>" />
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザー情報－基本情報】</td>
+    </tr>
+    <?php if($this->isNew == 1) { ?>
+    <tr>
+      <td class="label">OEM先</td>
+      <td class="data">
+        <select id="OemId" " name="data[OemId]" value="<?php echo f_e($this->apiUser['OemId']); ?>">
+        <?php foreach($this->oemList as $value => $caption) { ?>
+          <?php $selected = $this->apiUser['OemId'] == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+        <?php } ?>
+        </select>
+          ※OEM先を設定した場合はOEM先サイトとして登録されます。
+        </td>
+    </tr>
+    <?php } ?>
+
+    <tr>
+      <td class="r_label">APIユーザー名<font color="red">*</font></td>
+      <td class="l_data">
+		<input id="ApiUserNameKj" name="data[ApiUserNameKj]" type="text" size="40" value="<?php echo escape($this->apiUser['ApiUserNameKj']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">APIユーザー名カナ</td>
+      <td class="l_data">
+		<input id="ApiUserNameKn" name="data[ApiUserNameKn]" type="text" size="40" value="<?php echo escape($this->apiUser['ApiUserNameKn']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">状態<font color="red">*</font></td>
+      <td class="l_data">
+		<select id="ValidFlg" name="data[ValidFlg]">
+			<option>----</option>
+			<option value="1"<?php if($this->apiUser['ValidFlg'] == 1) { echo ' selected="selected"'; } ?>>有効</option>
+			<option value="0"<?php if(isset($this->apiUser['ValidFlg']) && (int)$this->apiUser['ValidFlg'] === 0) { echo ' selected="selected"'; } ?>>無効</option>
+		</select>
+	  </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザー情報－ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名</td>
+      <td class="l_data">
+		<input id="CpNameKj" name="data[CpNameKj]" type="text" size="40" value="<?php echo escape($this->apiUser['CpNameKj']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名カナ</td>
+      <td class="l_data">
+		<input id="CpNameKn" name="data[CpNameKn]" type="text" size="40" value="<?php echo escape($this->apiUser['CpNameKn']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">部署名</td>
+      <td class="l_data">
+		<input id="DivisionName" name="data[DivisionName]" type="text" size="30" value="<?php echo escape($this->apiUser['DivisionName']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data">
+		<input id="MailAddress" name="data[MailAddress]" type="text" size="60" value="<?php echo escape($this->apiUser['MailAddress']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先電話番号</td>
+      <td class="l_data">
+		<input id="ContactPhoneNumber" name="data[ContactPhoneNumber]" type="text" size="20" value="<?php echo escape($this->apiUser['ContactPhoneNumber']); ?>" />
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先FAX番号</td>
+      <td class="l_data">
+		<input id="ContactFaxNumber" name="data[ContactFaxNumber]" type="text" size="20" value="<?php echo escape($this->apiUser['ContactFaxNumber']); ?>" />
+	  </td>
+    </tr>
+
+    <tr>
+      <td colspan="2" class="l_data">【APIユーザーその他の情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label" style="vertical-align: top;">
+		接続IPアドレス
+		<div>
+			<a id="ip_help_toggle" href="#" onclick="return false;">登録方法について</a>
+			<div id="ip_help" style="display: none;"><b>IPアドレスの登録方法について</b>
+	● アスタリスク（*）によるワイルドカード指定が可能です。
+		例１：　「192.168.1.*」
+			→ 192.168.1.0～192.168.1.255 からアクセス可能
+
+		例２：　「192.168.*」
+			→ 192.168.0.0 ～ 192.168.255.255 からアクセス可能
+
+		例３：　「*」
+			→ すべてのIPアドレスからアクセス可能
+
+	● 1行に1つ登録してください。
+
+	● 1件もIPアドレスが登録されていない場合、
+	　 API経由での注文登録はできません。
+			</div>
+		</div>
+	  </td>
+      <td class="l_data">
+		<?php $ipList = join("\n", explode(';', $this->apiUser['ConnectIpAddressList'])); ?>
+		<textarea id="ConnectIpAddressList" name="data[ConnectIpAddressList]" style="width: 90%; height: 120px; font-size: 12px;"><?php echo escape($ipList); ?></textarea>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label" style="vertical-align: top;">備考</td>
+      <td class="l_data">
+		<textarea id="Note" name="data[Note]" style="width: 90%; height: 120px; font-size: 12px;"><?php echo escape($this->apiUser['Note']); ?></textarea>
+	  </td>
+    </tr>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+        <input type="submit" value="　確　定　" />
+		<?php $cancelUrl = ($this->mode == 'edit') ? $this->baseUrl ."/apiuser/detail/id/{$this->apiUser['ApiUserId']}" : $this->baseUrl .'/apiuser/list';  ?>
+		<button type="button" onclick="window.location.href = '<?php echo escape($cancelUrl); ?>';">キャンセル</button>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+Event.observe( window, "load", function() {
+	Event.observe( $("ip_help_toggle"), "click", function() {
+		var id = "ip_help";
+		var visible = Element.visible($(id));
+		Element[ visible ? "hide" : "show" ]($(id));
+	} );
+	Event.observe( $("ip_help"), "click", function() {
+		Element.hide( $("ip_help") );
+	} );
+} );
+</script>
+</html>

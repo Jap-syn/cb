@@ -1,0 +1,117 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+?>
+</head>
+<body>
+<div id="top-of-page"></div>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpagrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座登録</h3>
+
+  <?php if (isset($this->regError)) { ?>
+    <div class="page_error_message">
+      以下のエラーが発生しました : </br>
+      <?php echo f_e($this->regError); ?>
+    </div>
+  <?php } ?>
+
+  <?php if (isset($this->validateError)) { ?>
+    <div class="page_error_message">
+      以下の入力に誤りがあります : </br>
+      <?php foreach ($this->validateError as $key => $val) { ?>
+      　・<?php     echo f_e($val[0]); ?></br>
+      <?php } ?>
+    </div>
+  <?php } ?>
+
+  <?php if (isset($this->regAcount)) { ?>
+    <div class="page_info_message">
+      <?php echo f_nf($this->regAcount, '#,##0'); ?> 件のSMBCバーチャル口座を登録しました。
+    </div>
+  <?php } ?>
+
+    <form name="form" method="post" action="smbcpagrp/accsave">
+      <input type="hidden" name="oid" value="<?php echo f_e($this->oid); ?>" />
+
+      <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="label">SMBCバーチャル口座支店<font color="red">*</font></td>
+            <td class="data" width="640">
+              <select id="selBranch" name="selBranch" value="<?php echo f_e($this->selBranch); ?>">
+              <?php foreach($this->master_map['branchList'] as $value => $caption) { ?>
+                <?php $selected = ($this->selBranch == $value) ? ' selected="selected"' : ''; ?>
+                <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+              <?php } ?>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">口座開始番号<font color="red">*</font></td>
+            <td class="data"><input name="sttAccno" type="text" id="sttAccno" size="10" maxlength="7" value="<?php echo f_e($this->sttAccno); ?>" /></td>
+          </tr>
+          <tr>
+            <td class="label">口座終了番号<font color="red">*</font></td>
+            <td class="data"><input name="endAccno" type="text" id="endAccno" size="10" maxlength="7" value="<?php echo f_e($this->endAccno); ?>" /></td>
+          </tr>
+          <tr>
+            <td class="label">口座種別<font color="red">*</font></td>
+            <td class="data">
+              <span class="radio_set">
+              <?php foreach($this->master_map['accType'] as $value => $caption) { ?>
+                <label for="accType<?php echo f_e($value); ?>">
+                  <?php $checked = ($this->accType == $value) ? ' checked="checked"' : ''; ?>
+                  <input name="accType" id="accType<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                  <?php echo f_e($caption); ?>
+                </label>
+              <?php } ?>
+            </td>
+          </tr>
+          <tr>
+            <td class="label">管理グループキー<font color="red">*</font></td>
+            <td class="data"><input name="manageKey" type="text" id="manageKey" size="20" value="<?php echo f_e($this->manageKey); ?>" />　※SMBCバーチャル口座登録内容詳細（口座グループ）表示用</td>
+          </tr>
+          <tr>
+            <td class="label">管理グループ名<font color="red">*</font></td>
+            <td class="data"><input name="manageKeyLabel" type="text" id="manageKeyLabel" size="35" value="<?php echo f_e($this->manageKeyLabel); ?>" />　※SMBCバーチャル口座登録内容詳細（口座グループ）表示用</td>
+          </tr>
+          <tr>
+            <td class="label">口座名義カナ<font color="red">*</font></td>
+            <td class="data"><input name="accountHolder" type="text" id="accountHolder" size="35" value="<?php echo f_e($this->accountHolder); ?>" />　※請求書に印字されるワンタイム口座名</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr align="center">
+            <td style="padding: 2px 0px"><input type="submit" id="submit_button" value="　確　定　" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,30 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searche/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>事業者取込インポート　完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+<!--   <thead> -->
+<!--   </thead> -->
+  <tbody>
+  <tr>
+    <td class="l_data" style="font-size: 18px;">登録事業者数 : <?php echo $this->registCount ?>件</td>
+  </tr>
+  <tr>
+    <td class="c_data"><a href="searche/search">事業者一覧へ</a></td>
+  </tr>
+  </tbody>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

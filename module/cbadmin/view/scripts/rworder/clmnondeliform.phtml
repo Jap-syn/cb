@@ -1,0 +1,76 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求書不達</h3>
+    <form name="form" method="post" action="rworder/clmnondelidone">
+      <table style="clear:both; margin: 0px 0px 25px 25px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文Seq</th>
+            <th>注文ID</th>
+            <th>注文日</th>
+            <th>事業者名</th>
+            <th>請求先氏名</th>
+            <th>住所</th>
+            <th>請求額</th>
+            <th>初回請求</th>
+            <th>最終請求</th>
+            <th>請求回数</th>
+          </tr>
+          <tr>
+            <td class="r_data">
+              <input type="hidden" name="oseq" id="oseq" value="<?php echo f_e($this->list["OrderSeq"]); ?>" />
+              <input type="hidden" name="EnterpriseId" id="EnterpriseId" value="<?php echo f_e($this->list["EnterpriseId"]); ?>" />
+              <?php echo f_e($this->list["OrderSeq"]); ?>
+            </td>
+            <td class="l_data">
+              <?php echo f_e($this->list["OrderId"]); ?>
+            </td>
+            <td class="c_data"><?php echo f_e($this->list["ReceiptOrderDate"]); ?></td>
+            <td class="l_data"><?php echo f_e($this->list["EnterpriseNameKj"]); ?></td>
+            <td class="l_data">
+              <a href="rworder/detail/oseq/<?php echo f_e($this->list["OrderSeq"]); ?>">
+                <?php echo f_e($this->list["NameKj"]); ?>
+              </a>
+            </td>
+            <td class="l_data"><?php echo f_e($this->list["UnitingAddress"]); ?>...</td>
+            <td class="r_data"><?php echo f_e($this->list["ClaimAmount"]); ?></td>
+            <td class="c_data"><?php echo f_e($this->list["Clm_F_ClaimDate"]); ?></td>
+            <td class="c_data"><?php echo f_e($this->list["Clm_L_ClaimDate"]); ?></td>
+            <td class="c_data"><?php echo f_e($this->list["Clm_Count"]); ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="10" class="c_data">
+              請求書不達メール　　
+              <input type="radio" name="sendmail" value="on">送信する　
+              <input type="radio" name="sendmail" value="off" checked="checked">送信しない
+            </td>
+          </tr>
+          <tr>
+            <td colspan="10" class="c_data">
+              <input style="margin: 8px; " type="submit" value="　　請求書不達　確定　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

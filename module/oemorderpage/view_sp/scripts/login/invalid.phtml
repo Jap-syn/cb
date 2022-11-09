@@ -1,0 +1,35 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5 style="line-height:30px;">注文情報確認ページ<BR>(期限切れ)</h5>
+    <?php echo $this->Note; ?>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>
+

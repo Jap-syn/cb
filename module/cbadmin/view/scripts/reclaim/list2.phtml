@@ -1,0 +1,209 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  </head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/reclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">個別指定再請求書発行待ちリスト(個別指定CSV一括出力)</h3>
+
+    <table style="clear:both;" width="862" class="datatable" cellpadding="0" cellspacing="0" border="1"><tr>
+    <!-- ページナビゲーション -->
+    <?php echo $this->render('cbadmin/page_navigation.php'); ?></tr>
+    </table>
+
+    <h4>
+
+    <form name="sform" method="post" action="reclaim/list2">
+      <font color="red">検索条件を変更した場合は、必ず[検索]ボタンを押してください</font>
+      </p>
+      請求書<?php echo $this->billIssueStateTag; ?>
+      再請求<?php echo $this->claimPatternSearchTag; ?>
+      <input style="margin-left: 50px;" id="search" type="submit" value="　検　索　" />
+
+      </p>
+      OEM<?php echo $this->oemTag; ?>
+      </p>
+      加盟店ID(後方一致)<input style="text-align: left;" type="text" size="10" name="entid" id="endid" value="<?php echo f_e($this->entid); ?>" />
+      加盟店名(部分一致)<input style="text-align: left;" type="text" size="20" name="entnm" id="endnm" value="<?php echo f_e($this->entnm); ?>" />
+      注文ID(後方一致)<input style="text-align: left;" type="text" size="10" name="odrid" id="odrid" value="<?php echo f_e($this->odrid); ?>" />
+      </p>
+      サイトID(完全一致)<input style="text-align: left;" type="text" size="10" name="siteid" id="siteid" value="<?php echo f_e($this->siteid); ?>" />
+    </form>
+    </h4>
+
+    <h4><span class="cnt"><?php echo $this->cnt; ?></span>　件の再請求候補があります。</h4>
+    <form id="form" name="form">
+      <table style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td align="right">
+            <input type="button" onclick="allChecked(true, this.form,'chkWaitDecision');" value="　確定全選択　" /></p>
+            <input type="button" onclick="allChecked(false,this.form,'chkWaitDecision');" value="　確定全解除　" />
+            </p>
+          </td>
+        </tr>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>状態</th>
+            <th>注文<br />SEQ</th>
+            <th>注文ID</th>
+            <th>注文登録日時</th>
+            <th>属性</th>
+            <th>事業者名</th>
+            <th>請求先氏名</th>
+            <th>住所</th>
+            <th>利用額</th>
+            <th>再請求</th>
+            <th>確定<br />待ち</th>
+          </tr>
+          <?php 
+            // count関数対策
+            $listCount = 0;
+			      if (!empty($this->list)) {
+			      $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="l_data" style="min-width:48px;"><?php echo $this->list[$i]["ConfirmWaitingStr"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["OrderSeq"]; ?>
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>"/>
+            </td>
+            <td class="l_data">
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["OrderId"]; ?></a>
+            </td>
+            <td class="c_data" style="min-width:60px;"><?php echo $this->list[$i]["RegistDate"]; ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["IncreArCaption"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["EnterpriseNameKj"]; ?></td>
+            <td class="l_data">
+              <a target="_blank" href="customerinquiry/detail/custid/<?php echo $this->list[$i]["CustomerId"]; ?>"><?php echo $this->list[$i]["NameKj"]; ?></a>
+            </td>
+            <td class="l_data" ><?php echo $this->list[$i]["UnitingAddress"]; ?>...</td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]["UseAmountTotal"], '#,##0'); ?></td>
+            <td class="l_data" style="min-width:48px;"><?php echo $this->list[$i]["ClaimStr"]; ?></td>
+            <td class="c_data" style="min-width:24px;"><input type="checkbox" name="chkWaitDecision<?php echo $i; ?>" id="chkWaitDecision<?php echo $i; ?>" <?php if( !$this->list[$i]['ConfirmWaitingFlg']) { echo 'disabled="disabled" '; } ?> /></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+                <span style="float:left"> <button id="submit1" type="button">　　印刷済に更新　　</button></span>
+                <span style="float:right"><button id="submit2" type="button">　　CSV出力　　</button></span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script src="../member/js/cover.js"></script>
+<script type="text/javascript">
+Event.observe( window, "load", function() {
+    window.WindowCover = createCover();
+    document.body.appendChild( window.WindowCover );
+
+} );
+</script>
+
+<script type="text/javascript">
+//チェックボックス全件選択
+function allChecked(check, targetForm, colnm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        var str = targetForm.elements[j].name;
+        if (str.indexOf(colnm) == 0){
+            // オブジェクトがイネーブル時に限り処理を行う
+            if (!targetForm.elements[j].disabled) {
+                targetForm.elements[j].checked = check;
+            }
+        }
+    }
+}
+
+//[印刷済に更新]ボタン押下
+Event.observe($("submit1"), "click", function() {
+    $("submit1").disabled = true;
+
+    setTimeout(function() {
+        var str = Form.serialize('form');
+        var url = "<?php echo $this->baseUrl; ?>/reclaim/list2up";
+        var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+        var res = eval('(' + ajax.transport.responseText + ')');
+        if  (res['status'] != 1) {
+            alert(res['status']);
+        }
+        else {
+        	alert('更新処理が完了しました。');
+        }
+
+        location.reload(true);
+	}, 0)
+});
+
+Event.observe($("submit2"), "click", function() {
+    $("submit2").disabled = true;
+
+	WindowCover.show();
+
+	// AJAX通信でフォーム情報をセッションに設定
+    var str = "billIssueState=" + document.forms.sform.billIssueState.value + "&claimpattern=" + document.forms.sform.claimpattern.value + "&oem=" + document.forms.sform.oem.value + "&entid=" + document.forms.sform.entid.value + "&entnm=" + document.forms.sform.entnm.value + "&odrid=" + document.forms.sform.odrid.value + "&siteid=" + document.forms.sform.siteid.value;
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/list2csv1";
+    var ajax = new Ajax.Request( url, {method: 'get', parameters: str, onComplete: submit2OnComplete, asynchronous: true });
+
+});
+
+function submit2OnComplete(httpObj){
+
+	var res = eval('(' + httpObj.responseText + ')');
+    if  (res['status'] == 2) {
+
+    	var msg = "以下の注文の請求データ作成に失敗しました。\n";
+    	msg += "エラー内容を確認し、注文情報を修正してください。\n\n";
+    	msg += "\n";
+    	msg += res['message']
+    	msg += "\n\n";
+    	msg += "ファイルのダウンロードは、[OK]ボタンをクリックした後に行われます。\n";
+    	msg += "(エラーが発生した上記注文は含まれません)\n";
+
+    	alert(msg);
+    }
+
+    if  (res['status'] == 9) {
+    	var msg = "エラーが発生しました。エラーが頻発する場合は、システム管理者へご連絡ください。\n";
+    	msg += res['message'];
+    	alert(msg);
+    	location.reload(true);
+        return;
+    }
+
+    // (２．ＣＳＶ出力)
+    var str = "billIssueState=" + document.forms.sform.billIssueState.value + "&claimpattern=" + document.forms.sform.claimpattern.value + "&oem=" + document.forms.sform.oem.value + "&entid=" + document.forms.sform.entid.value + "&entnm=" + document.forms.sform.entnm.value + "&odrid=" + document.forms.sform.odrid.value + "&siteid=" + document.forms.sform.siteid.value;
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/list2csv2?" + str;
+    var ref = window.open( url );
+
+    // CSV出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+}
+
+</script>
+</html>

@@ -1,0 +1,57 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+
+<style>
+table.datatable {
+    font-size: 90%;
+}
+table.datatable th {
+    padding: 5px 0;
+    height: 10px;
+}
+</style>
+</head>
+<body>
+  <!-- start contents -->
+  <div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/searche/page_menu.php'); ?>
+    <div class="title"><span>事業者検索</span></div>
+    <div id="result_cnt">
+      該当件数　<?php echo $this->list->count(); ?> 件
+    </div>
+    <table id="search_result" class="datatable clear">
+      <thead>
+        <tr>
+          <th>事業者ID</th>
+          <th>事業者名</th>
+          <th>代表者氏名</th>
+          <th>担当者氏名</th>
+          <th>電話番号</th>
+          <th>メール</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($this->list as $row) { ?>
+        <tr>
+          <td nowrap class="l_data"><?php echo f_e($row["LoginId"]); ?></td>
+          <td nowrap class="l_data"><a href="enterprise/detail/eid/<?php echo f_e($row['EnterpriseId']); ?>" /><?php echo f_e($row["EnterpriseNameKj"]); ?></a></td>
+          <td nowrap class="l_data"><?php echo f_e($row["RepNameKj"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($row["CpNameKj"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($row["ContactPhoneNumber"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($row["MailAddress"]); ?></td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+  <!-- end contents -->
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+new base.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+</script>
+</html>

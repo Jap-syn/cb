@@ -1,0 +1,169 @@
+/**
+ * 注文ステータスによる色分け for 注文詳細画面
+ *----------------------------------------------------------*/
+
+/* 与信NG */
+.orderstatus_close_ng td {
+	color: black;
+	background-color: #ceffff;
+}
+.orderstatus_close_ng td.label,
+.orderstatus_close_ng td.l_label,
+.orderstatus_close_ng td.r_label,
+.orderstatus_close_ng td.c_label,
+.orderstatus_close_ng td.l_label2,
+.orderstatus_close_ng td.r_label2,
+.orderstatus_close_ng td.c_label2 {
+	color: white;
+	background-color: #3165ff;
+}
+
+/* キャンセル */
+.orderstatus_close_cancel td {
+	color: black;
+	background-color: honeydew;
+}
+.orderstatus_close_cancel td.label,
+.orderstatus_close_cancel td.l_label,
+.orderstatus_close_cancel td.r_label,
+.orderstatus_close_cancel td.c_label,
+.orderstatus_close_cancel td.l_label2,
+.orderstatus_close_cancel td.r_label2,
+.orderstatus_close_cancel td.c_label2 {
+	background-color: #00ff00;
+}
+
+/* キャンセル申請 */
+.orderstatus_request_cancel td {
+	color: black;
+	background-color: honeydew;
+}
+.orderstatus_request_cancel td.label,
+.orderstatus_request_cancel td.l_label,
+.orderstatus_request_cancel td.r_label,
+.orderstatus_request_cancel td.c_label,
+.orderstatus_request_cancel td.l_label2,
+.orderstatus_request_cancel td.r_label2,
+.orderstatus_request_cancel td.c_label2 {
+	background-color: #00ff00;
+}
+
+/* キャンセル（債権返却後） */
+.orderstatus_close_saiken td {
+	color: black;
+	background-color: greenyellow;
+}
+.orderstatus_close_saiken td.label,
+.orderstatus_close_saiken td.l_label,
+.orderstatus_close_saiken td.r_label,
+.orderstatus_close_saiken td.c_label,
+.orderstatus_close_saiken td.l_label2,
+.orderstatus_close_saiken td.r_label2,
+.orderstatus_close_saiken td.c_label2 {
+	background-color: yellowgreen;
+}
+
+/* キャンセル（債権返却前） */
+.orderstatus_request_saiken td {
+	color: black;
+	background-color: greenyellow;
+}
+.orderstatus_request_saiken td.label,
+.orderstatus_request_saiken td.l_label,
+.orderstatus_request_saiken td.r_label,
+.orderstatus_request_saiken td.c_label,
+.orderstatus_request_saiken td.l_label2,
+.orderstatus_request_saiken td.r_label2,
+.orderstatus_request_saiken td.c_label2 {
+	background-color: yellowgreen;
+}
+/* 支払済み(期限内) */
+.orderstatus_receipted_normal td {
+	color: black;
+	background-color: white;
+	background-color: azure;
+}
+.orderstatus_receipted_normal td.label,
+.orderstatus_receipted_normal td.l_label,
+.orderstatus_receipted_normal td.r_label,
+.orderstatus_receipted_normal td.c_label,
+.orderstatus_receipted_normal td.l_label2,
+.orderstatus_receipted_normal td.r_label2,
+.orderstatus_receipted_normal td.c_label2 {
+	background-color: #ceffff;
+}
+
+/* 支払済み(期限超過) */
+.orderstatus_receipted_damaged td {
+	color: black;
+	background-color: lavender;
+}
+.orderstatus_receipted_damaged td.label,
+.orderstatus_receipted_damaged td.l_label,
+.orderstatus_receipted_damaged td.r_label,
+.orderstatus_receipted_damaged td.c_label,
+.orderstatus_receipted_damaged td.l_label2,
+.orderstatus_receipted_damaged td.r_label2,
+.orderstatus_receipted_damaged td.c_label2 {
+	background-color: #ce9aff;
+}
+
+/* 支払済み(期限内:過剰入金) */
+.orderstatus_receipted_normal_excesspayment td {
+    color: black;
+    background-color: #c8ffff;
+}
+.orderstatus_receipted_normal_excesspayment td.label,
+.orderstatus_receipted_normal_excesspayment td.l_label,
+.orderstatus_receipted_normal_excesspayment td.r_label,
+.orderstatus_receipted_normal_excesspayment td.c_label,
+.orderstatus_receipted_normal_excesspayment td.l_label2,
+.orderstatus_receipted_normal_excesspayment td.r_label2,
+.orderstatus_receipted_normal_excesspayment td.c_label2 {
+    background-color: #00ffff;
+}
+
+/* 支払済み(期限超過:過剰入金) */
+.orderstatus_receipted_damaged_excesspayment td {
+    color: black;
+    background-color: #c8ffff;
+}
+.orderstatus_receipted_damaged_excesspayment td.label,
+.orderstatus_receipted_damaged_excesspayment td.l_label,
+.orderstatus_receipted_damaged_excesspayment td.r_label,
+.orderstatus_receipted_damaged_excesspayment td.c_label,
+.orderstatus_receipted_damaged_excesspayment td.l_label2,
+.orderstatus_receipted_damaged_excesspayment td.r_label2,
+.orderstatus_receipted_damaged_excesspayment td.c_label2 {
+    background-color: #00ffff;
+}
+
+/* 未入金 */
+.orderstatus_noreceipt_normal td {
+	color: black;
+	background-color: lemonchiffon;
+}
+.orderstatus_noreceipt_normal td.label,
+.orderstatus_noreceipt_normal td.l_label,
+.orderstatus_noreceipt_normal td.r_label,
+.orderstatus_noreceipt_normal td.c_label,
+.orderstatus_noreceipt_normal td.l_label2,
+.orderstatus_noreceipt_normal td.r_label2,
+.orderstatus_noreceipt_normal td.c_label2 {
+	background-color: #ffcf9c;
+}
+
+/* 不払い */
+.orderstatus_noreceipt_damaged td {
+	color: black;
+	background-color: lavenderblush;
+}
+.orderstatus_noreceipt_damaged td.label,
+.orderstatus_noreceipt_damaged td.l_label,
+.orderstatus_noreceipt_damaged td.r_label,
+.orderstatus_noreceipt_damaged td.c_label,
+.orderstatus_noreceipt_damaged td.l_label2,
+.orderstatus_noreceipt_damaged td.r_label2,
+.orderstatus_noreceipt_damaged td.c_label2 {
+	background-color: #ff9ace;
+}

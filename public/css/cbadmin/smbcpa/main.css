@@ -1,0 +1,131 @@
+#contents table.datatable,
+#contents table.formtable {
+    width: 862px;
+    background-color: #ddd;
+    margin: 5px 25px;
+}
+#contents table.formtable {
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+#contents h4.category-title {
+    width: 840px;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-right: 0;
+    border: solid #ddd 1px;
+    border-bottom-width: 0;
+}
+#contents .submit-area,
+#contents .content {
+	margin: 5px 25px;
+    border: solid #ddd 1px;
+	padding: 5px 25px;
+}
+#contents .submit-area {
+	text-align: center;
+	width: 810px;
+}
+#contents .submit-area button,
+#contents .submit-area a.action {
+    padding: 2px 20px;
+}
+#contents .submit-area a.action {
+    font-size: 14px;
+}
+#contents .page_info_message,
+#contents .page_error_message {
+	margin: 5px 25px;
+	border: double 3px;
+	font-size: 14px;
+	padding: 5px 10px;
+}
+#contents .page_info_message {
+	border-color: navy;
+	background-color: azure;
+	color: royalblue;
+}
+#contents .page_error_message {
+	border-color: firebrick;
+	background-color: lemonchiffon;
+	color: crimson;
+}
+td.l_label {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #eeeeee;
+    width: 180px;
+    white-space: nowrap;
+}
+td.r_label {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #eeeeee;
+    width: 180px;
+    white-space: nowrap;
+}
+td.c_label {
+    text-align: center;
+    background-color: #eeeeee;
+}
+td.l_data {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    background-color: #ffffff;
+}
+td.l_data span.wrap_container {
+    width: 398px;
+    overflow: hidden;
+    float: left;
+}
+td.r_data {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    background-color: #ffffff;
+}
+td.c_data {
+    text-align: center;
+    padding: 2px 0px 2px 0px;
+    background-color: #ffffff;
+}
+td.multi-line-text p {
+    min-height: 80px;
+    max-height: 200px;
+    overflow: auto;
+    margin: 0 5px 0 0 !important;
+}
+div {
+    margin: 0px;
+    padding: 0px;
+    font-size: 12px;
+    font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+.detail-tools {
+  margin: 5px 25px;
+  font-size: 16px;
+  text-align: right;
+}
+.detail-tools a,
+.detail-tools span.dummy-link {
+    margin: 0 0 0 12px;
+}
+.input_error_message {
+	color: red;
+}
+
+.datatable .oem-name {
+  width: 210px;
+}
+.datatable .smbcpa-name {
+  width: 395px;
+}
+.datatable .group-count {
+  width: 76px;
+}
+.datatable .acc-count {
+  width: 200px;
+}
+
+#navigation {
+	height: 30px;
+}

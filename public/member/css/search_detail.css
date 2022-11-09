@@ -1,0 +1,50 @@
+.main_contents {
+	padding: 8px;
+	height: auto;
+}
+
+/* テーブル */
+table.order_detail {
+	margin: 8px 1%;
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+	width: 800px;
+}
+
+/* デフォルトのtd */
+table.order_detail th,
+table.order_detail td {
+	padding: 2px 4px;
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+	vertical-align: top;
+}
+
+table.order_detail td {
+	font-size: 9pt;
+/*	width: 25%; */
+}
+
+table.order_detail th.category_name {
+	background-color: #7F9E40;
+	color: white;
+	font-size: 11pt;
+}
+
+table.order_detail td.item_name {
+	background-color: #D7E4BC;
+}
+
+table.order_detail td.pre {
+	white-space: pre;
+}
+
+table.order_detail td.no_display {
+	padding: 8px 16px;
+	font-size: 12pt;
+	color: dimgray;
+}
+
+table.order_detail tr.total_row td {
+	font-size: 11pt;
+}

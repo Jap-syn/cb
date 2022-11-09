@@ -1,0 +1,6 @@
+INSERT INTO `M_CodeManagement` (`CodeId`, `CodeName`, `KeyPhysicalName`, `KeyLogicName`, `Class1ValidFlg`, `Class1Name`, `Class2ValidFlg`, `Class2Name`, `Class3ValidFlg`, `Class3Name`, `Class4ValidFlg`, `Class4Name`, `RegistDate`, `RegistId`, `UpdateDate`, `UpdateId`, `ValidFlg`) VALUES
+('212', 'SBPS契約先', NULL, 'SBPS契約先', '0', NULL, '0', NULL, '0', NULL, '0', NULL, now(), '1', now(), '1', '1');
+INSERT INTO `M_CodeManagement` (`CodeId`, `CodeName`, `KeyPhysicalName`, `KeyLogicName`, `Class1ValidFlg`, `Class1Name`, `Class2ValidFlg`, `Class2Name`, `Class3ValidFlg`, `Class3Name`, `Class4ValidFlg`, `Class4Name`, `RegistDate`, `RegistId`, `UpdateDate`, `UpdateId`, `ValidFlg`) VALUES
+('211', 'SBペイメントリンク型のエラー', NULL, 'SBPSエラー', '0', NULL, '0', NULL, '0', NULL, '0', NULL, now(), '1', now(), '1', '1');
+UPDATE `M_CodeManagement` SET `CodeName`='届いてから払い利用', `KeyLogicName`='届いてから払い利用' WHERE `CodeId`='199';
+INSERT INTO `M_CodeManagement` (`CodeId`, `CodeName`, `KeyLogicName`, `Class1ValidFlg`, `Class2ValidFlg`, `Class3ValidFlg`, `Class4ValidFlg`, `RegistId`, `UpdateId`, `ValidFlg`) VALUES ('213', '後払いと届いてから払いの設定', '後払いと届いてから払いの設定', '1', '1', '1', '1', '1', '1', '1');

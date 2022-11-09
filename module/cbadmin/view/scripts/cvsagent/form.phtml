@@ -1,0 +1,168 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+
+$is_edit = $this->mode == 'edit';
+$fd = $this->data;
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+span.require-mark {
+	font-weight: bold;
+	color: pink;
+	margin-right: 8px;
+	font-size: 14px;
+}
+th {
+	text-align: right;
+	width: 300px;
+	padding: 0 4px;
+}
+input[type=text], select {
+	width: 450px;
+}
+textarea {
+	width: 450px;
+	height: 150px;
+}
+</style>
+<script>
+Event.observe(window, "load", function() {
+	function disable_buttons() {
+		["submit_button", "cancel_edit"].each(function(id) {
+			$(id).disabled = true;
+		});
+	}
+
+	Event.observe($("cancel_edit"), "click", function() {
+		var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+		disable_buttons();
+		var url = [
+			base.replace(/\/$/, ""),
+			'cvsagent/list'
+		].join("/");
+		window.location.href = url;
+	});
+	Event.observe($("submit_button"), "click", function() {
+		setTimeout(disable_buttons, 0);
+	});
+});
+</script>
+</head>
+<body onLoad="javascript:changeFixPattern(); changeLimitDatePattern(); ">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/cvsagent/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>コンビニ収納代行会社<?php echo $is_edit ? '設定' : '登録'; ?></h3>
+<form name="form" method="post" action="cvsagent/save">
+  <input name="form[isNew]" id="isNew" value="<?php echo $is_edit ? 0 : 1; ?>" type="hidden" />
+  <input name="form[ReceiptAgentId]" type="hidden" value="<?php echo f_e($fd['ReceiptAgentId']); ?>" />
+  <input name="form[RegistDate]" type="hidden" value="<?php echo f_e($fd['RegistDate']); ?>" />
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+	<tr>
+		<th>
+			収納代行会社ID
+		</th>
+		<td class="l_data"><?php echo f_e($fd['ReceiptAgentId']); ?></td>
+	</tr>
+<?php if($is_edit) { ?>
+	<tr>
+		<th>
+			最終更新日
+		</th>
+		<td class="l_data"><?php echo f_df($fd['UpdateDate'], 'Y-m-d H:i:s'); ?></td>
+	</tr>
+<?php } ?>
+	<tr>
+		<th>
+			収納代行会社名
+			<span class="require-mark">*</span>
+		</th>
+		<td class="l_data">
+			<input type="text" name="form[ReceiptAgentName]" value="<?php echo f_e($fd['ReceiptAgentName']); ?>" />
+			<?php show_error_message($this->error['ReceiptAgentName']); ?>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			収納代行会社固有コード
+			<span class="require-mark">*</span>
+		</th>
+		<td class="l_data">
+			<input type="text" name="form[ReceiptAgentCode]" value="<?php echo f_e($fd['ReceiptAgentCode']); ?>" />
+			<?php show_error_message($this->error['ReceiptAgentCode']); ?>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			バーコード生成ロジック
+			<span class="require-mark">*</span>
+		</th>
+		<td class="l_data">
+			<select name="form[BarcodeLogicName]">
+				<option value="">(選択してください)</option>
+			<?php foreach($this->barcodeClasses as $name => $class) { ?>
+				<?php $is_selected = $name == $fd['BarcodeLogicName']; ?>
+				<option value="<?php echo f_e($name); ?>"<?php echo $is_selected ? ' selected="selected"' : ''; ?>><?php echo f_e($name); ?></option>
+			<?php } ?>
+			</select>
+			<?php show_error_message($this->error['BarcodeLogicName']); ?>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			備考
+		</th>
+		<td class="l_data">
+			<textarea name="form[Note]"><?php echo f_e($fd['Note']); ?></textarea>
+			<?php show_error_message($this->error['Note']); ?>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			無効設定
+		</th>
+		<td class="l_data">
+			<label>
+				<input type="checkbox" name="form[InvalidFlg]" value="1"<?php echo (!$fd['ValidFlg']) ? ' checked="checked"' : ''; ?> />
+				この収納代行会社を無効にする
+			</label>
+			<?php show_error_message($this->error['InvalidFlg']); ?>
+		</td>
+	</tr>
+    </tbody>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td style="padding: 2px 0px">
+        <input type="submit" id="submit_button" value="　確　定　" />
+		&nbsp;
+		<input type="button" id="cancel_edit" value="キャンセル" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

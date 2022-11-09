@@ -1,0 +1,83 @@
+@CHARSET "UTF-8";
+
+div#login_area h5 {
+	margin: 20px 20px 20px 10px;
+	padding: 4px 8px;
+	font-size: 20pt;
+	color: block;
+}
+
+div#login_area h6 {
+	margin: 10px 20px;
+	padding: 4px 8px;
+	font-size: 16pt;
+	color: #77933C;
+}
+
+div#login_area table {
+	margin: 20px auto;
+}
+
+div#login_area tr {
+	margin: 5px 0px;
+}
+
+div#login_area td.r_area {
+	text-align: right;
+	background-color: #ffffff;
+}
+
+div#login_area td.l_area {
+	text-align: left;
+	background-color: #ffffff;
+	font-size: 16px;
+    font-weight: bold;
+}
+
+div#login_area td.c_area {
+	text-align: center;
+	background-color: #ffffff;
+}
+
+/*ログイン*/
+#login_btn {
+	border-radius: 8px;
+	background-color: #C0504D;
+	color: #FFFFFF;
+	width: 190px;
+	height: 60px;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	padding: 15px 0px 15px 0px;
+	margin: 5px;
+}
+
+/*新規登録*/
+#new_btn {
+	border-radius: 8px;
+	background-color: #9BBB59;
+	color: #FFFFFF;
+	width: 190px;
+	height: 40px;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+	padding: 20px 0px 0px 0px;
+	margin: 5px 5px 0px 5px;
+}
+
+#new_btn a:link, #new_btn a:hover, #new_btn a:visited, #new_btn a:active {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+#new_btn a:hover {
+	text-decoration: underline;
+}
+
+#l_pws {
+    color: #3A92CE;
+    margin-left: 5px;
+}

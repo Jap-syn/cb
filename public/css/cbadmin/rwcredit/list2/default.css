@@ -1,0 +1,156 @@
+@CHARSET "UTF-8";
+
+#contents table {
+	margin: 0px;
+	padding: 0px;
+}
+
+table.ddtable {
+	background-color: #dddddd;
+	font-size: 11px;
+	margin: 0px;
+	padding: 0px;
+}
+
+table.command {
+	width: 400px;
+	font-size: 14px;
+	margin-top: 30px;
+}
+
+td.l_label {
+	text-align: left;
+	padding: 0px 0px 0px 5px;
+	background-color: #eeeeee;
+}
+
+td.r_label {
+	text-align: right;
+	padding: 0px 5px 0px 0px;
+	background-color: #eeeeee;
+}
+
+td.c_label {
+	text-align: center;
+	background-color: #eeeeee;
+}
+
+td.l_data {
+	text-align: left;
+	padding: 0px 0px 0px 5px;
+	background-color: #ffffff;
+}
+
+td.r_data {
+	text-align: right;
+	padding: 0px 5px 0px 0px;
+	background-color: #ffffff;
+}
+
+td.c_data {
+	text-align: center;
+	padding: 2px 0px 2px 0px;
+	background-color: #ffffff;
+}
+
+td.denominator_backcolor{
+	background-color: mistyrose;
+}
+
+div.border {
+	clear: both;
+	height: 2px;
+	padding-top: 5px;
+	background-color: #ffcc33;
+}
+
+div {
+	margin: 0px;
+	padding: 0px;
+	font-size: 12px;
+	font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+
+#oneorder input,select {
+	font-size: 11px;
+}
+
+#orders {
+	margin: 0px 25px 20px;
+}
+
+#oneorder {
+	clear: both;
+	margin: 5px 0px;
+}
+
+.od1 {
+	float: left;
+	width: 460px;
+}
+
+.od1_1 {
+}
+
+.od1_2 {
+
+}
+
+.od1_3 {
+
+}
+
+.od2 {
+	float: right;
+}
+
+.od2_1 {
+
+}
+
+.od2_2 {
+}
+
+#od_caption {
+
+}
+
+/* 郵便番号→住所検索結果 (08.7.4） */
+#contents .post_search_result {
+	font-size : 11px;
+}
+
+#contents .post_search_result ul,
+#contents .post_search_result ol,
+#contents .post_search_result li {
+	list-style : none;
+}
+
+#contents .post_search_result ul,
+#contents .post_search_result ol {
+	margin : 4px 2px 4px 0px;
+	border : solid 1px gainsboro;
+}
+
+#contents .post_search_result li {
+	margin : 0px;
+	padding : 1px 4px;
+	line-height: 103%;
+	border: none 0px;
+	border-bottom: dotted 1px silver;
+}
+
+#contents .post_search_result li .postal_code,
+#contents .post_search_result li .address {
+	padding : 0px 4px;
+	border: none 0px;
+}
+
+#contents .post_search_result li .postal_code {
+	border-right: dotted 1px silver;
+}
+
+#contents .postal_search_button {
+	font-size: 11px;
+	width : 60px;
+}

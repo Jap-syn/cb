@@ -1,0 +1,87 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style>
+.monthly {
+	margin-top: -7px;
+	margin-left: 20px;
+	font-size: 80%;
+	line-height: 15px;
+}
+.notice_container {
+	width: 900px;
+	height: 150px;
+	overflow-y: scroll;
+	border: 1px #c0c0c0 solid;
+	margin-top: 0.2em;
+}
+</style>
+    </head>
+    <body>
+        <div id="contents">
+            <?php echo $this->render('oemadmin/page_header.php'); ?>
+            <?php echo $this->render('oemadmin/index/page_menu.php'); ?>
+            <div class="title t_status"><span>ステータス</span></div>
+            <div id="status">
+                <?php
+                $statusList = array(
+                    '与信中' => $this->highlight['rw11count'] + $this->highlight['rw15count'] + $this->highlight['rw21count'],
+                    '伝票番号登録中' => $this->highlight['rw31count'],
+                    '請求書発行中' => $this->highlight['rwToPrintcount'],
+                    '着荷確認中' => $this->highlight['rwArrivalcount'],
+                    '入金確認中' => $this->highlight['rw51count'] + $this->highlight['rw61count']
+                );
+                $i = 0;
+                foreach ($statusList as $key => $val) {
+                $i = $i + 1;
+                ?>
+                <div class="status">
+                    <div class="status_title">
+                        <a href="searcho/form/searchkbn/<?php echo $i; ?>"><span><?php echo $key; ?></span></a>
+                    </div>
+                    <div class="status_cnt">
+                        <?php echo $val; ?>件
+                    </div>
+                </div>
+                <?php } ?>
+            </div>
+            <?php if (isset($this->notice)) { ?>
+            <div class="title t_status"><span>お知らせ</span></div>
+            <div class="notice_container">
+                <?php echo $this->notice; ?>
+            </div>
+            <?php } ?>
+            <div class="title"><span>検索・統計</span></div>
+            <div class="sidemenu">
+                <ul>
+                    <li><a href="searcho/form/searchkbn/0">注文検索</a></li>
+                    <li><a href="searcho/qform">簡易検索</a></li>
+                    <li>月次明細</li>
+					<div class="monthly">
+						・<a href="monthly/settlement">精算書</a><br />
+						・<a href="claim/index">債権明細</a>
+					</div>
+					<li><a href="paying/list">立替確認</a></li>
+                </ul>
+            </div>
+            <div class="title"><span>加盟店事業者管理</span></div>
+            <div class="sidemenu">
+                <ul>
+                    <li><a href="searche/form">事業者検索</a></li>
+                    <li><a href="enterprise/list">事業者一覧</a></li>
+                </ul>
+            </div>
+            <div class="title"><span>管理機能</span></div>
+            <div class="sidemenu">
+                <ul>
+                    <li><a href="gp/notice">お知らせ管理</a></li>
+                    <li><a href="gp/mailtf">メールテンプレート管理</a></li>
+                    <li><a href="oem/detail">登録情報管理</a></li>
+                    <li><a href="operator/chgpw">パスワード変更</a></li>
+                </ul>
+            </div>
+            <?php echo $this->render('oemadmin/page_footer.php'); ?>
+        </div>
+    </body>
+</html>

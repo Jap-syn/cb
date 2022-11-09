@@ -1,0 +1,90 @@
+<?php
+use member\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\Validate\CoralValidateUtility;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+use Zend\Validator;
+
+$viewHelper = new CoralViewHelperValueFormat();
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	'以下の注文に入力不備があります。不備内容を確認し、注文を修正してください。',
+    // buttons
+    array()
+);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+
+  <!-- start contents -->
+  <div id="contents">
+      <BR>
+      <table style="clear:both; font-size:10pt;" width="1100" class="search_items" cellpadding="1" cellspacing="1" border="0">
+          <thead>
+            <tr>
+                <th class="column_header">注文ID</th>
+                <th class="column_header">注文日</th>
+                <th class="column_header">購入者</th>
+                <th class="column_header">電話番号</th>
+                <th class="column_header">郵便番号</th>
+                <th class="column_header">住所</th>
+                <th class="column_header">任意注文番号</th>
+                <th class="column_header">不備内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($this->list as $row) { ?>
+            <?php $url = 'search/detail/id/' . $row['OrderId']; ?>
+            <tr>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['OrderId']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo $viewHelper->ValueFormat( $row['ReceiptOrderDate'], 'date' ); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['NameKj']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['Phone']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['PostalCode']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['UnitingAddress']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_e($row['Ent_OrderId']); ?></a></td>
+                <td class="column_data"><a class="show_detail" href="<?php echo $url; ?>" ><?php echo f_br($row['DefectNote']); ?></a></td>
+            </tr>
+            <?php } ?>
+          </tbody>
+      </table>
+      <BR>
+  </div>
+  <!-- end contents -->
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php echo $this->render('member/tab_support.php'); ?>
+
+</html>

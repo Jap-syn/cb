@@ -1,0 +1,126 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">振替結果(MHF)詳細<?php if (isset($this->filename)) { echo ' (' . f_e($this->filename) . ') '; }; ?></h3>
+    <?php echo $this->errormessage; ?>
+
+      <!-- ■サマリーあり時に表示 -->
+      <?php if (isset($this->summary)) { ?>
+      <p>【サマリー】</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>請求合計件数</th>
+            <th>請求合計金額</th>
+            <th>振替済合計件数</th>
+            <th>振替済合計金額</th>
+            <th>振替不能合計件数</th>
+            <th>振替不能合計金額</th>
+          </tr>
+          <tr>
+            <td class="r_data"><?php echo f_nf($this->summary['claimCnt'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->summary['claimSum'], '#,##0'); ?></td>
+            <td class="r_data" width="150"><?php echo f_nf($this->summary['transferredCnt'], '#,##0'); ?></td>
+            <td class="r_data" width="150"><?php echo f_nf($this->summary['transferredSum'], '#,##0'); ?></td>
+            <td class="r_data" width="120"><?php echo f_nf($this->summary['impossibleCnt'], '#,##0'); ?></td>
+            <td class="r_data" width="120"><?php echo f_nf($this->summary['impossibleSum'], '#,##0'); ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+
+      <!-- ■インフォメーションデータあり時に表示(振替結果コードに[0:正常に振替済]以外がある場合) -->
+      <?php if (isset($this->infodata)) { ?>
+      <p>【振替結果(振替不能)情報】</p><h5 style="text-align:right"><a href="rwrcptcfm/csvdownload?csv=<?php echo $this->filename; ?>">↓CSVダウンロード</a></h5>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>振替結果</th>
+            <th>注文ID</th>
+            <th>顧客番号</th>
+            <th>加盟店顧客</th>
+            <th>請求金額</th>
+          </tr>
+          <?php foreach ($this->infodata as $row) { ?>
+          <tr>
+            <td class="l_data">
+            <?php if        ($row['ResCode'] == '1') { ?>1 : 資金不足
+            <?php } else if ($row['ResCode'] == '2') { ?>2 : 取引なし
+            <?php } else if ($row['ResCode'] == '3') { ?>3 : 預金者都合
+            <?php } else if ($row['ResCode'] == '4') { ?>4 : 依頼書なし
+            <?php } else if ($row['ResCode'] == '8') { ?>8 : 委託者都合
+            <?php } else if ($row['ResCode'] == 'E') { ?>E : データエラー
+            <?php } else if ($row['ResCode'] == 'N') { ?>N : 振替結果未着
+            <?php } else if ($row['ResCode'] == '9') { ?>9 : その他
+            <?php } else                             { ?><?php echo f_e($row['ResCode']); ?> : ---
+            <?php } ?>
+            </td>
+            <td class="c_data" width="120">
+                <?php if ($row['OrderSeq'] == -1) { ?>
+                    <?php echo f_e('注文未特定'); ?>
+                <?php } else { ?>
+                    <a target="_blank" href="rworder/detail/oseq/<?php echo f_e((int)($row['OrderSeq'])); ?>"><?php echo f_e($row['OrderId']); ?></a>
+                <?php } ?>
+            </td>
+            <td class="c_data" width="100"><?php echo f_e($row['EntCustSeq']); ?></td>
+            <td class="l_data" width="200"><a target="_blank" href="customer/memberdetail/ecseq/<?php echo f_e((int)($row['EntCustSeq'])); ?>"><?php echo f_e($row['CustomerName']); ?></a></td>
+            <td class="r_data" width="120"><?php echo f_nf($row['ClaimAmount'], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+
+      <!-- ■インフォメーション２データあり時に表示(振替済額⇔入金処理額に差異あり) -->
+      <?php if (isset($this->infodata2)) { ?>
+      <p>【注文未特定リスト】</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>顧客番号</th>
+            <th>加盟店顧客</th>
+            <th>振替済額</th>
+            <th>入金処理額</th>
+            <th>差額(振替済－入金処理)</th>
+            <th>理由</th>
+          </tr>
+          <?php foreach ($this->infodata2 as $row) { ?>
+            <td class="c_data" width="100"><?php echo f_e($row['EntCustSeq']); ?></td>
+            <td class="l_data" width="222"><a target="_blank" href="customer/memberdetail/ecseq/<?php echo f_e((int)($row['EntCustSeq'])); ?>"><?php echo f_e($row['CustomerName']); ?></a></td>
+            <td class="r_data" width="60"><?php echo f_nf($row['ClaimAmountF'], '#,##0'); ?></td>
+            <td class="r_data" width="80"><?php echo f_nf($row['ClaimAmountD'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimAmountF'] - $row['ClaimAmountD'], '#,##0'); ?></td>
+            <td class="l_data" width="240"><?php if (array_key_exists('Reason', $row)) {echo f_e($row['Reason']);} ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

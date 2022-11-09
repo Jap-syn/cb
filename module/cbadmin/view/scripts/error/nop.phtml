@@ -1,0 +1,20 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+<div id="contents">
+    <h1 style="margin: 0px 25px 10px 20px; padding: 0px 20px 0px 20px;">権限がありません。</h1>
+    <h4>指定された操作は権限不足のため処理できません。<br />管理者に確認してください。</h4>
+    <div style="text-align: center;">
+    <a href=".">トップへ</a>
+    </div>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

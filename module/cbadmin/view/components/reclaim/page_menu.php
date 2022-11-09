@@ -1,0 +1,10 @@
+ <!-- navigation start -->
+ <div id="navigation">
+  <ul>
+   <li><a href="." class="tabs" ><span>トップ</span></a></li>
+   <li><a href="reclaim/simplelist" class="tabs" ><span>一括出力</span></a></li>
+   <li><a href="reclaim/list2" class="tabs" ><span>個別出力</span></a></li>
+  </ul>
+  <?php echo $this->render('cbadmin/id_search_form.php'); ?>
+ </div>
+ <!-- navigation end -->

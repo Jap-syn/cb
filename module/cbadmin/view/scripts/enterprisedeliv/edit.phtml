@@ -1,0 +1,511 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#error-info {
+    margin: 5px 25px;
+    padding: 5px 20px;
+    background-color: lemonchiffon;
+    color: crimson;
+    border: double 3px firebrick;
+}
+
+#contents .action-area {
+    margin: -5px 25px 20px 25px;
+    border: solid 1px silver;
+    border-top: none 0px;
+    padding: 2px 25px;
+}
+#contents .action-area a {
+    margin: 0 12px;
+}
+
+#contents .content-box,
+#contents form#form {
+    margin: 5px 25px;
+    margin-bottom: 25px;
+}
+#contents form#form {
+    margin-top: 40px;
+    text-align: center;
+}
+form#form button {
+    width: 180px;
+    padding: 4px 12px;
+    font-size: 18px;
+    margin: 0 10px;
+}
+
+#contents .content-box .list-box {
+}
+#contents .content-box .list-box h4 {
+    margin: 5px 0;
+    padding: 0;
+}
+#contents .content-box .left-list-box {
+    float: left;
+    margin-left: 20px;
+}
+#contents .content-box .right-list-box {
+    float: right;
+    margin-right: 20px;
+}
+#contents .content-box .list-box .control-area {
+    text-align: center;
+}
+#contents .content-box .list-box .control-area button {
+    /*width: 100px;*/
+    padding: 2px 8px;
+    margin: 5px;
+}
+
+#contents .content-box select.deliv-list {
+    width: 380px;
+    height: 200px;
+}
+
+select.deliv-list option {
+    height: 18px;
+    font-size: 14px;
+    padding: 3px 0 0 4px;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    line-height: 0;
+    font-size: 0;
+    visibility: hidden;
+    clear: both;
+}
+
+#enterprise-info.content-box {
+    margin-left: 45px;
+    padding: 4px;
+    display: none;
+    border: solid 1px silver;
+}
+#enterprise-info.hasList {
+    display: block;
+}
+h4#enterprise-info-title {
+    margin: 0;
+    padding: 0;
+}
+#enterprise-info-list,
+#enterprise-info-notice {
+    margin-left: 20px;
+}
+#enterprise-info .deli-info {
+    margin: 0 8px;
+}
+#enterprise-info .invalid-deli {
+    font-weight: bold !important;
+    color: crimson !important;
+}
+#enterprise-info-notice {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+</style>
+<script type="text/javascript">
+// 指定select要素の現在の情報を取得する
+function listInfo(ele) {
+    var
+        list = $(ele),
+        size = list.options.length,
+        current = list.selectedIndex >= 0 ? list.options[list.selectedIndex] : null,
+        curIndex = list.selectedIndex;
+    return {
+        list : list,
+        size : size,
+        current : current,
+        curIndex : curIndex
+    };
+}
+
+// 「使用する配送方法」リストで項目が選択された
+function delibListSelected() {
+    var info = listInfo('enterprise-deliv-list');
+
+    // アクションボタンの状態を更新
+    $('up-to-item').disabled = !(info.current && info.curIndex > 0);
+    $('down-to-item').disabled = !(info.current && info.curIndex < info.size - 1);
+    $('remove-item').disabled = !info.current;
+    $('remove-item-all').disabled = info.size == 0;
+}
+
+// 「配送方法マスター」リストで項目が選択された
+function masterListSelected() {
+    var info = listInfo('master-deliv-list');
+
+    // アクションボタンの状態を更新
+    $('master-to-enterprise').disabled = !(info.current);
+    $('master-to-enterprise-all').disabled = !(info.size > 0);
+}
+
+// 「使用する配送方法」リストの選択項目を1つ上に移動する
+function upToItem() {
+    if($('up-to-item').disabled) return;
+
+    var
+        info = listInfo('enterprise-deliv-list'),
+        // 現在の1つ上の項目
+        target = info.list.options[info.curIndex - 1];
+
+    if(target) {
+        info.list.insertBefore(info.current, target);
+        // ボタンの状態を更新
+        updateButtons();
+    }
+}
+
+// 「使用する配送方法」リストの選択項目を1つ下に移動する
+function downToItem() {
+    if($('down-to-item').disabled) return;
+
+    var
+        info = listInfo('enterprise-deliv-list'),
+        // 現在の1つ下の項目
+        target = info.list.options[info.curIndex + 1];
+
+    if(target) {
+        info.list.insertBefore(target, info.current);
+        // ボタンの状態を更新
+        updateButtons();
+    }
+}
+
+// 「使用する配送方法」リストの選択項目をリストから削除して「配送方法マスター」へ移動する
+function removeBy() {
+    if($('remove-item').disabled) return;
+
+    var
+        enterpriseInfo = listInfo('enterprise-deliv-list'),
+        mstInfo = listInfo('master-deliv-list'),
+        // 挿入場所（＝現在選択中の項目値より大きい最小値を持つ項目）
+        target = $A(mstInfo.list.options).find(function(opt) {
+            return (Number(opt.value) > Number(enterpriseInfo.current.value));
+        });
+
+    if(target) {
+        // 途中に差し込む
+        mstInfo.list.insertBefore(enterpriseInfo.current, target);
+    } else {
+        // 末尾に差し込む
+        mstInfo.list.appendChild(enterpriseInfo.current);
+    }
+
+    var lastIndex = enterpriseInfo.curIndex, enterpriseInfo = listInfo('enterprise-deliv-list');
+    enterpriseInfo.list.selectedIndex = lastIndex < enterpriseInfo.size ? lastIndex : lastIndex - 1;
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// 「使用する配送方法」リストの全ての項目をリストから削除して「配送方法マスター」へ移動する
+function removeByAll() {
+    if($('remove-item-all').disabled) return;
+
+    $('enterprise-deliv-list').disabled = $('master-deliv-list').disabled = true;
+    var info = listInfo('enterprise-deliv-list');
+    if(info.size) {
+        info.list.selectedIndex = 0;
+        updateButtons();
+        removeBy();
+        if($('enterprise-deliv-list').options.length) {
+            // 項目が残っている限り再帰的に処理する
+            setTimeout(removeByAll, 0);
+        } else {
+            // 全削除が完了したのでリストを使用可能に
+            $('enterprise-deliv-list').disabled = $('master-deliv-list').disabled = false;
+        }
+    }
+}
+
+// 「配送方法マスター」リストの選択項目を「使用する配送方法」リストへ移動する
+function moveTo() {
+    if($('master-to-enterprise').disabled) return;
+
+    var
+        enterpriseInfo = listInfo('enterprise-deliv-list'),
+        mstInfo = listInfo('master-deliv-list'),
+        // 「使用する」リストの選択項目
+        target = enterpriseInfo.list.options[enterpriseInfo.curIndex + 1];
+
+    if(enterpriseInfo.curIndex >= 0 && target) {
+        // 選択項目があったらその直後に挿入
+        enterpriseInfo.list.insertBefore(mstInfo.current, target);
+    } else {
+        // 選択項目がないので末尾へ挿入
+        enterpriseInfo.list.appendChild(mstInfo.current);
+    }
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// 「配送方法マスター」リストの全項目を「使用する配送方法」リストへ移動する
+function moveToAll() {
+    if($('master-to-enterprise-all').disabled) return;
+
+    var
+        enterpriseInfo = listInfo('enterprise-deliv-list'),
+        mstInfo = listInfo('master-deliv-list');
+
+    // 常に末尾へ逐次挿入する
+    $A(mstInfo.list.options).each(function(opt) {
+    	enterpriseInfo.list.appendChild(opt);
+    });
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// 各select要素の状態に応じて各種ボタンの状態を更新する
+function updateButtons() {
+    delibListSelected();
+    masterListSelected();
+
+    // フォームの内容を更新する
+    var data = $A($('enterprise-deliv-list').options).map(function(opt) {
+        return Number(opt.value);
+    });
+    $('fixed-data').value = data.toJSONString();
+
+    // 自動仮登録有効事業者情報を更新
+    refreshEntInfo();
+}
+
+// 指定リストの内容を現在のDBの状態に合わせて更新する
+function refreshSpecifiedDelivList(ele, callback) {
+    var
+        list = $(ele),
+        id = list.id;
+    if(!['enterprise-deliv-list', 'master-deliv-list'].include(id)) return;
+    var
+        funcName = {
+            'enterprise-deliv-list' : 'current',
+            'master-deliv-list' : 'master'
+        }[id],
+        url = [
+            (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/+$/, ''),
+            'enterprisedeliv/{0}/eid/{1}'.format(funcName, $('enterpriseId').value)
+        ].join('/'),
+        onError = function() {
+            refresh([]);
+        },
+        terminate = function() {
+            try {
+                (callback || Prototype.emptyFunction)();
+            } catch(e) {}
+        },
+        refresh = function(list) {
+            $(id).options.length = 0;
+            list.each(function(data) {
+                $(id).appendChild(Object.extend(
+                    document.createElement('option'),
+                    {
+                        innerHTML : '{0}：{1}{2}'.format(
+                                                        data.DeliMethodId,
+                                                        data.DeliMethodName,
+                                                        data.ValidFlg == 1 ? ' (*)' : '').escapeHTML(),
+                        value : data.DeliMethodId
+                    }
+                ));
+            });
+            terminate();
+        },
+        ajaxHandled = false;
+    new Ajax.Request(url, {
+        method : 'GET',
+        onFailure : onError,
+        onException : function(xhr, err) {
+            if(!ajaxHandled) {
+                ajaxHandled = true;
+                //console.log(err);
+                onError();
+            }
+        },
+        onComplete : function(xhr) {
+            refresh(xhr.responseText.parseJSON());
+        }
+    });
+}
+
+// 配送伝票自動仮登録が有効な事業者の情報表示を更新する
+function refreshEntInfo() {
+    // 仮登録有効事業者なし
+    if(!window.entInfo.length) {
+        new Element.ClassNames($('enterprise-info')).remove('hasList');
+        $('enterprise-info-title').innerHTML = '';
+        $('enterprise-info-list').innerHTML = '';
+        Element.hide($('enterprise-info-notice'));
+        return;
+    }
+
+//     new Element.ClassNames($('enterprise-info')).add('hasList');
+//     Element.hide($('enterprise-info-notice'));
+//     var delivList = listInfo('enterprise-deliv-list');
+//     $('enterprise-info-title').innerHTML ='配送伝票自動仮登録が有効な事業者一覧';
+//     $('enterprise-info-list').innerHTML =
+//         window.entInfo.map(function(d) {
+//             var ele = Object.extend(document.createElement('a'), {
+//                 href : [
+//                         (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+//                         'enterprise/detail/eid/{0}'.format(d.EnterpriseId)].join('/'),
+//                 target : '_blank',
+//                 className : 'deli-info',
+//                 innerHTML : '{0}：{1} ({2}：{3})'.format(d.EnterpriseId, d.EnterpriseNameKj, d.DeliMethodId, d.DeliMethodName).escapeHTML()
+//             });
+//             var is_valid = $A(delivList.list.options).find(function(deli) {
+//                 return Number(deli.value) == Number(d.DeliMethodId);
+//             }) != null || delivList.size == 0;
+//             if(!is_valid) {
+//                 new Element.ClassNames(ele).add('invalid-deli');
+//                 Element.show($('enterprise-info-notice'));
+//             }
+//             var container = document.createElement('div');
+//             container.appendChild(ele);
+//             return container.innerHTML;
+//         }).join('／');
+}
+
+// 各リストを初期化する
+function initDelivList() {
+    $('enterprise-deliv-list').disabled = $('master-deliv-list').disabled = true;
+
+    // 自動仮登録事業者情報更新
+    initEntInfoList(function() {
+        // マスターから初期化
+        refreshSpecifiedDelivList('master-deliv-list', function() {
+            // マスター初期化が完了したので使用するリストを更新
+            refreshSpecifiedDelivList('enterprise-deliv-list', function() {
+                // 使用するリストにある項目をマスターから削除
+                $A($('enterprise-deliv-list').options).each(function(opt) {
+                    var dup = $A($('master-deliv-list').options).find(function(mOpt) {
+                        return mOpt.value == opt.value;
+                    });
+                    if(dup) $('master-deliv-list').removeChild(dup);
+                });
+                $('enterprise-deliv-list').disabled = $('master-deliv-list').disabled = false;
+                updateButtons();
+            });
+        });
+    });
+}
+
+// 自動仮登録有効事業者の情報を初期化
+function initEntInfoList(callback) {
+    window.entInfo = [];
+    var
+        url = [
+            (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+            'enterprisedeliv/entinfo/eid/{0}'.format($('enterpriseId').value)
+        ].join('/'),
+        onError = function() {
+            window.entInfo = [];
+            terminate();
+        },
+        terminate = function() {
+            (callback || Prototype.emptyFunction)();
+        };
+    new Ajax.Request(url, {
+        method : 'GET',
+        onFailure : onError,
+        onException : function(xhr, err) {
+            onError();
+        },
+        onComplete : function(xhr) {
+            window.entInfo = xhr.responseText.parseJSON();
+            terminate();
+        }
+    });
+}
+
+// 初期化処理
+function init() {
+    // 各種イベントのバインド
+    [
+        { id : 'enterprise-deliv-list', meth : delibListSelected },
+        { id : 'master-deliv-list', meth : masterListSelected },
+        { id : 'up-to-item', meth : upToItem },
+        { id : 'down-to-item', meth : downToItem },
+        { id : 'remove-item', meth : removeBy },
+        { id : 'remove-item-all', meth : removeByAll },
+        { id : 'master-to-enterprise', meth : moveTo },
+        { id : 'master-to-enterprise-all', meth : moveToAll },
+        { id : 'reset', meth : initDelivList }
+    ].each(function(conf) {
+        Event.observe($(conf.id), 'click', conf.meth);
+    });
+
+    // ボタンの状態を更新
+    updateButtons();
+
+    // 各リストを初期化
+    initDelivList();
+}
+
+// windowの準備ができたら初期化を実行
+window.entInfo = [];
+Event.observe(window, 'load', init);
+</script>
+</head>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/enterprisedeliv/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+    <?php if(isset($this->error)) { ?>
+        <div id="error-info"><?php echo f_e($this->error); ?></div>
+    <?php } ?>
+        <h3 class="contents_title">加盟店先 <?php echo f_e(sprintf('%s：%s', $this->eid, $this->enterprise['EnterpriseNameKj'])); ?> の配送先設定</h3>
+        <div class="action-area">
+            <a href="delimethod/list">配送方法設定画面へ</a>
+        </div>
+        <div class="content-box clearfix">
+            <div class="list-box left-list-box">
+                <h4>使用する配送方法</h4>
+                <select class="deliv-list" id="enterprise-deliv-list" size="2">
+                </select>
+                <div class="control-area">
+                    <button id="up-to-item">↑ 上へ</button>
+                    <button id="down-to-item">↓ 下へ</button>
+                    <button id="remove-item">× 削除</button>
+                    <button id="remove-item-all">× 全て削除</button>
+                </div>
+            </div>
+
+            <div class="list-box right-list-box">
+                <h4>配送方法マスター</h4>
+                <select class="deliv-list" id="master-deliv-list" size="2">
+                </select>
+                <div class="control-area">
+                    <button id="master-to-enterprise">← 使用する</button>
+                    <button id="master-to-enterprise-all">← 全て使用</button>
+                </div>
+            </div>
+        </div>
+        <div class="content-box" id="enterprise-info">
+            <h4 id="enterprise-info-title"></h4>
+            <div id="enterprise-info-list"></div>
+            <div id="enterprise-info-notice">※：現在の設定で保存した場合、<span class="invalid-deli">強調表示</span>されている事業者の自動仮登録向け配送方法は保存時の先頭の配送先に更新されます</div>
+        </div>
+        <form id="form" action="enterprisedeliv/save" method="post">
+            <input type="hidden" name="eid" id="enterpriseId" value="<?php echo f_e($this->eid); ?>" />
+            <input type="hidden" name="data" id="fixed-data" value="" />
+            <button type="submit" id="submit">登録</button>
+            <button type="button" id="reset">リセット</button>
+        </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

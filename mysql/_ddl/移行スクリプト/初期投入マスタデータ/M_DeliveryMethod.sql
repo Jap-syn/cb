@@ -1,0 +1,1 @@
+INSERT INTO `M_DeliveryMethod` (`DeliMethodId`,`DeliMethodName`,`DeliMethodNameB`,`EnableCancelFlg`,`PayChgCondition`,`ValidFlg`,`ArrivalConfirmUrl`,`ValidateRegex`,`ListNumber`,`JournalRegistClass`,`ProductServiceClass`,`RegistDate`,`RegistId`,`UpdateDate`,`UpdateId`) VALUES (101,'役務','エキム',1,1,1,NULL,NULL,101,1,1,NOW(),9,NOW(),9);

@@ -1,0 +1,140 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$map = $this->master_map;
+$d = $this->data;
+
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/agency/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>代理店登録内容確認</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <!-- ■代理店情報■ -->
+    <tr>
+      <td colspan="2" class="data">【代理店情報】</td>
+    </tr>
+    <?php if(!is_null($this->data["OemId"]) && $this->data["OemId"] >= 0) { ?>
+    <tr>
+      <td class="label">OEM先名</td>
+      <td class="data" ><?php echo f_e($this->data["OemNameKj"]); ?></td>
+    </tr>
+    <?php } ?>
+    <tr>
+      <td class="label">登録日</td>
+      <td class="data"><?php echo f_e($this->data["ApplicationDate"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">キャッチボール営業</td>
+      <td class="data"><?php echo f_e($this->data["Salesman"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代理店名</td>
+      <td class="data"><?php echo f_e($this->data["AgencyNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代理店名カナ</td>
+      <td class="data"><?php echo f_e($this->data["AgencyNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">所在地</td>
+      <td class="data"><?php echo '〒 ' . f_e($this->data["PostalCode"]) . ' ' . f_e($this->data["PrefectureName"]) . f_e($this->data["City"]) . f_e($this->data["Town"]) . f_e($this->data["Building"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">担当者氏名</td>
+      <td class="data"><?php echo f_e($this->data["RepNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">担当者氏名カナ</td>
+      <td class="data"><?php echo f_e($this->data["RepNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先電話番号</td>
+      <td class="data"><?php echo f_e($this->data["Phone"]); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先FAX番号</td>
+      <td class="data"><?php echo f_e($this->data["Fax"]); ?></td>
+    </tr>
+    <!-- ■入金口座■  -->
+    <tr>
+      <td colspan="2" class="data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="label">金融機関</td>
+      <td class="data"><?php echo f_e($this->data["FfName"]) . '(' . f_e($this->data["FfCode"]) . ') ' . f_e($this->data["BranchName"]) . '(' . f_e($this->data["FfBranchCode"]) . ') ' . (($this->data["FfAccountClass"] == 2) ? '当座' : '普通') . ' 口座番号：' . f_e($this->data["AccountNumber"]) . ' 口座名義：' . f_e($this->data["AccountHolder"])  ; ?></td>
+    </tr>
+    <tr>
+      <td class="label" >振込手数料負担</td>
+      <td class="data">
+            <?php if($this->data['ChargeClass']==1){echo 'CB負担';}else{echo '代理店負担';}?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label" >振込先</td>
+      <td class="data">
+            <?php if($this->data['TransferFeeClass'] == 1){echo '同行';}else if($this->data['TransferFeeClass'] == 2){echo '他行';}else{echo "";}?>
+      </td>
+    </tr>
+    <!-- ■その他■  -->
+    <tr>
+      <td colspan="2" class="data">【その他】</td>
+    </tr>
+    <tr>
+      <td class="label">手数料支払閾値</td>
+      <td class="data"><?php echo valueFormat($this->data["FeePaymentThreshold"], 'number', '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">手数料未払残高</td>
+      <td class="data"><?php echo valueFormat($this->data["FeeUnpaidBalance"], 'number', '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label" >備考</td>
+      <td class="data"><?php echo f_e($this->data["Note"]); ?></td>
+    </tr>
+    <!-- ■審査状況■  -->
+    <tr>
+      <td colspan="2" class="data">【審査状況】</td>
+    </tr>
+    <tr>
+      <td class="label" >審査結果</td>
+      <td class="data"><?php echo f_e($this->master_map['ExaminationResult'][$this->data["ExaminationResult"]]); ?></td>
+    </tr>
+    <tr>
+      <td class="label" >コメント</td>
+      <td class="data"><?php echo f_e($this->data["Comment"]); ?></td>
+    </tr>
+
+
+  <tr>
+    <td colspan="2" align="center">
+      <form id="saveForm" action="agency/save" method="post">
+        <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+        <a id="doSave" href="javascript:void(0)">確　認</a>　　　　　<a id="cancelSave" href="javascript:void(0)">戻　る</a>
+      </form>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("doSave"), "click", function() {
+    $("saveForm").submit();
+    return false;
+  });
+  Event.observe($("cancelSave"), "click", function() {
+    $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+    $("saveForm").submit();
+    return false;
+  });
+});
+</script>
+</body>
+</html>

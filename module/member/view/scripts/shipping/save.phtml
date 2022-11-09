@@ -1,0 +1,68 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php if( isset( $this->rows ) ) { ?>
+    <table border="1" cellpadding="2" cellspacing="0">
+
+<?php
+$first = true;
+foreach( $this->rows as $row ) {
+    if( $first ) {
+?>
+        <thead>
+            <tr>
+<?php foreach( $row as $key => $val ) { ?>
+                <th><?php echo $this->escape( $key ); ?></th>
+<?php
+        }
+?>
+            </tr>
+        </thead>
+        <tbody>
+<?php
+    }
+?>
+            <tr>
+<?php foreach( $row as $key => $val ) { ?>
+                <td><?php echo $this->escape( $val ); ?></td>
+<?php } ?>
+            </tr>
+<?php
+}
+?>
+        </tbody>
+    </table>
+<?php } ?>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>

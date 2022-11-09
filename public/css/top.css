@@ -1,0 +1,52 @@
+* {
+	font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+	line-height: 110%;
+}
+
+/* 待ち件数の表示の所？ */
+.style3 {font-weight: bold; color: #0000FF;}
+
+a:link, a:hover, a:visited, a:active {
+	color: blue;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* ハイライトの所のBOLD */
+.style6 {font-size: small; font-weight: bold; }
+
+/* 「要支払」等のCaution */
+.style7 {
+	color: #FF0000;
+	font-weight: bold;
+}
+
+/* 昨日分類の大カテゴリ */
+.style10 {
+	font-size: large;
+	font-weight: bold;
+}
+
+#header div#loginstatus {
+	margin: 5px 0px 0px 30px;
+	padding: 0px;
+	color: #666666;
+	/*font-size: 1.2em;*/
+	text-align: right;
+}
+
+#header div#loginstatus a {
+	padding-left: 30px;
+	padding-right: 20px;
+}
+
+#header img {
+	padding: 10px;
+}
+
+body {
+	width: 819px;
+}

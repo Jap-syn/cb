@@ -1,0 +1,1345 @@
+DROP PROCEDURE IF EXISTS P_Treas_OemAccounts_PayableStatisticsTable;
+
+DELIMITER $$
+
+CREATE PROCEDURE P_Treas_OemAccounts_PayableStatisticsTable( IN pi_user_id INT )
+proc:
+/******************************************************************************
+ *
+ * ﾌﾟﾛｼｰｼﾞｬ名       ：  P_Treas_OemAccounts_PayableStatisticsTable
+ *
+ * 概要             ：  OEM未払金･売掛金･加盟店未収金統計表
+ *
+ * 引数             ：  [I/ ]pi_user_id        ﾕｰｻﾞｰID
+ *
+ * 履歴             ：  2015/10/01  NDC 新規作成
+ *
+ *****************************************************************************/
+BEGIN
+    -- ------------------------------
+    -- 変数宣言
+    -- ------------------------------
+    DECLARE v_BusinessDate                          DATE;                                       -- 業務日付
+    DECLARE v_AccountingMonth                       DATE;                                       -- 会計月
+    -- ------------------------------
+    -- 変数初期化
+    -- ------------------------------
+    SET v_BusinessDate    = F_GetSystemProperty('[DEFAULT]', 'systeminfo', 'BusinessDate');     -- 業務日付
+    SET v_AccountingMonth = F_GetSystemProperty('[DEFAULT]', 'systeminfo', 'AccountingMonth');  -- 会計月
+
+    -- ------------------------------
+    -- ﾜｰｸﾃｰﾌﾞﾙの初期化
+    -- ------------------------------
+    -- OEM未払金･売掛金･未収金統計表ﾜｰｸをﾄﾗﾝｹｰﾄ
+    TRUNCATE AW_OemAccounts_PayableStatisticsTable;
+
+    -- ------------------------------
+    -- ②精算日計より作成
+    -- ------------------------------
+    -- 精算日計.立替日の年月=会計月の年月  AND  精算日計.OEMID<>0  の精算日計を出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_pda.OemId                           -- OEMID
+        ,at_pda.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,at_pda.AccountsReceivableTotal         -- 未払金(売掛金相殺)
+        ,0                                      -- 未払金(未収金相殺)
+        ,IFNULL(at_pda.StampFee, 0) + IFNULL(at_pda.AdjustmentAmount, 0) + IFNULL(at_pda.EnterpriseRefund, 0)  -- 未払金(その他未収金相殺)
+        ,0                                      -- 未払金(未収金へ振替)
+        ,CASE WHEN IFNULL(at_pda.AdvancesAmount, 0) > 0
+              THEN 1
+              ELSE 0
+         END                                    -- 未払金(当月実支払件数)
+        ,at_pda.AdvancesAmount                  -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,IFNULL(at_pda.StampFee, 0) + IFNULL(at_pda.AdjustmentAmount, 0) + IFNULL(at_pda.EnterpriseRefund, 0)            -- その他未収金相殺(合計)
+        ,at_pda.StampFeeCount                   -- その他未収金相殺(印紙代件数)
+        ,at_pda.StampFee                        -- その他未収金相殺(印紙代)
+        ,0                                      -- その他未収金相殺(振込手数料件数)
+        ,0                                      -- その他未収金相殺(振込手数料)
+        ,at_pda.AdjustmentAmountCount           -- その他未収金相殺(調整金額件数)
+        ,at_pda.AdjustmentAmount                -- その他未収金相殺(調整金額)
+        ,at_pda.EnterpriseRefundCount           -- その他未収金相殺(返金件数)
+        ,at_pda.EnterpriseRefund                -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,0                                      -- 売掛金(OEM未払金相殺)
+        ,0                                      -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,0                                      -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_PayOff_DailyAccount at_pda
+    WHERE DATE_FORMAT(at_pda.AdvancesDate, '%Y/%m/01') = v_AccountingMonth
+    AND at_pda.OemId <> 0
+    ;
+
+    -- ------------------------------
+    -- ③日次売上明細(月額固定費)より作成
+    -- ------------------------------
+    -- 日次売上明細.会計月の年月 = 会計月の年月 AND 日次売上明細.OEMID <> 0(OEM) AND 日次売上明細.売上確定条件=8(月額固定費)の日次売上明細を抽出しOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_dsd.OemId                           -- OEMID
+        ,at_dsd.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,IFNULL(at_dsd.OemMonthlyFee, 0) + IFNULL(at_dsd.OemMonthlyFeeTax, 0)                               -- 売掛金(OEM月額固定費)
+        ,IFNULL(at_dsd.OemIncludeMonthlyFee, 0) + IFNULL(at_dsd.OemIncludeMonthlyFeeTax, 0)                 -- 売掛金(OEM同梱月額固定費)
+        ,IFNULL(at_dsd.OemApiMonthlyFee, 0) + IFNULL(at_dsd.OemApiMonthlyFeeTax, 0)                         -- 売掛金(OEMAPI月額固定費)
+        ,IFNULL(at_dsd.OemCreditNoticeMonthlyFee, 0) + IFNULL(at_dsd.OemCreditNoticeMonthlyFeeTax, 0)       -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,IFNULL(at_dsd.OemNCreditNoticeMonthlyFee, 0) + IFNULL(at_dsd.OemNCreditNoticeMonthlyFeeTax, 0)     -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,IFNULL(at_dsd.OemReserveMonthlyFee, 0) + IFNULL(at_dsd.OemReserveMonthlyFeeTax, 0)                 -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_Daily_SalesDetails at_dsd
+    WHERE AccountDate = v_AccountingMonth
+    AND at_dsd.OemId <> 0
+    AND at_dsd.SalesDefiniteConditions = '月額固定費'      -- 8:月額固定費
+    ;
+
+    -- ------------------------------
+    -- ③日次売上明細(着荷確認日･入金日･役務提日)より作成
+    -- ------------------------------
+    -- 日次売上明細.会計月の年月 = 会計月の年月 AND 日次売上明細.OEMID <> 0(OEM) AND (日次売上明細.売上確定条件=1(着荷確認日) OR 2(入金日) OR 3(役務提供日)) の日次売上明細を抽出しOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_dsd.OemId                           -- OEMID
+        ,at_dsd.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,1                                      -- 未払金(当月発生件数)
+        ,at_dsd.UseAmountTotal                  -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,CASE WHEN IFNULL(at_dsd.OemSettlementFee, 0) <> 0
+              THEN 1
+              ELSE 0
+         END                                    -- 売掛金(OEM決済手数料件数)
+        ,at_dsd.OemSettlementFee                -- 売掛金(OEM決済手数料金額)
+        ,CASE WHEN IFNULL(at_dsd.OemClaimFee, 0) <> 0
+              THEN 1
+              ELSE 0
+         END                                    -- 売掛金(OEM請求手数料件数)
+        ,at_dsd.OemClaimFee                     -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_Daily_SalesDetails at_dsd
+    WHERE AccountDate = v_AccountingMonth
+    AND at_dsd.OemId <> 0
+    AND at_dsd.SalesDefiniteConditions in('着荷確認日', '入金日', '役務提供日')     -- 1,2,3(着荷/入金/役務)
+    ;
+
+    -- ------------------------------
+    -- ③日次売上明細(ｷｬﾝｾﾙ) より作成
+    -- ------------------------------
+    -- 日次売上明細より日次売上明細.会計月の年月=会計月の年月 且つ 日次売上明細.OEMID <> 0(OEM) 且つ 日次売上明細.売上確定条件 = 4(ｷｬﾝｾﾙ日) のﾃﾞｰﾀをOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_dsd.OemId                           -- OEMID
+        ,at_dsd.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,1                                      -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,(IFNULL(at_dsd.UseAmountTotal, 0)) * -1           -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,CASE WHEN IFNULL(at_dsd.OemSettlementFee, 0) <> 0
+              THEN -1
+              ELSE 0
+         END                                    -- 売掛金(OEM決済手数料件数)
+        ,at_dsd.OemSettlementFee                -- 売掛金(OEM決済手数料金額)
+        ,CASE WHEN IFNULL(at_dsd.OemClaimFee, 0) <> 0
+              THEN -1
+              ELSE 0
+         END                                    -- 売掛金(OEM請求手数料件数)
+        ,at_dsd.OemClaimFee                     -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_Daily_SalesDetails at_dsd
+    WHERE at_dsd.AccountDate = v_AccountingMonth
+    AND at_dsd.OemId <> 0
+    AND at_dsd.SalesDefiniteConditions = 'ｷｬﾝｾﾙ日'      -- 4(ｷｬﾝｾﾙ日)
+    ;
+
+    -- ------------------------------
+    -- ④無保証立替金戻し明細より作成
+    -- ------------------------------
+    -- 無保証立替金戻し明細.会計月の年月 = 会計月の年月 AND 無保証立替金戻し明細.OEMID <> 0(OEM) の無保証立替金戻し明細を抽出しOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_asb.OemId                           -- OEMID
+        ,at_asb.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,CASE WHEN IFNULL(at_asb.ClaimAmount, 0) <> 0
+              THEN 1
+              ELSE 0
+         END                                    -- 未払金(当月立替金戻し件数)
+        ,at_asb.ClaimAmount                     -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_AdvancesSettlementBack at_asb
+    WHERE at_asb.AccountDate = v_AccountingMonth
+    AND at_asb.OemId <> 0
+    ;
+
+    -- ------------------------------
+    -- ⑦OEM移管明細より作成
+    -- ------------------------------
+    -- OEM移管明細.会計月の年月 = 会計月の年月 AND OEM移管明細.有効ﾌﾗｸﾞ=1のOEM移管明細を抽出しOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         at_ots.OemId                           -- OEMID
+        ,at_ots.EnterpriseId                    -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,1                                      -- 未収金(移管件数)
+        ,at_ots.ReceivablesTransferredAmount    -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_Oem_TransferSpecification at_ots
+    WHERE at_ots.AccountDate = v_AccountingMonth
+    AND at_ots.ValidFlg = 1
+    ;
+
+    -- ------------------------------
+    -- ⑧月初残高管理より作成
+    -- ------------------------------
+    -- 月初残高管理よりOEM分の月初残高管理.当月=会計月 のﾃﾞｰﾀをOEM未払金･売掛金･未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         c.Class3                               -- OEMID
+        ,at_mfbm.EnterpriseId                   -- 加盟店ID
+        ,at_mfbm.AccountsPayableBalance         -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,NULL                                   -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,at_mfbm.AccountsReceivableBalance      -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,NULL                                   -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,at_mfbm.AccountsDueeBalance            -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,NULL                                   -- 未収金(現在未収金)
+    FROM  AT_MoonFirstBalanceManagement at_mfbm
+    LEFT JOIN T_Enterprise e
+    ON   at_mfbm.EnterpriseId = e.EnterpriseId
+    LEFT JOIN M_Code c
+    ON    c.CodeId         = 160
+    AND   c.KeyCode        = IFNULL(e.OemId, 0)
+    WHERE at_mfbm.PresentMonth = v_AccountingMonth
+    AND at_mfbm.ValidFlg = 1
+    AND at_mfbm.BalanceFlg = 2                  --  2:未払･売掛･加盟店未収金統計表
+    AND c.Class1 <> 0
+    ;
+
+    -- ------------------------------
+    -- ⑨OEM未払金･売掛金･加盟店未収金明細より作成
+    -- ------------------------------
+    -- OEM未払金兼売掛金明細よりOEM分の OEM未払金･売掛金･加盟店未収金明細.会計月=会計月 のﾃﾞｰﾀをOEM未払金･売掛金･加盟店未収金統計表ﾜｰｸに出力する
+    INSERT INTO AW_OemAccounts_PayableStatisticsTable (
+         OemId                                  -- OEMID
+        ,EnterpriseId                           -- 加盟店ID
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒件数)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        )
+    SELECT
+         c.Class3                               -- OEMID
+        ,at_oemapr.EnterpriseId                 -- 加盟店ID
+        ,NULL                                   -- 未払金(前月未払金残高)
+        ,NULL                                   -- 未払金(当月発生件数)
+        ,NULL                                   -- 未払金(当月発生金額)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,NULL                                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,NULL                                   -- 未払金(当月立替金戻し件数)
+        ,NULL                                   -- 未払金(当月立替金戻し金額)
+        ,NULL                                   -- 未払金(売掛金相殺)
+        ,NULL                                   -- 未払金(未収金相殺)
+        ,NULL                                   -- 未払金(その他未収金相殺)
+        ,NULL                                   -- 未払金(未収金へ振替)
+        ,NULL                                   -- 未払金(当月実支払件数)
+        ,NULL                                   -- 未払金(当月実支払額)
+        ,NULL                                   -- 未払金(貸倒件数)
+        ,NULL                                   -- 未払金(貸倒金額)
+        ,NULL                                   -- 未払金(当月未払金残)
+        ,at_oemapr.UseAmount                    -- 未払金(商品代金等合計)
+        ,NULL                                   -- 未払金(差額)
+        ,NULL                                   -- その他未収金相殺(合計)
+        ,NULL                                   -- その他未収金相殺(印紙代件数)
+        ,NULL                                   -- その他未収金相殺(印紙代)
+        ,NULL                                   -- その他未収金相殺(振込手数料件数)
+        ,NULL                                   -- その他未収金相殺(振込手数料)
+        ,NULL                                   -- その他未収金相殺(調整金額件数)
+        ,NULL                                   -- その他未収金相殺(調整金額)
+        ,NULL                                   -- その他未収金相殺(返金件数)
+        ,NULL                                   -- その他未収金相殺(返金)
+        ,NULL                                   -- 売掛金(前月売掛金残)
+        ,NULL                                   -- 売掛金(当月売上増加)
+        ,NULL                                   -- 売掛金(OEM決済手数料件数)
+        ,NULL                                   -- 売掛金(OEM決済手数料金額)
+        ,NULL                                   -- 売掛金(OEM請求手数料件数)
+        ,NULL                                   -- 売掛金(OEM請求手数料金額)
+        ,NULL                                   -- 売掛金(OEM月額固定費)
+        ,NULL                                   -- 売掛金(OEM同梱月額固定費)
+        ,NULL                                   -- 売掛金(OEMAPI月額固定費)
+        ,NULL                                   -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,NULL                                   -- 売掛金(OEM月額固定費予備)
+        ,NULL                                   -- 売掛金(OEM未払金相殺)
+        ,NULL                                   -- 売掛金(OEM未収金へ振替)
+        ,NULL                                   -- 売掛金(当月入金件数)
+        ,NULL                                   -- 売掛金(当月入金)
+        ,NULL                                   -- 売掛金(貸倒件数)
+        ,NULL                                   -- 売掛金(貸倒金額)
+        ,NULL                                   -- 売掛金(当月末売掛金残)
+        ,at_oemapr.AccountsReceivableTotal      -- 売掛金(売掛金合計)
+        ,NULL                                   -- 売掛金(差額)
+        ,NULL                                   -- 未収金(前月未収金残)
+        ,NULL                                   -- 未収金(移管件数)
+        ,NULL                                   -- 未収金(移管金額)
+        ,NULL                                   -- 未収金(未払金金相殺)
+        ,NULL                                   -- 未収金(当月入金件数)
+        ,NULL                                   -- 未収金(当月入金)
+        ,NULL                                   -- 未収金(貸倒件数)
+        ,NULL                                   -- 未収金(貸倒金額)
+        ,NULL                                   -- 未収金(当月末未収金残)
+        ,at_oemapr.AccountsDue                  -- 未収金(現在未収金)
+    FROM  AT_Oem_Accounts_PayableReceivable at_oemapr
+    LEFT JOIN T_Enterprise e
+    ON   at_oemapr.EnterpriseId = e.EnterpriseId
+    LEFT JOIN M_Code c
+    ON    c.CodeId         = 160
+    AND   c.KeyCode        = IFNULL(e.OemId, 0)
+    WHERE at_oemapr.AccountDate = v_AccountingMonth
+    AND c.Class1 <> 0
+    ;
+
+    -- ------------------------------
+    -- ⑩OEM未払金･売掛金･加盟店未収金明細より作成
+    -- ------------------------------
+    -- OEM未払金･売掛金･加盟店未収金統計表ﾜｰｸを集約しOEM未払金･売掛金･加盟店未収金統計表に出力する
+    INSERT INTO AT_OemAccounts_PayableStatisticsTable (
+         DailyMonthlyFlg                        -- 日次･月次区分
+        ,ProcessingDate                         -- 処理日付
+        ,AccountDate                            -- 会計月
+        ,OemId                                  -- OEMID
+        ,OemNameKj                              -- OEM先名
+        ,EnterpriseId                           -- 加盟店ID
+        ,EnterpriseNameKj                       -- 加盟店名
+        ,AP_AccountsPayableBalance              -- 未払金(前月未払金残高)
+        ,AP_ChargeCount                         -- 未払金(当月発生件数)
+        ,AP_ChargeAmount                        -- 未払金(当月発生金額)
+        ,AP_CancelCount                         -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,AP_CalcelAmount                        -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,AP_SettlementBackCount                 -- 未払金(当月立替金戻し件数)
+        ,AP_SettlementBackAmount                -- 未払金(当月立替金戻し金額)
+        ,AP_AccountsReceivableOffset            -- 未払金(売掛金相殺)
+        ,AP_AccountsPayableOffset               -- 未払金(未収金相殺)
+        ,AP_OtherAccountsPayableOffset          -- 未払金(その他未収金相殺)
+        ,AP_AccountsPayableTransfer             -- 未払金(未収金へ振替)
+        ,AP_AmountPaymentCount                  -- 未払金(当月実支払件数)
+        ,AP_AmountPayment                       -- 未払金(当月実支払額)
+        ,AP_BadDebtAmountCount                  -- 未払金(貸倒件数)
+        ,AP_BadDebtAmount                       -- 未払金(貸倒金額)
+        ,AP_PreAccountsPayableBalance           -- 未払金(当月未払金残)
+        ,AP_UseAmountTotal                      -- 未払金(商品代金等合計)
+        ,AP_Difference                          -- 未払金(差額)
+        ,Other_AccountsPayableOffset            -- その他未収金相殺(合計)
+        ,Other_StampFeeCount                    -- その他未収金相殺(印紙代件数)
+        ,Other_StampFee                         -- その他未収金相殺(印紙代)
+        ,Other_TransferCommissionCount          -- その他未収金相殺(振込手数料件数)
+        ,Other_TransferCommission               -- その他未収金相殺(振込手数料)
+        ,Other_AdjustmentAmountCount            -- その他未収金相殺(調整金額件数)
+        ,Other_AdjustmentAmount                 -- その他未収金相殺(調整金額)
+        ,Other_RefundCount                      -- その他未収金相殺(返金件数)
+        ,Other_Refund                           -- その他未収金相殺(返金)
+        ,AR_AccountsReceivableBalance           -- 売掛金(前月売掛金残)
+        ,AR_AccountsReceivableIncrease          -- 売掛金(当月売上増加)
+        ,AR_OemSettlementFeeCount               -- 売掛金(OEM決済手数料件数)
+        ,AR_OemSettlementFeeAmount              -- 売掛金(OEM決済手数料金額)
+        ,AR_OemClaimFeeCount                    -- 売掛金(OEM請求手数料件数)
+        ,AR_OemClaimFeeAmount                   -- 売掛金(OEM請求手数料金額)
+        ,AR_OemMonthlyFee                       -- 売掛金(OEM月額固定費)
+        ,AR_OemIncludeMonthlyFee                -- 売掛金(OEM同梱月額固定費)
+        ,AR_OemApiMonthlyFee                    -- 売掛金(OEMAPI月額固定費)
+        ,AR_OemCreditNoticeMonthlyFee           -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemNCreditNoticeMonthlyFee          -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,AR_OemReserveMonthlyFee                -- 売掛金(OEM月額固定費予備)
+        ,AR_AccountsPayableOffset               -- 売掛金(OEM未払金相殺)
+        ,AR_AccountsPayableTransfer             -- 売掛金(OEM未収金へ振替)
+        ,AR_AccountsMonthPaymentCount           -- 売掛金(当月入金件数)
+        ,AR_AccountsMonthPayment                -- 売掛金(当月入金)
+        ,AR_BadDebtAmountCount                  -- 売掛金(貸倒件数)
+        ,AR_BadDebtAmount                       -- 売掛金(貸倒金額)
+        ,AR_PreAccountsReceivableBalance        -- 売掛金(当月末売掛金残)
+        ,AR_AccountsReceivableToal              -- 売掛金(売掛金合計)
+        ,AR_Difference                          -- 売掛金(差額)
+        ,AD_AccountsDueBalance                  -- 未収金(前月未収金残)
+        ,AD_TransferAmountCount                 -- 未収金(移管件数)
+        ,AD_TransferAmount                      -- 未収金(移管金額)
+        ,AD_AccountsPayableOffset               -- 未収金(未払金金相殺)
+        ,AD_AccountsMonthCount                  -- 未収金(当月入金件数)
+        ,AD_AccountsMonthPayment                -- 未収金(当月入金)
+        ,AD_BadDebtCount                        -- 未収金(貸倒金額)
+        ,AD_BadDebtAmount                       -- 未収金(貸倒金額)
+        ,AD_PerAccountsDueBalance               -- 未収金(当月末未収金残)
+        ,AD_CurrentAccountsDue                  -- 未収金(現在未収金)
+        ,AD_Difference                          -- 未収金(差額)
+        ,RegistDate                             -- 登録日時
+        ,RegistId                               -- 登録者
+        ,UpdateDate                             -- 更新日時
+        ,UpdateId                               -- 更新者
+        ,ValidFlg                               -- 有効ﾌﾗｸﾞs
+        )
+    SELECT
+         1                                                 -- 日次･月次区分
+        ,v_BusinessDate                                    -- 処理日付
+        ,v_AccountingMonth                                 -- 会計月
+        ,aw_aps.OemId                                      -- OEMID
+        ,c.class2                                          -- OEM先名
+        ,aw_aps.EnterpriseId                               -- 加盟店ID
+        ,e.EnterpriseNameKj                                -- 加盟店名
+        ,SUM(IFNULL(AP_AccountsPayableBalance, 0))         -- 未払金(前月未払金残高)
+        ,SUM(IFNULL(AP_ChargeCount, 0))                    -- 未払金(当月発生件数)
+        ,SUM(IFNULL(AP_ChargeAmount, 0))                   -- 未払金(当月発生金額)
+        ,SUM(IFNULL(AP_CancelCount, 0))                    -- 未払金(当月ｷｬﾝｾﾙ件数)
+        ,SUM(IFNULL(AP_CalcelAmount, 0))                   -- 未払金(当月ｷｬﾝｾﾙ立替金額)
+        ,SUM(IFNULL(AP_SettlementBackCount, 0))            -- 未払金(当月立替金戻し件数)
+        ,SUM(IFNULL(AP_SettlementBackAmount, 0))           -- 未払金(当月立替金戻し金額)
+        ,SUM(IFNULL(AP_AccountsReceivableOffset, 0))       -- 未払金(売掛金相殺)
+        ,SUM(IFNULL(AP_AccountsPayableOffset, 0))          -- 未払金(未収金相殺)
+        ,SUM(IFNULL(AP_OtherAccountsPayableOffset, 0))     -- 未払金(その他未収金相殺)
+        ,SUM(IFNULL(AP_AccountsPayableTransfer, 0))        -- 未払金(未収金へ振替)
+        ,SUM(IFNULL(AP_AmountPaymentCount, 0))             -- 未払金(当月実支払件数)
+        ,SUM(IFNULL(AP_AmountPayment, 0))                  -- 未払金(当月実支払額)
+        ,SUM(IFNULL(AP_BadDebtAmountCount, 0))             -- 未払金(貸倒件数)
+        ,SUM(IFNULL(AP_BadDebtAmount, 0))                  -- 未払金(貸倒金額)
+        ,SUM(IFNULL(AP_AccountsPayableBalance, 0) + IFNULL(AP_ChargeAmount, 0) + IFNULL(AP_CalcelAmount, 0) +
+         IFNULL(AP_SettlementBackAmount, 0) + IFNULL(AP_AccountsReceivableOffset, 0) + IFNULL(AP_AccountsPayableOffset, 0) +
+         IFNULL(AP_OtherAccountsPayableOffset, 0) + IFNULL(AP_AccountsPayableTransfer, 0) + IFNULL(AP_AmountPayment, 0) +
+         IFNULL(AP_BadDebtAmount, 0))                      -- 未払金(当月未払金残)
+        ,SUM(IFNULL(AP_UseAmountTotal, 0))                 -- 未払金(商品代金等合計)
+        ,SUM(IFNULL(AP_AccountsPayableBalance, 0) + IFNULL(AP_ChargeAmount, 0) + IFNULL(AP_CalcelAmount, 0) +
+         IFNULL(AP_SettlementBackAmount, 0) + IFNULL(AP_AccountsReceivableOffset, 0) + IFNULL(AP_AccountsPayableOffset, 0) +
+         IFNULL(AP_OtherAccountsPayableOffset, 0) + IFNULL(AP_AccountsPayableTransfer, 0) + IFNULL(AP_AmountPayment, 0) +
+         IFNULL(AP_BadDebtAmount, 0) - IFNULL(AP_UseAmountTotal, 0))                          -- 未払金(差額)
+        ,SUM(IFNULL(Other_StampFee, 0) + IFNULL(Other_TransferCommission, 0) + IFNULL(Other_AdjustmentAmount, 0) +
+         IFNULL(Other_Refund, 0))                          -- その他未収金相殺(合計)
+        ,SUM(IFNULL(Other_StampFeeCount, 0))               -- その他未収金相殺(印紙代件数)
+        ,SUM(IFNULL(Other_StampFee, 0))                    -- その他未収金相殺(印紙代)
+        ,SUM(IFNULL(Other_TransferCommissionCount, 0))     -- その他未収金相殺(振込手数料件数)
+        ,SUM(IFNULL(Other_TransferCommission, 0))          -- その他未収金相殺(振込手数料)
+        ,SUM(IFNULL(Other_AdjustmentAmountCount, 0))       -- その他未収金相殺(調整金額件数)
+        ,SUM(IFNULL(Other_AdjustmentAmount, 0))            -- その他未収金相殺(調整金額)
+        ,SUM(IFNULL(Other_RefundCount, 0))                 -- その他未収金相殺(返金件数)
+        ,SUM(IFNULL(Other_Refund, 0))                      -- その他未収金相殺(返金)
+        ,SUM(IFNULL(AR_AccountsReceivableBalance, 0))      -- 売掛金(前月売掛金残)
+        ,SUM(IFNULL(AR_OemSettlementFeeAmount, 0) + IFNULL(AR_OemClaimFeeAmount, 0) + IFNULL(AR_OemMonthlyFee, 0) +
+         IFNULL(AR_OemIncludeMonthlyFee, 0) + IFNULL(AR_OemApiMonthlyFee, 0) + IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) +
+         IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) + IFNULL(AR_OemReserveMonthlyFee, 0))          -- 売掛金(当月売上増加)
+        ,SUM(IFNULL(AR_OemSettlementFeeCount, 0))          -- 売掛金(OEM決済手数料件数)
+        ,SUM(IFNULL(AR_OemSettlementFeeAmount, 0))         -- 売掛金(OEM決済手数料金額)
+        ,SUM(IFNULL(AR_OemClaimFeeCount, 0))               -- 売掛金(OEM請求手数料件数)
+        ,SUM(IFNULL(AR_OemClaimFeeAmount, 0))              -- 売掛金(OEM請求手数料金額)
+        ,SUM(IFNULL(AR_OemMonthlyFee, 0))                  -- 売掛金(OEM月額固定費)
+        ,SUM(IFNULL(AR_OemIncludeMonthlyFee, 0))           -- 売掛金(OEM同梱月額固定費)
+        ,SUM(IFNULL(AR_OemApiMonthlyFee, 0))               -- 売掛金(OEMAPI月額固定費)
+        ,SUM(IFNULL(AR_OemCreditNoticeMonthlyFee, 0))      -- 売掛金(OEM与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,SUM(IFNULL(AR_OemNCreditNoticeMonthlyFee, 0))     -- 売掛金(OEM次回請求与信結果通知ｻｰﾋﾞｽ月額固定費)
+        ,SUM(IFNULL(AR_OemReserveMonthlyFee, 0))           -- 売掛金(OEM月額固定費予備)
+        ,SUM(IFNULL(AR_AccountsPayableOffset, 0))          -- 売掛金(OEM未払金相殺)
+        ,SUM(IFNULL(AR_AccountsPayableTransfer, 0))        -- 売掛金(OEM未収金へ振替)
+        ,SUM(IFNULL(AR_AccountsMonthPaymentCount, 0))      -- 売掛金(当月入金件数)
+        ,SUM(IFNULL(AR_AccountsMonthPayment, 0))           -- 売掛金(当月入金)
+        ,SUM(IFNULL(AR_BadDebtAmountCount, 0))             -- 売掛金(貸倒件数)
+        ,SUM(IFNULL(AR_BadDebtAmount, 0))                  -- 売掛金(貸倒金額)
+        ,SUM(IFNULL(AR_AccountsReceivableBalance, 0) + (IFNULL(AR_OemSettlementFeeAmount, 0) + IFNULL(AR_OemClaimFeeAmount, 0) + IFNULL(AR_OemMonthlyFee, 0) +
+         IFNULL(AR_OemIncludeMonthlyFee, 0) + IFNULL(AR_OemApiMonthlyFee, 0) + IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) +
+         IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) + IFNULL(AR_OemReserveMonthlyFee, 0)) + IFNULL(AR_AccountsPayableOffset, 0) +
+         IFNULL(AR_AccountsPayableTransfer, 0) + IFNULL(AR_AccountsMonthPayment, 0) + IFNULL(AR_BadDebtAmount, 0))        -- 売掛金(当月末売掛金残)
+        ,SUM(IFNULL(AR_AccountsReceivableToal, 0))         -- 売掛金(売掛金合計)
+        ,SUM(IFNULL(AR_AccountsReceivableBalance, 0) + (IFNULL(AR_OemSettlementFeeAmount, 0) + IFNULL(AR_OemClaimFeeAmount, 0) + IFNULL(AR_OemMonthlyFee, 0) +
+         IFNULL(AR_OemIncludeMonthlyFee, 0) + IFNULL(AR_OemApiMonthlyFee, 0) + IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) +
+         IFNULL(AR_OemNCreditNoticeMonthlyFee, 0) + IFNULL(AR_OemReserveMonthlyFee, 0)) + IFNULL(AR_AccountsPayableOffset, 0) +
+         IFNULL(AR_AccountsPayableTransfer, 0) + IFNULL(AR_AccountsMonthPayment, 0) + IFNULL(AR_BadDebtAmount, 0)) -
+         SUM(IFNULL(AR_AccountsReceivableToal, 0))         -- 売掛金(差額)
+        ,SUM(IFNULL(AD_AccountsDueBalance, 0))             -- 未収金(前月未収金残)
+        ,SUM(IFNULL(AD_TransferAmountCount, 0))            -- 未収金(移管件数)
+        ,SUM(IFNULL(AD_TransferAmount, 0))                 -- 未収金(移管金額)
+        ,SUM(IFNULL(AD_AccountsPayableOffset, 0))          -- 未収金(未払金金相殺)
+        ,SUM(IFNULL(AD_AccountsMonthCount, 0))             -- 未収金(当月入金件数)
+        ,SUM(IFNULL(AD_AccountsMonthPayment, 0))           -- 未収金(当月入金)
+        ,SUM(IFNULL(AD_BadDebtCount, 0))                   -- 未収金(貸倒金額)
+        ,SUM(IFNULL(AD_BadDebtAmount, 0))                  -- 未収金(貸倒金額)
+        ,IFNULL(AD_AccountsDueBalance, 0) + 
+         IFNULL(AD_TransferAmount, 0) + 
+         IFNULL(AD_AccountsPayableOffset, 0) + 
+         IFNULL(AD_AccountsMonthPayment, 0) + 
+         IFNULL(AD_BadDebtAmount, 0)                       -- 未収金(当月末未収金残)
+        ,SUM(IFNULL(AD_CurrentAccountsDue, 0))             -- 未収金(現在未収金)
+        ,IFNULL(AD_AccountsDueBalance, 0) + 
+         IFNULL(AD_TransferAmount, 0) + 
+         IFNULL(AD_AccountsPayableOffset, 0) + 
+         IFNULL(AD_AccountsMonthPayment, 0) + 
+         IFNULL(AD_BadDebtAmount, 0) - 
+         SUM(IFNULL(AD_CurrentAccountsDue, 0))             -- 未収金(差額)
+        ,NOW()                                             -- 登録日時
+        ,1                                                 -- 登録者
+        ,NOW()                                             -- 更新日時
+        ,1                                                 -- 更新者
+        ,1                                                 -- 有効ﾌﾗｸﾞ
+    FROM AW_OemAccounts_PayableStatisticsTable aw_aps
+    LEFT JOIN T_Enterprise e
+    ON aw_aps.EnterpriseId = e.EnterpriseId
+    LEFT JOIN M_Code c
+    ON    c.CodeId         = 160
+    AND   c.KeyCode        = aw_aps.OemId
+    GROUP BY aw_aps.EnterpriseId, aw_aps.OemId
+    ;
+
+    -- ------------------------------
+    -- ⑪月初残高管理作成
+    -- ------------------------------
+    -- OEM未払金･売掛金･加盟店未収金統計表よりOEM未払金･売掛金･加盟店未収金統計表.会計月=会計月  AND  OEM未払金･売掛金･加盟店未収金統計表.有効ﾌﾗｸﾞ=1のﾃﾞｰﾀより月初残高管理を出力(INSERT)する
+    INSERT INTO AT_MoonFirstBalanceManagement (
+         PresentMonth                           -- 当月(YYYYMMDD)
+        ,BalanceFlg                             -- 残高ﾌﾗｸﾞ
+        ,EnterpriseId                           -- 加盟店ID
+        ,AccountsDueeBalance                    -- 未収金残高
+        ,AccountsPayableBalance                 -- 未払金残高
+        ,AccountsReceivableBalance              -- 売掛金残高
+        ,RegistDate                             -- 登録日時
+        ,RegistId                               -- 登録者
+        ,UpdateDate                             -- 更新日時
+        ,UpdateId                               -- 更新者
+        ,ValidFlg                               -- 有効ﾌﾗｸﾞ
+        )
+    SELECT
+         v_AccountingMonth                      -- 当月(YYYYMMDD)
+        ,2                                      -- 残高ﾌﾗｸﾞ
+        ,EnterpriseId                           -- 加盟店ID
+        ,AD_PerAccountsDueBalance               -- 未収金残高
+        ,AP_PreAccountsPayableBalance           -- 未払金残高
+        ,AR_PreAccountsReceivableBalance        -- 売掛金残高
+        ,NOW()                                  -- 登録日時
+        ,1                                      -- 登録者
+        ,NOW()                                  -- 更新日時
+        ,1                                      -- 更新者
+        ,1                                      -- 有効ﾌﾗｸﾞ
+    FROM  AT_OemAccounts_PayableStatisticsTable
+    WHERE AccountDate = v_AccountingMonth
+    AND   ValidFlg = 1
+    ;
+
+END
+$$
+
+DELIMITER ;

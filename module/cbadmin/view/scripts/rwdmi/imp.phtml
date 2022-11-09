@@ -1,0 +1,85 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">DMI与信結果インポート</h3>
+	<h4>DMI与信結果ファイル　「<?php echo $this->dmires_name; ?>」　をインポートしました。</h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>返答コード</th>
+            <th>顧客名義</th>
+            <th rowspan="2">金額</th>
+            <th>〒</th>
+            <th>住所</th>
+            <th>電話番号</th>
+          </tr>
+          <tr>
+            <th>返答内容</th>
+            <th>コメント</th>
+            <th>〒（正）</th>
+            <th>住所（正）</th>
+            <th>エラー</th>
+          </tr>
+        <?php 
+        // count関数対策
+          $dataCount = 0;
+          if (!empty($this->data)) {
+          $dataCount = count($this->data);
+          }
+          for ($i = 1 ; $i < $dataCount ; $i++) { ?>
+        <?php /* 
+          <tr>
+            <td class="c_data"><?php echo mb_convert_encoding($this->data[$i][0], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][2], 'UTF-8', 'SJIS'); ?></td>
+            <td rowspan="2" class="r_data"><?php echo mb_convert_encoding($this->data[$i][3], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][4], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][5], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][6], 'UTF-8', 'SJIS'); ?></td>
+          </tr>
+          <tr>
+            <td class="c_data"><?php echo mb_convert_encoding($this->data[$i][1], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][7], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][8], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][9], 'UTF-8', 'SJIS'); ?></td>
+            <td class="l_data"><?php echo mb_convert_encoding($this->data[$i][10], 'UTF-8', 'SJIS'); ?></td>
+          </tr>
+		*/ ?>
+          <tr>
+            <td class="c_data"><?php echo $this->data[$i][0]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][2]; ?></td>
+            <td rowspan="2" class="r_data"><?php echo $this->data[$i][3]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][4]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][5]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][6]; ?></td>
+          </tr>
+          <tr>
+            <td class="c_data"><?php echo $this->data[$i][1]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][7]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][8]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][9]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][10]; ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

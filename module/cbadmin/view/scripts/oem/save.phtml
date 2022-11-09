@@ -1,0 +1,45 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+#completion_form {
+    margin: 5px 45px;
+}
+#completion_form button {
+    border: none 0px;
+    background-color: white;
+    color: blue;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+</style>
+</head>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+        <p>
+            保存内容を確定させています。少しお待ちください...
+        </p>
+        <form id="completion_form" action="oem/completion" method="post">
+            <input name="hash" value="<?php echo f_e($this->data); ?>" type="hidden" />
+            <button type="submit">しばらくたっても画面が移動しない場合はここをクリックしてください</button>
+        </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    setTimeout(function() {
+        $("completion_form").submit();
+    }, 2000);
+});
+</script>
+</html>

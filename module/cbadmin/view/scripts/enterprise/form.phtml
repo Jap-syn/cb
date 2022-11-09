@@ -1,0 +1,1152 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->data;
+$ad = $this->atedata;
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  div.error-message-batchLock {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+	padding: 4px 8px;
+    border: 1px solid gray;
+    width: 842px;
+    background-color: mistyrose;
+    font-weight: bold;
+    color: firebrick;
+  }
+  </style>
+</head>
+  <script type="text/javascript">
+    function changeFixPattern()
+    {
+      ;
+    }
+
+    /**
+     * OEM指定
+     *
+     */
+    function checkIwill()
+    {
+      var selected = $('OemId').selectedIndex;
+      var dm = $('OemId').options[selected].value;
+      var oemselected = $('OemId').selectedIndex;
+      var oem = $('OemId').options[oemselected].value;
+
+      if((oem == 0 )) {
+        $('N_OemMonthlyFee').disabled = true;
+        $('OemMonthlyFee').disabled = true;
+        //$('N_OemMonthlyFee').value = ""; //(20150624_1320_OEM選択切り替え時のクリアを行わない)
+        //$('OemMonthlyFee').value = "";   //(20150624_1320_OEM選択切り替え時のクリアを行わない)
+        // 2015/10/07 Y.Suzuki Add 会計対応 Stt
+        $('N_OemIncludeMonthlyFee').disabled = true;
+        $('OemIncludeMonthlyFee').disabled = true;
+        $('N_OemApiMonthlyFee').disabled = true;
+        $('OemApiMonthlyFee').disabled = true;
+        $('N_OemCreditNoticeMonthlyFee').disabled = true;
+        $('OemCreditNoticeMonthlyFee').disabled = true;
+        $('N_OemNCreditNoticeMonthlyFee').disabled = true;
+        $('OemNCreditNoticeMonthlyFee').disabled = true;
+        $('N_OemReserveMonthlyFee').disabled = true;
+        $('OemReserveMonthlyFee').disabled = true;
+        // 2015/10/07 Y.Suzuki Add 会計対応 End
+      }else{
+        $('OemMonthlyFee').disabled = false;
+        $('N_OemMonthlyFee').disabled = false;
+        // 2015/10/07 Y.Suzuki Add 会計対応 Stt
+        $('N_OemIncludeMonthlyFee').disabled = false;
+        $('OemIncludeMonthlyFee').disabled = false;
+        $('N_OemApiMonthlyFee').disabled = false;
+        $('OemApiMonthlyFee').disabled = false;
+        $('N_OemCreditNoticeMonthlyFee').disabled = false;
+        $('OemCreditNoticeMonthlyFee').disabled = false;
+        $('N_OemNCreditNoticeMonthlyFee').disabled = false;
+        $('OemNCreditNoticeMonthlyFee').disabled = false;
+        $('N_OemReserveMonthlyFee').disabled = false;
+        $('OemReserveMonthlyFee').disabled = false;
+        // 2015/10/07 Y.Suzuki Add 会計対応 End
+
+        //--- ここから参考値出力
+        //---月額固定費
+        $('ReferenceMonthlyFee').value = "月額固定費:" + document.getElementById('oemMaster' + oem + 'MonthlyFee').value + "円";
+        //次回請求月額固定費
+        $('ReferenceNMonthlyFee').value = "次回請求月額固定費:" + document.getElementById('oemMaster' + oem + 'N_MonthlyFee').value + "円";
+      }
+    }
+
+    /**
+     * 料金プラン指定
+     *
+     */
+    function changePricePlan()
+    {
+      var selected = $('Plan').selectedIndex;
+      var pp = $('Plan').options[selected].value;
+
+      if((pp == 0 )) {
+        //参考値そのまま
+      }else{
+        //参考値出力
+        //月額固定費
+        $('ReferencePPMonthlyFee').value = "月額固定費:" + document.getElementById('priceplanMaster' + pp + 'MonthlyFee').value + "円";
+      }
+    }
+
+    Event.observe(window, 'load', function() {
+      // 配送方法一覧取得APIのベースURL
+      var listApiUrl = [
+        (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+        'enterprise/delimethodlist'
+      ].join('/');
+    });
+
+      <?php echo $this->render('cbadmin/searchzip.php'); ?>
+
+    // キャンペーン一覧の再表示
+    function campaignListReload() {
+      new Ajax.Updater('divCampaign','enterprise/campaignlist/eid/<?php echo f_e($fd['EnterpriseId']); ?>',{method: 'get'});
+    }
+
+    // 審査システム連携（請求代行プラン用）
+    function IluCooperationFlgSetting(check)
+    {
+        if ((check == 0) || (check == null) || (check == ''))
+        {
+            document.getElementById('IluCooperationFlg0').disabled = true;
+            document.getElementById('IluCooperationFlg1').disabled = true;
+            document.getElementById('IluCooperationFlg0').checked  = false;
+            document.getElementById('IluCooperationFlg1').checked  = true;
+        }
+        else
+        {
+            document.getElementById('IluCooperationFlg0').disabled = false;
+            document.getElementById('IluCooperationFlg1').disabled = false;
+        }
+    }
+  </script>
+  <body onLoad="javascript:changeFixPattern(); IluCooperationFlgSetting(<?php echo nvl($fd['BillingAgentFlg'], 0) ?>);">
+    <div id="wrapper">
+      <?php echo $this->render('cbadmin/page_header.php'); ?>
+      <?php echo $this->render('cbadmin/enterprise/page_menu.php'); ?>
+
+      <!-- start contents -->
+      <div id="contents">
+        <h3>事業者登録</h3>
+        <?php
+        if(isset($this->error['BatchLock'])){ ?>
+           <div class = "error-message-batchLock" >
+             <?php show_error_message($this->error['BatchLock']); ?>
+          </div>
+          <?php } ?>
+        <form name="form" method="post" action="enterprise/confirm">
+          <input name="form[isNew]" id="isNew" value="<?php echo $fd['isNew'] ? 1 : 0; ?>" type="hidden" />
+          <input name="form[EnterpriseId]" id="EnterpriseId" type="hidden" value="<?php echo f_e($fd['EnterpriseId']); ?>" />
+          <input name="form[OemId]" id="selectOemId"  type="hidden" value="<?php echo f_e($fd['OemId']); ?>" />
+          <input name="form[LoginId]" type="hidden" id="LoginId" value="<?php echo f_e($fd['LoginId']); ?>" />
+          <input name="form[LoginPasswd]" type="hidden" id="LoginPasswd" value="<?php echo f_e($fd['LoginPasswd']); ?>" />
+          <!-- OEM情報をhiddenに持たせる-->
+        <?php foreach($this->oem_master as $key=>$value){;
+          echo '<input type="hidden" id="oemMaster'.$key.'MonthlyFee" value="'.$value['MonthlyFee'].'">';
+          echo '<input type="hidden" id="oemMaster'.$key.'N_MonthlyFee" value="'.$value['N_MonthlyFee'].'">';
+        }?>
+          <!-- 料金プラン情報をhiddenに持たせる-->
+        <?php foreach($this->priceplan_master as $key=>$value){;
+          echo '<input type="hidden" id="priceplanMaster'.$key.'MonthlyFee" value="'.$value['MonthlyFee'].'">';
+        }?>
+
+          <!-- 事業者情報 -->
+          <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr>
+                <td colspan="2" class="data">【事業者情報－基本情報】</td>
+              </tr>
+              <?php if($fd['isNew'] == 1) { ?>
+              <tr>
+                <td class="label">OEM先</td>
+                <td class="data">
+                  <select id="OemId" onChange="javascript:checkIwill(<?php $this->oemDatas;?>);" name="form[OemId]" value="<?php echo f_e($fd['OemId']); ?>">
+                  <?php foreach($this->oemList as $value => $caption) { ?>
+                    <?php $selected = $this->selectOem == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                    ※OEM先を設定した場合はOEM先事業者として登録されます。
+                  <?php show_error_message($this->error['OemId']); ?>
+                </td>
+              </tr>
+              <?php } elseif(!is_null($fd['OemId'] ) && $fd['OemId'] != 0 ) { ?>
+              <tr>
+                <td class="label">OEM先名</td>
+                <td class="data" >
+                  <?php echo $fd['OemNameKj']; ?>
+                  <input name="form[OemNameKj]" type="hidden" id="OemNameKj" value="<?php echo f_e($fd['OemNameKj']); ?>" />
+                </td>
+              </tr>
+              <?php } ?>
+              <tr>
+                <td class="label">加盟店名<font color="red">*</font></td>
+                <td class="data">
+                  <input name="form[EnterpriseNameKj]" type="text" id="EnterpriseNameKj" value="<?php echo f_e($fd['EnterpriseNameKj']); ?>" />
+                  <?php show_error_message($this->error['EnterpriseNameKj']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">加盟店カナ<font color="red">*</font></td>
+                <td class="data">
+                  <input name="form[EnterpriseNameKn]" type="text" id="EnterpriseNameKn" value="<?php echo f_e($fd['EnterpriseNameKn']); ?>" />
+                  <?php show_error_message($this->error['EnterpriseNameKn']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">所在地<font color="red">*</font></td>
+                <td class="data">〒
+                  <input name="form[PostalCode]" type="text" id="PostalCode" value="<?php echo f_e($fd['PostalCode']); ?>" />
+                  <input type="button" value="検索" onClick="getAddress($('PostalCode').value);" /><br />
+                  <select id="PrefectureCode" name="form[PrefectureCode]" value="<?php echo f_e($fd['PrefectureCode']); ?>">
+                  <?php foreach($this->master_map['Prefecture'] as $value => $caption) { ?>
+                    <?php $selected = $fd['PrefectureCode'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                    (市区郡)<input size="30" name="form[City]" type="text" id="City" value="<?php echo f_e($fd['City']); ?>" /><br />
+                    (町域)<input size="50" name="form[Town]" type="text" id="Town" value="<?php echo f_e($fd['Town']); ?>" /><br />
+                    (建物)<input size="50" name="form[Building]" type="text" id="Building" value="<?php echo f_e($fd['Building']); ?>" />
+                  <?php show_error_message($this->error['PostalCode']); ?>
+                  <?php show_error_message($this->error['PrefectureCode']); ?>
+                  <?php show_error_message($this->error['City']); ?>
+                  <?php show_error_message($this->error['Town']); ?>
+                  <?php show_error_message($this->error['Building']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">代表者氏名<font color="red">*</font></td>
+                <td class="data"><input size="40" name="form[RepNameKj]" type="text" id="RepNameKj" value="<?php echo f_e($fd['RepNameKj']); ?>" />
+                <?php show_error_message($this->error['RepNameKj']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">代表者氏名カナ<font color="red">*</font></td>
+                <td class="data"><input size="40" name="form[RepNameKn]" type="text" id="RepNameKn" value="<?php echo f_e($fd["RepNameKn"]); ?>" />
+                <?php show_error_message($this->error['RepNameKn']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">代表電話番号<font color="red">*</font></td>
+                <td class="data"><input name="form[Phone]" type="text" id="Phone" value="<?php echo f_e($fd['Phone']); ?>" />
+                <?php show_error_message($this->error['Phone']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">代表FAX番号</td>
+                <td class="data"><input name="form[Fax]" type="text" id="Fax" value="<?php echo f_e($fd['Fax']); ?>" />
+                <?php show_error_message($this->error['Fax']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">推定月商</td>
+                <td class="data">
+                  <select id="PreSales" name="form[PreSales]" value="<?php echo f_e($fd['PreSales']); ?>">
+                  <?php foreach($this->master_map['PreSales'] as $value => $caption) { ?>
+                    <?php $selected = $fd['PreSales'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['PreSales']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">業種</td>
+                <td class="data">
+                  <select id="Industry" name="form[Industry]" value="<?php echo f_e($fd['Industry']); ?>">
+                  <?php foreach($this->master_map['Industry'] as $value => $caption) { ?>
+                    <?php $selected = $fd['Industry'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['Industry']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">与信手段</td>
+                <td class="data">
+                  <select id="AutoCreditJudgeMode" name="form[AutoCreditJudgeMode]" value="<?php echo f_e($fd['AutoCreditJudgeMode']); ?>">
+                  <?php foreach($this->master_map['AutoCreditJudgeMode'] as $value => $caption) { ?>
+                    <?php $selected = $fd['AutoCreditJudgeMode'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  与信限度額（APIリアルタイム与信用)<input size="8" name="form[UseAmountLimitForCreditJudge]" type="text" id="UseAmountLimitForCreditJudge" value="<?php echo f_e($fd['UseAmountLimitForCreditJudge']); ?>" />円
+                  <?php show_error_message($this->error['AutoCreditJudgeMode']); ?></label>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">与信保留要求</td>
+                <td class="data">
+                  <div>
+                    <input id="CreditJudgePendingRequest" type="checkbox" value="1" name="form[CreditJudgePendingRequest]"<?php if($fd['CreditJudgePendingRequest']) echo ' checked="checked"'; ?> />
+                    設定を有効にする
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">有効設定</td>
+                <td class="data">
+                  <div>
+                    <input type="checkbox" id="ValidFlg" name="form[ValidFlg]" id="ValidFlg" <?php if($fd['ValidFlg'] == 1){echo 'checked';} ?> value="1" />
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="data">【事業者情報－ご連絡先】</td>
+              </tr>
+              <tr>
+                <td class="label">担当者氏名<font color="red">*</font></td>
+                <td class="data"><input size="40" name="form[CpNameKj]" type="text" id="CpNameKj" value="<?php echo f_e($fd['CpNameKj']); ?>" />
+                <?php show_error_message($this->error['CpNameKj']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">担当者氏名カナ<font color="red">*</font></td>
+                <td class="data"><input size="40" name="form[CpNameKn]" type="text" id="CpNameKn" value="<?php echo f_e($fd['CpNameKn']); ?>" />
+                <?php show_error_message($this->error['CpNameKn']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">部署名</td>
+                <td class="data"><input size="40" name="form[DivisionName]" type="text" id="DivisionName" value="<?php echo f_e($fd['DivisionName']); ?>" />
+                <?php show_error_message($this->error['DivisionName']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">メールアドレス<font color="red">*</font></td>
+                <td class="data"><input size="40" name="form[MailAddress]" type="text" id="MailAddress" value="<?php echo f_e($fd['MailAddress']); ?>" />
+                <?php show_error_message($this->error['MailAddress']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">連絡先電話番号<font color="red">*</font></td>
+                <td class="data"><input name="form[ContactPhoneNumber]" type="text" id="ContactPhoneNumber" value="<?php echo f_e($fd['ContactPhoneNumber']); ?>" />
+                <?php show_error_message($this->error['ContactPhoneNumber']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">連絡先FAX番号</td>
+                <td class="data"><input name="form[ContactFaxNumber]" type="text" id="ContactFaxNumber" value="<?php echo f_e($fd['ContactFaxNumber']); ?>" />
+                <?php show_error_message($this->error['ContactFaxNumber']); ?></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="data">【サービス内容】</td>
+              </tr>
+              <tr>
+                <td class="label">申込日<font color="red">*</font></td>
+                <td class="data"><input name="form[ApplicationDate]" type="text" id="ApplicationDate" value="<?php echo f_e($fd['ApplicationDate']); ?>" />
+                <?php show_error_message($this->error['ApplicationDate']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">利用プラン<font color="red">*</font></td>
+                <td class="data">
+                <select id="Plan" name="form[Plan]" value="<?php echo f_e($fd['Plan']); ?>" onChange="javascript:changePricePlan();">
+                <?php foreach($this->master_map['Plan'] as $value => $caption) { ?>
+                  <?php $selected = $fd['Plan'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                <?php } ?>
+                </select>
+                <?php show_error_message($this->error['Plan']); ?><INPUT style=border:none; disabled = true type="text" value="" name="oemReference"></td>
+              </tr>
+              <tr>
+                <td class="label">月額固定費(税抜)<font color="red">*</font></td>
+                <td class="data"><input name="form[MonthlyFee]" type="text" id="MonthlyFee" value="<?php echo f_e($fd['MonthlyFee']); ?>" />　円
+                <input type="text" id="ReferencePPMonthlyFee" value="<?php if ($fd['Plan'] > 0){echo "月額固定費:".$this->priceplan_master[$fd['Plan']]['MonthlyFee']."円";} ?>" style=border:none; disabled="ture">
+                <?php show_error_message($this->error['MonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求月額固定費(税抜)<font color="red">*</font></td>
+                <td class="data"><input name="form[N_MonthlyFee]" type="text" id="N_MonthlyFee" value="<?php echo f_e($fd['N_MonthlyFee']); ?>" />　円　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_MonthlyFee']); ?></td>
+              </tr>
+<!-- 2015/09/18 Y.Suzuki Add 会計対応 Stt -->
+              <tr>
+                <td class="label">同梱月額固定費(税抜)</td>
+                <td class="data"><input name="atform[IncludeMonthlyFee]" type="text" id="IncludeMonthlyFee" value="<?php echo f_e($ad['IncludeMonthlyFee']); ?>" />　円
+                <?php show_error_message($this->error['IncludeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求同梱月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_IncludeMonthlyFee]" type="text" id="N_IncludeMonthlyFee" value="<?php echo f_e($ad['N_IncludeMonthlyFee']); ?>" />　円
+                　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_IncludeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">API月額固定費(税抜)</td>
+                <td class="data"><input name="atform[ApiMonthlyFee]" type="text" id="ApiMonthlyFee" value="<?php echo f_e($ad['ApiMonthlyFee']); ?>" />　円
+                <?php show_error_message($this->error['ApiMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求API月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_ApiMonthlyFee]" type="text" id="N_ApiMonthlyFee" value="<?php echo f_e($ad['N_ApiMonthlyFee']); ?>" />　円
+                　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_ApiMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[CreditNoticeMonthlyFee]" type="text" id="CreditNoticeMonthlyFee" value="<?php echo f_e($ad['CreditNoticeMonthlyFee']); ?>" />　円
+                <?php show_error_message($this->error['CreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_CreditNoticeMonthlyFee]" type="text" id="N_CreditNoticeMonthlyFee" value="<?php echo f_e($ad['N_CreditNoticeMonthlyFee']); ?>" />　円
+                　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_CreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[NCreditNoticeMonthlyFee]" type="text" id="NCreditNoticeMonthlyFee" value="<?php echo f_e($ad['NCreditNoticeMonthlyFee']); ?>" />　円
+                <?php show_error_message($this->error['NCreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求次回請求与信結果<br>通知サービス月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_NCreditNoticeMonthlyFee]" type="text" id="N_NCreditNoticeMonthlyFee" value="<?php echo f_e($ad['N_NCreditNoticeMonthlyFee']); ?>" />　円
+                　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_NCreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">月額固定費予備(税抜)</td>
+                <td class="data"><input name="atform[ReserveMonthlyFee]" type="text" id="ReserveMonthlyFee" value="<?php echo f_e($ad['ReserveMonthlyFee']); ?>" />　円
+                <?php show_error_message($this->error['ReserveMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求月額固定費予備(税抜)</td>
+                <td class="data"><input name="atform[N_ReserveMonthlyFee]" type="text" id="N_ReserveMonthlyFee" value="<?php echo f_e($ad['N_ReserveMonthlyFee']); ?>" />　円
+                　※「審査結果メール送信」を行った場合、計算された日割り額で上書きされます。
+                <?php show_error_message($this->error['N_ReserveMonthlyFee']); ?></td>
+              </tr>
+<!-- 2015/09/18 Y.Suzuki Add 会計対応 End -->
+              <tr>
+                <td class="label">OEM月額固定費(税抜)<font color="red"></font></td>
+                <td class="data"><input name="form[OemMonthlyFee]" type="text" id="OemMonthlyFee" value="<?php echo f_e($fd['OemMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円　※OEM先を選択した場合必須となります<br>
+                <input type="text" id="ReferenceMonthlyFee" value="<?php if($fd['OemId'] != 0){echo "月額固定費".$this->oem_master[$fd['OemId']]['MonthlyFee']."円";}else{echo "";}?>" style=border:none; disabled="ture">
+                <?php show_error_message($this->error['OemMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEM月額固定費(税抜)<font color="red"></font></td>
+                <td class="data"><input name="form[N_OemMonthlyFee]" type="text" id="N_OemMonthlyFee" value="<?php echo f_e($fd['N_OemMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円　※OEM先を選択した場合必須となります<br>
+                <input type="text" size="30"id="ReferenceNMonthlyFee" value="<?php if($fd['OemId'] != 0){echo "次回請求月額固定費".$this->oem_master[$fd['OemId']]['N_MonthlyFee']."円";}else{echo "";}?>" style=border:none; disabled="ture">
+                <?php show_error_message($this->error['N_OemMonthlyFee']); ?></td>
+              </tr>
+<!-- 2015/09/18 Y.Suzuki Add 会計対応 Stt -->
+              <tr>
+                <td class="label">OEM同梱月額固定費(税抜)</td>
+                <td class="data"><input name="atform[OemIncludeMonthlyFee]" type="text" id="OemIncludeMonthlyFee" value="<?php echo f_e($ad['OemIncludeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['OemIncludeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEM同梱月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_OemIncludeMonthlyFee]" type="text" id="N_OemIncludeMonthlyFee" value="<?php echo f_e($ad['N_OemIncludeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['N_OemIncludeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">OEMAPI月額固定費(税抜)</td>
+                <td class="data"><input name="atform[OemApiMonthlyFee]" type="text" id="OemApiMonthlyFee" value="<?php echo f_e($ad['OemApiMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['OemApiMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEMAPI月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_OemApiMonthlyFee]" type="text" id="N_OemApiMonthlyFee" value="<?php echo f_e($ad['N_OemApiMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['N_OemApiMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">OEM与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[OemCreditNoticeMonthlyFee]" type="text" id="OemCreditNoticeMonthlyFee" value="<?php echo f_e($ad['OemCreditNoticeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['OemCreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEM与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_OemCreditNoticeMonthlyFee]" type="text" id="N_OemCreditNoticeMonthlyFee" value="<?php echo f_e($ad['N_OemCreditNoticeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['N_OemCreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">OEM次回請求与信結果通知サービス<br>月額固定費(税抜)</td>
+                <td class="data"><input name="atform[OemNCreditNoticeMonthlyFee]" type="text" id="OemNCreditNoticeMonthlyFee" value="<?php echo f_e($ad['OemNCreditNoticeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['OemNCreditNoticeMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEM次回請求与信結果<br>通知サービス月額固定費(税抜)</td>
+                <td class="data"><input name="atform[N_OemNCreditNoticeMonthlyFee]" type="text" id="N_OemNCreditNoticeMonthlyFee" value="<?php echo f_e($ad['N_OemNCreditNoticeMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['N_OemMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">OEM月額固定費予備(税抜)</td>
+                <td class="data"><input name="atform[OemReserveMonthlyFee]" type="text" id="OemReserveMonthlyFee" value="<?php echo f_e($ad['OemReserveMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['OemReserveMonthlyFee']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">次回請求OEM月額固定費予備(税抜)</td>
+                <td class="data"><input name="atform[N_OemReserveMonthlyFee]" type="text" id="N_OemReserveMonthlyFee" value="<?php echo f_e($ad['N_OemReserveMonthlyFee']); ?>" <?php if($fd['OemId'] != 0){echo "";}else{echo "disabled";}?>/>　円
+                <?php show_error_message($this->error['N_OemReserveMonthlyFee']); ?></td>
+              </tr>
+<!-- 2015/09/18 Y.Suzuki Add 会計対応 End -->
+              <tr>
+                <td class="label">立替サイクル<font color="red">*</font></td>
+                <td class="data">
+                <?php if($fd['isNew'] == 1) { ?>
+                  <select id="PayingCycleId" name="form[PayingCycleId]" value="<?php echo f_e($fd['PayingCycleId']); ?>">
+                  <?php foreach($this->master_map['PayingCycleId'] as $value => $caption) { ?>
+                    <?php $selected = $fd['PayingCycleId'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['PayingCycleId']); ?>
+                <?php } else { ?>
+                  <input type="hidden" id="PayingCycleId" name="form[PayingCycleId]" value="<?php echo f_e($fd['PayingCycleId']); ?>">
+                  現在の立替サイクル ： <?php echo f_e($this->master_map['PayingCycleId'][$fd['PayingCycleId']]); ?><br>
+                  次回立替確定時の変更予定 ：
+                  <select id="N_PayingCycleId" name="form[N_PayingCycleId]" value="<?php echo f_e($fd['N_PayingCycleId']); ?>">
+                  <?php foreach($this->master_map['PayingCycleId'] as $value => $caption) { ?>
+                    <?php $selected = $fd['N_PayingCycleId'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">営業担当</td>
+                <td class="data"><input size="85" name="form[Salesman]" type="text" id="Salesman" value="<?php echo f_e($fd['Salesman']); ?>" />
+                <?php show_error_message($this->error['Salesman']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">加盟店請求<font color="red">*</font></td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ClaimClass'] as $value => $caption) { ?>
+                    <label for="ClaimClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['ClaimClass'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ClaimClass]" id="ClaimClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+          <?php if ($fd['isNew'] != 1) { ?>
+            </table>
+            <!-- キャンペーン設定 -->
+            <div id="divCampaign" name="divCampaign">
+            <table class="datatable" width="500" cellpadding="1" cellspacing="1" border="0">
+              <tr>
+                <td colspan="5" class="data">【キャンペーン設定】</td>
+              </tr>
+              <tr>
+                <th>プラン名</th>
+                <th>期間FROM</th>
+                <th>期間TO</th>
+                <th>月額固定費</th>
+                <th>表示</th>
+              </tr>
+              <?php foreach ($this->campaign as $value) { ?>
+              <tr>
+                <td class="l_data"><?php echo f_e($value['PricePlanName']); ?></td>
+                <td class="c_data"><?php echo f_df($value['DateFrom'], 'Y-m-d'); ?></td>
+                <td class="c_data"><?php echo f_df($value['DateTo'], 'Y-m-d'); ?></td>
+                <td class="r_data"><?php echo f_nf(nvl($value['MonthlyFee'], 0), '#,##0'); ?></td>
+                <td class="c_data"><input type="button" id="campaign" name="campaign" onclick="window.open('<?php echo 'enterprise/campaign/eid/' . f_e($fd['EnterpriseId']) . '/mode/edit/seq/' . $value['Seq'];?>')" value="表示"></td>
+              </tr>
+              <?php } ?>
+              <tr>
+                <td colspan="5" class="c_data"><input type="button" id="insertRow" name="insertRow" onclick="window.open('<?php echo 'enterprise/campaign/eid/' . f_e($fd['EnterpriseId']) . '/mode/new';?>')" value="行追加"></td>
+              </tr>
+            </table>
+            </div>
+            <!-- ここまで -->
+            <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <?php } ?>
+              <tr>
+                <td colspan="2" class="data">【入金口座】</td>
+              </tr>
+              <tr>
+                <td class="label">金融機関<font color="red">*</font></td>
+                <td class="data">
+                  銀行名<input size="30" name="form[FfName]" type="text" id="FfName" value="<?php echo f_e($fd['FfName']); ?>" />　
+                  銀行番号<input size="10" name="form[FfCode]" type="text" id="FfCode" value="<?php echo f_e($fd['FfCode']); ?>" /><br />
+                  支店名<input size="30" name="form[FfBranchName]" type="text" id="FfBranchName" value="<?php echo f_e($fd['FfBranchName']); ?>" />　
+                  支店番号<input size="10" name="form[FfBranchCode]" type="text" id="FfBranchCode" value="<?php echo f_e($fd['FfBranchCode']); ?>" /><br />
+                  口座種別
+                    <span class="radio_set">
+                    <?php foreach($this->master_map['FfAccountClass'] as $value => $caption) { ?>
+                      <label for="FfAccountClass<?php echo f_e($value); ?>">
+                        <?php $checked = $fd['FfAccountClass'] == $value ? ' checked="checked"' : ''; ?>
+                        <input name="form[FfAccountClass]" id="FfAccountClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                        <?php echo f_e($caption); ?>
+                      </label>
+                    <?php } ?>
+                    </span><br />
+                  口座番号<input name="form[FfAccountNumber]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountNumber']); ?>" /><br />
+                  口座名義<input size="30" name="form[FfAccountName]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountName']); ?>" />
+                  <?php show_error_message($this->error['FfName']); ?>
+                  <?php show_error_message($this->error['FfCode']); ?>
+                  <?php show_error_message($this->error['FfBranchName']); ?>
+                  <?php show_error_message($this->error['FfBranchCode']); ?>
+                  <?php show_error_message($this->error['FfAccountClass']); ?>
+                  <?php show_error_message($this->error['FfAccountNumber']); ?>
+                  <?php show_error_message($this->error['FfAccountName']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">振込手数料<font color="red">*</font></td>
+                <td class="data">
+                  <select id="TcClass" name="form[TcClass]" value="<?php echo f_e($fd['TcClass']); ?>">
+                  <?php foreach($this->master_map['TcClass'] as $value => $caption) { ?>
+                    <?php $selected = $fd['TcClass'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['TcClass']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="data">【その他】</td>
+              </tr>
+              <tr>
+                <td class="label">備考：事業者対応内容</td>
+                <td class="data">
+                <textarea name="form[Note]" id="Note" rows="3" cols="60"><?php echo f_e($fd['Note']); ?></textarea>
+                <?php show_error_message($this->error['Note']); ?></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="data">【オプション機能】</td>
+              </tr>
+              <?php if($fd['isNew'] != 1) { ?>
+              <tr>
+                <td class="label">新旧システム版設定</td>
+                <td class="data"><?php echo ($fd['SystemClass'] == 1) ? '新システム' : '旧システム'; ?></td>
+              </tr>
+              <?php } ?>
+              <tr>
+                <td class="label">税区分</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['TaxClass'] as $value => $caption) { ?>
+                    <label for="TaxClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['TaxClass'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[TaxClass]" id="TaxClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+              <!-- 2015/12/09 Sodeyama Add 与信項目radio初期値0 →1 -->
+                <td class="label">審査システム自動与信</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['JudgeSystemFlg'] as $value => $caption) { ?>
+                    <label for="JudgeSystemFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['JudgeSystemFlg'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[JudgeSystemFlg]" id="JudgeSystemFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">社内自動与信</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['AutoJudgeFlg'] as $value => $caption) { ?>
+                    <label for="AutoJudgeFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['AutoJudgeFlg'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[AutoJudgeFlg]" id="AutoJudgeFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">ジンテック与信</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['JintecFlg'] as $value => $caption) { ?>
+                    <label for="JintecFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['JintecFlg'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[JintecFlg]" id="JintecFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">手動与信</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ManualJudgeFlg'] as $value => $caption) { ?>
+                    <label for="ManualJudgeFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['ManualJudgeFlg'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ManualJudgeFlg]" id="ManualJudgeFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">保留ボックス機能</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['HoldBoxFlg'] as $value => $caption) { ?>
+                    <label for="HoldBoxFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['HoldBoxFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[HoldBoxFlg]" id="HoldBoxFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">与信スレッドNo</td>
+                <td class="data">
+                  <select id="CreditThreadNo" name="form[CreditThreadNo]" value="<?php echo f_e($fd['CreditThreadNo']); ?>">
+                  <?php foreach($this->master_map['CreditThreadNo'] as $value => $caption) { ?>
+                    <?php $selected = $fd['CreditThreadNo'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['CreditThreadNo']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">与信NG表示期間</td>
+                <td class="data"><input name="form[CreditNgDispDays]" type="text" id="CreditNgDispDays" value="<?php echo f_e($fd['CreditNgDispDays']); ?>" />
+                <?php show_error_message($this->error['CreditNgDispDays']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">与信有効期間</td>
+                <td class="data"><input name="form[CreditJudgeValidDays]" type="text" id="CreditJudgeValidDays" value="<?php echo f_e($fd['CreditJudgeValidDays']); ?>" />
+                <?php show_error_message($this->error['CreditJudgeValidDays']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">CSV一括登録</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['CsvRegistClass'] as $value => $caption) { ?>
+                    <label for="CsvRegistClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['CsvRegistClass'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[CsvRegistClass]" id="CsvRegistClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">一括登録エラー修正機能区分</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['CsvRegistErrorClass'] as $value => $caption) { ?>
+                    <label for="CsvRegistErrorClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['CsvRegistErrorClass'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[CsvRegistErrorClass]" id="CsvRegistErrorClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">入金ステータス検索条件区分</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ReceiptStatusSearchClass'] as $value => $caption) { ?>
+                    <label for="ReceiptStatusSearchClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['ReceiptStatusSearchClass'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ReceiptStatusSearchClass]" id="ReceiptStatusSearchClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">自動無保証対象フラグ</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['AutoNoGuaranteeFlg'] as $value => $caption) { ?>
+                    <label for="AutoNoGuaranteeFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['AutoNoGuaranteeFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[AutoNoGuaranteeFlg]" id="AutoNoGuaranteeFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">表示用小数点桁数</td>
+                <td class="data">
+                  <select id="DispDecimalPoint" name="form[DispDecimalPoint]" value="<?php echo f_e($fd['DispDecimalPoint']); ?>">
+                  <?php foreach($this->master_map['DispDecimalPoint'] as $value => $caption) { ?>
+                    <?php $selected = $fd['DispDecimalPoint'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                  <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['DispDecimalPoint']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">利用額端数計算設定</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['UseAmountFractionClass'] as $value => $caption) { ?>
+                    <label for="UseAmountFractionClass<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['UseAmountFractionClass'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[UseAmountFractionClass]" id="UseAmountFractionClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求とりまとめ店舗手数料フラグ</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['CombinedClaimChargeFeeFlg'] as $value => $caption) { ?>
+                    <label for="CombinedClaimChargeFeeFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['CombinedClaimChargeFeeFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[CombinedClaimChargeFeeFlg]" id="CombinedClaimChargeFeeFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求書コメント</td>
+                <td class="data">
+                <textarea name="form[PrintEntComment]" id="PrintEntComment" rows="3" cols="60"><?php echo f_e($fd['PrintEntComment']); ?></textarea>
+                ※１０行まで請求書に表示されます
+                <?php show_error_message($this->error['PrintEntComment']); ?></td>
+              </tr>
+              <tr>
+                <td class="label">任意注文番号の印刷（請求書）</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['PrintEntOrderIdOnClaimFlg'] as $value => $caption) { ?>
+                    <label for="PrintEntOrderIdOnClaimFlg<?php echo f_e($value); ?>">
+                      <?php $checked = $fd['PrintEntOrderIdOnClaimFlg'] == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[PrintEntOrderIdOnClaimFlg]" id="PrintEntOrderIdOnClaimFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  </span>
+                <?php show_error_message($this->error['PrintEntOrderIdOnClaimFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求書の加盟店顧客番号の印字名</td>
+                <td class="data">
+                  <input name="form[ClaimEntCustIdDisplayName]" type="text" id="ClaimEntCustIdDisplayName" value="<?php echo f_e($fd['ClaimEntCustIdDisplayName']); ?>" />
+                  （半角20文字以内または全角10文字以内）
+                  <?php show_error_message($this->error['ClaimEntCustIdDisplayName']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求書の注文日の印字形式</td>
+                <td class="data">
+                  <label for="ClaimOrderDateFormat">
+                    <input name="form[ClaimOrderDateFormat]" type="checkbox" id="ClaimOrderDateFormat" value="1"<?php if($fd['ClaimOrderDateFormat']) echo ' checked="checked"'; ?> />
+                    YYYY/MM で印字する
+                  </label>
+                  <?php show_error_message($this->error['ClaimOrderDateFormat']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求書個別出力</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ClaimIndividualOutputFlg'] as $value => $caption) { ?>
+                    <label for="ClaimIndividualOutputFlg<?php echo f_e($value); ?>">
+                      <?php $checked = $fd['ClaimIndividualOutputFlg'] == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ClaimIndividualOutputFlg]" id="ClaimIndividualOutputFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  </span>
+                <?php show_error_message($this->error['ClaimIndividualOutputFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">「与信NG復活」機能</td>
+                <td class="data">
+                  <label for="OrderRevivalDisabled">
+                  <input name="form[OrderRevivalDisabled]" type="checkbox" id="OrderRevivalDisabled" value="1"<?php if($fd['OrderRevivalDisabled']) echo ' checked="checked"'; ?> />
+                  利用を禁止
+                  </label>
+                  <?php show_error_message($this->error['OrderRevivalDisabled']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">立替完了メール</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['PayingMail'] as $value => $caption) { ?>
+                    <label for="PayingMail<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['PayingMail'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[PayingMail]" id="PayingMail<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr style="display:none">
+                <td class="label">間違い伝番修正依頼メール</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['SendMailRequestModifyJournalFlg'] as $value => $caption) { ?>
+                    <label for="SendMailRequestModifyJournalFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['SendMailRequestModifyJournalFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[SendMailRequestModifyJournalFlg]" id="SendMailRequestModifyJournalFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">精算停止区分</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ExecStopFlg'] as $value => $caption) { ?>
+                    <label for="ExecStopFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['ExecStopFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ExecStopFlg]" id="ExecStopFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">LINE Pay利用(SMBC店舗用)</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['LinePayUseFlg'] as $value => $caption) { ?>
+                    <label for="LinePayUseFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['LinePayUseFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[LinePayUseFlg]" id="LinePayUseFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  <?php show_error_message($this->error['LinePayUseFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">注文登録APIタイムアウト利用</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ApiOrderRestTimeOutFlg'] as $value => $caption) { ?>
+                    <label for="ApiOrderRestTimeOutFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['ApiOrderRestTimeOutFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ApiOrderRestTimeOutFlg]" id="ApiOrderRestTimeOutFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  <?php show_error_message($this->error['ApiOrderRestTimeOutFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">NTTスマートトレード加盟店</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['NTTSmartTradeFlg'] as $value => $caption) { ?>
+                    <label for="NTTSmartTradeFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['NTTSmartTradeFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[NTTSmartTradeFlg]" id="NTTSmartTradeFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  <?php show_error_message($this->error['NTTSmartTradeFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求代行プラン</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['BillingAgentFlg'] as $value => $caption) { ?>
+                      <?php $checked = nvl($fd['BillingAgentFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[BillingAgentFlg]" id="BillingAgentFlg<?php echo f_e($value); ?>" type="radio" onclick="IluCooperationFlgSetting(<?php echo f_e($value); ?>);" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                  <?php } ?>
+                  <?php show_error_message($this->error['BillingAgentFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">審査システム連携</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['IluCooperationFlg'] as $value => $caption) { ?>
+                      <?php $checked = nvl($fd['IluCooperationFlg'], 1) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[IluCooperationFlg]" id="IluCooperationFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked;?>/>
+                      <?php echo f_e($caption); ?>
+                  <?php } ?>　※「連携しない」は請求代行プラン利用時のみ選択可能
+                  <?php show_error_message($this->error['IluCooperationFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="data">【オプション機能（口座振替）】</td>
+              </tr>
+              <tr>
+                <td class="label">口座振替利用</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['CreditTransferFlg'] as $value => $caption) { ?>
+                      <label for="CreditTransferFlg<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['CreditTransferFlg'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[CreditTransferFlg]" id="CreditTransferFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  <?php show_error_message($this->error['CreditTransferFlg']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">申込用紙発行条件</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['AppFormIssueCond'] as $value => $caption) { ?>
+                      <label for="AppFormIssueCond<?php echo f_e($value); ?>">
+                      <?php $checked = nvl($fd['AppFormIssueCond'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[AppFormIssueCond]" id="AppFormIssueCond<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                    </label>
+                  <?php } ?>
+                  <?php show_error_message($this->error['AppFormIssueCond']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">案内用紙の封入</td>
+                <td class="data">
+                  <span class="radio_set">
+                  <?php foreach($this->master_map['ClaimPamphletPut'] as $value => $caption) { ?>
+                      <?php $checked = nvl($fd['ClaimPamphletPut'], 0) == $value ? ' checked="checked"' : ''; ?>
+                      <input name="form[ClaimPamphletPut]" id="ClaimPamphletPut<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                      <?php echo f_e($caption); ?>
+                  <?php } ?>
+                  <?php show_error_message($this->error['ClaimPamphletPut']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">強制解約日</td>
+                <td class="data">
+                  <div>
+                    <input id="ForceCancelDatePrintFlg" type="checkbox" value="1" name="form[ForceCancelDatePrintFlg]"<?php if($fd['ForceCancelDatePrintFlg']) echo ' checked="checked"'; ?> />
+                      注文の備考欄に入力された強制解約日を請求書に印字する　※「請求書個別出力する」の場合に設定可能
+                    <?php show_error_message($this->error['ForceCancelDatePrintFlg']); ?>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">強制解約通知請求書</td>
+                <td class="data">
+                  <select id="ForceCancelClaimPattern" name="form[ForceCancelClaimPattern]" value="<?php echo f_e($fd['ForceCancelClaimPattern']); ?>">
+                    <?php foreach($this->master_map['ForceCancelClaimPattern'] as $value => $caption) { ?>
+                      <?php $selected = $fd['ForceCancelClaimPattern'] == $value ? ' selected="selected"' : ''; ?>
+                      <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                    <?php } ?>
+                  </select>
+                  <?php show_error_message($this->error['ForceCancelClaimPattern']); ?>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">請求書発行停止</td>
+                <td class="data">
+                  <input type="checkbox" id="ClaimIssueStopFlg" name="form[ClaimIssueStopFlg]" id="ClaimIssueStopFlg" <?php if($fd['ClaimIssueStopFlg'] == 1){echo 'checked';} ?> value="1" />
+                  &nbsp;強制解約通知の請求書を発行後に請求ストップする
+                  &nbsp;&nbsp;※解除予約日は強制解約日になる（なければ未設定）
+                </td>
+              </tr>
+              <tr>
+                <td class="label">初回請求書発行制御</td>
+                <td class="data">
+                  <input type="checkbox" id="FirstClaimIssueCtlFlg" name="form[FirstClaimIssueCtlFlg]" id="FirstClaimIssueCtlFlg" <?php if($fd['FirstClaimIssueCtlFlg'] == 1){echo 'checked';} ?> value="1" />
+                  &nbsp;初回請求書支払期限日が過ぎた後は、初回請求書の発行をできなくする
+                </td>
+              </tr>
+              <tr>
+                <td class="label">再請求書発行制御</td>
+                <td class="data">
+                  <input type="checkbox" id="ReClaimIssueCtlFlg" name="form[ReClaimIssueCtlFlg]" id="ReClaimIssueCtlFlg" <?php if($fd['ReClaimIssueCtlFlg'] == 1){echo 'checked';} ?> value="1" />
+                  &nbsp;手動再請求時に強制解約通知請求書しか発行できなくする
+                </td>
+              </tr>
+              <tr>
+                <td class="label">初回再発行の支払期限</td>
+                <td class="data">
+                  <input type="checkbox" id="FirstReClaimLmitDateFlg" name="form[FirstReClaimLmitDateFlg]" id="FirstReClaimLmitDateFlg" <?php if($fd['FirstReClaimLmitDateFlg'] == 1){echo 'checked';} ?> value="1" />
+                  &nbsp;初回請求書と同じ支払期限日で発行する
+                </td>
+              </tr>
+              <tr>
+                <td class="label">通帳表示名</td>
+                <td class="data">
+                  <input name="form[MhfCreditTransferDisplayName]" type="text" id="MhfCreditTransferDisplayName" value="<?php echo f_e($fd['MhfCreditTransferDisplayName']); ?>" />
+                  <?php show_error_message($this->error['MhfCreditTransferDisplayName']); ?>
+                  ※半角英数カナ文字　口座振替利用が「SMBC」、「みずほ」の場合に設定必須
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+              <tr align="center">
+                <td style="padding: 2px 0px">
+                  <input type="submit" id="submit_button" value="　確　定　" />&nbsp;<input type="button" id="cancel_edit" value="キャンセル" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+      <?php echo $this->render('cbadmin/page_footer.php'); ?>
+    </div>
+  </body>
+  <script>
+    Event.observe(window, "load", function() {
+      function disable_buttons() {
+        ["submit_button", "cancel_edit"].each(function(id) {
+          $(id).disabled = true;
+        });
+      }
+
+      Event.observe($("cancel_edit"), "click", function() {
+        //if(! confirm("キャンセルすると、編集途中の事業者データは破棄されます。キャンセルしてよろしいですか？") ) return;
+        var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+        disable_buttons();
+        var url = [
+          base.replace(/\/$/, ""),
+          "<?php echo (!$fd['isNew'] && $fd['EnterpriseId']) ? sprintf('enterprise/detail/eid/%s', $fd['EnterpriseId']) : 'index/index'; ?>"
+        ].join("/");
+        window.location.href = url;
+      });
+      Event.observe($("submit_button"), "click", function() {
+        setTimeout(disable_buttons, 0);
+      });
+    });
+
+    function changeCreditTransferFlg(){
+        if (document.getElementById('CreditTransferFlg0').checked) {
+            document.getElementById('MhfCreditTransferDisplayName').disabled = true;
+        }
+        if (document.getElementById('CreditTransferFlg1').checked) {
+            document.getElementById('MhfCreditTransferDisplayName').disabled = false;
+        }
+        if (document.getElementById('CreditTransferFlg2').checked) {
+            document.getElementById('MhfCreditTransferDisplayName').disabled = true;
+        }
+        if (document.getElementById('CreditTransferFlg3').checked) {
+            document.getElementById('MhfCreditTransferDisplayName').disabled = false;
+        }
+    }
+    document.getElementById('CreditTransferFlg0').addEventListener('change', changeCreditTransferFlg);
+    document.getElementById('CreditTransferFlg1').addEventListener('change', changeCreditTransferFlg);
+    document.getElementById('CreditTransferFlg2').addEventListener('change', changeCreditTransferFlg);
+    document.getElementById('CreditTransferFlg3').addEventListener('change', changeCreditTransferFlg);
+    changeCreditTransferFlg();
+  </script>
+</html>

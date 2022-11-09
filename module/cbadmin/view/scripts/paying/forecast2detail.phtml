@@ -1,0 +1,110 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/paying/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替予測</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        立替予定日　<?php echo $this->execscheduledate; ?>
+   &nbsp;&nbsp;&nbsp;<a href="paying/forecastdatadl/e/<?php echo $this->execscheduledate; ?>/oemid/<?php echo $this->oem['OemId'];?>">予測データＤＬ</a>
+      </div>
+    </div>
+    <form name="form" method="post" action="paying/execcharge">
+      <input type="hidden" name="DecisionDate" id="DecisionDate" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+            <tr>
+                <td style="color: red; font-size: 18px; font-weight: bold; " class="l_data" colspan="6"><?php echo $this->oem['OemName'].$this->oem['PayingMethodName'];?></td>
+            </tr>
+          <tr>
+            <th rowspan="2" colspan="5">合計</th>
+            <th>立替額</th>
+            <th>決済手数料</th>
+            <th>請求手数料</th>
+            <th>CNL</th>
+            <th>印紙</th>
+            <th>振込</th>
+            <th>月固</th>
+            <th>振込額</th>
+          </tr>
+        <tr>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["ChargeAmount"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["SettlementFee"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["ClaimFee"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["CancelRepayment"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["StampFee"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["TransferComission"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["MonthlyFee"], 'number', '#,##0'); ?></td>
+            <td style="font-weight: bold; color: green;" class="r_data"><?php echo valueFormat($this->total["DecisionPayment"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="13">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <th>EID</th>
+            <th>ログインID</th>
+            <th>事業者名</th>
+            <th>締めPT</th>
+            <th>締め日</th>
+            <th>立替額</th>
+            <th>決済手数料</th>
+            <th>請求手数料</th>
+            <th>CNL</th>
+            <th>印紙</th>
+            <th>振込</th>
+            <th>月固</th>
+            <th>振込額</th>
+          </tr>
+          <?php 
+              $total = 0;
+              // count関数対策
+              $listCount = 0;
+              if (!empty($this->list)) {
+                  $listCount = count($this->list);
+              } 
+              for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="r_data"><?php echo $this->list[$i]["EnterpriseId"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["LoginId"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["EnterpriseNameKj"]; ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["FixPattern"]; ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["FixedDate"]; ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["ChargeAmount"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["SettlementFee"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["ClaimFee"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["CancelRepayment"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["StampFee"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["TransferComission"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["MonthlyFee"], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo valueFormat($this->list[$i]["DecisionPayment"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="13">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php $total += $this->list[$i]["ChargeAmount"]; } ?>
+          <!-- tr>
+            <td colspan="7" class="r_data">合計</td>
+            <td colspan="6" class="r_data"><?php echo valueFormat($total, 'number', '#,##0'); ?></td>
+          </tr -->
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

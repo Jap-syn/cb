@@ -1,0 +1,106 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  Event.observe($('rollback-button'), 'click', function() {
+    var baseUrl = (document.getElementsByTagName('base')[0] || { href : '' }).href;
+    <?php if($this->mode == 'add') { ?>
+    var path = 'smbcpa/new';
+    <?php } else { ?>
+    var path = 'smbcpa/edit/oid/<?php echo f_e($this->data['OemId']); ?>';
+    <?php } ?>
+    $('smbcpa-form').action = [baseUrl.replace(/\/+$/, ''), path].join('/');
+    setTimeout(function() {
+      $('smbcpa-form').submit();
+    }, 250);
+    $('submit-button').disabled = $('rollback-button').disabled = true;
+  });
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpa/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座登録内容確認</h3>
+    <form id="smbcpa-form" class="main-form" action="smbcpa/save" method="post">
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <?php /* ---------------------------------------------------------- OEM先 */ ?>
+          <tr>
+            <td class="r_label">OEM先</td>
+            <td class="l_data">
+              <?php echo f_e(sprintf('%d：%s', $this->data['OemId'], $this->data['OemNameKj'])); ?>
+              <input name="form[OemId]" type="hidden" value="<?php echo f_e($this->oid); ?>" />
+            </td>
+          </tr>
+
+          <?php /* ---------------------------------------------------------- 登録日時 */ ?>
+          <tr>
+            <td class="r_label">登録日時</td>
+            <td class="l_data">
+              <?php echo f_df($this->data['RegistDate'], 'Y年n月j日 H時i分'); ?>
+              <input name="form[RegistDate]" type="hidden" value="<?php echo f_e($this->data['RegistDate']); ?>" />
+            </td>
+          </tr>
+
+          <?php /* ---------------------------------------------------------- 名称 */ ?>
+          <tr>
+            <td class="r_label">名称</td>
+            <td class="l_data">
+            <?php echo f_e($this->data['DisplayName']); ?>
+            <input name="form[DisplayName]" type="hidden" value="<?php echo f_e($this->data['DisplayName']); ?>" />
+            </td>
+          </tr>
+
+          <?php /* ---------------------------------------------------------- 銀行名 */ ?>
+          <tr>
+            <td class="r_label">銀行名</td>
+            <td class="l_data">
+              <?php echo f_e($this->data['BankName']); ?>
+              <input name="form[BankName]" type="hidden" value="<?php echo f_e($this->data['BankName']); ?>" />
+            </td>
+          </tr>
+
+          <?php /* ---------------------------------------------------------- 銀行コード */ ?>
+          <tr>
+            <td class="r_label">銀行コード</td>
+            <td class="l_data">
+              <?php echo f_e($this->data['BankCode']); ?>
+              <input name="form[BankCode]" type="hidden" value="<?php echo f_e($this->data['BankCode']); ?>" />
+            </td>
+          </tr>
+
+          <?php /* ---------------------------------------------------------- メモ */ ?>
+          <tr>
+            <td class="r_label">メモ</td>
+            <td class="l_data multi-line-text">
+              <p><?php echo f_br($this->data['Memo']); ?></p>
+              <input name="form[Memo]" type="hidden" value="<?php echo f_e($this->data['Memo']); ?>" />
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <div class="submit-area">
+        <input name="mode" type="hidden" value="<?php echo f_e($this->mode); ?>" />
+        <input name="form[ValidFlg]" type="hidden" value="<?php echo f_e($this->data['ValidFlg']); ?>" />
+        <button id="submit-button" type="submit">確認</button>
+        <button id="rollback-button" type="button">戻る</button>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

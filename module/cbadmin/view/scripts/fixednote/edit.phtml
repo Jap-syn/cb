@@ -1,0 +1,149 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+  dl.error-message {
+    margin: 8px 0px;
+    border: double 3px gray;
+    background-color: mistyrose;
+  }
+  dl.error-message dt {
+    margin: 4px;
+    margin-bottom: 10px;
+    color: gray;
+  }
+  dl.error-message dd {
+    margin-left: 40px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: firebrick;
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/fixednote/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">定型備考編集</h3>
+    <?php if (isset($_SESSION['SUCCESS_EDITDONE'])) { ?>
+    <div id="message" align="center"><font color="red"><b>更新しました。　<?php echo date("Y-m-d H:i:s"); ?></b></font></div>
+    <?php     unset($_SESSION['SUCCESS_EDITDONE']); ?>
+    <?php } ?>
+    <!-- count関数対策 -->
+    <?php if(!empty($this->errors)) { ?>
+    <dl class="error-message">
+      <dt>※：入力に不備があります。登録内容を見直してください。</dt>
+      <?php foreach ($this->errors as $error) { ?>
+      <dd><?php echo $error; ?></dd>
+      <?php } ?>
+    </dl>
+    <?php } ?>
+
+    <form name="form" method="post" action="fixednote/editdone">
+      <!-- ***** 以下、グループ項目 ***** -->
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 556px">グループ名称</th>
+            <th style="width: 60px">有効</th>
+            <th style="width: 60px">注文詳細</th>
+            <th style="width: 60px">社内与信</th>
+            <th style="width: 60px">表示順</th>
+            <th>関連付け</th>
+          </tr>
+        </thead>
+        <tbody>
+        <!-- count関数対策 -->
+        <?php 
+            $countHeader = 0;	
+            if (!empty($this->dataHeader)){
+                $countHeader = count($this->dataHeader);
+            }	?>
+        <?php for ($i=0; $i<$countHeader; $i++) { ?>
+        <?php     $row = $this->dataHeader[$i]; ?>
+          <tr class="data">
+            <input type="hidden" name="HSeq<?php echo $i; ?>" id="HSeq<?php echo $i; ?>" value="<?php echo $row['Seq']; ?>" />
+            <td class="l_data"><input type="text" style="width: 390px;" name="HNote<?php echo $i; ?>" id="HNote<?php echo $i; ?>" value="<?php echo f_e($row['Note']); ?>" /></td>
+            <td class="c_data"><input type="checkbox" name="HValidFlg<?php echo $i; ?>" id="HValidFlg<?php echo $i; ?>" <?php if($row['ValidFlg'] == 1) echo 'checked'; ?> /></td>
+            <td class="c_data"><input type="checkbox" name="HUseType1<?php echo $i; ?>" id="HUseType1<?php echo $i; ?>" <?php if($row['UseType1'] == 1) echo 'checked'; ?> /></td>
+            <td class="c_data"><input type="checkbox" name="HUseType2<?php echo $i; ?>" id="HUseType2<?php echo $i; ?>" <?php if($row['UseType2'] == 1) echo 'checked'; ?> /></td>
+            <td class="c_data">
+              <select name="HListNumber<?php echo $i; ?>" id="HListNumber<?php echo $i; ?>" style="width: 40px;">
+                <?php foreach( $this->listNumberList as $item ) { ?>
+                <option value="<?php echo $item['Key']; ?>"<?php if ($item['Key'] == $row['ListNumber']) { echo ' selected="selected"'; } ?>>
+                  <?php echo $item['Value']; ?>
+                </option>
+                <?php } ?>
+              </select>
+            </td>
+            <td class="c_data"><?php echo f_e($row['IsRelated']); ?></td>
+          </tr>
+        <?php     } ?>
+          <tr class="data">
+            <td class="l_data"><input type="text" style="width: 390px;" name="HNote" id="HNote" value="" /><font color="red">　※新規：空欄時は登録無し</font></td>
+            <td class="c_data"><input type="checkbox" name="HValidFlg" id="HValidFlg" checked /></td>
+            <td class="c_data"><input type="checkbox" name="HUseType1" id="HUseType1" checked /></td>
+            <td class="c_data"><input type="checkbox" name="HUseType2" id="HUseType2" checked /></td>
+            <td class="c_data">
+              <select name="HListNumber" id="HListNumber" style="width: 40px;">
+                <?php foreach( $this->listNumberList as $item ) { ?>
+                <option value="<?php echo $item['Key']; ?>"<?php if ($item['Key'] == ($countHeader + 1)) { echo ' selected="selected"'; } ?>>
+                  <?php echo $item['Value']; ?>
+                </option>
+                <?php } ?>
+              </select>
+            </td>
+            <td class="c_data"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ***** 以下、コメント項目 ***** -->
+      <table width="680" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 556px">コメント</th>
+            <th style="width: 60px">有効</th>
+            <th>関連付け</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php
+          // count関数対策
+          $dataDetailCount = 0;
+          if (!empty($this->dataDetail)) {
+              $dataDetailCount = count($this->dataDetail);
+          }
+          for ($i=0; $i<$dataDetailCount; $i++) { ?>
+        <?php     $row = $this->dataDetail[$i]; ?>
+          <tr class="data">
+            <input type="hidden" name="DSeq<?php echo $i; ?>" id="DSeq<?php echo $i; ?>" value="<?php echo $row['Seq']; ?>" />
+            <td class="l_data"><input type="text" style="width: 390px;" name="DNote<?php echo $i; ?>" id="DNote<?php echo $i; ?>" value="<?php echo f_e($row['Note']); ?>" /></td>
+            <td class="c_data"><input type="checkbox" name="DValidFlg<?php echo $i; ?>" id="DValidFlg<?php echo $i; ?>" <?php if($row['ValidFlg'] == 1) echo 'checked'; ?> /></td>
+            <td class="c_data"><?php echo f_e($row['IsRelated']); ?></td>
+          </tr>
+        <?php     } ?>
+          <tr class="data">
+            <td class="l_data"><input type="text" style="width: 390px;" name="DNote" id="DNote" value="" /><font color="red">　※新規：空欄時は登録無し</font></td>
+            <td class="c_data"><input type="checkbox" name="DValidFlg" id="DValidFlg" checked /></td>
+            <td class="c_data"></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td class="c_data"><input type="submit" value="　この内容で更新　"></td>
+        </tr>
+      </table>
+    </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

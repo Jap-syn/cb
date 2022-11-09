@@ -1,0 +1,170 @@
+<?php
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function getOrderStatus($dataStatus, $cnlStatus, $closeReason) {
+  if($dataStatus == 91 && $closeReason == 2) return 'キャンセル済み';
+  if($dataStatus == 91 && $closeReason == 3) return '与信NG';
+  if($dataStatus == 91 && $closeReason == 4) return '損害確定クローズ';
+  if($cnlStatus) return 'キャンセル依頼中';
+  $map = array(
+    '11' => '社内与信実行待ち',
+    '12' => 'リアルタイム与信実行待ち',
+    '15' => '社内与信確定待ち',
+    '21' => '社内与信保留待ち',
+    '25' => 'DMIインポート待ち',
+    '31' => '伝票番号入力待ち',
+    '41' => '請求書印刷待ち',
+    '51' => '入金確認待ち',
+    '61' => '一部入金',
+    '91' => '入金済みクローズ'
+  );
+  if(isset($map[$dataStatus])) return sprintf('[%s]%s', $dataStatus, $map[$dataStatus]);
+  return sprintf('[%s]', $dataStatus);
+}
+?>
+
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+    background-color: #ffddff;
+}
+
+-->
+</style>
+<script type="text/javascript">
+function confirmReceipt(seq) {
+  var amount = document.payment.amount.value;
+
+  if(amount.match(/[^0-9]+/)){
+    window.alert('入金額に数字以外が入力されています');
+    var result = false;
+  }else if(amount == 0){
+      window.alert('入金額に0が入力されています');
+      var result = false;
+  }else{
+    var result = confirm('{0:#,##0} 円で入金を確定させますか？'.format(parseInt(amount)));
+  }
+
+  return result;
+}
+
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcparcpt/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座金額指定入金</h3>
+
+    <form name="payment" action="smbcparcpt/execIndividual" method="post">
+      <?php $detail = Json::decode($this->data['ReceivedRawData'], Json::TYPE_ARRAY); ?>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+              <th>口座SEQ</th>
+              <th>口座番号</th>
+              <th>受信日</th>
+              <th>未確定理由</th>
+              <th>振込人</th>
+            <th>入金額</th>
+              <th>対象注文</th>
+              <th>入金額</th>
+          </tr>
+
+          <tr title="<?php echo f_e(var_export($this->data, true)); ?>">
+            <td class="r_data">
+                <?php echo f_e($this->data['NotificationSeq']); ?>
+            </td>
+            <td class="l_data">
+                <?php echo f_e(sprintf('%s - %s', $this->data['ReqBranchCode'], $this->data['ReqAccountNumber'])); ?>
+            </td>
+            <td class="c_data">
+                <?php echo f_df($this->data['ReceivedDate'], 'y/m/d H:i'); ?>
+            </td>
+            <td class="l_data target_cell">
+                <?php echo f_e($this->data['RejectReason']); ?>
+            </td>
+            <td class="l_data target_cell">
+                <?php echo f_e(sprintf('%s %s', trim($detail['RmtBankName']), trim($detail['RmtBrName']))); ?><br />
+                <?php echo f_e(trim($detail['OutputName'])); ?>
+            </td>
+            <td class="l_data target_cell">
+                <?php echo f_nf($this->data['ReceiptAmount'], '#,##0'); ?><br />
+            </td>
+            <td class="l_data target_cell" style="line-height: 1.3">
+                <a href="rworder/detail/oseq/<?php echo f_e($this->data['OrderSeq']); ?>" target="_blank" title="<?php echo f_e(getOrderStatus($this->data['DataStatus'], $this->data['Cnl_Status'], $this->data['CloseReason'])); ?>">
+                <?php echo f_e(sprintf('%s：%s', $this->data['OrderId'], $this->data['NameKj'])); ?>
+                </a><br />
+                (請求金額：<?php echo f_nf($this->data['ClaimAmountTotal'], '#,##0'); ?> 円)
+            </td>
+            <td class="r_data target_cell">
+                <input id="amount" type="text" name="amount" style="width: 85%; text-align: right;" value="<?php echo f_e($this->data['ReceiptAmount']); ?>" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="submit-area">
+        <input type="hidden" name="nfseq" value="<?php echo f_e($this->data['NotificationSeq']); ?>" />
+        <button type="submit" onclick="return confirmReceipt(<?php echo f_e($this->data['NotificationSeq']); ?>)">入金確定</button>
+      </div>
+    </form>
+
+
+    <!-- 実入金額エラーの表示　ここから -->
+    <!-- count関数対策 -->
+    <?php if (!empty($this->error)) { ?>
+    <h4><span style="color: red;">以下のデータは入金日または実入金額が不正なため処理されませんでした。</span></h4>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+              <th>注文SEQ</th>
+              <th>注文ID</th>
+              <th>請求先氏名</th>
+              <th>入金形態</th>
+              <th>実入金額</th>
+          </tr>
+          <!-- count関数対策 -->
+          $errorCount = 0;
+          if (!empty($this->error)) {
+            $errorCount = count($this->error);
+          }
+          <?php for ($i = 0 ; $i < $errorCount ; $i++) { ?>
+          <tr>
+            <td class="r_data">
+              <?php echo $this->error[$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data"><?php echo $this->error[$i]["OrderId"]; ?></td>
+            <td class="l_data"><?php echo f_trim($this->error[$i]["NameKj"]); ?></td>
+            <td class="c_data"><?php echo $this->error[$i]["Rct_ReceiptMethod"]; ?></td>
+            <td class="r_data"><?php echo $this->error[$i]["Rct_ReceiptAmount"]; ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="5" class="c_data">
+              <a href="rwrcptcfm/list/page/<?php echo $this->current_page; ?>">入金確認待ちリストへ</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <?php } ?>
+    <!-- 実入金額エラーの表示　ここまで -->
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

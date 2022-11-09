@@ -1,0 +1,269 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$isSelectMode = isset($this->sites) && $this->sites != null;
+$oemId = isset($this->oemId) ? $this->oemId : 0;
+?>
+    <style>
+        dl.subcontents {
+            padding: 8px !important;
+            margin: 20px 25px !important;
+        }
+        dl.subcontents dt {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 8px 2px !important;
+        }
+        dl.subcontents dd {
+            margin: 20px;
+            margin-left: 40px;
+        }
+        select {
+            width: 296px;
+        }
+        select.apiBox {
+            width: 100%;
+        }
+        button {
+            padding: 2px 6px;
+        }
+        option.valid {
+        }
+        option.invalid {
+            color: gray;
+            text-decoration: line-through;
+        }
+        .nav-tools {
+            font-size: 12px;
+            font-weight: normal;
+            padding: 2px 40px;
+        }
+        .nav-tools a,
+        .nav-tools span.dummy-link {
+            margin-left: 8px;
+            margin-right: 8px;
+        }
+        .msg {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 40px;
+        }
+        #app-msg {
+            color: forestgreen;
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper">
+	<?php echo $this->render('cbadmin/page_header.php'); ?>
+	<?php echo $this->render('cbadmin/apirel/page_menu.php'); ?>
+
+	<!-- start contents -->
+	<div id="contents">
+		<h3 class="contents_title">
+			サイト → APIユーザー 関連設定 (OEM先：<?php echo f_e($this->oemName); ?>
+			<?php if(!$isSelectMode) { echo f_e(sprintf('／ サイト：%s', $this->site['SiteNameKj'])); } ?>)
+		</h3>
+
+		<dl class="subcontents">
+		<?php if($isSelectMode) { ?>
+			<dt>「<?php echo $this->oemName;?>」のサイトを指定してください
+				<div class="nav-tools">
+					<a href="apirel/entoemselect">OEM先選択へ戻る</a>
+				</div>
+			</dt>
+			<dd>
+				<select id="SiteId" name="SiteId">
+					<option value="-1">--- サイトを選択してください ---</option>
+					<?php foreach($this->sites as $site) { ?>
+					<option value="<?php echo f_e($site['SiteId']); ?>">
+						<?php echo f_e($site['SiteId']); ?>
+						<?php echo f_e($site['SiteNameKj']); ?>
+					</option>
+					<?php } ?>
+				</select>
+			</dd>
+		<?php } else { ?>
+			<dt>
+				[<?php echo $this->site['SiteId']; ?>]
+				<?php echo htmlspecialchars($this->site['SiteNameKj']); ?>　のAPIユーザー関連設定
+
+				<div class="nav-tools">
+					<a href="apirel/ent2api/oemId/<?php echo f_e($this->oemId); ?>">サイト選択へ戻る</a>
+
+					<a href="apirel/entoemselect">OEM先選択へ戻る</a>
+
+					<span class="dummy-link">｜</span>
+
+					<a href="site/edit/eid/<?php echo f_e($this->enterpriseId); ?>/sid/<?php echo f_e($this->site['SiteId']); ?>" target="_blank">サイト詳細情報</a>
+				</div>
+				<div id="app-msg" class="msg"><?php echo f_e($this->message); ?></div>
+			</dt>
+			<dd>
+				<div style="float: left; width: 300px">
+					<div>登録済みAPIユーザー</div>
+					<div>
+						<select class="apiBox" id="relatedApiUsers" size="8" style="height:202px;">
+							<?php foreach($this->relations as $user ) { ?>
+							<option value="<?php echo f_e($user['ApiUserId']); ?>" class="<?php echo ($user['ValidFlg'] ? 'valid' : 'invalid'); ?>">
+								[<?php echo f_e($user['ApiUserId']); ?>]
+								<?php echo f_e($user['ApiUserNameKj']); ?>
+							</option>
+							<?php } ?>
+						</select>
+					</div>
+				</div>
+
+				<div style="float: left; width: 120px; padding: 40px 0px 0px 0px; margin: 0px 4px; text-align: center;">
+					<div style="margin: 12px 0px;">
+						<button id="addTo" disabled="disabled">← 登録</button>
+					</div>
+					<div style="margin: 12px 0px;">
+						<button id="removeFrom" disabled="disabled">解除 →</button>
+					</div>
+				</div>
+
+				<div style="float: left; width: 300px">
+                    <div>OEM選択
+                    <?php echo $this->oemListTag; ?>
+                    </div>
+					<div>　</div>
+					<div>
+						<select class="apiBox" id="availableApiUsers" size="8" style="height:162px;">
+							<?php foreach($this->apiUsers as $user) { ?>
+							<option value="<?php echo f_e($user['ApiUserId']); ?>" class="<?php echo ($user['ValidFlg'] ? 'valid' : 'invalid'); ?>">
+								[<?php echo f_e($user['ApiUserId']); ?>]
+								<?php echo f_e($user['ApiUserNameKj']); ?>
+							</option>
+							<?php } ?>
+						</select>
+					</div>
+				</div>
+				<div style="float: none; clear: both; height: 20px;">&nbsp;</div>
+
+				<div>
+					<form id="mainForm" action="apirel/ent2api/id/<?php echo f_e($this->site['SiteId']); ?>" method="post">
+						<input type="hidden" name="is_edited" value="true" />
+						<input type="hidden" name="oemId" value="<?php echo f_e($this->oemId); ?>" />
+						<div id="itemPlace" style="display: none;"></div>
+						<div style="padding-left: 300px;">
+							<button id="doSubmit" type="submit" style="width: 120px;">確定</button>
+						</div>
+					</form>
+				</div>
+			</dd>
+		<?php } ?>
+		</dl>
+
+        <form id="chgoemForm" id="chgoemForm" method="post">
+            <input type="hidden" id="seloemId"  name="seloemId"  value="" />
+            <input type="hidden" id="selapiuserid" name="selapiuserid" value="" />
+        </form>
+	</div>
+	<!-- end contents -->
+	<?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	<?php if($isSelectMode) { /* --- for サイト選択モード --- */ ?>
+	Event.observe( $("SiteId"), "change", function(evt) {
+		if( this.value == -1 ) return;
+		var url = "<?php echo f_e(f_path($this->baseUrl, sprintf('apirel/ent2api/oemId/%s/id/', $oemId))); ?>{0}".format(this.value);
+		window.location.href = url;
+	}.bindAsEventListener($("SiteId")) );
+	<?php } else {            /* --- for APIユーザー編集モード --- */ ?>
+	function refreshButtons() {
+		refreshAddTo();
+		refreshRemoveFrom();
+	}
+	function refreshAddTo() {
+		$("addTo").disabled = $("availableApiUsers").selectedIndex < 0;
+	}
+	function refreshRemoveFrom() {
+		$("removeFrom").disabled = $("relatedApiUsers").selectedIndex < 0;
+	}
+	Event.observe( $("relatedApiUsers"), "change", refreshRemoveFrom );
+	Event.observe( $("availableApiUsers"), "change", refreshAddTo );
+	Event.observe( $("addTo"), "click", function() {
+		var sel = $A($("availableApiUsers").options).find(function(opt) { return opt.selected; });
+		if( sel ) {
+			$("relatedApiUsers").appendChild( sel );
+		}
+		setTimeout( refreshButtons, 0 );
+	} );
+	Event.observe( $("removeFrom"), "click", function() {
+		var sel = $A($("relatedApiUsers").options).find(function(opt) { return opt.selected; });
+		if( sel ) {
+			$("availableApiUsers").appendChild( sel );
+		}
+		setTimeout( refreshButtons, 0 );
+	} );
+	Event.observe( $("mainForm"), "submit", function(evt) {
+		var container = $("itemPlace");
+		container.innerHTML = null;
+		$A($("relatedApiUsers").options).each( function(opt) {
+			var field = Object.extend( document.createElement("input"), {
+				type : "hidden",
+				name : "data[][ApiUserId]",
+				value : opt.value
+			} );
+			container.appendChild(field);
+		} );
+	}.bindAsEventListener($("mainForm")) );
+	<?php } ?>
+	if($('app-msg') && $('app-msg').innerHTML.length) {
+		setTimeout(function() {
+			bytefx.fade($('app-msg'), 100, 0, 1, function() {
+				$('app-msg').innerHTML = '';
+			});
+		}, 3000);
+	}
+});
+
+//OEM選択イベント
+function changeOem() {
+    // OEM選択
+    $("seloemId").value = $("oemList").options[$("oemList").selectedIndex].value;
+
+    // 登録済みAPIユーザ
+    $("selapiuserid").value = "";  // 初期化
+    var obj = $("relatedApiUsers");
+    if (obj.length > 0) {
+        var aryApiuserid = [];
+        for (var i=0; i<obj.length; i++) {
+        	aryApiuserid[i] = obj.options[i].value;
+        }
+        $("selapiuserid").value = aryApiuserid.join(',');
+    }
+
+    // 選択可能APIユーザリストの取得
+    var str = Form.serialize('chgoemForm');
+    var url = "<?php echo $this->baseUrl; ?>/apirel/chgoem2";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] != 1) {
+        alert(res['status']);
+        return
+    }
+    else {
+        // 選択可能APIユーザリストのクリア
+        obj = $("availableApiUsers");
+        while(obj.lastChild) {
+            obj.removeChild(obj.lastChild);
+        }
+        // 選択可能APIユーザリストの再設定
+        for (var i=0; i<res['info']['apiuserList'].length; i++) {
+            var row = res['info']['apiuserList'][i];
+            var option = document.createElement('option');
+            option.setAttribute('value', row['ApiUserId']);
+            option.setAttribute('class', ((row['ValidFlg'] == 0) ? 'invalid' : 'valid'));
+            option.innerHTML = ('[' + row['ApiUserId'] + ']' + '\n' + row['ApiUserNameKj']);
+            $("availableApiUsers").appendChild(option)
+        }
+
+        return
+    }
+}
+</script>
+</html>

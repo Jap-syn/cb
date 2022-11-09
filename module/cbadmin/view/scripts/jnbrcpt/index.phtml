@@ -1,0 +1,292 @@
+<?php
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function getOrderStatus($dataStatus, $cnlStatus, $closeReason) {
+  if($dataStatus == 91 && $closeReason == 2) return 'キャンセル済み';
+  if($dataStatus == 91 && $closeReason == 3) return '与信NG';
+  if($dataStatus == 91 && $closeReason == 4) return '損害確定クローズ';
+  if($cnlStatus) return 'キャンセル依頼中';
+  $map = array(
+    '11' => '社内与信実行待ち',
+    '12' => 'リアルタイム与信実行待ち',
+    '15' => '社内与信確定待ち',
+    '21' => '社内与信保留待ち',
+    '25' => 'DMIインポート待ち',
+    '31' => '伝票番号入力待ち',
+    '41' => '請求書印刷待ち',
+    '51' => '入金確認待ち',
+    '61' => '一部入金',
+    '91' => '入金済みクローズ'
+  );
+  if(isset($map[$dataStatus])) return sprintf('[%s]%s', $dataStatus, $map[$dataStatus]);
+  return sprintf('[%s]', $dataStatus);
+}
+?>
+<style type="text/css">
+#contents table.formtable {
+  margin-bottom: 40px;
+  font-size: 12px;
+}
+#contents table.formtable .seq {
+  width: 54px;
+}
+#contents table.formtable .amount {
+  width: 56px;
+}
+#contents table.formtable .account,
+#contents table.formtable .date {
+  width: 85px;
+}
+#contents table.formtable .rmt-info {
+  width: 130px;
+}
+#contents table.formtable .reason {
+  width: 130px;
+}
+#contents table.formtable .action {
+  width: 130px;
+}
+
+#contents table.formtable .action form {
+  margin: 1px 0;
+}
+#contents table.formtable .action form button {
+  width: 120px;
+  font-size: 12px;
+  padding: 2px 0;
+}
+#contents table.formtable tr.even td {
+  background-color: #f8f8f8;
+}
+#contents table.formtable tr:hover td,
+#contents table.formtable tr.even:hover td {
+  background-color: azure;
+}
+#contents table.formtable tr.highlight.even td,
+#contents table.formtable tr.highlight td {
+  background-color: yellow;
+}
+</style>
+<script type="text/javascript">
+function confirmReceipt(seq, amount) {
+  highlightRow(seq);
+  var result = confirm('{0:#,##0} 円で入金を確定させますか？'.format(amount));
+  unhigilightRow(seq);
+  return result;
+}
+function confirmDispose(seq) {
+  highlightRow(seq);
+  var result = confirm('本当にこの通知を破棄しますか？（通知を破棄しても口座の状態は変わりません）');
+  unhigilightRow(seq);
+  return result;
+}
+function highlightRow(seq) {
+  new Element.ClassNames($('notify-{0}'.format(seq))).add('highlight');
+}
+function unhigilightRow(seq) {
+  new Element.ClassNames($('notify-{0}'.format(seq))).remove('highlight');
+}
+function emphasizeNotify(nfSeq) {
+  var id = 'notify-{0}'.format(nfSeq);
+  if(!$(id)) return;
+  var
+    begin = function() {
+      bytefx.scroll($(id), 15, scrollDone);
+    },
+    scrollDone = function() {
+      setTimeout(prepare, 0);
+    },
+    prepare = function() {
+      $A($(id).getElementsByTagName('td')).each(function(td) {
+        td.style.backgroundColor = 'transparent';
+      });
+      setTimeout(blinkUp, 0);
+    },
+    blinkUp = function() {
+      bytefx.color($(id), 'backgroundColor', '#fff', '#ff9', 5, blinkHold);
+    },
+    blinkHold = function() {
+      bytefx.color($(id), 'backgroundColor', '#ff8', '#ff4', 3, blinkDown);
+    },
+    blinkDown = function() {
+      bytefx.color($(id), 'backgroundColor', '#ff4', '#fff', 1, cleanup);
+    },
+    cleanup = function() {
+      $A($(id).getElementsByTagName('td')).each(function(td) {
+        td.style.backgroundColor = null;
+      });
+      $(id).style.backgroundColor = null;
+    };
+  begin();
+}
+Event.observe(window, 'load', function() {
+  if(/^#\d+$/.test(location.hash)) {
+    emphasizeNotify(location.hash.substr(1));
+  }
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbrcpt/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB手動入金一覧
+    </h3>
+  <!-- count関数対策 -->
+  <?php if(!empty($this->systemMessages)) { ?>
+    <div class="page_error_message">
+    <?php foreach( array_reverse( $this->systemMessages ) as $message ) { ?>
+        <div><?php echo $message; ?></div>
+    <?php } ?>
+    </div>
+  <?php } ?>
+
+    <h4 class="category-title">注文特定済みリスト（<?php
+    // count関数対策
+        $list1Count = 0;
+        if (!empty($this->list1)){
+          $list1Count = count($this->list1);
+        }
+        echo f_nf($list1Count, '#,##0'); ?> 件）</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="seq">口座SEQ</th>
+          <th class="account">口座番号</th>
+          <th class="date">受信日</th>
+          <th class="reason">未確定理由</th>
+          <th class="rmt-info">振込人</th>
+          <th class="amount">入金額</th>
+          <th>対象注文</th>
+          <th class="action">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!-- count関数対策 -->
+      <?php if(empty($this->list1)) { ?>
+        <tr>
+          <td class="l_data" colspan="8"><p>注文特定済みリストはありません</p></td>
+        </tr>
+      <?php } else { ?>
+        <?php foreach($this->list1 as $i => $row) { ?>
+        <?php $detail = Json::decode($row['ReceivedRawData'], Json::TYPE_ARRAY); ?>
+        <tr id="notify-<?php echo f_e($row['NotificationSeq']); ?>" class="<?php echo $i % 2 == 0 ? 'odd' : 'even'; ?>">
+          <td class="r_data">
+            <a href="jnb/history/accseq/<?php echo f_e($row['AccountSeq']); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e($row['AccountSeq']); ?>
+            </a>
+          </td>
+          <td class="l_data">
+            <a href="jnb/history/account/<?php echo f_e(sprintf('%s-%s', $row['ReqBranchCode'], $row['ReqAccountNumber'])); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e(sprintf('%s - %s', $row['ReqBranchCode'], $row['ReqAccountNumber'])); ?>
+            </a>
+          </td>
+          <td class="c_data"><?php echo f_df($row['ReceivedDate'], 'y/m/d H:i'); ?></td>
+          <td class="l_data"><?php echo f_e($row['RejectReason']); ?></td>
+          <td class="l_data">
+            <?php echo f_e(sprintf('%s %s', trim($detail['RmtBankName']), trim($detail['RmtBrName']))); ?><br />
+            <?php echo f_e(trim($detail['OutputName'])); ?>
+          </td>
+          <td class="r_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+          <td class="l_data">
+            <a href="rworder/detail/oseq/<?php echo f_e($row['OrderSeq']); ?>" target="_blank" title="<?php echo f_e(getOrderStatus($row['DataStatus'], $row['Cnl_Status'], $row['CloseReason'])); ?>">
+            <?php echo f_e(sprintf('%s：%s', $row['OrderId'], $row['NameKj'])); ?>
+            </a><br />
+            (請求金額：<?php echo f_nf($row['ClaimAmountTotal'], '#,##0'); ?> 円)
+          </td>
+          <td class="c_data action">
+            <form action="jnbrcpt/exec" method="post">
+              <input type="hidden" name="nfseq" value="<?php echo f_e($row['NotificationSeq']); ?>" />
+              <button type="submit" onclick="return confirmReceipt(<?php echo f_e($row['NotificationSeq']); ?>, <?php echo f_e($row['ReceiptAmount']); ?>)"><!--
+                -->差額 <?php echo sprintf('%s%s', $row['ReceiptAmount'] - $row['ClaimAmountTotal'] > 0 ? '+' : '-', abs($row['ReceiptAmount'] - $row['ClaimAmountTotal'])); ?> で確定<!--
+              --></button>
+            </form>
+            <form action="jnbrcpt/execby/nfseq/<?php echo f_e($row['NotificationSeq']); ?>"" method="get">
+              <button type="submit">金額指定で入金</button>
+            </form>
+            <form action="jnbrcpt/dispose" method="post">
+              <input type="hidden" name="nfseq" value="<?php echo f_e($row['NotificationSeq']); ?>" />
+              <button type="submit" onclick="return confirmDispose(<?php echo f_e($row['NotificationSeq']); ?>)">この通知を破棄</button>
+            </form>
+          </td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </tbody>
+    </table>
+
+    <h4 class="category-title">注文未特定リスト（<?php
+     // count関数対策
+        $list2Count = 0;
+        if (!empty($this->list2)){
+          $list2Count = count($this->list2);
+        }
+        echo f_nf($list2Count, '#,##0'); ?> 件）</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="seq">口座SEQ</th>
+          <th class="account">口座番号</th>
+          <th class="date">受信日</th>
+          <th class="reason">未確定理由</th>
+          <th class="rmt-info">振込人</th>
+          <th class="amount">入金額</th>
+          <th>対象注文</th>
+          <th class="action">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!-- count関数対策 -->
+      <?php if(empty($this->list2)) { ?>
+        <tr>
+          <td class="l_data" colspan="8"><p>注文未特定リストはありません</p></td>
+        </tr>
+      <?php } else { ?>
+        <?php foreach($this->list2 as $i => $row) { ?>
+        <?php $detail = Json::decode($row['ReceivedRawData'], Json::TYPE_ARRAY); ?>
+        <tr id="notify-<?php echo f_e($row['NotificationSeq']); ?>" class="<?php echo $i % 2 == 0 ? 'odd' : 'even'; ?>">
+          <td class="r_data">
+            <a href="jnb/history/accseq/<?php echo f_e($row['AccountSeq']); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e($row['AccountSeq']); ?>
+            </a>
+          </td>
+          <td class="l_data">
+            <a href="jnb/history/account/<?php echo f_e(sprintf('%s-%s', $row['ReqBranchCode'], $row['ReqAccountNumber'])); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e(sprintf('%s - %s', $row['ReqBranchCode'], $row['ReqAccountNumber'])); ?>
+            </a>
+          </td>
+          <td class="c_data"><?php echo f_df($row['ReceivedDate'], 'y/m/d H:i'); ?></td>
+          <td class="l_data"><?php echo f_e($row['RejectReason']); ?></td>
+          <td class="l_data">
+            <?php echo f_e(sprintf('%s %s', trim($detail['RmtBankName']), trim($detail['RmtBrName']))); ?><br />
+            <?php echo f_e(trim($detail['OutputName'])); ?>
+          </td>
+          <td class="r_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+          <td class="l_data">&nbsp;</td>
+          <td class="c_data action">
+            <form action="jnbrcpt/dispose" method="post">
+              <input type="hidden" name="nfseq" value="<?php echo f_e($row['NotificationSeq']); ?>" />
+              <button type="submit" onclick="return confirmDispose(<?php echo f_e($row['NotificationSeq']); ?>)">この通知を破棄</button>
+            </form>
+          </td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </tbody>
+    </table>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

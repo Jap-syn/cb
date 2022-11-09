@@ -1,0 +1,58 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body onload="window.opener=self;">
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再発行完了</h5>
+    <table width="300px" cellpadding="1" cellspacing="1" border="1">
+        <tr>
+            <td class="c_data" style="height:36px; margin:6px 0;"><?php echo f_e($this->MailAddress); ?></td>
+        </tr>
+    </table>
+    <table class="datatable" width="300" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td class="data" style="height:36px; margin:6px 0;">
+            上記メールアドレスにパスワード再発行のお知らせをお送りしました。<br /><br />
+            本文中のパスワード再発行URLから、新しいパスワードをご設定ください。<br />
+            URLの有効期限は発行から24時間となっております。<br /><br />
+            </td>
+        </tr>
+        <tr>
+            <td class="data" style="height:36px; margin:6px 0; background-color:#eee">
+            ※メールが届かない場合<br /><br />
+            ・フリーメールアドレスをご利用の場合、迷惑メールフォルダやゴミ箱に振り分けられてしまう可能性がございます。<br /><br />
+            ・携帯電話メールアドレスをご利用の場合は、ドメイン設定によりメールが受信出来ない場合がございます。
+            </td>
+        </tr>
+    </table>
+    <table width="300px">
+        <tr>
+            <td align="center"><br /><input id="backto_button" type="button" value="画面を閉じる"  onclick="window.close();" /></td>
+        </tr>
+    </table>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer_sp.php' );
+?>
+
+</div></body>
+</html>

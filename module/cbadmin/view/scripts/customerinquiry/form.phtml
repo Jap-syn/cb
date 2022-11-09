@@ -1,0 +1,150 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.l_data.oem{
+    background-color: lightcyan;
+}
+dl.error-message {
+  margin: 8px 0px;
+  border: double 3px gray;
+  background-color: mistyrose;
+}
+dl.error-message dt {
+  margin: 4px;
+  margin-bottom: 10px;
+  color: gray;
+}
+dl.error-message dd {
+  margin-left: 40px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: firebrick;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/customerinquiry/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">顧客検索</h3>
+<?php if(isset($this->noParamsError)) { ?>
+    <dl class="error-message">
+      <dt>以下のエラーで検索を実行できませんでした</dt>
+      <dd><?php echo f_e('検索条件が入力されていません'); ?></dd>
+    </dl>
+<?php } ?>
+    <form name="form" method="post" action="customerinquiry/search">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th style="width: 120px">項目</th>
+          <th>指定値</th>
+          <th style="width: 150px">項目補足</th>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">【基本情報】</td>
+        </tr>
+
+        <tr>
+          <td class="r_label">顧客名</td>
+          <td class="l_data"><input type="text" size="50" name="SearchNameKj" id="SearchNameKj" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">顧客名カナ</td>
+          <td class="l_data"><input type="text" size="50" name="SearchNameKn" id="SearchNameKn" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+                <tr>
+          <td class="r_label">郵便番号</td>
+          <td class="l_data"><input type="text" size="10" name="PostalCode" id="PostalCode" /></td>
+          <td class="l_data">XXX-XXXX形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">住所</td>
+          <td class="l_data"><input type="text" size="70" name="SearchUnitingAddress" id="SearchUnitingAddress" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">【連絡先情報】</td>
+        </tr>
+        <tr>
+          <td class="r_label">電話番号</td>
+          <td class="l_data"><input type="text" size="15" name="SearchPhone" id="SearchPhone" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data"><input type="text" size="50" name="MailAddress" id="MailAddress" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">【請求情報】</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求残高</td>
+          <td class="l_data">
+            <input type="checkbox" name="nonClaimedBalance" id="nonClaimedBalance" value="1"/>なし
+            <input type="checkbox" name="ClaimedBalance" id="ClaimedBalance" value="1"/>あり
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">【その他】</td>
+        </tr>
+        <tr>
+          <td class="r_label">付帯情報</td>
+          <td class="l_data">
+            <input type="checkbox" name="BlackFlg" id="BlackFlg" value="1"/>ブラック顧客
+            <input type="checkbox" name="GoodFlg" id="GoodFlg" value="1"/>優良顧客
+            <input type="checkbox" name="ClaimerFlg" id="ClaimerFlg" value="1"/>クレーマー
+            <input type="checkbox" name="RemindStopFlg" id="RemindStopFlg" value="1"/>督促ストップ
+            <input type="checkbox" name="IdentityDocumentFlg" id="IdentityDocumentFlg" value="1"/>身分証アップロード
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">メモ</td>
+          <td class="l_data"><textarea rows="3" cols="75" name="Note" id="Note" ></textarea></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">顧客区分</td>
+          <td class="l_data">
+            <input type="checkbox" name="Management"  id="Management" value="1"/>管理顧客
+            <input type="checkbox" name="Enterprise" id="Enterprise" value="1"/>加盟店顧客
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">マイページ<br />最終ログイン日</td>
+          <td class="l_data"><input type="text" name="LastLoginDateF" id="LastLoginDateF" />～<input type="text" name="LastLoginDateT" id="LastLoginDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">口座振替利用<br />(加盟店顧客のみ)</td>
+          <td class="l_data">
+            <input type="checkbox" name="RequestStatus" id="RequestStatus" value="1"/>利用する
+            <input type="checkbox" name="nonRequestStatus" id="nonRequestStatus" value="1"/>利用しない
+          </td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="c_label"><input type="submit" value="　検　索　" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

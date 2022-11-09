@@ -1,0 +1,87 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/agencyfeesummary/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">代理店手数料確認</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr height="30">
+            <td class="l_data">
+                <form id="sform" name="sform" method="post" action="agencyfeesummary/list">
+                    対象年月：<?php echo $this->monthListTag; ?>　
+                    OEM：<?php echo $this->oemListTag; ?>　
+                    代理店：<?php echo $this->agencyListTag; ?>　
+                    <input type="submit" id="btnSearch" value="　検　索　" />
+                </form>
+            </td>
+        </tr>
+        </tr>
+        </table>
+        <form id="form" name="form">
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>No</th>
+            <th>代理店名</th>
+            <th>対象加盟店数</th>
+            <th>加盟店売上額</th>
+            <th>手数料額</th>
+            <th>月額固定費</th>
+            <th>手数料</br>未払残高</th>
+            <th>手数料合計</th>
+            <th>振込手数料</th>
+            <th>振込額</th>
+            <th>次回繰越額</th>
+          </tr>
+          <?php 
+          // count関数対策
+                  $listCount = 0;
+                  if (!empty($this->list)) {
+                      $listCount = count($this->list);
+                  }
+                  for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <?php     $row = $this->list[$i]; ?>
+          <tr>
+            <td class="c_data"><?php echo (1 + $i); ?></td>
+            <td class="l_data"><?php echo $row['AgencyNameKj']; ?></td>
+            <td class="r_data"><?php echo f_nf($row['EnterpriseCount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['EnterpriseSalesAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['AgencyFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf(nvl($row['MonthlyFee'], 0), '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['CarryOverTC'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['SubTotal'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf(($row['SubTotal'] - $row['PaymentAmount']), '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf(($row['PaymentTargetClass'] == 0) ? 0 : $row['PaymentAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf(($row['PaymentTargetClass'] == 0) ? $row['SubTotal'] : 0, '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      </form>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <input type="button" onclick="location.href='<?php echo f_e($this->dcsvlink1); ?>'" value="　振込ダウンロード　">　
+              <input type="button" onclick="location.href='<?php echo f_e($this->dcsvlink2); ?>'" value="　代理店別CSVダウンロード　">　
+              <input type="button" onclick="location.href='<?php echo f_e($this->dcsvlink3); ?>'" value="　加盟店別注文別CSVダウンロード　">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

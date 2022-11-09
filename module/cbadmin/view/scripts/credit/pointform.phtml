@@ -1,0 +1,463 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$keyIdx = 1;
+?>
+</head>
+<style>
+  dl.error-message {
+    margin: 8px 0px;
+    border: double 3px gray;
+    background-color: mistyrose;
+  }
+  dl.error-message dt {
+    margin: 4px;
+    margin-bottom: 10px;
+    color: gray;
+  }
+  dl.error-message dd {
+    margin-left: 40px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: firebrick;
+  }
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">社内与信条件設定</h3>
+    <div id="updated" align="center"><?php echo $this->updated; ?></div>
+    <?php if(isset($this->errors)) { ?>
+    <dl class="error-message">
+      <dt>※：入力に不備があります。登録内容を見直してください。</dt>
+      <?php foreach ($this->errors as $error) { ?>
+      <dd><?php echo $error; ?></dd>
+      <?php } ?>
+    </dl>
+    <?php } ?>
+    <form name="form" method="post" action="credit/pointup">
+
+    <!--
+      手動設定
+
+      Dependence = 7
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="4" class="l_data">手動審査画面項目（全与信基準判定共通）</td>
+        <td colspan="1" class="r_data"><a href="credit/impcriterionform">与信システム判定基準CSV登録・修正</a></td>
+      </tr>
+      <tr>
+        <th width="30">No</th>
+        <th>審査項目</th>
+        <th>ポイント</th>
+        <th>説明</th>
+        <th>メッセージ</th>
+      </tr>
+      <?php foreach ($this->list_dep7 as $row) { ?>
+      <tr>
+        <td width="30" class="r_label">
+          <?php echo $row['CpId']; ?>
+          <input type="hidden" name="CpId<?php echo $keyIdx; ?>" id="CpId<?php echo $row['CpId']; ?>" value="<?php echo $row['CpId']; ?>" />
+          <input type="hidden" name="Dependence<?php echo $row['CpId']; ?>" id="Dependence<?php echo $row['CpId']; ?>" value="<?php echo $row['Dependence']; ?>" />
+        </td>
+        <td width="180" class="r_label">
+          <?php echo $row['Caption']; ?>
+          <input type="hidden" name="Caption<?php echo $row['CpId']; ?>" id="Caption<?php echo $row['CpId']; ?>" value="<?php echo $row['Caption']; ?>" />
+        </td>
+        <td width="120" class="c_data"><input size="10" type="text" name="Point<?php echo $row['CpId']; ?>" id="Point<?php echo $row['CpId']; ?>" value="<?php echo $row['Point']; ?>" /></td>
+        <td width="180" class="l_label">
+          <?php echo $row['Description']; ?>
+          <input type="hidden" name="Description<?php echo $row['CpId']; ?>" id="Description<?php echo $row['CpId']; ?>" value="<?php echo $row['Description']; ?>" />
+        </td>
+        <td class="l_data"><input size="40" type="text" name="Message<?php echo $row['CpId']; ?>" id="Message<?php echo $row['CpId']; ?>" value="<?php echo f_e($row['Message']); ?>" /></td>
+      </tr>
+      <?php $keyIdx++; } ?>
+    </table>
+
+    <!--
+      依存なし
+      Dependence = 1
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="5" class="l_data">自動判定項目（スコアリング）</td>
+      </tr>
+      <tr>
+        <th width="30">No</th>
+        <th>審査項目</th>
+        <th>ポイント</th>
+        <th>説明</th>
+        <th>メッセージ</th>
+      </tr>
+      <?php foreach ($this->list_dep1 as $row) { ?>
+      <tr>
+        <td width="30" class="r_label">
+          <?php echo $row['CpId']; ?>
+          <input type="hidden" name="CpId<?php echo $keyIdx; ?>" id="CpId<?php echo $row['CpId']; ?>" value="<?php echo $row['CpId']; ?>" />
+          <input type="hidden" name="Dependence<?php echo $row['CpId']; ?>" id="Dependence<?php echo $row['CpId']; ?>" value="<?php echo $row['Dependence']; ?>" />
+        </td>
+        <td width="180" class="r_label">
+          <?php echo $row['Caption']; ?>
+          <input type="hidden" name="Caption<?php echo $row['CpId']; ?>" id="Caption<?php echo $row['CpId']; ?>" value="<?php echo $row['Caption']; ?>" />
+        </td>
+        <td width="120" class="c_data"><input size="10" type="text" name="Point<?php echo $row['CpId']; ?>" id="Point<?php echo $row['CpId']; ?>" value="<?php echo $row['Point']; ?>" /></td>
+        <td width="180" class="l_label">
+          <?php echo $row['Description']; ?>
+          <input type="hidden" name="Description<?php echo $row['CpId']; ?>" id="Description<?php echo $row['CpId']; ?>" value="<?php echo $row['Description']; ?>" />
+        </td>
+        <td class="l_data"><input size="40" type="text" name="Message<?php echo $row['CpId']; ?>" id="Message<?php echo $row['CpId']; ?>" value="<?php echo f_e($row['Message']); ?>" /></td>
+      </tr>
+      <?php $keyIdx++; } ?>
+    </table>
+
+    <!--
+      回数
+      Dependence = 8
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="4" class="l_data">自動判定項目（上限回数）</td>
+      </tr>
+      <tr>
+        <th width="30">No</th>
+        <th>審査項目</th>
+        <th>回数 ・ 日数</th>
+        <th>説明</th>
+      </tr>
+      <?php foreach ($this->list_dep8 as $row) { ?>
+      <tr>
+        <td width="30" class="r_label">
+          <?php echo $row['CpId']; ?>
+          <input type="hidden" name="CpId<?php echo $keyIdx; ?>" id="CpId<?php echo $row['CpId']; ?>" value="<?php echo $row['CpId']; ?>" />
+          <input type="hidden" name="Dependence<?php echo $row['CpId']; ?>" id="Dependence<?php echo $row['CpId']; ?>" value="<?php echo $row['Dependence']; ?>" />
+        </td>
+        <td width="180" class="r_label">
+          <?php echo $row['Caption']; ?>
+          <input type="hidden" name="Caption<?php echo $row['CpId']; ?>" id="Caption<?php echo $row['CpId']; ?>" value="<?php echo $row['Caption']; ?>" />
+        </td>
+        <td width="120" class="c_data"><input size="10" type="text" name="Point<?php echo $row['CpId']; ?>" id="Point<?php echo $row['CpId']; ?>" value="<?php echo $row['Point']; ?>" /></td>
+        <td class="l_label">
+          <?php echo $row['Description']; ?>
+          <input type="hidden" name="Description<?php echo $row['CpId']; ?>" id="Description<?php echo $row['CpId']; ?>" value="<?php echo $row['Description']; ?>" />
+        </td>
+      </tr>
+      <?php $keyIdx++; } ?>
+    </table>
+
+    <!--
+      属性依存
+      Dependence = 2
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="6" class="l_data">手動設定の敷居値に依存しポイントを有する項目</td>
+      </tr>
+      <tr>
+        <th width="30">No</th>
+        <th>審査項目</th>
+        <th>条件</th>
+        <th>説明</th>
+        <th>ポイント</th>
+        <th>メッセージ</th>
+      </tr>
+      <?php foreach ($this->list_dep2 as $row) { ?>
+      <tr>
+        <td width="30" class="r_label">
+          <?php echo $row['CpId']; ?>
+          <input type="hidden" name="CpId<?php echo $keyIdx; ?>" id="CpId<?php echo $row['CpId']; ?>" value="<?php echo $row['CpId']; ?>" />
+          <input type="hidden" name="Dependence<?php echo $row['CpId']; ?>" id="Dependence<?php echo $row['CpId']; ?>" value="<?php echo $row['Dependence']; ?>" />
+        </td>
+        <td class="r_label">
+          <?php echo $row['Caption']; ?>
+          <input type="hidden" name="Caption<?php echo $row['CpId']; ?>" id="Caption<?php echo $row['CpId']; ?>" value="<?php echo $row['Caption']; ?>" />
+        </td>
+        <td class="c_data"><input size="10" type="text" name="GeneralProp<?php echo $row['CpId']; ?>" id="GeneralProp<?php echo $row['CpId']; ?>" value="<?php echo $row['GeneralProp']; ?>" /></td>
+        <td class="l_label">
+          <?php echo $row['Description']; ?>
+          <input type="hidden" name="Description<?php echo $row['CpId']; ?>" id="Description<?php echo $row['CpId']; ?>" value="<?php echo $row['Description']; ?>" />
+        </td>
+        <td class="c_data"><input size="10" type="text" name="Point<?php echo $row['CpId']; ?>" id="Point<?php echo $row['CpId']; ?>" value="<?php echo $row['Point']; ?>" /></td>
+        <td class="l_data"><input size="40" type="text" name="Message<?php echo $row['CpId']; ?>" id="Message<?php echo $row['CpId']; ?>" value="<?php echo f_e($row['Message']); ?>" /></td>
+      </tr>
+      <?php $keyIdx++; } ?>
+    </table>
+
+    <!--
+      重みづけ（基幹）
+      Dependence = 5
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="4" class="l_data">基幹システム内重みづけ設定</td>
+      </tr>
+      <tr>
+        <th width="30">No</th>
+        <th>審査項目</th>
+        <th>ポイント（倍率）</th>
+        <th>説明</th>
+      </tr>
+      <?php foreach ($this->list_dep5 as $row) { ?>
+      <tr>
+        <td width="30" class="r_label">
+          <?php echo $row['CpId']; ?>
+          <input type="hidden" name="CpId<?php echo $keyIdx; ?>" id="CpId<?php echo $row['CpId']; ?>" value="<?php echo $row['CpId']; ?>" />
+          <input type="hidden" name="Dependence<?php echo $row['CpId']; ?>" id="Dependence<?php echo $row['CpId']; ?>" value="<?php echo $row['Dependence']; ?>" />
+        </td>
+        <td width="180" class="r_label">
+          <?php echo $row['Caption']; ?>
+          <input type="hidden" name="Caption<?php echo $row['CpId']; ?>" id="Caption<?php echo $row['CpId']; ?>" value="<?php echo $row['Caption']; ?>" />
+        </td>
+        <td width="120" class="c_data"><input size="10" type="text" name="Rate<?php echo $row['CpId']; ?>" id="Rate<?php echo $row['CpId']; ?>" value="<?php echo sprintf("%.2f", $row['Rate']); ?>" /></td>
+        <td class="l_label">
+          <?php echo $row['Description']; ?>
+          <input type="hidden" name="Description<?php echo $row['CpId']; ?>" id="Description<?php echo $row['CpId']; ?>" value="<?php echo $row['Description']; ?>" />
+        </td>
+      </tr>
+      <?php $keyIdx++; } ?>
+    </table>
+
+    <!--
+      重み付け（審査）
+      Dependence = 6
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="l_data">審査システム内重みづけ設定（審査パターンID,重みづけ値を交互に入力してください）</td>
+      </tr>
+      <tr>
+        <th>設定</th>
+      </tr>
+      <tr>
+        <td class="l_data"><textarea name="SinsaPoint" id="SinsaPoint" rows="5" cols="110"><?php echo f_e($this->list_dep6); ?></textarea></td>
+      </tr>
+    </table>
+
+    <!--
+      与信閾値
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="2" class="l_data">与信閾値設定</td>
+      </tr>
+      <tr>
+        <th>与信閾値</th>
+        <th>値</th>
+      </tr>
+      <tr>
+        <td width="250" class="r_label">審査システム利用時保留上限</td>
+        <td class="l_data">
+          <input size="10" type="text" name="threshold[JudgeSystemHoldMAX]" id="JudgeSystemHoldMAX" value="<?php echo f_e($this->CJThreshold['JudgeSystemHoldMAX']); ?>" />点以上
+          <input type="hidden" name="threshold[Seq]" id="Seq" value="<?php echo f_e($this->CJThreshold['Seq']); ?>" />
+        </td>
+      </tr>
+      <tr>
+        <td class="r_label">審査システム利用時保留下限</td>
+        <td class="l_data"><input size="10" type="text" name="threshold[JudgeSystemHoldMIN]" id="JudgeSystemHoldMIN" value="<?php echo f_e($this->CJThreshold['JudgeSystemHoldMIN']); ?>" />点以下</td>
+      </tr>
+      <tr>
+        <td class="r_label">基幹システムのみ保留上限</td>
+        <td class="l_data"><input size="10" type="text" name="threshold[CoreSystemHoldMAX]" id="CoreSystemHoldMAX" value="<?php echo f_e($this->CJThreshold['CoreSystemHoldMAX']); ?>" />点以上</td>
+      </tr>
+      <tr>
+        <td class="r_label">基幹システムのみ保留下限</td>
+        <td class="l_data"><input size="10" type="text" name="threshold[CoreSystemHoldMIN]" id="CoreSystemHoldMIN" value="<?php echo f_e($this->CJThreshold['CoreSystemHoldMIN']); ?>" />点以下</td>
+      </tr>
+    </table>
+
+    <!--
+      自動与信限度額設定
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="4" class="l_data">自動与信限度額設定</td>
+      </tr>
+      <tr>
+        <th>項目</th>
+        <th colspan="3">値</th>
+      </tr>
+      <tr>
+        <td width="250" class="r_label" rowspan="4">自動与信限度額判定設定</td>
+        <td class="r_label"></td>
+        <td class="c_label" colspan="2">過去注文</td>
+      </tr>
+      <tr>
+        <td class="r_label">対象注文</td>
+        <td class="c_label">請求先</td>
+        <td class="c_label">配送先</td>
+      </tr>
+      <tr>
+        <td class="r_label">請求先</td>
+        <td class="c_data"><input type="checkbox" name="systeminfo[AutoCreditLimitAmount1]" id="AutoCreditLimitAmount1" value="1" <?php echo $this->CreditSystemInfo['AutoCreditLimitAmount1'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+        <td class="c_data"><input type="checkbox" name="systeminfo[AutoCreditLimitAmount2]" id="AutoCreditLimitAmount2" value="1" <?php echo $this->CreditSystemInfo['AutoCreditLimitAmount2'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+      </tr>
+      <tr>
+        <td class="r_label">配送先</td>
+        <td class="c_data"><input type="checkbox" name="systeminfo[AutoCreditLimitAmount3]" id="AutoCreditLimitAmount3" value="1" <?php echo $this->CreditSystemInfo['AutoCreditLimitAmount3'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+        <td class="c_data"><input type="checkbox" name="systeminfo[AutoCreditLimitAmount4]" id="AutoCreditLimitAmount4" value="1" <?php echo $this->CreditSystemInfo['AutoCreditLimitAmount4'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+      </tr>
+      <tr>
+        <td class="r_label">請求先の過去注文有効日数</td>
+        <td class="l_data" colspan="3"><input size="10" type="text" name="systeminfo[ClaimPastDays]" id="ClaimPastDays" value="<?php echo f_e($this->CreditSystemInfo['ClaimPastDays']); ?>" /></td>
+      </tr>
+      <tr>
+        <td class="r_label">配送先の過去注文有効日数</td>
+        <td class="l_data" colspan="3"><input size="10" type="text" name="systeminfo[DeliveryPastDays]" id="DeliveryPastDays" value="<?php echo f_e($this->CreditSystemInfo['DeliveryPastDays']); ?>" /></td>
+      </tr>
+    </table>
+
+    <!--
+      ジンテック手動与信強制条件設定
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td colspan="5" class="l_data">手動与信強制設定</td>
+      </tr>
+      <tr>
+        <th>条件</th>
+        <th colspan="4">値</th>
+      </tr>
+      <tr>
+        <td width="250" class="r_label">未払い１</td>
+        <td class="l_data" colspan="4"><input type="checkbox" name="threshold[JintecManualJudgeUnpaidFlg]" id="JintecManualJudgeUnpaidFlg" <?php echo $this->CJThreshold['JintecManualJudgeUnpaidFlg'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+      </tr>
+      <tr>
+        <td width="250" class="r_label">不払い１</td>
+        <td class="l_data" colspan="4"><input type="checkbox" name="threshold[JintecManualJudgeNonPaymentFlg]" id="JintecManualJudgeNonPaymentFlg" <?php echo $this->CJThreshold['JintecManualJudgeNonPaymentFlg'] == 1 ? 'checked="checked"' : ''; ?> /></td>
+      </tr>
+      <tr>
+        <td width="250" class="r_label" rowspan="18">審査システム回答条件</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns11" id="JintecManualJudgeSns11" value="11" <?php echo in_array(11, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾌﾞﾗｯｸ：住所</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns12" id="JintecManualJudgeSns12" value="12" <?php echo in_array(12, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾌﾞﾗｯｸ：氏名</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns13" id="JintecManualJudgeSns13" value="13" <?php echo in_array(13, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾌﾞﾗｯｸ：電話番号</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns14" id="JintecManualJudgeSns14" value="14" <?php echo in_array(14, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾌﾞﾗｯｸ：ﾒｰﾙｱﾄﾞﾚｽ</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns101" id="JintecManualJudgeSns101" value="101" <?php echo in_array(101, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：ｾﾝﾀｰ・営業所留め</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns102" id="JintecManualJudgeSns102" value="102" <?php echo in_array(102, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：団地</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns103" id="JintecManualJudgeSns103" value="103" <?php echo in_array(103, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：ﾎﾃﾙ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns104" id="JintecManualJudgeSns104" value="104" <?php echo in_array(104, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：荘</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns105" id="JintecManualJudgeSns105" value="105" <?php echo in_array(105, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：様方</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns106" id="JintecManualJudgeSns106" value="106" <?php echo in_array(106, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：番地なし</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns107" id="JintecManualJudgeSns107" value="107" <?php echo in_array(107, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：部屋番号なし</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns108" id="JintecManualJudgeSns108" value="108" <?php echo in_array(108, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：解析不能住所</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns109" id="JintecManualJudgeSns109" value="109" <?php echo in_array(109, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：詐欺・ｸﾚｰﾏｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns111" id="JintecManualJudgeSns111" value="111" <?php echo in_array(111, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：仮ｵﾌｨｽ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns114" id="JintecManualJudgeSns114" value="114" <?php echo in_array(114, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：私書箱</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns115" id="JintecManualJudgeSns115" value="115" <?php echo in_array(115, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：ｺﾝﾋﾞﾆ</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns116" id="JintecManualJudgeSns116" value="116" <?php echo in_array(116, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：郵便番号不一致</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns117" id="JintecManualJudgeSns117" value="117" <?php echo in_array(117, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：公共施設</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns118" id="JintecManualJudgeSns118" value="118" <?php echo in_array(118, $this->JudgeList) ? 'checked="checked"' : ''; ?> />住所：最終文字不正</td>
+        <td class="l_data"></td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns201" id="JintecManualJudgeSns201" value="201" <?php echo in_array(201, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：ひらがな</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns202" id="JintecManualJudgeSns202" value="202" <?php echo in_array(202, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：ｶﾀｶﾅ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns203" id="JintecManualJudgeSns203" value="203" <?php echo in_array(203, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：ｾﾝﾀｰ・営業所留め</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns204" id="JintecManualJudgeSns204" value="204" <?php echo in_array(204, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：合同・合資会社</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns205" id="JintecManualJudgeSns205" value="205" <?php echo in_array(205, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：外人</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns206" id="JintecManualJudgeSns206" value="206" <?php echo in_array(206, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：ﾛｰﾏ字</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns207" id="JintecManualJudgeSns207" value="207" <?php echo in_array(207, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：詐欺・ｸﾚｰﾏｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns208" id="JintecManualJudgeSns208" value="208" <?php echo in_array(208, $this->JudgeList) ? 'checked="checked"' : ''; ?> />氏名：珍しい名字</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns301" id="JintecManualJudgeSns301" value="301" <?php echo in_array(301, $this->JudgeList) ? 'checked="checked"' : ''; ?> />電話：050/070</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns302" id="JintecManualJudgeSns302" value="302" <?php echo in_array(302, $this->JudgeList) ? 'checked="checked"' : ''; ?> />電話：自動ｱﾅｳﾝｽ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns303" id="JintecManualJudgeSns303" value="303" <?php echo in_array(303, $this->JudgeList) ? 'checked="checked"' : ''; ?> />電話：詐欺・ｸﾚｰﾏｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns304" id="JintecManualJudgeSns304" value="304" <?php echo in_array(304, $this->JudgeList) ? 'checked="checked"' : ''; ?> />電話：住所-市外局番不一致</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns305" id="JintecManualJudgeSns305" value="305" <?php echo in_array(305, $this->JudgeList) ? 'checked="checked"' : ''; ?> />電話：仮ｵﾌｨｽ</td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns401" id="JintecManualJudgeSns401" value="401" <?php echo in_array(401, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：出会い系</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns402" id="JintecManualJudgeSns402" value="402" <?php echo in_array(402, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：ﾔﾌｵｸ悪ﾕｰｻﾞｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns403" id="JintecManualJudgeSns403" value="403" <?php echo in_array(403, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：捨てｱﾄﾞ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns404" id="JintecManualJudgeSns404" value="404" <?php echo in_array(404, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：連続４文字数字</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns405" id="JintecManualJudgeSns405" value="405" <?php echo in_array(405, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：顔文字含</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns406" id="JintecManualJudgeSns406" value="406" <?php echo in_array(406, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：詐欺・ｸﾚｰﾏｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns407" id="JintecManualJudgeSns407" value="407" <?php echo in_array(407, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ﾒｰﾙｱﾄﾞﾚｽ：仮ｵﾌｨｽ</td>
+        <td class="l_data"></td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns501" id="JintecManualJudgeSns501" value="501" <?php echo in_array(501, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：連続注文</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns502" id="JintecManualJudgeSns502" value="502" <?php echo in_array(502, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：数量ｵｰﾊﾞｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns503" id="JintecManualJudgeSns503" value="503" <?php echo in_array(503, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：商品代金無し</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns504" id="JintecManualJudgeSns504" value="504" <?php echo in_array(504, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：未払い債権額</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns551" id="JintecManualJudgeSns551" value="551" <?php echo in_array(551, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品01</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns552" id="JintecManualJudgeSns552" value="552" <?php echo in_array(552, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品02</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns553" id="JintecManualJudgeSns553" value="553" <?php echo in_array(553, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品03</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns554" id="JintecManualJudgeSns554" value="554" <?php echo in_array(554, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品04</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns555" id="JintecManualJudgeSns555" value="555" <?php echo in_array(555, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品05</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns556" id="JintecManualJudgeSns556" value="556" <?php echo in_array(556, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品06</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns557" id="JintecManualJudgeSns557" value="557" <?php echo in_array(557, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品07</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns558" id="JintecManualJudgeSns558" value="558" <?php echo in_array(558, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品08</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns559" id="JintecManualJudgeSns559" value="559" <?php echo in_array(559, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品09</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns560" id="JintecManualJudgeSns560" value="560" <?php echo in_array(560, $this->JudgeList) ? 'checked="checked"' : ''; ?> />注文：要注意商品10</td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns601" id="JintecManualJudgeSns601" value="601" <?php echo in_array(601, $this->JudgeList) ? 'checked="checked"' : ''; ?> />事業者：補正</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns602" id="JintecManualJudgeSns602" value="602" <?php echo in_array(602, $this->JudgeList) ? 'checked="checked"' : ''; ?> />事業者：購入額ｵｰﾊﾞｰ</td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns1001" id="JintecManualJudgeSns1001" value="1001" <?php echo in_array(1001, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ｲﾍﾞﾝﾄ：ﾊﾞﾚﾝﾀｲﾝﾃﾞｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns1002" id="JintecManualJudgeSns1002" value="1002" <?php echo in_array(1002, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ｲﾍﾞﾝﾄ：ﾎﾜｲﾄﾃﾞｰ</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns1003" id="JintecManualJudgeSns1003" value="1003" <?php echo in_array(1003, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ｲﾍﾞﾝﾄ：母の日</td>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns1004" id="JintecManualJudgeSns1004" value="1004" <?php echo in_array(1004, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ｲﾍﾞﾝﾄ：父の日</td>
+      </tr>
+      <tr>
+        <td class="l_data"><input type="checkbox" name="JintecManualJudgeSns1005" id="JintecManualJudgeSns1005" value="1005" <?php echo in_array(1005, $this->JudgeList) ? 'checked="checked"' : ''; ?> />ｲﾍﾞﾝﾄ：敬老の日</td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+        <td class="l_data"></td>
+      </tr>
+      </table>
+
+    <!--
+      ボタン類
+    -->
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr align="center">
+        <td>
+          <input type="submit" value="　更　新　" />　　　
+          <!-- <input type="button" value="　戻る　" onClick="javascript:location.href='.'; "/>-->
+          <a href=".">戻　る</a>
+        </td>
+      </tr>
+    </table>
+
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

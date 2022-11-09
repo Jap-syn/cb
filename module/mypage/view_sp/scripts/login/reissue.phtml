@@ -1,0 +1,81 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<style>
+#inputarea {
+    font-size: 14px;
+    font-weight: bold;
+    float: left;
+    margin: 5px 20px 0px 20px;
+    width: 100%;
+}
+#inputarea1 {
+    float: left;
+    margin: 0px 20px 0px 20px;
+    width: 100%;
+}
+</style>
+</head>
+<body onload="window.opener=self;">
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/login/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再発行</h5>
+    <div id="d_01" style="margin-left: 20px;">
+        <span style="font-weight: normal;">ご本人様確認のため、必要情報をご入力ください。</span><br /><br />
+    </div>
+
+    <?php if (isset($this->errors)) { ?>
+    <div class="alertbox" style="display:block;" >
+    <?php     foreach ($this->errors as $error) { ?>
+    <p class="error"><?php echo $error; ?></p>
+    <?php     } ?>
+    </div>
+    <?php } ?>
+
+    <form name="form" method="post" action="login/reissueconfirm" novalidate="novalidate">
+        <div id="inputarea">メールアドレス<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1"><input type="email" size="35px" style="height: 25px;word-break:break-all;" name="form[MailAddress]" value="<?php echo f_e($this->formdata['MailAddress']); ?>" /></div>
+        <div id="inputarea">名前</div>
+        <div id="inputarea">姓<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1"><input type="text" size="35px" style="height: 25px;word-break:break-all;" name="form[NameSeiKj]" value="<?php echo f_e($this->formdata['NameSeiKj']); ?>" /></div>
+        <div id="inputarea">名<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1"><input type="text" size="35px" style="height: 25px;word-break:break-all;" name="form[NameMeiKj]" value="<?php echo f_e($this->formdata['NameMeiKj']); ?>" /></div>
+        <div id="inputarea">電話番号<font style="color: red; font-weight: normal; font-size: 13px;">　　※必須</font></div>
+        <div id="inputarea1">
+             <input size="6" style="height:20px; margin:6px 0;" name="form[Phone_1]" type="tel" value="<?php echo f_e($this->formdata['Phone_1']); ?>" />
+        　-　<input size="6" style="height:20px; margin:6px 0;" name="form[Phone_2]" type="tel" value="<?php echo f_e($this->formdata['Phone_2']); ?>" />
+        　-　<input size="6" style="height:20px; margin:6px 0;" name="form[Phone_3]" type="tel" value="<?php echo f_e($this->formdata['Phone_3']); ?>" />
+        </div>
+        <table width="300px">
+            <tr class="data">
+                <td align="center"><br /><input id="goto_button" type="submit" value="登録内容を確認する" /></td>
+            </tr>
+            <tr class="data">
+                <td align="center"><br /><input id="backto_button" type="button" value="画面を閉じる" onclick="window.close();" /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer_sp.php' );
+?>
+
+</div></body>
+</html>

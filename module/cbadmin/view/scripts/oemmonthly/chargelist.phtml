@@ -1,0 +1,131 @@
+<?php
+$summary_templates = array(
+        'UseAmount' => 0,
+        'SettlementFee' => 0,
+        'ClaimFee' => 0,
+        'OemFee' => 0,
+        'AgencyFee' => 0,
+        'StampFee' => 0,
+        'sagaku' => 0,
+);
+$summaries = array_merge(array(), $summary_templates);
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM精算明細（お取引明細）</h3>
+      <table style="font-size: 12px;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+            <td class="r_data">
+              <a class="download_link" href="<?php echo 'oemmonthly/dordermeisai/oemid/'.f_e($this->oemInfo['OemId']).'/eid/'.f_e($this->entInfo['EnterpriseId']).'/fd/'.f_e($this->fd); ?>">↓CSVダウンロード</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  <!-- count関数対策 -->
+<?php if(empty($this->list)) { ?>
+<h4>明細はありません。</h4>
+<?php } else { ?>
+<?php
+$item_count = 0;
+foreach($this->list as $key => $value) {
+  // count関数対策
+  if (!empty($value)){
+    $item_count += count($value);
+  }
+};
+
+$last_sitename = array_pop(array_keys($this->list));
+$i = 0;
+foreach($this->list as $sitename => $rows) {
+	$_summaries = array_merge(array(), $summary_templates);
+?>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>注文ID</th>
+            <th>任意注文番号</th>
+            <th>購入者</th>
+            <th>注文日</th>
+            <th>伝登日</th>
+            <th>立替締</th>
+            <th>請求額</th>
+            <th>決済<br />手数料</th>
+            <th>請求<br />手数料</th>
+            <th>OEM<br />手数料</th>
+            <th>印紙<br />代金</th>
+            <th>差引後<br />金額</th>
+          </tr>
+        </thead>
+        <tbody>
+<?php   foreach($rows as $row) { ?>
+          <tr>
+            <td class="c_data"><?php echo (++$i); ?></td>
+            <td class="c_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e( $row['OrderSeq'] ); ?>"><?php echo f_e( $row['OrderId'] ); ?></a></td>
+            <td class="c_data"><?php echo f_e( $row['Ent_OrderId'] ); ?></td>
+            <td class="l_data"><?php echo f_e( $row['NameKj'] ); ?></td>
+            <td class="c_data"><?php echo f_df( $row['ReceiptOrderDate'], 'Y/m/d' ); ?></td>
+            <td class="c_data"><?php echo f_df( $row['MaxDeliJournalIncDate'], 'Y/m/d' ); ?></td>
+            <td class="c_data"><?php echo f_df( $row['FixedDate'], 'Y/m/d' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['UseAmount'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['SettlementFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['ClaimFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['OemFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['StampFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $row['sagaku'], 0 ), '#,##0' ); ?></td>
+          </tr>
+<?php
+            foreach( array_keys( $summaries ) as $key ) {
+                $summaries[$key] = ((int)$summaries[$key]) + ((int)$row[$key]);
+                $_summaries[$key] = ((int)$_summaries[$key]) + ((int)$row[$key]);
+            }
+        }
+        $style = $sitename == $last_sitename ? ' style="border-bottom-style: double; border-bottom-width: 3px;"' : '';
+?>
+          <tr>
+            <td class="r_data" colspan="7"<?php echo $style; ?>>サイト計<?php echo '（' . $sitename . '）'; ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['UseAmount'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['SettlementFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['ClaimFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['OemFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['StampFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"<?php echo $style; ?>><?php echo f_nf( nvl( $_summaries['sagaku'], 0 ), '\ #,##0'); ?></td>
+          </tr>
+
+<?php   if( $sitename == $last_sitename ) { ?>
+          <tr>
+            <td class="r_data" colspan="7">お取引先計</td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['UseAmount'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['SettlementFee'], 0 ),  '\ #,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['ClaimFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['OemFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['StampFee'], 0 ), '\ #,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $summaries['sagaku'], 0 ), '\ #,##0'); ?></td>
+          </tr>
+<?php   } ?>
+        </tbody>
+      </table>
+<?php
+    }
+}
+?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

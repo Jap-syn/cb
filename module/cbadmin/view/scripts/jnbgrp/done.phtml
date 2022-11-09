@@ -1,0 +1,54 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポート完了
+    <?php if(isset($this->data)) { ?>
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    <?php } else { ?>
+      (※：処理情報の取得に失敗しました！)
+    <?php } ?>
+    </h3>
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              インポートが完了しました。
+              <!-- count関数対策 -->
+            <?php if(!empty($this->state)) { ?>
+              (所要時間：<?php echo f_nf($this->state['elapsed'], '#,##0'); ?> 秒)<br />
+              処理件数：<?php echo f_nf($this->state['processed'], '#,##0'); ?> 件、
+              うちインポート済み <?php echo f_nf($this->state['imported'], '#,##0'); ?> 件／エラー <?php echo f_nf($this->state['errors'], '#,##0'); ?> 件<br />
+              <?php if($this->state['errors']) { ?>
+              <a href="jnbgrp/errdetail/oid/<?php echo f_e($this->data['OemId']); ?>/tid/<?php echo f_e($this->state['transactionId']); ?>">エラーの詳細を見る</a>
+              <?php } ?>
+            <?php } ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="submit-area">
+      <?php if(isset($this->data)) { ?>
+        <a href="jnb/detail/oid/<?php echo f_e($this->data['OemId']); ?>"> JNB登録内容詳細へ戻る　</a>
+      <?php } else { ?>
+        <a href="jnb/index">　JNB契約一覧へ　</a>
+      <?php } ?>
+      </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

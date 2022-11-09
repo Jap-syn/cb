@@ -1,0 +1,78 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">「<?php echo f_e($this->EnterpriseNameKj); ?>」　サイト一覧</h3>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <form name="form" method="post" >
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <th >サイトID</th>
+          <th>登録日</th>
+          <th>サイト名</th>
+          <th>APIユーザー名</th>
+          <th>URL</th>
+          <th>有効</th>
+          <th>サイト情報</th> <!-- Edit column name 指示 -> サイト情報 -->
+          <th>届いてから</th> <!-- Add this column -->
+          <th>代理店</th>
+          <th>APIユーザー</th>
+          <th>ジンテック</th>
+          <input type="hidden" name="EnterpriseId" id="EnterpriseId" value="<?php echo f_e($this->EnterpriseId); ?>" />
+        <?php $i = 0; foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <input type="hidden" name="SiteId<?php echo f_e($i); ?>" id="SiteId<?php echo f_e($i); ?>" value="<?php echo f_e($row['SiteId']); ?>" />
+            <td class="r_data"><?php echo f_e($row['SiteId']); ?></td>
+            <td class="c_data"><?php echo f_e(date('Y-m-d', strtotime($row['RegistDate']))); ?></td>
+            <td class="l_data"><?php echo f_e($row['SiteNameKn']); ?><br><?php echo f_e($row['SiteNameKj']); ?></td>
+            <td class="l_data"><?php echo f_e($this->apilist[$i]['ApiUserNameKn']); ?><br><?php echo f_e($this->apilist[$i]['ApiUserNameKj']); ?></td>
+            <td class="c_data">
+              <a href="<?php echo f_e($row['Url']);?>" target="_blank"><?php echo f_e($row['Url']);?></a>
+            </td>
+            <td class="c_data"><?php if ($row['ValidFlg'] == 1) { echo "有効"; } else { echo "無効"; }?></td>
+            <td class="c_data">
+              <a href="site/edit/eid/<?php echo f_e($this->list[$i]['EnterpriseId']); ?>/sid/<?php echo $row['SiteId'];?>">編集</a>
+            </td>
+            <td class="c_data">
+               <!-- Link to Regist Todo screen -->
+              <?php if (!$checkTodo['disableLink']) { ?>
+                <a href="site/registtodoitekara/eid/<?php echo f_e($this->list[$i]['EnterpriseId']); ?>/sid/<?php echo $row['SiteId'];?>"><?php echo $checkTodo['text'][$row['SiteId']]; ?></a>
+              <?php } else { echo $checkTodo['text'][$row['SiteId']]; } ?>
+            </td>
+            <td class="c_data">
+              <a href="site/siteagency/sid/<?php echo f_e($row['SiteId']); ?>"><?php echo f_e((int)$this->cnt[$row['SiteId']]['cnt'] > 0 ? sprintf('%s 件', $this->cnt[$row['SiteId']]['cnt']) : '(未設定)'); ?></a>
+            </td>
+            <td class="c_data">
+              <a href="apirel/ent2api/oemId/<?php echo f_e(nvl($this->OemId, 0)); ?>/id/<?php echo f_e($row['SiteId']);?>"><?php echo f_e((int)$this->apicnt[$i]['cnt'] > 0 ? sprintf('%s 件', $this->apicnt[$i]['cnt']) : '(未設定)'); ?></a>
+            </td>
+            <td class="c_data">
+              <a href="site/jintecjudge/eid/<?php echo f_e($this->list[$i]['EnterpriseId']); ?>/sid/<?php echo $row['SiteId'];?>"><?php echo f_e($row['JintecJudge'] == 1 ? '設定あり' : '(未設定)'); ?></a>
+            </td>
+
+          </tr>
+        <?php $i++; } ?>
+          <tr>
+            <td colspan="11" class="c_data">
+              <a href="enterprise/detail/eid/<?php echo f_e($this->EnterpriseId); ?>">事業者詳細画面へ</a>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

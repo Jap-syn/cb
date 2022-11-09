@@ -1,0 +1,306 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->data;
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+</style>
+</head>
+<script type="text/javascript">
+    <?php echo $this->render('cbadmin/searchzip.php'); ?>
+
+    Event.observe(window, 'load', function() {
+    	window.printable_count = 0;
+
+    	['ChargeClass_disabled', 'ChargeClass_enabled'].each(function(id) {
+    		if(!$(id) || $(id).type == 'hidden') throw $continue;
+    		Event.observe($(id), 'click', function(evt) {
+    			setTimeout(updateUI, 0);
+    		}.bindAsEventListener($(id)));
+    	});
+        // 編集時「CB負担」なら無効
+        updateUI();
+    });
+    function updateUI() {
+    	var mode_status = $('ChargeClass_enabled').checked;
+
+    	// 「振込手数料負担」
+    	// → 「代理店負担」チェックなら有効、それ以外は無効
+    	['TransferFeeClass1', 'TransferFeeClass2'].each(function(id) {
+    		if(!$(id) || $(id).type == 'hidden') throw $continue;
+    		$(id).disabled = !mode_status;
+    	});
+    }
+
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/agency/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3><?php echo $fd['isNew'] ? '代理店登録' : '代理店編集'; ?></h3>
+<form name="form" method="post" action="agency/confirm">
+  <input name="form[isNew]" id="isNew" value="<?php echo $fd['isNew'] ? 1 : 0; ?>" type="hidden" />
+  <input name="form[AgencyId]" id="AgencyId" type="hidden" value="<?php echo f_e($fd['AgencyId']); ?>" />
+  <input name="form[OemId]" id="selectOemId"  type="hidden" value="<?php echo f_e($fd['OemId']); ?>" />
+  <input name="form[LoginId]" type="hidden" id="LoginId" value="<?php echo f_e($fd['LoginId']); ?>" />
+  <input name="form[LoginPasswd]" type="hidden" id="LoginPasswd" value="<?php echo f_e($fd['LoginPasswd']); ?>" />
+    <!-- OEM情報をhiddenに持たせる-->
+    <?php foreach($this->oem_master as $key=>$value){;
+        echo '<input type="hidden" id="oemMaster'.$key.'MonthlyFee" value="'.$value['MonthlyFee'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'N_MonthlyFee" value="'.$value['N_MonthlyFee'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'SettlementFeeRateRKF" value="'.$value['SettlementFeeRateRKF'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'SettlementFeeRateSTD" value="'.$value['SettlementFeeRateSTD'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'SettlementFeeRateEXP" value="'.$value['SettlementFeeRateEXP'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'SettlementFeeRateSPC" value="'.$value['SettlementFeeRateSPC'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'ClaimFeeBS" value="'.$value['ClaimFeeBS'].'">';
+        echo '<input type="hidden" id="oemMaster'.$key.'ClaimFeeDK" value="'.$value['ClaimFeeDK'].'">';
+    }?>
+  <!-- 代理店情報 -->
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <!-- ■代理店情報■ -->
+    <tr>
+      <td colspan="2" class="data">【代理店情報】</td>
+    </tr>
+    <?php if($fd['isNew'] == 1) { ?>
+    <tr>
+      <td class="label">OEM先</td>
+      <td class="data">
+        <select id="OemId" name="form[OemId]" value="<?php echo f_e($fd['OemId']); ?>">
+        <?php foreach($this->oemList as $value => $caption) { ?>
+          <?php $selected = $this->selectOem == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+        <?php } ?>
+        </select>
+        <?php show_error_message($this->error['OemId']); ?>
+      </td>
+    </tr>
+    <?php } elseif(!is_null($fd['OemId'] ) && $fd['OemId'] >= 0 ) { ?>
+    <tr>
+      <td class="label">OEM先名</td>
+      <td class="data" >
+        <?php echo f_e($fd['OemNameKj']); ?>
+        <input name="form[OemNameKj]" type="hidden" id="OemNameKj" value="<?php echo f_e($fd['OemNameKj']); ?>" />
+      </td>
+    </tr>
+    <?php } ?>
+
+    <tr>
+      <td class="label">登録日<font color="red">*</font></td>
+      <td class="data">
+		<input name="form[ApplicationDate]" type="text" id="ApplicationDate" value="<?php echo f_e($fd['ApplicationDate']); ?>" maxlength="10"/>
+		<?php show_error_message($this->error['ApplicationDate']); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="label">キャッチボール営業<font color="red">*</font></td>
+      <td class="data">
+		<input name="form[Salesman]" type="text" id="Salesman" value="<?php echo f_e($fd['Salesman']); ?>" />
+		<?php show_error_message($this->error['Salesman']); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="label">代理店名<font color="red">*</font></td>
+      <td class="data">
+		<input name="form[AgencyNameKj]" type="text" id="AgencyNameKj" value="<?php echo f_e($fd['AgencyNameKj']); ?>" />
+		<?php show_error_message($this->error['AgencyNameKj']); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="label">代理店名カナ<font color="red">*</font></td>
+      <td class="data">
+		<input name="form[AgencyNameKn]" type="text" id="AgencyNameKn" value="<?php echo f_e($fd['AgencyNameKn']); ?>" />
+		<?php show_error_message($this->error['AgencyNameKn']); ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="label">所在地<font color="red">*</font></td>
+      <td class="data">〒
+        <input name="form[PostalCode]" type="text" id="PostalCode" value="<?php echo f_e($fd['PostalCode']); ?>" />
+        <input type="button" value="検索" onClick="getAddress($('PostalCode').value);" /><br />
+		<select id="PrefectureCode" name="form[PrefectureCode]" value="<?php echo f_e($fd['PrefectureCode']); ?>">
+		<?php foreach($this->master_map['Prefecture'] as $value => $caption) { ?>
+		  <?php $selected = $fd['PrefectureCode'] == $value ? ' selected="selected"' : ''; ?>
+		  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+		<?php } ?>
+		</select>
+        　(市区郡)<input size="30" name="form[City]" type="text" id="City" value="<?php echo f_e($fd['City']); ?>" /><br />
+        　(町域)<input size="50" name="form[Town]" type="text" id="Town" value="<?php echo f_e($fd['Town']); ?>" /><br />
+        　(建物)<input size="50" name="form[Building]" type="text" id="Building" value="<?php echo f_e($fd['Building']); ?>" />
+        <?php show_error_message($this->error['PostalCode']); ?>
+        <?php show_error_message($this->error['PrefectureCode']); ?>
+        <?php show_error_message($this->error['City']); ?>
+        <?php show_error_message($this->error['Town']); ?>
+        <?php show_error_message($this->error['Building']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">担当者氏名<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[RepNameKj]" type="text" id="RepNameKj" value="<?php echo f_e($fd['RepNameKj']); ?>" />
+      <?php show_error_message($this->error['RepNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">担当者氏名カナ<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[RepNameKn]" type="text" id="RepNameKn" value="<?php echo f_e($fd["RepNameKn"]); ?>" />
+      <?php show_error_message($this->error['RepNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先電話番号<font color="red">*</font></td>
+      <td class="data"><input name="form[Phone]" type="text" id="Phone" value="<?php echo f_e($fd['Phone']); ?>" />
+      <?php show_error_message($this->error['Phone']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先FAX番号</td>
+      <td class="data"><input name="form[Fax]" type="text" id="Fax" value="<?php echo f_e($fd['Fax']); ?>" />
+      <?php show_error_message($this->error['Fax']); ?></td>
+    </tr>
+    <!-- ■入金口座■  -->
+    <tr>
+      <td colspan="2" class="data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="label">金融機関<font color="red">*</font></td>
+      <td class="data">
+        銀行名<input size="30" name="form[FfName]" type="text" id="FfName" value="<?php echo f_e($fd['FfName']); ?>" />　
+        銀行番号<input size="10" name="form[FfCode]" type="text" id="FfCode" value="<?php echo f_e($fd['FfCode']); ?>" /><br />
+        支店名<input size="30" name="form[BranchName]" type="text" id="BranchName" value="<?php echo f_e($fd['BranchName']); ?>" />　
+        支店番号<input size="10" name="form[FfBranchCode]" type="text" id="FfBranchCode" value="<?php echo f_e($fd['FfBranchCode']); ?>" /><br />
+        口座種別
+		  <span class="radio_set">
+		  <?php foreach($this->master_map['FfAccountClass'] as $value => $caption) { ?>
+			<label for="FfAccountClass<?php echo f_e($value); ?>">
+			  <?php $checked = $fd['FfAccountClass'] == $value ? ' checked="checked"' : '';  ?>
+			  <input name="form[FfAccountClass]" id="FfAccountClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>" <?php if(f_e($caption)=="普通"){ echo "checked"; }else{ echo $checked;}?> />
+			  <?php echo f_e($caption); ?>
+			</label>
+		  <?php } ?>
+		  </span><br />
+        口座番号<input name="form[AccountNumber]" type="text" id="AccountNumber" value="<?php echo f_e($fd['AccountNumber']); ?>" /><br />
+        口座名義<input size="30" name="form[AccountHolder]" type="text" id="AccountHolder" value="<?php echo f_e($fd['AccountHolder']); ?>" />
+        <?php show_error_message($this->error['FfName']); ?>
+        <?php show_error_message($this->error['FfCode']); ?>
+        <?php show_error_message($this->error['BranchName']); ?>
+        <?php show_error_message($this->error['FfBranchCode']); ?>
+        <?php show_error_message($this->error['FfAccountClass']); ?>
+        <?php show_error_message($this->error['AccountNumber']); ?>
+        <?php show_error_message($this->error['AccountHolder']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label" >振込手数料負担</td>
+      <td class="data">
+        <input type="radio" id="ChargeClass_disabled" name="form[ChargeClass]" value="1"<?php {echo 'checked';}?>>CB負担
+        <input type="radio" id="ChargeClass_enabled" name="form[ChargeClass]" value="2"<?php if($fd['ChargeClass'] == 2){echo 'checked';}?>>代理店負担
+      </td>
+    </tr>
+    <tr>
+      <td class="label" >振込先</td>
+      <td class="data">
+        <input type="radio" id="TransferFeeClass1" name="form[TransferFeeClass]" value="1"<?php {echo 'checked';}?>>同行
+        <input type="radio" id="TransferFeeClass2" name="form[TransferFeeClass]" value="2"<?php if($fd['TransferFeeClass'] == 2){echo 'checked';}?>>他行
+      </td>
+    </tr>
+    <!-- ■その他■  -->
+    <tr>
+      <td colspan="2" class="data">【その他】</td>
+    </tr>
+    <tr>
+      <td class="label">手数料支払閾値</td>
+      <td class="data">
+        <input name="form[FeePaymentThreshold]" type="text" id="FeePaymentThreshold" value="<?php echo f_e($fd['FeePaymentThreshold']); ?>" />
+        <?php show_error_message($this->error['FeePaymentThreshold']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">手数料未払残高</td>
+      <td class="data">
+        <?php echo f_e($fd['FeeUnpaidBalance']); ?>
+        <input name="form[FeeUnpaidBalance]" type="hidden" id="FeeUnpaidBalance" value="<?php echo f_e($fd['FeeUnpaidBalance']); ?>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="label">備考</td>
+      <td class="data">
+      <textarea name="form[Note]" id="Note" rows="3" cols="60"><?php echo f_e($fd['Note']); ?></textarea>
+      <?php show_error_message($this->error['Note']); ?></td>
+    </tr>
+    <!-- ■審査状況■  -->
+    <tr>
+      <td colspan="2" class="data">【審査状況】</td>
+    </tr>
+    <tr>
+      <td class="label">審査結果<font color="red">*</font></td>
+      <td class="data">
+		<select id="ExaminationResult" name="form[ExaminationResult]" value="<?php echo f_e($fd['ExaminationResult']); ?>">
+		<?php foreach($this->master_map['ExaminationResult'] as $value => $caption) { ?>
+		  <?php $selected = $fd['ExaminationResult'] == $value ? ' selected="selected"' : ''; ?>
+		  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+		<?php } ?>
+		</select>
+        <?php show_error_message($this->error['ExaminationResult']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">コメント</td>
+      <td class="data">
+      <textarea name="form[Comment]" id="Comment" rows="3" cols="60"><?php echo f_e($fd['Comment']); ?></textarea>
+      <?php show_error_message($this->error['Comment']); ?></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td style="padding: 2px 0px">
+        <input type="submit" id="submit_button" value="　確　定　" />
+		&nbsp;
+		<input type="button" id="cancel_edit" value="キャンセル" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	function disable_buttons() {
+		["submit_button", "cancel_edit"].each(function(id) {
+			$(id).disabled = true;
+		});
+	}
+
+	Event.observe($("cancel_edit"), "click", function() {
+		var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+		disable_buttons();
+		var url = [
+			base.replace(/\/$/, ""),
+			"<?php echo 'agency/list'; ?>"
+		].join("/");
+		window.location.href = url;
+	});
+	Event.observe($("submit_button"), "click", function() {
+		setTimeout(disable_buttons, 0);
+	});
+});
+</script>
+</html>

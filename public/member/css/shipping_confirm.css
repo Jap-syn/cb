@@ -1,0 +1,16 @@
+/* submitボタンのコンテナ領域 */
+.regist_table .submit_area,
+.regist_table .submit_area * {
+	font-size: 14pt;
+}
+
+.regist_table .submit_area {
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+
+.regist_table .error_journal_check {
+	font-size: 12pt;
+	padding: 2px 8px;
+	margin-right:150px;
+}

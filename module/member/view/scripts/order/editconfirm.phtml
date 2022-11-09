@@ -1,0 +1,473 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use member\classes\OrderEditor;
+use member\Application;
+use member\classes\OrderInputInfo;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+<style type="text/css">
+td.item_name {
+	text-align: left !important;
+}
+td.item_value {
+	width: auto !important;
+}
+.main_contents {
+	padding: 8px;
+}
+
+.help_info,
+.help_alert {
+	color: crimson;
+}
+.help_alert {
+	font-weight: bold;
+}
+div.help_alert {
+	border: solid 1px gray;
+	background-color: white;
+	padding: 2px 4px;
+	margin: 2px 0px;
+}
+form#main_form,
+form#sub_form {
+	margin: 0px;
+	display: inline;
+}
+
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+// 注文状況をハンドルするためのOrderEditor
+$editor = new OrderEditor(Application::getInstance()->dbAdapter);
+
+?>
+
+<div class="main_contents">
+
+<?php
+$data = $this->detailData;
+
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	sprintf('注文ID：%s の登録内容修正  [注文状況：%s]', $data['OrderId'], $editor->getStatusLabel($data['OrderSeq'])),
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'back_to_detail',
+				CoralViewCommandBarButton::OPTION_HREF => sprintf('search/detail/id/%s', $data['OrderId']),
+				CoralViewCommandBarButton::OPTION_TEXT => '修正を中止',
+				CoralViewCommandBarButton::OPTION_TITLE => '注文修正を中止して、注文詳細情報へ戻ります'
+			)
+		),
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'back_to_form',
+				CoralViewCommandBarButton::OPTION_HREF => 'javascript:$("sub_form").submit()',
+				CoralViewCommandBarButton::OPTION_TEXT => '内容を再修正',
+				CoralViewCommandBarButton::OPTION_TITLE => '内容を再修正するにはここをクリックします'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+setReplaceEmpty(true);
+?>
+
+<?php if($this->hasChanged['Customer'] || $this->hasChanged['Destination'] || $this->hasChanged['Items']) { ?>
+<div class="confirmation_container">
+<h4>[注意] 以下の理由により、この注文は再度与信審査が行われます！</h4>
+    <ul class="confirmation_list">
+        <?php if($this->hasChanged['Customer']) { ?><li>購入者情報が変更されています</li><?php } ?>
+        <?php if($this->hasChanged['Destination']) { ?>
+            <?php if($data['AnotherDeliFlg']) { ?>
+                <li>配送先情報が変更されています</li>
+            <?php } else { ?>
+                <li>(配送先情報が変更されています)</li>
+            <?php } ?>
+        <?php } ?>
+        <?php if($this->hasChanged['Items']) { ?><li>合計金額が3,000以上増額しています</li><?php } ?>
+    </ul>
+</div>
+<?php } ?>
+
+<?php /* 基本取引情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_ORDER; ?>
+<h3>取引情報</h3>
+<table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="item_name">項目名</th>
+            <th class="item_value" style="width: 420px">入力</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="item_name">注文ID</td>
+            <td class="item_value"><?php echo f_e(nvl($data['OrderId'], '-')); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">注文日</td>
+            <td class="item_value"><?php echo nvl(f_df($data['ReceiptOrderDate'], 'Y/m/d', 'Y-m-d'), '-'); ?></td>
+        </tr>
+        <tr <?php if (nvl($data['ServiceExpectedDate'],'') == '') { echo ' style="display:none"';} ?>>
+            <td class="item_name">役務提供予定日</td>
+            <td class="item_value"><?php echo nvl(f_df($data['ServiceExpectedDate'], 'Y/m/d', 'Y-m-d'), '-'); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">受付サイト</td>
+            <td class="item_value"><?php echo f_e(nvl($this->site_list_array[$data['SiteId']], '-')); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">任意注文番号</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Ent_OrderId'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">備考</td>
+            <td class="pre item_value"><?php echo f_br( nvl($data['Ent_Note'], ' ') ); ?></td>
+        </tr>
+        <tr <?php if ($data['T_OrderClass'] != '1') { echo ' style="display:none"';} ?>>
+            <td class="item_name">テスト注文</td>
+            <td class="pre item_value">1：テスト注文</td>
+        </tr>
+    </tbody>
+</table>
+
+<?php /* 購入者情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_CUSTOMER; ?>
+<h3>購入者情報</h3>
+<table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="item_name">項目名</th>
+            <th class="item_value" style="width: 420px">入力</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="item_name">氏名</td>
+            <td class="item_value"><?php echo f_e( nvl($data['NameKj'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">氏名カナ</td>
+            <td class="item_value"><?php echo f_e( nvl($data['NameKn'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">住所</td>
+            <td class="item_value">
+                <?php echo f_e( $data['PostalCode'] ); ?><br />
+                <?php echo f_e( nvl($data['UnitingAddress'], '-') ); ?>
+            </td>
+        </tr>
+        <tr>
+            <td class="item_name">電話番号</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Phone'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">メールアドレス</td>
+            <td class="item_value"><?php echo f_e( nvl($data['MailAddress'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">加盟店顧客番号</td>
+            <td class="item_value"><?php echo f_e( nvl($data['EntCustId'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">職業</td>
+            <td class="item_value"><?php echo f_e( nvl($data['Occupation'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">法人名</td>
+            <td class="item_value"><?php echo f_e( nvl($data['CorporateName'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">部署名</td>
+            <td class="item_value"><?php echo f_e( nvl($data['DivisionName'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">担当者名</td>
+            <td class="item_value"><?php echo f_e( nvl($data['CpNameKj'], '-') ); ?></td>
+        </tr>
+        <tr <?php if (nvl($this->userInfo->SelfBillingMode, 0) == 0) { echo ' style="display: none;"'; }/* 加盟店の[SelfBillingMode]が[0orNull]の時は、[請求書別送]を表示しない */ ?>>
+            <td class="item_name">請求書別送</td>
+            <td class="item_value"><?php echo f_e( nvl($this->claimsendingclass_info[$data['ClaimSendingClass']], '-') ); ?></td>
+        </tr>
+        <tr <?php if ((nvl($this->creditTransferFlg, 1) == 0) || (nvl($this->creditTransferFlg, 2) == 0) || (nvl($this->creditTransferFlg, 3) == 0)) { echo ' style="display: none;"'; }/* 加盟店の[creditTransferFlg]が[0orNull]の時は、[口座振替]を表示しない */ ?>>
+              <td class="item_name">口座振替</td>
+              <td class="item_value"><?php echo f_e( nvl($this->creditTransferRequestFlg_info[$data['CreditTransferRequestFlg']], '-') ); ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php /* 配送先情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_DELIVERY; ?>
+<h3>配送先情報</h3>
+<?php if($data['AnotherDeliFlg']) { ?>
+<table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="item_name">項目名</th>
+            <th class="item_value" style="width: 420px">入力</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="item_name">氏名</td>
+            <td class="item_value"><?php echo f_e( nvl($data['DestNameKj'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">氏名カナ</td>
+            <td class="item_value"><?php echo f_e( nvl($data['DestNameKn'], '-') ); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">住所</td>
+            <td class="item_value">
+                <?php echo f_e( $data['DestPostalCode'] ); ?><br />
+                <?php echo f_e( nvl($data['DestUnitingAddress'], '-') ); ?>
+            </td>
+        </tr>
+        <tr>
+            <td class="item_name">電話番号</td>
+            <td class="item_value"><?php echo f_e( nvl($data['DestPhone'], '-') ); ?></td>
+        </tr>
+    </tbody>
+</table>
+<?php } else { ?>
+<table id="<?php echo f_e($group_key . '_disable'); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <tbody>
+        <tr>
+            <td class="no_display" colspan="4">（購入者に同じ）</td>
+        </tr>
+    </tbody>
+</table>
+<?php } ?>
+
+<?php /* 配送伝票情報 */ ?>
+<?php $group_key = OrderEditor::GROUP_JOURNAL; ?>
+<h3>配送伝票</h3>
+<table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="item_name">項目名</th>
+            <th class="item_value" style="width: 420px">入力</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="item_name">伝票登録日</td>
+            <td class="item_value"><?php echo nvl(f_df($data['Deli_JournalIncDate'], 'Y/m/d H:i:s'), '-'); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">配送会社</td>
+            <td class="item_value"><?php echo f_e(nvl($this->deliv_masters[$data['Deli_DeliveryMethod']], '-')); ?></td>
+        </tr>
+        <tr>
+            <td class="item_name">伝票番号</td>
+            <td class="item_value"><?php echo f_e(nvl($data['Deli_JournalNumber'], '-')); ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php
+	$groupName = OrderInputInfo::ARRKEY_DELIV;
+	$group = $this->form_info->getGroup( $groupName );
+?>
+
+
+<?php /* 自由入力情報 */ ?>
+<?php if($this->billingAgentFlg == 1){ ?>
+    <h3>
+    	【自由入力情報】
+    </h3>
+    <table class="order_input_form order_items" id="<?php echo f_e($groupName); ?>"  border="1" cellpadding="0" cellspacing="0">
+    	<thead>
+    		<tr>
+    			<th class="item_name">項目名</th>
+    			<th class="item_value" style="width: 420px">入力</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+    	<tr>
+    		<td class="item_name">１行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free1'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">２行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free2'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">３行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free3'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">４行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free4'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">５行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free5'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">６行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free6'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">７行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free7'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">８行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free8'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">９行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free9'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１０行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free10'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１１行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free11'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１２行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free12'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１３行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free13'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１４行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free14'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１５行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free15'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１６行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free16'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１７行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free17'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１８行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free18'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">１９行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free19'], '-')); ?></td>
+    	</tr>
+    	<tr>
+    		<td class="item_name">２０行目</td>
+    		<td class="item_value"><?php echo f_e(nvl($data['Free20'], '-')); ?></td>
+    	</tr>
+    	</tbody>
+    </table>
+<?php } ?>
+
+<?php /* 商品明細 */ ?>
+<?php $group_key = OrderEditor::GROUP_ITEMS; ?>
+<h3>商品明細・送料等</h3>
+<table id="<?php echo f_e($group_key); ?>" class="order_input_form order_items" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="item_name" style="width: 420px">商品名/購入品目</th>
+            <th class="item_name" style="width: 90px">金額</th>
+            <th class="item_name" style="width: 130px">単価×数量</th>
+            <th class="item_name" style="width: 90px">消費税率</th>
+        </tr>
+    </thead>
+    <tbody>
+<?php foreach( $this->itemList as $i => $item ) { // 商品情報ループ ?>
+        <tr>
+<?php     if ($item['DataClass'] == 1) { ?>
+            <td class="item_value">
+            <?php   if      ($item['OrderItemId'] == 'a') echo '（追加）';
+                    else if (!empty($this->delList) && in_array($item['OrderItemId'], $this->delList)) echo '（削除）';
+                    /* 共通 */
+                    echo f_e($item['ItemNameKj']);
+            ?>
+            </td>
+            <td class="item_value">\ <?php echo f_nf($item['SumMoney'], '#,##0'); ?></td>
+            <td class="item_value">(\ <?php echo f_nf($item['UnitPrice'], '#,##0'); ?> x <?php echo number_format(nvl($item['ItemNum'],0), $this->userInfo->DispDecimalPoint); ?> )</td>
+
+            <?php   if ($item ['TaxrateNotsetFlg'] == 1 && $item ['TaxRate'] == NULL) {
+                        $item ['TaxRate'] = $this->taxRate;
+                    }
+            ?>
+            <td class="item_value"> <?php echo $item['TaxRate'] ?>%</td>
+<?php     } else { ?>
+            <td class="item_name">
+            <?php   if      ($item['DataClass'] == 2) echo '送料';
+                    else if ($item['DataClass'] == 3) echo '手数料';
+                    else if ($item['DataClass'] == 4) echo '外税額';
+                    else '-';
+            ?>
+            </td>
+            <td class="item_value" >\ <?php echo f_nf($item['SumMoney'], '#,##0'); ?></td>
+            <td class="item_value">&nbsp;</td>
+            <td></td>
+
+<?php     } ?>
+        </tr>
+<?php } ?>
+        <tr class="total_row">
+            <td class="item_name" style="font-size: 11pt;">請求金額合計</td>
+            <td class="item_value" colspan="3" style="font-size: 11pt;">\ <span id="Order.UseAmount"><?php echo f_nf($data['UseAmount'], '#,##0'); ?></span></td>
+        </tr>
+    </tbody>
+</table>
+<center class="submit_area" style="width: 90%">
+    <form id="main_form" action="order/editdone" method="post">
+        <button type="submit" id="form_regist">この内容で登録</button>
+        <input type="hidden" name="confirmedData" value="<?php echo f_e($this->confirmedData); ?>" />
+        <input type="hidden" name="verifyKey" value="<?php echo f_e($this->verifyKey); ?>" />
+    </form>
+    <form id="sub_form" action="order/edit/id/<?php echo f_e($data['OrderId']); ?>" method="post">
+        <button type="submit" id="form_cancel">内容を再修正</button>
+        <input type="hidden" name="confirmedData" value="<?php echo f_e($this->confirmedData); ?>" />
+        <input type="hidden" name="verifyKey" value="<?php echo f_e($this->verifyKey); ?>" />
+    </form>
+</center>
+
+</div>
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<script type="text/javascript">
+</script>
+</html>
+

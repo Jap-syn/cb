@@ -1,0 +1,40 @@
+;テスト制御(送信先のURL)
+URI=http://192.168.1.115/api/order/rest
+
+;基本情報
+O_ReceiptOrderDate=2009/5/23
+O_EnterpriseId=1
+O_SiteId=218
+O_ApiUserId=1
+O_Ent_OrderId=２００９０５２１Ａ０４３
+O_Ent_Note=テストデータ
+O_UseAmount=145900
+
+;請求者情報
+C_PostalCode=160-0022
+C_UnitingAddress=東京都新宿区新宿１－２－3
+C_NameKj=山田　太郎
+C_NameKn=やまだ　たろう
+C_Phone=０３-５９１９-４６１１
+C_MailAddress=ｙａｍａｄａ@example.com
+C_Occupation=会社員
+
+;配送先情報
+O_AnotherDeliFlg=1
+D_PostalCode=183-8550
+D_UnitingAddress=東京都府中市日吉町１
+D_DestNameKj=馬場　競
+D_DestNameKn=ばば　けい
+D_Phone=０１２３－４５－６７８９
+
+;商品
+I_ItemNameKj_1=寝具セット
+I_UnitPrice_1=39800
+I_ItemNum_1=2
+
+I_ItemNameKj_2=2段ベット
+I_UnitPrice_2=59800
+I_ItemNum_2=1
+
+I_ItemCarriage=6000
+I_ItemCharge=500

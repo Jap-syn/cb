@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">退会申請</div>
+        <?php
+        echo $this->render( 'mypage/menu.php' );
+        ?>
+        <div id="d_01" >退会すると株式会社キャッチボールのマイページの機能がご利用いただけなくなります。
+        <form name="form" method="post" action="edit/withdrawexec">
+        <br/>
+        <div style="text-align: center;"><input id="red_btn" type="submit" value="退会申請" onclick="return confirm( '退会後はマイページをご利用できなくなります。よろしいですか？' );" /></div>
+        </form>
+        </div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style>
+table.datatable th {
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM先検索</h3>
+    <div style="margin: 5px 25px;">
+    <h4>
+      <!-- count関数対策 -->
+      該当件数　<?php echo !empty($this->list); ?> 件
+    </h4>
+    <table style="margin: 0px; clear:both;" width="862" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th>OEMID</th>
+          <th>OEM先名</th>
+          <th>代表者氏名</th>
+          <th>担当者氏名</th>
+          <th>電話番号</th>
+          <th>メール</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php 
+        // count関数対策
+        $listCount = 0;
+        if (!empty($this->list)) {
+            $listCount = count($this->list);
+        }
+        for ($i = 0 ; $i < $listCount ; $i++) { ?>
+        <tr>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["OemId"]); ?></td>
+          <td nowrap class="l_data"><a href="oem/detail/oid/<?php echo f_e($this->list[$i]['OemId']); ?>" /><?php echo f_e($this->list[$i]["OemNameKj"]); ?></a></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["RepNameKj"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["CpNameKj"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ContactPhoneNumber"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["MailAddress"]); ?></td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+new NetB.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+</script>
+</html>

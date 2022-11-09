@@ -1,0 +1,45 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/oem/page_menu.php'); ?>
+    <div class="title"><span>登録完了</span></div>
+<table class="datatable">
+  <tr>
+    <td class="r_label width_300">担当者名</td>
+    <td class="l_data"><?php echo escape($this->data["CpNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">担当者名カナ</td>
+    <td class="l_data"><?php echo escape($this->data["CpNameKn"]); ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">部署名</td>
+    <td class="l_data"><?php echo escape($this->data["DivisionName"]); ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">メールアドレス</td>
+    <td class="l_data"><?php echo escape($this->data["MailAddress"]); ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">連絡先電話番号</td>
+    <td class="l_data"><?php echo escape($this->data["ContactPhoneNumber"]); ?></td>
+  </tr>
+  <tr>
+    <td class="r_label">連絡先FAX番号</td>
+    <td class="l_data"><?php echo escape($this->data["ContactFaxNumber"]); ?></td>
+  </tr>
+</table>
+  <div class="btncontents">
+      <a class="default_btn" href="oem/detail">詳細画面へ</a>　
+      <a class="default_btn" href="oem/edit">編集画面へ</a>
+  </div>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

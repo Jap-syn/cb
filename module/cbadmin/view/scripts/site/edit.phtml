@@ -1,0 +1,1384 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->list;
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+  <style type="text/css">
+    .input_error_message {
+      color: red;
+    }
+
+    #contents table.datatable {
+      width: 862px;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #contents td {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    td.l_label {
+      text-align: left;
+      padding: 0px 0px 0px 5px;
+      background-color: #ffffff;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    td.r_label {
+      text-align:right;
+      padding: 0px 5px 0px 0px;
+      background-color: #eeeeee;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    td.c_label {
+      text-align: center;
+      /*padding: 2px 10px 2px 0px;*/
+      background-color: #eeeeee;
+    }
+
+    td.l_data {
+      text-align: left;
+      padding: 0px 0px 0px 5px;
+      background-color: #ffffff;
+    }
+
+    td.l_data span.wrap_container {
+      width: 398px;
+      overflow: hidden;
+      float: left;
+    }
+
+    td.r_data {
+      text-align: right;
+      padding: 0px 5px 0px 0px;
+      background-color: #ffffff;
+    }
+
+    td.c_data {
+      text-align: center;
+      padding: 2px 0px 2px 0px;
+      background-color: #ffffff;
+    }
+
+    div {
+        margin: 0px;
+        padding: 0px;
+        font-size: 12px;
+        font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+    }
+
+    .detail-tools {
+        margin: 5px 25px;
+        font-size: 16px;
+        text-align: right;
+    }
+
+    .detail-tools a,
+    .detail-tools span.dummy-link {
+        margin: 0 0 0 12px;
+    }
+	input.link-style-btn{
+		cursor: pointer;
+		border: none;
+		background: none;
+		color: #0033cc;
+	}
+	input.link-style-btn:hover{
+		text-decoration: underline;
+		color: #002080;
+	}
+    #contents .warning {
+        margin: 5px 25px;
+        font-size: 1em;
+        font-weight: bold;
+        color: red;
+        border: solid 1px firebrick;
+        background-color: mistyrose;
+        padding: 8px 12px;
+    }
+  </style>
+  <script type="text/javascript">
+    var g_init_flg = false; // 初期表示かどうか
+    <?php
+    $linePay = 0;
+    $rakutenBank = 0;
+    $famiPay = 0;
+    $yuchoPay = 0;
+    foreach($payments as $payment) {
+        switch ($payment['FixedId']) {
+            case 3:
+                $linePay = $payment['PaymentId'];
+                break;
+            case 4:
+                $rakutenBank = $payment['PaymentId'];
+                break;
+            case 5:
+                $famiPay = $payment['PaymentId'];
+                break;
+            case 6:
+                $yuchoPay = $payment['PaymentId'];
+                break;
+        }
+    }
+    ?>
+    var g_payment_id_linepay = <?php echo $linePay; ?>;
+    var g_payment_id_rakuten = <?php echo $rakutenBank; ?>;
+    var g_payment_id_famipay = <?php echo $famiPay; ?>;
+    var g_payment_id_yuchopay = <?php echo $yuchoPay; ?>;
+
+    function changeLimitDatePattern()
+    {
+        if ($('LimitDatePattern').value == 1 || $('LimitDatePattern').value == 2)
+        {
+            $('LimitDay').disabled = false;
+        }
+        else
+        {
+            $('LimitDay').disabled = true;
+        }
+    }
+
+    function clickReClaimFeeSetting(check)
+    {
+        if ((check == 0) || (check == null) || (check == ''))
+        {
+            document.getElementById('ReClaimFee1').disabled = true;
+            document.getElementById('ReClaimFee3').disabled = true;
+            document.getElementById('ReClaimFee4').disabled = true;
+            document.getElementById('ReClaimFee5').disabled = true;
+            document.getElementById('ReClaimFee6').disabled = true;
+            document.getElementById('ReClaimFee7').disabled = true;
+            document.getElementById('ReClaimFeeStartRegistDate').disabled = true;
+            document.getElementById('ReClaimFeeStartDate').disabled = true;
+        }
+        else
+        {
+            document.getElementById('ReClaimFee1').disabled = false;
+            document.getElementById('ReClaimFee3').disabled = false;
+            document.getElementById('ReClaimFee4').disabled = false;
+            document.getElementById('ReClaimFee5').disabled = false;
+            document.getElementById('ReClaimFee6').disabled = false;
+            document.getElementById('ReClaimFee7').disabled = false;
+            document.getElementById('ReClaimFeeStartRegistDate').disabled = false;
+            document.getElementById('ReClaimFeeStartDate').disabled = false;
+        }
+    }
+
+    function AllPaymentSetting()
+    {
+        g_init_flg = true;
+        <?php foreach($payments as $payment) { ?>
+        clickPaymentSetting('Payment_<?php echo $payment['PaymentId']; ?>_');
+        <?php } ?>
+        g_init_flg = false;
+        if (g_payment_id_linepay != 0) {
+            if (document.getElementById('SubscriberFlg').value != 9) {
+                // LINE Pay未申請じゃない場合はすべて非活性へ
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').disabled = true;
+                document.getElementById('Payment_' + g_payment_id_linepay + '_ApplyDate').disabled = true;
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartDate').disabled = true;
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').disabled = true;
+            } else {
+                // LINE Pay未申請の場合は、使用可否を活性化へ
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').disabled = false;
+                if (!document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').checked) {
+                    // LINE Pay未申請、且つ、使用可なら、その他をすべて活性化へ
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_ApplyDate').disabled = true;
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartDate').disabled = true;
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').disabled = true;
+                }
+            }
+        }
+
+        if (g_payment_id_rakuten != 0) {
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_UseFlg').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_ApplyDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_UseStartDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_UseStartFixFlg').disabled = true;
+        }
+
+        if (g_payment_id_famipay != 0) {
+            document.getElementById('Payment_' + g_payment_id_famipay + '_UseFlg').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_famipay + '_ApplyDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_famipay + '_UseStartDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_famipay + '_UseStartFixFlg').disabled = true;
+        }
+
+        if (g_payment_id_yuchopay != 0) {
+            document.getElementById('Payment_' + g_payment_id_yuchopay + '_UseFlg').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_yuchopay + '_ApplyDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_yuchopay + '_UseStartDate').disabled = true;
+            document.getElementById('Payment_' + g_payment_id_yuchopay + '_UseStartFixFlg').disabled = true;
+        }
+
+        if ($('SubscriberCode').value == '') {
+            initPaymentSetting();
+        } else {
+            getSubscriberSiteData($('ReceiptAgentId').value,$('SubscriberCode').value, true);
+            if (g_payment_id_linepay != 0) {
+                if (document.getElementById('Payment_' + g_payment_id_linepay + '_ProtectFlg').value == 0) {
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_ApplyDate').disabled = false;
+                }
+                if (document.getElementById('Payment_' + g_payment_id_linepay + '_FixProtectFlg').value == 0) {
+                    // if (document.getElementById('SubscriberFlg').value != 9) {
+                    //     document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartDate').disabled = false;
+                    // }
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartDate').disabled = false;
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').disabled = false;
+                }
+                // if (document.getElementById('SubscriberFlg').value != 9) {
+                //     document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').disabled = true;
+                // }
+            }
+        }
+    }
+
+    // 支払可能種類の設定の初期化
+    function initPaymentSetting()
+    {
+        <?php foreach($payments as $payment) { ?>
+        if (!g_init_flg) {
+            // 各行の初期化
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseFlg').checked = false;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_ApplyDate').value = '';
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartDate').value = '';
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartFixFlg').checked = false;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseFlg').disabled = false;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_ApplyDate').disabled = true;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartDate').disabled = true;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartFixFlg').disabled = true;
+
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_ProtectFlg').value = 0;
+            document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_FixProtectFlg').value = 0;
+        }
+        <?php } ?>
+
+        // LINEPay、楽天銀行、FamiPay、PayBの使用可否区分を非活性（初期化）
+        if (g_payment_id_linepay != 0) {
+            document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').disabled = true;
+        }
+        if (g_payment_id_rakuten != 0) {
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_UseFlg').disabled = true;
+        }
+        if (g_payment_id_famipay != 0) {
+            document.getElementById('Payment_' + g_payment_id_famipay + '_UseFlg').disabled = true;
+        }
+        if (g_payment_id_yuchopay != 0) {
+            document.getElementById('Payment_' + g_payment_id_yuchopay + '_UseFlg').disabled = true;
+        }
+    }
+
+    // 支払可能種類の設定の使用可否区分チェックイベント
+    function clickPaymentSetting(prefix)
+    {
+        if (document.getElementById(prefix+'UseFlg').checked) {
+            document.getElementById(prefix+'ApplyDate').disabled = false;
+            document.getElementById(prefix+'UseStartDate').disabled = false;
+            document.getElementById(prefix+'UseStartFixFlg').disabled = false;
+
+            if (document.getElementById(prefix+'ProtectFlg').value == 1) {
+                document.getElementById(prefix+'UseFlg').disabled = true;
+                document.getElementById(prefix+'ApplyDate').disabled = true;
+            }
+
+            if (document.getElementById(prefix+'FixProtectFlg').value == 1) {
+                document.getElementById(prefix+'UseFlg').disabled = true;
+                document.getElementById(prefix+'ApplyDate').disabled = true;
+                document.getElementById(prefix+'UseStartDate').disabled = true;
+                document.getElementById(prefix+'UseStartFixFlg').disabled = true;
+            }
+        } else {
+            // 各行の初期化
+            document.getElementById(prefix + 'UseFlg').checked = false;
+            if (!g_init_flg) {
+                document.getElementById(prefix + 'ApplyDate').value = '';
+                document.getElementById(prefix + 'UseStartDate').value = '';
+                document.getElementById(prefix + 'UseStartFixFlg').checked = false;
+            }
+            document.getElementById(prefix + 'UseFlg').disabled = false;
+            document.getElementById(prefix + 'ApplyDate').disabled = true;
+            document.getElementById(prefix + 'UseStartDate').disabled = true;
+            document.getElementById(prefix + 'UseStartFixFlg').disabled = true;
+
+            document.getElementById(prefix + 'ProtectFlg').value = 0;
+            document.getElementById(prefix + 'FixProtectFlg').value = 0;
+        }
+    }
+
+    function setZeikomiLbl()
+    {
+        var val = 0;
+        if (!isNaN($('OemSettlementFeeRate').value)) {
+        	val = $('OemSettlementFeeRate').value * <?php echo $this->zei_rate ?>;
+        }
+        val = Math.floor(val * 1000) / 1000;
+
+        $('OemSettlementFeeRateZeikomi').innerHTML = val.toFixed(3);
+    }
+
+    function freeitemsSubmit()
+    {
+        form.action='site/freeitems';
+
+        // 支払可能種類の設定をすべて活性化する
+        <?php foreach($payments as $payment) { ?>
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseFlg').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_ApplyDate').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartDate').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartFixFlg').disabled = false;
+        <?php } ?>
+
+        return true;
+    }
+
+    function dispConfirm()
+    {
+        var elements = document.getElementsByName('list[AutoJournalIncMode]');
+        for(var i = 0;i<elements.length; i++){
+            if(elements[i].checked){
+                var autoJournalIncMode = elements[i].value;
+                break;
+            }
+        }
+
+        var elements = document.getElementsByName('list[SelfBillingFlg]');
+        for(var i = 0;i<elements.length; i++){
+            if(elements[i].checked){
+                var selfBillingFlg = elements[i].value;
+                break;
+            }
+        }
+
+        var elements = document.getElementsByName('list[ClaimMypagePrint]');
+        for(var i = 0;i<elements.length; i++){
+            if(elements[i].checked){
+                var claimMypagePrint = elements[i].value;
+                break;
+            }
+        }
+
+        if(autoJournalIncMode == 1 && selfBillingFlg == 0) {
+            if(!window.confirm('請求書別送設定かつ伝票番号自動仮登録設定になっていますがよろしいですか？')){
+                return false;
+            }
+        }
+
+        if(claimMypagePrint != <?php echo $this->defaultClaimMypagePrint; ?>) {
+            if(!window.confirm('請求書マイページ印字の設定がデフォルトから変更されていますがよろしいですか？')){
+                return false;
+            }
+        }
+
+        var allowOutOfAmendsName = document.getElementById('allowOutOfAmendsName').value + "";
+        var allowList = allowOutOfAmendsName.split(',');
+        var allowFlg = false;
+        var siteNm = document.getElementById('SiteNameKj').value;
+
+        for(var i = 0;i<allowList.length; i++){
+            if(siteNm.indexOf(allowList[i]) != -1){
+                allowFlg = true;
+                break;
+            }
+        }
+
+        if(!allowFlg && document.form.OutOfAmendsFlg.checked) {
+            if(!window.confirm('本番サイトに対して全案件補償外が設定されていますがよろしいですか？')){
+                return false;
+            }
+        }
+
+        // 支払可能種類の設定をすべて活性化する
+        <?php foreach($payments as $payment) { ?>
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseFlg').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_ApplyDate').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartDate').disabled = false;
+        document.getElementById('Payment_<?php echo $payment['PaymentId']; ?>_UseStartFixFlg').disabled = false;
+        <?php } ?>
+
+        document.getElementById('FirstClaimLayoutMode').disabled = false;
+
+        return true;
+    }
+
+    function ReissueCountInput(BillingAgentFlg)
+    {
+        if (BillingAgentFlg == 1)
+        {
+            $('ReissueCount').disabled = false;
+        }
+        else
+        {
+            $('ReissueCount').disabled = true;
+        }
+    }
+
+    function Oemcheck(OemId)
+    {
+        if (OemId == 0)
+        {
+            $('OemFirstCreditTransferClaimFee').disabled = true;
+            $('OemFirstCreditTransferClaimFeeWeb').disabled = true;
+            $('OemCreditTransferClaimFee').disabled = true;
+        }
+        else
+        {
+            $('OemFirstCreditTransferClaimFee').disabled = false;
+            $('OemFirstCreditTransferClaimFeeWeb').disabled = false;
+            $('OemCreditTransferClaimFee').disabled = false;
+        }
+    }
+
+	// CB_B2C_DEV-14
+    function getSubscriberSiteData(ReceiptAgentId,SubscriberCode,InitFlg)
+    {
+        g_init_flg = InitFlg;
+        if(SubscriberCode!=''){
+	        var url = '<?php echo $this->baseUrl . '/Generalsvc/searchsubscriber' ?>?ra=' + ReceiptAgentId + '&sc=' + SubscriberCode;
+	        var ajax = new Ajax.Request(
+	            url,
+	            {
+	                method: 'GET',
+	                onComplete: setSubscriberSiteData
+	            }
+	        );
+            document.getElementById('btnConfirm').disabled = false;
+            document.getElementById('submit_massage').style.display = "none";
+        }else{
+        	window.open('Site/sscodelist/ra/' + ReceiptAgentId);
+        }
+    }
+
+    function setSubscriberSiteData(orgReq)
+    {
+        var jsonObj = eval('(' + orgReq.responseText + ')');
+        var SubscriberSiteCnt = jsonObj["SiteCnt"];
+        var SubscriberName = jsonObj["SubscriberName"];
+
+        document.getElementById("SubscriberLabel").textContent = '(' + SubscriberSiteCnt + '件) ' + SubscriberName;
+
+        if (!g_init_flg) {
+            // 各行の初期化
+            initPaymentSetting();
+        }
+        if (SubscriberName == '対象データが存在しませんでした。') {
+            // 初期表示時も含め、加入者固有コードが未存在の場合は、初期化する
+            initPaymentSetting();
+
+            if (g_init_flg) {
+                element = document.getElementById('message');
+                new_element = document.createElement('div');
+                new_element.classList.add("warning");
+                new_element.textContent = '存在しない加入者固有コードが指定されています。';
+                element.appendChild(new_element);
+            }
+            g_init_flg = false;
+            return;
+        }
+
+        //　初期表示時はサイト支払方法を優先とする
+        if (g_init_flg) {
+            g_init_flg = false;
+            return;
+        }
+
+        // 楽天銀行の設定
+        if (g_payment_id_rakuten != 0) {
+            if (jsonObj["RakutenBankUseFlg"] == 1) {
+                document.getElementById('Payment_' + g_payment_id_rakuten + '_UseFlg').checked = true;
+            } else {
+                document.getElementById('Payment_' + g_payment_id_rakuten + '_UseFlg').checked = false;
+            }
+            document.getElementById('Payment_' + g_payment_id_rakuten + '_UseStartFixFlg').checked = true;
+        }
+
+        // FamiPayの設定
+        if (g_payment_id_famipay != 0) {
+            if (jsonObj["FamiPayUseFlg"] == 1) {
+                document.getElementById('Payment_' + g_payment_id_famipay + '_UseFlg').checked = true;
+            } else {
+                document.getElementById('Payment_' + g_payment_id_famipay + '_UseFlg').checked = false;
+            }
+            document.getElementById('Payment_' + g_payment_id_famipay + '_UseStartFixFlg').checked = true;
+        }
+
+        // LINEPayの設定
+        if (g_payment_id_linepay != 0) {
+            if (jsonObj["LinePayUseFlg"] == 9) {
+                    // 未申請
+                    document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').disabled = false;
+            } else if (jsonObj["LinePayUseFlg"] == 1) {
+                // LINEPAY可
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').checked = true;
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').checked = true;
+            } else {
+                // LINEPAY不可
+                document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').checked = true;
+            }
+            document.getElementById('SubscriberFlg').value = jsonObj["LinePayUseFlg"];
+            // document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartFixFlg').disabled = false;
+            document.getElementById('Payment_' + g_payment_id_linepay + '_ApplyDate').value = jsonObj["LineApplyDate"];
+            document.getElementById('Payment_' + g_payment_id_linepay + '_UseStartDate').value = jsonObj["LineUseStartDate"];
+
+            if (document.getElementById('Payment_' + g_payment_id_linepay + '_UseFlg').disabled) {
+                document.getElementById('Payment_' + g_payment_id_linepay + '_FixProtectFlg').value = 1;
+            }
+        }
+        g_init_flg = false;
+    }
+
+    function firstClaimLayoutModeCtl(Mode)
+    {
+        if (Mode == 1) {
+            document.getElementById('FirstClaimLayoutMode').disabled = false;
+        } else {
+            document.getElementById('FirstClaimLayoutMode').disabled = true;
+        }
+    }
+          </script>
+        </head>
+        <body onLoad="javascript:changeLimitDatePattern();clickReClaimFeeSetting(<?php echo f_e($fd['ReClaimFeeSetting']);?>); setZeikomiLbl(); ReissueCountInput(<?php echo f_e($this->BillingAgentFlg);?>); AllPaymentSetting();firstClaimLayoutModeCtl(<?php echo f_e($this->firstClaimLayoutModeCtl);?>); Oemcheck(<?php echo f_e($fd['CreditTransferFlg']);?>);">
+          <div id="wrapper"><!-- start #wrapper -->
+          <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>【サイト登録】</h3>
+      <div id="message"></div>
+      <form name="form" action="site/confirm" method="post" enctype="multipart/form-data">
+        <input type="hidden" id="EnterpriseId" name="list[EnterpriseId]" value="<?php echo f_e($fd['EnterpriseId']);?>">
+        <input type="hidden" id="PaymentAfterArrivalFlg" name="list[PaymentAfterArrivalFlg]" value="<?php echo f_e($fd['PaymentAfterArrivalFlg']);?>">
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_label" colspan=6>【基本情報】</td>
+            </tr>
+            <tr>
+              <td class="r_label" >サイトID</td>
+              <td class="l_label"colspan=5>
+                <input type="hidden" id="SiteId" name="list[SiteId]" value="<?php echo f_e($fd['SiteId']); ?>" ><?php echo f_e($fd['SiteId']); ?>
+                <?php show_error_message($this->error['SiteId']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >サイト名<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SiteNameKj" name="list[SiteNameKj]" value="<?php echo f_e($fd['SiteNameKj']); ?>">
+                <?php show_error_message($this->error['SiteNameKj']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >サイト名カナ<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SiteNameKn" name="list[SiteNameKn]" value="<?php echo f_e($fd['SiteNameKn']); ?>">
+                <?php show_error_message($this->error['SiteNameKn']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >URL<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="Url" name="list[Url]" value="<?php echo f_e($fd['Url']); ?>">
+                <?php show_error_message($this->error['Url']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >メールアドレス<font color="red">*</font></td>
+              <td class="l_label" colspan=5><input type="checkbox" id="ReqMailAddrFlg" name="list[ReqMailAddrFlg]" value="1" <?php if($fd['ReqMailAddrFlg'] == 1){echo 'checked';}?>/>必須</td>
+            </tr>
+            <tr>
+              <td class="r_label" >形態<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <select name="list[SiteForm]">
+                <?php foreach ($fd['SiteForms'] as $key => $row) { ?>
+                  <option value="<?php echo $key ;?>" <?php if( $fd['SiteForm'] == $key){echo 'selected';}?>><?php echo $row?></option>
+                <?php }?>
+                </select>
+                <?php show_error_message($this->error['SiteForm']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">初回請求用紙モード</td>
+              <td class="l_label" colspan=5><input type="checkbox" id="FirstClaimLayoutMode" name="list[FirstClaimLayoutMode]" value="1" <?php if($fd['FirstClaimLayoutMode'] == 1){echo 'checked';}?> /></td>
+            </tr>
+                <tr>
+                    <td class="r_label" >請求書マイページ印字</td>
+                    <td class="l_label" colspan=5>
+                        <input type="radio" id="ClaimMypagePrint" name="list[ClaimMypagePrint]" value=1 <?php if($fd['ClaimMypagePrint'] == 1){echo 'checked';}?>>する
+                        <input type="radio" id="ClaimMypagePrint" name="list[ClaimMypagePrint]" value=0 <?php if($fd['ClaimMypagePrint'] == 0){echo 'checked';}?>>しない
+                    </td>
+                </tr>
+            <tr>
+              <td class="r_label">全案件補償外</td>
+              <td class="l_label" colspan=5><input type="checkbox" id="OutOfAmendsFlg" name="list[OutOfAmendsFlg]" value="1" <?php if($fd['OutOfAmendsFlg'] == 1){echo 'checked';}?> />全案件補償外である</td>
+            </tr>
+            <tr>
+              <td class="r_label" style="width: 275px;">初回請求支払期限算出方法<br />支払期限算出基準日</td>
+              <td class="l_label" colspan=5>
+                <select id="LimitDatePattern" name="list[LimitDatePattern]" value="<?php echo f_e($fd['LimitDatePattern']); ?>" onchange="changeLimitDatePattern()">
+                <?php foreach($this->master_map['LimitDatePattern'] as $value => $caption) { ?>
+                  <?php $selected = $fd['LimitDatePattern'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+
+                <?php } ?>
+                </select>
+
+            　翌月
+              <select id="LimitDay" name="list[LimitDay]" value="<?php echo f_e($fd['LimitDay']); ?>">
+                <?php foreach($this->master_map['LimitDay'] as $value => $caption) { ?>
+                  <?php $selected = $fd['LimitDay'] == $value ? ' selected="selected"' : ''; ?>
+                  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+
+                <?php } ?>
+              </select>日
+            　（翌月指定日の場合のみ有効）
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >バーコード使用期限</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="BarcodeLimitDays" name="list[BarcodeLimitDays]" value="<?php echo f_e($fd['BarcodeLimitDays']);?>" maxlength="3" >日(期限なしは999)
+                <?php show_error_message($this->error['BarcodeLimitDays']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >コンビニ収納代行情報</td>
+              <td class="l_label" colspan=5>
+                <select name="list[ReceiptAgentId]" id="ReceiptAgentId">
+                <?php foreach ($fd['ReceiptAgentForms'] as $key => $row) { ?>
+                  <option value="<?php echo $key ;?>" <?php if( $fd['ReceiptAgentId'] == $key){echo 'selected';}?>><?php echo $row?></option>
+                <?php }?>
+                </select>
+                <input size="8" name="list[SubscriberCode]" type="text" id="SubscriberCode" value="<?php echo f_e($fd['SubscriberCode']); ?>" />
+                  <input type="hidden" name="list[SubscriberFlg]" id="SubscriberFlg" value="<?php echo f_e($fd['SubscriberFlg']); ?>" />
+                  <input type="button" value="検索" onClick="getSubscriberSiteData($('ReceiptAgentId').value,$('SubscriberCode').value,false);" />
+                  <label id="SubscriberLabel"><?php echo f_e($fd['SubscriberCodeSearchView']); ?></label>
+                  <?php show_error_message($this->error['ReceiptAgentId']); ?>
+                  <?php show_error_message($this->error['SubscriberCode']); ?>
+                  <div>初回が＠ペイメントでないOEM（SMBCFSなど）の場合は再請求で利用するコンビニ収納代行情報を設定してください。</div>
+                  <div style="color: red;">支払可能種類の設定に影響するため、収納代行ID入力後は必ず検索ボタンを押してください。</div>
+              </td>
+            </tr>
+            <?php for($i=0; $i<sizeof($payments); $i++){ ?>
+            <tr>
+                <?php if ($i == 0) { ?>
+                <td class="r_label" rowspan="<?php echo sizeof($payments) ?>">支払可能種類の設定</td>
+                <td class="r_label" rowspan="<?php echo sizeof($payments) ?>"><?php echo $payments[$i]['PaymentGroupName'];?></td>
+                <?php } ?>
+                <?php
+                    $paymentId = $payments[$i]['PaymentId'];
+                    $useFlg = "";
+                    if ($payments[$i]['UseFlg'] != 1) {
+                        $useFlg = "disabled";
+                    }
+                ?>
+                <td class="l_label">
+                    <input type="checkbox" id="Payment_<?php echo $paymentId; ?>_UseFlg" onclick="clickPaymentSetting('Payment_<?php echo $paymentId; ?>_');" name="list[Payment][<?php echo $paymentId; ?>][UseFlg]" <?php echo $useFlg; ?> <?php if($fd['Payment'][$paymentId]['UseFlg'] == 1){echo 'checked';} ?> value="1">
+                    <?php echo $payments[$i]['PaymentName'];?>
+                    <?php show_error_message($this->error['Payment_'.$paymentId.'_UseFlg']); ?>
+                </td>
+                <td class="l_label">
+                    申込日：<input type="text" id="Payment_<?php echo $paymentId; ?>_ApplyDate" name="list[Payment][<?php echo $paymentId; ?>][ApplyDate]" size="10" value="<?php echo $fd['Payment'][$paymentId]['ApplyDate']; ?>">
+                    <?php show_error_message($this->error['Payment_'.$paymentId.'_ApplyDate']); ?>
+                </td>
+                <td class="l_label" colspan="2">
+                    利用開始日：<input type="text" id="Payment_<?php echo $paymentId; ?>_UseStartDate" name="list[Payment][<?php echo $paymentId; ?>][UseStartDate]" size="10" value="<?php echo $fd['Payment'][$paymentId]['UseStartDate']; ?>">
+                    <input type="hidden" id="Payment_<?php echo $paymentId; ?>_ProtectFlg" name="list[Payment][<?php echo $paymentId; ?>][ProtectFlg]" value="<?php echo $fd['Payment'][$paymentId]['ProtectFlg']; ?>">
+                    <input type="hidden" id="Payment_<?php echo $paymentId; ?>_FixProtectFlg" name="list[Payment][<?php echo $paymentId; ?>][FixProtectFlg]" value="<?php echo $fd['Payment'][$paymentId]['FixProtectFlg']; ?>">
+                    <?php show_error_message($this->error['Payment_'.$paymentId.'_UseStartDate']); ?>
+                    　<input type="checkbox" id="Payment_<?php echo $paymentId; ?>_UseStartFixFlg" name="list[Payment][<?php echo $paymentId; ?>][UseStartFixFlg]" disabled <?php if($fd['Payment'][$paymentId]['UseStartFixFlg'] == 1){echo 'checked';} ?> value="1">
+                </td>
+            </tr>
+            <?php } ?>
+            <tr>
+              <td class="r_label" >三菱UFJ</td>
+              <td class="l_label" colspan=5>
+                <input type="checkbox" id="MufjBarcodeUsedFlg" name="list[MufjBarcodeUsedFlg]" <?php if($fd['MufjBarcodeUsedFlg'] == 1){echo 'checked';} ?> value="1" />
+                &nbsp;初回請求書に三菱UFJの収納代行を利用する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >コンビニ収納代行情報</td>
+              <td class="l_label" colspan=5>
+                加入者固有コード&nbsp;&nbsp;
+                <input type="text" id="MufjBarcodeSubscriberCode" name="list[MufjBarcodeSubscriberCode]" value="<?php echo f_e($fd['MufjBarcodeSubscriberCode']); ?>">
+                <?php show_error_message($this->error['MufjBarcodeSubscriberCode']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >有効設定</td>
+              <td class="l_label" colspan=5><input type="checkbox" id="ValidFlg" name="list[ValidFlg]" <?php if($fd['ValidFlg'] == 1){echo 'checked';} ?> value="1" /></td>
+            </tr>
+            <tr>
+              <td class="l_label" colspan=6>【サービス内容】</td>
+            </tr>
+            <tr>
+              <td class="r_label" >申込日</td>
+              <td class="l_label" colspan=5><?php echo $fd['ApplicationDate']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label" >利用プラン</td>
+              <td class="l_label" colspan=5><?php echo $fd['PlanName']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label" >決済上限額（税抜）<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SettlementAmountLimit" name="list[SettlementAmountLimit]" value="<?php echo f_e($fd['SettlementAmountLimit']);?>">円
+                <input type="text" id="ReferenceSettlementAmountLimit" value="<?php echo "決済上限額：".$fd['Reference']['SettlementAmountLimit']."円"; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['SettlementAmountLimit']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >決済手数料率<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SettlementFeeRate" name="list[SettlementFeeRate]" value="<?php echo f_e($fd['SettlementFeeRate']); ?>">%(小数点以下有効桁数:5桁)
+                <input type="text" id="ReferenceSettlementFeeRate" value="<?php echo "決済手数料率：".$fd['Reference']['SettlementFeeRate']."%"; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['SettlementFeeRate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求手数料（別送）（税抜）<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ClaimFeeBS"  name="list[ClaimFeeBS]" value="<?php echo f_e($fd['ClaimFeeBS']);?>">円
+                <input type="text" id="ReferenceClaimFeeBS" value="<?php echo "請求手数料（別送）：".$fd['Reference']['ClaimFeeBS']."円"; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['ClaimFeeBS']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求手数料（同梱）（税抜）<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ClaimFeeDK" name="list[ClaimFeeDK]" value="<?php echo f_e($fd['ClaimFeeDK']);?>">円
+                <input type="text" id="ReferenceClaimFeeDK" value="<?php echo "請求手数料（同梱）：".$fd['Reference']['ClaimFeeDK']."円"; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['ClaimFeeDK']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >口振紙初回登録手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="FirstCreditTransferClaimFee" name="list[FirstCreditTransferClaimFee]" value="<?php echo f_e($fd['FirstCreditTransferClaimFee']);?>">円
+                <?php if( strcmp($fd['CreditTransferFlg'] , "1") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFee']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "2") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFee']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "3") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFee']); } ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >口振WEB初回登録手数料（税抜） </td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="FirstCreditTransferClaimFeeWeb" name="list[FirstCreditTransferClaimFeeWeb]" value="<?php echo f_e($fd['FirstCreditTransferClaimFeeWeb']);?>">円
+                <?php if( strcmp($fd['CreditTransferFlg'] , "1") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFeeWeb']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "2") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFeeWeb']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "3") == 0 ){ show_error_message($this->error['FirstCreditTransferClaimFeeWeb']); } ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >口振引落手数料（税抜） </td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="CreditTransferClaimFee" name="list[CreditTransferClaimFee]" value="<?php echo f_e($fd['CreditTransferClaimFee']);?>">円
+                <?php if( strcmp($fd['CreditTransferFlg'] , "1") == 0 ){ show_error_message($this->error['CreditTransferClaimFee']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "2") == 0 ){ show_error_message($this->error['CreditTransferClaimFee']); } ?>
+                <?php if( strcmp($fd['CreditTransferFlg'] , "3") == 0 ){ show_error_message($this->error['CreditTransferClaimFee']); } ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM決済手数料率（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="OemSettlementFeeRate" name="list[OemSettlementFeeRate]" value="<?php echo f_e($fd['OemSettlementFeeRate']);?>" onChange="setZeikomiLbl()">%(小数点以下有効桁数:5桁)　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceOemSettlementFeeRate" value="<?php echo isset($fd['Reference']['OemSettlementFeeRate']) ? "OEM決済手数料率：".$fd['Reference']['OemSettlementFeeRate']."%" : ""; ?>" style="border:none; width: 200px;" disabled="ture">　　税込 <label id="OemSettlementFeeRateZeikomi"></label>%
+                <?php show_error_message($this->error['OemSettlementFeeRate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM請求手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="OemClaimFee" name="list[OemClaimFee]" value="<?php echo f_e($fd['OemClaimFee']);?>">円　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceOemClaimFeeBS" value="<?php echo isset($fd['Reference']['OemClaimFeeBS']) ? "OEM請求手数料：".$fd['Reference']['OemClaimFeeBS']."円" : ""; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['OemClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM同梱請求手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SelfBillingOemClaimFee" name="list[SelfBillingOemClaimFee]" value="<?php echo f_e($fd['SelfBillingOemClaimFee']);?>">円　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceOemClaimFeeDK" value="<?php echo isset($fd['Reference']['OemClaimFeeDK']) ? "OEM同梱請求手数料：".$fd['Reference']['OemClaimFeeDK']."円" : ""; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['SelfBillingOemClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM口振紙初回登録手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="OemFirstCreditTransferClaimFee" name="list[OemFirstCreditTransferClaimFee]" value="<?php echo f_e($fd['OemFirstCreditTransferClaimFee']);?>">円　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceFirstCreditTransferClaimFeeOem" value="<?php echo isset($fd['Reference']['FirstCreditTransferClaimFeeOem']) ? "標準請求手数料：".$fd['Reference']['FirstCreditTransferClaimFeeOem']."円" : ""; ?>" style="border:none; width: 300px;" disabled="ture">
+                <?php show_error_message($this->error['OemFirstCreditTransferClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM口振WEB初回登録手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="OemFirstCreditTransferClaimFeeWeb" name="list[OemFirstCreditTransferClaimFeeWeb]" value="<?php echo f_e($fd['OemFirstCreditTransferClaimFeeWeb']);?>">円　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceFirstCreditTransferClaimFeeWebOem" value="<?php echo isset($fd['Reference']['FirstCreditTransferClaimFeeWebOem']) ? "標準請求手数料：".$fd['Reference']['FirstCreditTransferClaimFeeWebOem']."円" : ""; ?>" style="border:none; width: 300px;" disabled="ture">
+                <?php show_error_message($this->error['OemFirstCreditTransferClaimFeeWeb']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >OEM口振引落手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="OemCreditTransferClaimFee" name="list[OemCreditTransferClaimFee]" value="<?php echo f_e($fd['OemCreditTransferClaimFee']);?>">円　※OEM先を選択した場合必須となります<br />
+                <input type="text" id="ReferenceCreditTransferClaimFeeOem" value="<?php echo isset($fd['Reference']['CreditTransferClaimFeeOem']) ? "標準請求手数料：".$fd['Reference']['CreditTransferClaimFeeOem']."円" : ""; ?>" style="border:none; width: 300px;" disabled="ture">
+                <?php show_error_message($this->error['OemCreditTransferClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >システム手数料（税抜）</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SystemFee" name="list[SystemFee]" value="<?php echo f_e($fd['SystemFee']);?>">円
+                <?php show_error_message($this->error['SystemFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="l_label" colspan=6>【再請求設定】</td>
+            </tr>
+            <tr>
+              <td class="r_label" >再請求回数</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ReissueCount"  name="list[ReissueCount]" value="<?php echo f_e($fd['ReissueCount']);?>" />回　　初回請求書のハガキを使用
+                <?php show_error_message($this->error['ReissueCount']); ?>
+            </tr>
+            <tr>
+              <td class="l_label" colspan=6>【再請求手数料設定】</td>
+            </tr>
+            <tr>
+              <td class="r_label" style="width: 275px;">再請求手数料設定種別</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ReClaimFeeSetting" name="list[ReClaimFeeSetting]" onclick="clickReClaimFeeSetting(0);" value=0 <?php if($fd['ReClaimFeeSetting'] == 0){echo 'checked';}?>>均一設定
+                <input type="radio" id="ReClaimFeeSetting" name="list[ReClaimFeeSetting]" onclick="clickReClaimFeeSetting(1);" value=1 <?php if($fd['ReClaimFeeSetting'] == 1){echo 'checked';}?>>個別設定
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >再請求手数料（税抜）<font color="red">*</font></td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ReClaimFee" name="list[ReClaimFee]" value="<?php echo f_e($fd['ReClaimFee']);?>">円
+                <input type="text" id="ReferenceReClaimFee" value="<?php echo "再請求手数料：".$fd['Reference']['ReClaimFee']."円"; ?>" style="border:none; width: 200px;" disabled="ture">
+                <?php show_error_message($this->error['ReClaimFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >再請求１<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee1" style="width: 120px" name="list[ReClaimFee1]" value="<?php echo f_e($fd['ReClaimFee1']);?>">円
+                <?php show_error_message($this->error['ReClaimFee1']); ?>
+              </td>
+              <td class="r_label" >再請求３<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee3" style="width: 120px" name="list[ReClaimFee3]" value="<?php echo f_e($fd['ReClaimFee3']);?>">円
+                <?php show_error_message($this->error['ReClaimFee3']); ?>
+              </td>
+              <td class="r_label" >再請求４<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee4" style="width: 120px" name="list[ReClaimFee4]" value="<?php echo f_e($fd['ReClaimFee4']);?>">円
+                <?php show_error_message($this->error['ReClaimFee4']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >再請求５<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee5" style="width: 120px" name="list[ReClaimFee5]" value="<?php echo f_e($fd['ReClaimFee5']);?>">円
+                <?php show_error_message($this->error['ReClaimFee5']); ?>
+              </td>
+              <td class="r_label" >再請求６<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee6" style="width: 120px" name="list[ReClaimFee6]" value="<?php echo f_e($fd['ReClaimFee6']);?>">円
+                <?php show_error_message($this->error['ReClaimFee6']); ?>
+              </td>
+              <td class="r_label" >再請求７<font color="red">*</font></td>
+              <td class="l_label">
+                <input type="text" id="ReClaimFee7" style="width: 120px" name="list[ReClaimFee7]" value="<?php echo f_e($fd['ReClaimFee7']);?>">円
+                <?php show_error_message($this->error['ReClaimFee7']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >適用開始注文登録日</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ReClaimFeeStartRegistDate" name="list[ReClaimFeeStartRegistDate]" value="<?php echo f_e($fd['ReClaimFeeStartRegistDate']); ?>">　（YYYY-MM-DD形式）
+                <?php show_error_message($this->error['ReClaimFeeStartRegistDate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >適用開始注文日</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="ReClaimFeeStartDate" name="list[ReClaimFeeStartDate]" value="<?php echo f_e($fd['ReClaimFeeStartDate']); ?>">　（YYYY-MM-DD形式）
+                <?php show_error_message($this->error['ReClaimFeeStartDate']); ?>
+              </td>
+            </tr>
+          <!-- count関数対策 -->
+          <?php if (!empty($this->campaign)) { ?>
+          </table>
+          <!-- キャンペーン設定 -->
+          <table class="datatable" style="width: 500px;" cellpadding="1" cellspacing="1" border="0">
+            <tr>
+              <td colspan="5" class="data">【キャンペーン設定】</td>
+            </tr>
+            <tr>
+              <th>プラン名</th>
+              <th>期間FROM</th>
+              <th>期間TO</th>
+              <th>月額固定費</th>
+              <th>表示</th>
+            </tr>
+          <?php foreach ($this->campaign as $value) { ?>
+            <tr>
+              <td class="l_data"><?php echo f_e($value['PricePlanName']); ?></td>
+              <td class="c_data"><?php echo f_df($value['DateFrom'], 'Y-m-d'); ?></td>
+              <td class="c_data"><?php echo f_df($value['DateTo'], 'Y-m-d'); ?></td>
+              <td class="r_data"><?php echo f_nf(nvl($value['MonthlyFee'], 0), '#,##0'); ?></td>
+              <td class="c_data"><input type="button" id="campaign" name="campaign" onclick="window.open('<?php echo 'site/campaign/seq/' . $value['Seq'];?>')" value="表示"></td>
+            </tr>
+          <?php } ?>
+          </table>
+          <!-- ここまで -->
+          <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <?php } ?>
+            <tr>
+              <td class="l_label" colspan=6>【オプション機能】</td>
+            </tr>
+            <tr>
+              <td class="r_label" style="width: 275px;">役務設定</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ServiceTargetClass" name="list[ServiceTargetClass]" value=1 <?php if($fd['ServiceTargetClass'] == 1){echo 'checked';}?>>あり
+                <input type="radio" id="ServiceTargetClass" name="list[ServiceTargetClass]" value=0 <?php if($fd['ServiceTargetClass'] == 0){echo 'checked';}?>>なし
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >テスト注文可能</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="T_OrderClass" name="list[T_OrderClass]" value=0 <?php if($fd['T_OrderClass'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="T_OrderClass" name="list[T_OrderClass]" value=1 <?php if($fd['T_OrderClass'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信判定基準</td>
+              <td class="l_label" colspan=5>
+                <select id = "CreditCriterionNum" name="list[CreditCriterionNum]">
+                <?php foreach ($fd['CreditCriterionNames']as  $row) { ?>
+                  <option value="<?php echo $row['CreditCriterionId'];?>" <?php if( $fd['CreditCriterionNum'] == $row['CreditCriterionId'] ){echo 'selected';} ?> ><?php echo $row['CreditCriterionName' ];?></option>
+                <?php }?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信判定方法</td>
+              <td class="l_label" colspan=5>
+                <select id = "CreditJudgeMethod" name="list[CreditJudgeMethod]">
+                <?php foreach ($fd['Creditdecision'] as $key => $row) { ?>
+                  <option value="<?php echo $key;?>" <?php if($fd['CreditJudgeMethod'] == $key){echo 'selected';}?>><?php echo $row?></option>
+                <?php }?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信時注文利用額</td>
+              <td class="l_label" colspan=5><input type="text" id="CreditOrderUseAmount" name="list[CreditOrderUseAmount]" value="<?php echo f_e($fd['CreditOrderUseAmount']);?>">円</td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信時平均単価倍率</td>
+              <td class="l_label" colspan=5><input type="text" id="AverageUnitPriceRate" name="list[AverageUnitPriceRate]" value="<?php echo f_e($fd['AverageUnitPriceRate']);?>"></td>
+            </tr>
+            <tr>
+              <td class="r_label" >自動与信限度額</td>
+              <td class="l_label" colspan=5><input type="text" id="AutoCreditLimitAmount" name="list[AutoCreditLimitAmount]" value="<?php echo f_e($fd['AutoCreditLimitAmount']);?>">円</td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信自動化有効期間</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="AutoCreditDateFrom" name="list[AutoCreditDateFrom]" value="<?php echo f_e($fd['AutoCreditDateFrom']); ?>">
+                ～
+                <input type="text" id="AutoCreditDateTo" name="list[AutoCreditDateTo]" value="<?php echo f_e($fd['AutoCreditDateTo']);?>">
+                <?php show_error_message($this->error['AutoCreditDateFrom']); ?>
+                <?php show_error_message($this->error['AutoCreditDateTo']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >連続注文回数</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="MultiOrderCount" name="list[MultiOrderCount]" value="<?php echo f_e($fd['MultiOrderCount']);?>">
+                <?php show_error_message($this->error['MultiOrderCount']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >連続注文スコア</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="MultiOrderScore" name="list[MultiOrderScore]" value="<?php echo f_e($fd['MultiOrderScore']);?>">
+                <?php show_error_message($this->error['MultiOrderScore']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >連続注文除外</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ChatBotFlg" name="list[ChatBotFlg]" value=1 <?php if($fd['ChatBotFlg'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="ChatBotFlg" name="list[ChatBotFlg]" value=0 <?php if($fd['ChatBotFlg'] == 0){echo 'checked';}?>>しない
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >NG無保証変更</td>
+              <td class="l_label" colspan=5>
+                <input type="checkbox" id="NgChangeFlg" name="list[NgChangeFlg]" value="1" <?php if($fd['NgChangeFlg'] == 1){echo 'checked';}?>/>無保証変更可
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >NG理由表示</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ShowNgReason" name="list[ShowNgReason]" value=1 <?php if($fd['ShowNgReason'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="ShowNgReason" name="list[ShowNgReason]" value=0 <?php if($fd['ShowNgReason'] == 0){echo 'checked';}?>>しない
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >無保証変更可能期間</td>
+              <td class="l_label" colspan=5><input type="text" id="MuhoshoChangeDays" name="list[MuhoshoChangeDays]" value="<?php echo f_e($fd['MuhoshoChangeDays']);?>">日
+              </td>
+            </tr>
+            <tr style="display: none;">
+              <td class="r_label" >ジンテック手動与信強制</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="JintecManualReqFlg" name="list[JintecManualReqFlg]" value=1 <?php if($fd['JintecManualReqFlg'] == 1){echo 'checked';}?>>強制する
+                <input type="radio" id="JintecManualReqFlg" name="list[JintecManualReqFlg]" value=0 <?php if($fd['JintecManualReqFlg'] == 0){echo 'checked';}?>>強制しない
+              </td>
+            </tr>
+            <tr>
+              <td class="label">伝票番号自動仮登録</td>
+              <td class="data" colspan="5">
+                  <div>
+                      <input type="radio" id="AutoJournalIncMode" name="list[AutoJournalIncMode]" value=1 <?php if($fd['AutoJournalIncMode'] == 1){echo 'checked';}?>>する
+                      <input type="radio" id="AutoJournalIncMode" name="list[AutoJournalIncMode]" value=0 <?php if($fd['AutoJournalIncMode'] == 0){echo 'checked';}?>>しない
+                  </div>
+                  <div>
+                      <label for="AutoJournalDeliMethodId">
+                          自動仮登録時の配送方法：
+                            <select id = "AutoJournalDeliMethodId" name="list[AutoJournalDeliMethodId]">
+                            <?php foreach ($fd['DeliMethodName'] as $key => $row) { ?>
+                              <option value="<?php echo $key;?>" <?php if(($fd['AutoJournalDeliMethodId']) == $key){echo 'selected';}?>><?php echo $row; ?></option>
+                            <?php }?>
+                            </select>
+                      </label>
+                  </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">請求時伝票番号自動仮登録</td>
+              <td class="data" colspan="5">
+                <input type="radio" id="ClaimAutoJournalIncMode" name="list[ClaimAutoJournalIncMode]"  value=1 <?php if($fd['ClaimAutoJournalIncMode'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="ClaimAutoJournalIncMode" name="list[ClaimAutoJournalIncMode]"  value=0 <?php if(!($fd['ClaimAutoJournalIncMode'] == 1)){echo 'checked';}?>>しない
+                <?php show_error_message($this->error['ClaimAutoJournalIncMode']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求自動ストップ</td>
+              <td class="l_label" colspan=5>
+              <?php if(isset($fd['SiteId']) && strlen($fd['SiteId']) > 0){ ?>
+                <?php if($fd['AutoClaimStopFlg'] == 0){?>
+                <input type="hidden" id="AutoClaimStopFlg" name="list[AutoClaimStopFlg]" value=0 >自動ストップしない
+                <?php }else{?>
+                <input type="hidden" id="AutoClaimStopFlg" name="list[AutoClaimStopFlg]" value=1 >初回請求発行時に自動ストップ
+                <?php }?>
+                 <a href="site/resetacs/sid/<?php echo f_e($fd['SiteId']);?>" style="margin-left: 18px; font-size:11px">請求ストップ解除</a>
+              <?php }else{?>
+                <input type="radio" id="AutoClaimStopFlg" name="list[AutoClaimStopFlg]" value=0 <?php if($fd['AutoClaimStopFlg'] == 0){echo 'checked';}?>>自動ストップしない
+                <input type="radio" id="AutoClaimStopFlg" name="list[AutoClaimStopFlg]" value=1 <?php if($fd['AutoClaimStopFlg'] == 1){echo 'checked';}?>>初回請求発行時に自動ストップ
+              <?php }?>
+              </td>
+            </tr>
+            <tr <?php if (nvl($this->SelfBillingMode,0) == 0) { echo ' style="display:none"'; } ?>>
+              <td class="r_label" >請求書同梱</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="SelfBillingFlg" name="list[SelfBillingFlg]" value=1 <?php if($fd['SelfBillingFlg'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="SelfBillingFlg" name="list[SelfBillingFlg]" value=0 <?php if($fd['SelfBillingFlg'] == 0){echo 'checked';}?>>しない
+              </td>
+            </tr>
+            <tr <?php if (nvl($this->SelfBillingMode,0) == 0) { echo ' style="display:none"'; } ?>>
+              <td class="r_label" >注文強制同梱化</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="SelfBillingFixFlg" name="list[SelfBillingFixFlg]" value=1 <?php if($fd['SelfBillingFixFlg'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="SelfBillingFixFlg" name="list[SelfBillingFixFlg]" value=0 <?php if($fd['SelfBillingFixFlg'] == 0){echo 'checked';}?>>しない　※「請求書同梱」の設定が「する」の場合のみ本機能は有効となります<br />
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >サイト区分</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="SitClass" name="list[SitClass]" value=0 <?php if($fd['SitClass'] == 0){echo 'checked';}?>>一般
+                <input type="radio" id="SitClass" name="list[SitClass]" value=1 <?php if($fd['SitClass'] == 1){echo 'checked';}?>>法人
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求書用紙種類（同梱）</td>
+              <td class="l_label" colspan=5>
+                <select id = "PrintFormDK" name="list[PrintFormDK]">
+                <?php foreach ($fd['InvoiceDK'] as $key => $row) { ?>
+                  <option value="<?php echo $key;?>" <?php if($fd['PrintFormDK'] == $key){echo 'selected';}?>><?php echo $row?></option>
+                <?php }?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求書用紙種類（別送）</td>
+              <td class="l_label" colspan=5>
+                <select id = "PrintFormBS" name="list[PrintFormBS]">
+                <?php foreach ($fd['Invoice'] as $key => $row) { ?>
+                  <option value="<?php echo $key;?>" <?php if($fd['PrintFormBS'] == $key){echo 'selected';}?>><?php echo $row?></option>
+                <?php }?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >延滞起算猶予（初回請求）</td>
+              <td class="l_label" colspan=5><input type="text" id="FirstClaimKisanbiDelayDays" name="list[FirstClaimKisanbiDelayDays]" value="<?php echo f_e($fd['FirstClaimKisanbiDelayDays']);?>">日
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >延滞起算猶予（督促）</td>
+              <td class="l_label" colspan=5><input type="text" id="KisanbiDelayDays" name="list[KisanbiDelayDays]" value="<?php echo f_e($fd['KisanbiDelayDays']);?>">日
+              <input type="text" id="ReferenceKisanbiDelayDays" value="<?php echo isset($fd['Reference']['OemKisanbiDelayDays']) ? "OEM延滞起算猶予（督促）：".$fd['Reference']['OemKisanbiDelayDays']."日" : ""; ?>" style="border:none; width: 200px;" disabled="ture">
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >督促停止区分</td>
+              <td class="l_label" colspan=5>
+              <input type="radio" id="RemindStopClass" name="list[RemindStopClass]" value=1 <?php if($fd['RemindStopClass'] == 1){echo 'checked';}?>>する
+              <input type="radio" id="RemindStopClass" name="list[RemindStopClass]" value=0 <?php if($fd['RemindStopClass'] == 0){echo 'checked';}?>>しない
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >立替精算戻し</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="PayingBackFlg" name="list[PayingBackFlg]" value=1 <?php if($fd['PayingBackFlg'] == 1){echo 'checked';}?>>する
+                <input type="radio" id="PayingBackFlg" name="list[PayingBackFlg]" value=0 <?php if($fd['PayingBackFlg'] == 0){echo 'checked';}?>>しない
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >立替精算戻し判定日数</td>
+              <td class="l_label" colspan=5><input type="text" id="PayingBackDays" name="list[PayingBackDays]" value="<?php echo f_e($fd['PayingBackDays']);?>">日</td>
+            </tr>
+            <tr>
+              <td class="r_label" >掲載確認日</td>
+              <td class="l_label" colspan=5>
+                <input type="text" id="SiteConfDate" name="list[SiteConfDate]" value="<?php echo f_e($fd['SiteConfDate']);?>">
+                <?php show_error_message($this->error['SiteConfDate']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >「その他」着荷を自動で取る</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="EtcAutoArrivalFlg" name="list[EtcAutoArrivalFlg]" value=0 <?php if($fd['EtcAutoArrivalFlg'] == 0){echo 'checked';}?>>行わない
+                <input type="radio" id="EtcAutoArrivalFlg" name="list[EtcAutoArrivalFlg]" value=1 <?php if($fd['EtcAutoArrivalFlg'] == 1){echo 'checked';}?>>行う
+                <a style="display:none">
+                <input type="radio" id="EtcAutoArrivalFlg" name="list[EtcAutoArrivalFlg]" value=2 <?php if($fd['EtcAutoArrivalFlg'] == 2){echo 'checked';}?>>文字指定
+                <input type="text" id="EtcAutoArrivalNumber" name="list[EtcAutoArrivalNumber]" value="<?php echo f_e($fd['EtcAutoArrivalNumber']);?>">
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信開始メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="CreaditStartMail" name="list[CreaditStartMail]" value=0 <?php if($fd['CreaditStartMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="CreaditStartMail" name="list[CreaditStartMail]" value=1 <?php if($fd['CreaditStartMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信完了メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="CreaditCompMail" name="list[CreaditCompMail]" value=0 <?php if($fd['CreaditCompMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="CreaditCompMail" name="list[CreaditCompMail]" value=1 <?php if($fd['CreaditCompMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >注文修正メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="AddressMail" name="list[AddressMail]" value=0 <?php if($fd['AddressMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="AddressMail" name="list[AddressMail]" value=1 <?php if($fd['AddressMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求書発行メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ClaimMail" name="list[ClaimMail]" value=0 <?php if($fd['ClaimMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="ClaimMail" name="list[ClaimMail]" value=1 <?php if($fd['ClaimMail'] == 1){echo 'checked';}?>>送信する
+                <input type="radio" id="ClaimMail" name="list[ClaimMail]" value=2 <?php if($fd['ClaimMail'] == 2){echo 'checked';}?>>初回のみ送信
+                <input type="radio" id="ClaimMail" name="list[ClaimMail]" value=3 <?php if($fd['ClaimMail'] == 3){echo 'checked';}?>>督促のみ送信
+                </td>
+            </tr>
+            <tr>
+              <td class="r_label" >請求書破棄メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ClaimDisposeMail" name="list[ClaimDisposeMail]" value=0 <?php if($fd['ClaimDisposeMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="ClaimDisposeMail" name="list[ClaimDisposeMail]" value=1 <?php if($fd['ClaimDisposeMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >入金確認メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="ReceiptMail" name="list[ReceiptMail]" value=0 <?php if($fd['ReceiptMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="ReceiptMail" name="list[ReceiptMail]" value=1 <?php if($fd['ReceiptMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >キャンセル確認メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="CancelMail" name="list[CancelMail]" value=0 <?php if($fd['CancelMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="CancelMail" name="list[CancelMail]" value=1 <?php if($fd['CancelMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >もうすぐお支払いメール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="SoonPaymentMail" name="list[SoonPaymentMail]" value=0 <?php if($fd['SoonPaymentMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="SoonPaymentMail" name="list[SoonPaymentMail]" value=1 <?php if($fd['SoonPaymentMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >お支払未確認メール</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="NotPaymentConfMail" name="list[NotPaymentConfMail]" value=0 <?php if($fd['NotPaymentConfMail'] == 0){echo 'checked';}?>>送信しない
+                <input type="radio" id="NotPaymentConfMail" name="list[NotPaymentConfMail]" value=1 <?php if($fd['NotPaymentConfMail'] == 1){echo 'checked';}?>>送信する
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >与信結果メール</td>
+              <td class="l_label" colspan=5>
+                <?php foreach($this->master_map['CjMailMode'] as $value => $caption) { ?>
+                <label for="CjMailMode<?php echo f_e($value); ?>">
+                <?php $checked = $fd['CreditResultMail'] == $value ? ' checked="checked"' : ''; ?>
+                <input type="radio" id="CreditResultMail<?php echo f_e($value); ?>" name="list[CreditResultMail]" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+                <?php echo f_e($caption); ?>
+                </label>
+                <?php } ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >期間外注文チェック</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="OutOfTermcheck" name="list[OutOfTermcheck]" value=0 <?php if($fd['OutOfTermcheck'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="OutOfTermcheck" name="list[OutOfTermcheck]" value=1 <?php if($fd['OutOfTermcheck'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >電話番号不備チェック</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="Telcheck" name="list[Telcheck]" value=0 <?php if($fd['Telcheck'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="Telcheck" name="list[Telcheck]" value=1 <?php if($fd['Telcheck'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >住所不備チェック</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="Addresscheck" name="list[Addresscheck]" value=0 <?php if($fd['Addresscheck'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="Addresscheck" name="list[Addresscheck]" value=1 <?php if($fd['Addresscheck'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >郵便番号不備チェック</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="PostalCodecheck" name="list[PostalCodecheck]" value=0 <?php if($fd['PostalCodecheck'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="PostalCodecheck" name="list[PostalCodecheck]" value=1 <?php if($fd['PostalCodecheck'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" >任意注文番号チェック</td>
+              <td class="l_label" colspan=5>
+                <input type="radio" id="Ent_OrderIdcheck" name="list[Ent_OrderIdcheck]" value=0 <?php if($fd['Ent_OrderIdcheck'] == 0){echo 'checked';}?>>なし
+                <input type="radio" id="Ent_OrderIdcheck" name="list[Ent_OrderIdcheck]" value=1 <?php if($fd['Ent_OrderIdcheck'] == 1){echo 'checked';}?>>あり
+              </td>
+            </tr>
+            
+            <tr>
+              <td class="l_label" colspan=6>【請求代行サービス設定】
+              </td>
+            </tr>
+            <tr>
+              <td class="label">他サイトの与信対象外</td>
+              <td class="data" colspan=5 id="OtherSitesAuthCheck" name="OtherSitesAuthCheck" >
+                <input type="radio" id="OtherSitesAuthCheckFlg" name="list[OtherSitesAuthCheckFlg]" value=1 <?php if ( $fd['OtherSitesAuthCheckFlg'] == 1 ) { echo 'checked'; } if ( f_e($this->BillingAgentFlg) == 0 ) { echo ' disabled="disabled"'; } ?> />する
+                <input type="radio" id="OtherSitesAuthCheckFlg" name="list[OtherSitesAuthCheckFlg]" value=0 <?php if ( $fd['OtherSitesAuthCheckFlg'] == 0 ) { echo 'checked'; } if ( f_e($this->BillingAgentFlg) == 0 ) { echo ' disabled="disabled"'; } ?> />しない
+                <?php show_error_message($this->error['OtherSitesAuthCheckFlg']); ?>
+              </td>
+            </tr>
+            <tr>
+                <td class="r_label" >自由項目</td>
+                <td class="l_label" colspan=5 id="Freeitems" name="Freeitems">
+                    <?php echo f_e($fd['FreeItemsL']); ?>
+                    <?php if ( f_e($this->BillingAgentFlg) == 1 ) { ?>
+                    <input type="submit" id="btnFreeitems" name="btnFreeitems" class="link-style-btn" value="<?php echo f_e($fd['FreeItemsV']); ?>" onClick="return freeitemsSubmit()"/>
+                    <?php } else { echo f_e($fd['FreeItemsV']); } ?>
+                    <input name="hashFreeItems" value="<?php echo f_e($this->hashFreeItems); ?>" type="hidden" />
+                </td>
+            </tr>
+            <!-- <<< add link regist Todo -->
+            <tr>
+              <td class="l_label" colspan=6>【届いてから払い情報】
+              <?php 
+                $registTodoUrl = 'site/registtodoitekara/eid/' . f_e($fd['EnterpriseId']);
+                if(isset($fd['SiteId']) && strlen($fd['SiteId']) > 0) {
+                  $registTodoUrl .= '/sid/' . $fd['SiteId'];
+                }
+                if (!$this->checkTodo['disableLink'] && isset($fd['SiteId']) && !empty($fd['SiteId']) ) {
+              ?>
+                <a style="margin-left: 20px;" href="<?php echo $registTodoUrl ?>">届いてから払い情報編集</a>
+                <?php } else { ?>
+                <span style="margin-left: 20px;">届いてから払い情報編集</span>
+                <?php } ?>
+              </td>
+            </tr>
+            <!-- >>> -->
+         </tbody>
+        </table>
+      <?php if(isset($fd['SiteId']) && strlen($fd['SiteId']) > 0){?>
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td class="l_label" colspan=6>【APIユーザー情報】　　　　<a href="apirel/ent2api/oemId/<?php echo nvl($fd['OemId'], 0);?>/id/<?php echo f_e($fd['SiteId']);?>">APIユーザー情報編集</a></td>
+          </tr>
+          <tr>
+            <th >ID</th>
+            <th>状態</th>
+            <th colspan=2>APIユーザー</th>
+          </tr>
+          <?php foreach ($this->apiuserlist as $row) { ?>
+          <tr class="data">
+            <td class="r_data" style="width: 50px;"><?php echo $row['ApiUserId']; ?></td>
+            <td class="c_data" style="width: 50px;"><?php if ($row['ValidFlg'] ==1) { echo '有効';} else { echo '無効';} ?></td>
+            <td class="l_data" colspan=2><a href="apiuser/detail/id/<?php echo $row['ApiUserId']; ?>"><?php echo $row['ApiUserNameKj']; ?></a></td>
+          </tr>
+        <?php }?>
+        </table>
+      <?php }?>
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td class="c_data" colspan=6>
+              <input type="submit" id="btnConfirm" name="btnConfirm" value="　確定　" onClick="return dispConfirm()"/>
+              <input type="submit" id="btnCancel" name="btnCancel" value="キャンセル" onClick="form.action='site/list/eid/<?php echo f_e($this->EnterpriseId); ?>';return true"/>
+                <div id="submit_massage" style="display: none;color: red;">コンビニ収納代行情報の加入者固有コードを入力した後は、必ず検索ボタンを押してください</div>
+              <input type="hidden" id="allowOutOfAmendsName" name="form[allowOutOfAmendsName]" value="<?php echo f_e($this->AllowOutOfAmendsName); ?>" />
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div><!-- end #contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+    <script>
+        var g_before_subscriber_code;
+        document.getElementById('SubscriberCode').addEventListener('focusin', (e) => {
+            g_before_subscriber_code = document.getElementById('SubscriberCode').value;
+        });
+        document.getElementById('SubscriberCode').addEventListener('focusout', (e) => {
+            if (document.getElementById('SubscriberCode').value != g_before_subscriber_code) {
+                document.getElementById('btnConfirm').disabled = true;
+                document.getElementById('submit_massage').style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>

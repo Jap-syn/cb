@@ -1,0 +1,192 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<script type="text/javascript">
+<!--
+	function chkPndChanged(n)
+	{
+        $('chInd' + n).disabled = $('chkPnd' + n).checked;
+        $('TransFee' + n).disabled = $('chkPnd' + n).checked;
+    	if($('chkPnd' + n).checked) {
+    	    $('chInd' + n).checked = false;
+    	}
+	}
+//-->
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">過不足入金一覧</h3>
+	<!-- ページナビゲーション -->
+	<?php echo $this->render('cbadmin/page_navigation.php'); ?>
+
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr >
+            <td class="l_data" >
+                <form name="form" method="post" action="rwsprcpt/lacklist">
+                    <?php echo $this->lacktypeTag; ?>
+                    &nbsp;&nbsp;
+                    <?php echo $this->oemTag; ?>
+                    &nbsp;&nbsp;
+                    過不足金
+                    <input type="text" style="width:90px;" name="ClaimedBalanceF" id="ClaimedBalanceF" value="<?php echo f_e($this->ClaimedBalanceF); ?>" />&nbsp;～
+                    <input type="text" style="width:90px;" name="ClaimedBalanceT" id="ClaimedBalanceT" value="<?php echo f_e($this->ClaimedBalanceT); ?>" />
+                    <BR>
+                    ﾈｯﾄDE受取手数料&nbsp;<?php echo $this->transTag; ?>
+                    &nbsp;&nbsp;
+                    ﾈｯﾄDE受取ｽﾃｰﾀｽ&nbsp;<?php echo $this->statusTag; ?>
+                    <input type="submit" id="submit_button" value="　検　索　" />
+                </form>
+            </td>
+            <td class="r_data" width="180px">
+                <span class="pager"><a class="download_link" href="<?php echo $this->durl; ?>">一覧をCSVダウンロード</a></span>
+                <span class="pager"><a href="rwsprcpt/lackform">CSVファイルインポート</a></span>
+            </td>
+        </tr>
+        </table>
+        <form id="form2" name="form" method="post" action="<?php echo $this->surl; ?>">
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+            <td class="r_data" colspan="20" >
+                <input type="button" onclick="allChecked(true, this.form,'chInd');" value="　ﾈｯﾄDE受取全選択　" /><BR>
+                <input type="button" onclick="allChecked(false,this.form,'chInd');" value="　ﾈｯﾄDE受取全解除　" />
+            </td>
+        </tr>
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>初回<br>期限</th>
+            <th>最終<br>請求</th>
+            <th>支払<br>期限</th>
+            <th>請求</th>
+            <th>属<br>性</th>
+            <th width="80px">請求先氏名</th>
+            <th>請求金額</th>
+            <th>入金形態</th>
+            <th>顧客<br>入金日</th>
+            <th>入金<br>処理日</th>
+            <th>実入金額</th>
+            <th colspan="2">入金比較</th>
+            <th>過不足金</th>
+            <th>指示</th>
+            <th>返金<BR>保留</th>
+            <th>ﾈｯﾄDE<BR>受取指示</th>
+            <th>ﾈｯﾄDE<BR>受取手数料</th>
+            <th>ﾈｯﾄDE<BR>受付手数料</th>
+            </tr>
+          <?php $i = 0; ?>
+          <?php foreach ($this->list as $row) {
+              $isTransFeeDisabled = false;
+              if (($row['CntNet'] > 0) || ($row['ClaimedBalance'] * (-1) < 0) || ($row['RepayPendingFlg'] == 1)) {
+                  $isTransFeeDisabled = true;
+              }
+
+              $transFee = 0;
+              if ($row['RepayTCFlg'] == 0 && !$isTransFeeDisabled) {
+                $transFee = $this->NetTransferCommission;
+              } elseif(($row['CntNet'] > 0)) {
+                $transFee = $row['TransferCommission'];
+              }
+
+
+          ?>
+          <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $row['OrderSeq']; ?>"/>
+          <input type="hidden" name="ClaimId<?php echo $i; ?>" value="<?php echo $row['ClaimId']; ?>"/>
+          <input type="hidden" name="OrderId<?php echo $i; ?>" value="<?php echo $row['OrderId']; ?>"/>
+          <input type="hidden" name="ClaimedBalance<?php echo $i; ?>" value="<?php echo $row['ClaimedBalance'] * -1; ?>"/>
+
+          <tr>
+            <td class="c_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['F_LimitDate'])); ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['ClaimDate'])); ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['LimitDate'])); ?></td>
+            <td class="c_data"><?php echo $row['IncreCaption']; ?></td>
+            <td class="c_data"><?php echo $row['IncreLogCaption']; ?></td>
+            <td class="l_data"><a target="_blank" href="customerinquiry/detail/custid/<?php echo $row['CustomerId']; ?>"><?php echo $row['NameKj']; ?></a></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimAmount'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['ReceiptClass']; ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime($row['ReceiptDate'])); ?></td>
+            <td class="c_data"><?php echo date('m/d', strtotime(f_df($row['ReceiptProcessDate'], 'Y-m-d'))); ?></td>
+            <td class="r_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['ClaimPattern']; ?></td>
+            <td class="r_data"><?php echo f_nf($row['MinClaimAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimedBalance'] * (-1), '#,##0'); ?></td>
+            <td class="c_data">
+            <?php if ($row['ClaimedBalance'] > 0 ) { ?>
+            <a target="_blank" href="rwsprcpt/lossedit/oid/<?php echo $row['OrderId']; ?>/claimedbalance/<?php echo $row['ClaimedBalance']; ?>">雑損失</a>
+            <?php } else { ?>
+            <a target="_blank" href="rwsprcpt/repayedit/oseq/<?php echo $row['OrderSeq']; ?>">返金</a><br>
+            <?php } ?>
+            <!-- ↓追加 -->
+            <td class="c_data"><input type="checkbox" <?php if (($row['ClaimedBalance'] * (-1)) > 0 ) { ?>onChange="javascript:chkPndChanged(<?php echo $i; ?>)"<?php } ?> name="chkPnd<?php echo $i; ?>" id="chkPnd<?php echo $i; ?>" <?php if ($row['RepayPendingFlg'] == 1) { echo "checked"; } ?> /></td>
+            <td class="c_data"><input type="checkbox" name="chInd<?php echo $i; ?>" id="chInd<?php echo $i; ?>" <?php if (($row['CntNet'] > 0) || ($row['ClaimedBalance'] * (-1) < 0) || ($row['RepayPendingFlg'] == 1)) { echo "disabled"; } ?> /></td>
+            <td class="c_data"><?php if ($row['RepayTCFlg'] == 1) { echo '<span style="color:red">不要</span>'; } else { echo '必要'; } ?></td>
+            <td class="c_data"><input type="text" style="text-align: right;" size="4" name="TransFee<?php echo $i; ?>" id="TransFee<?php echo $i; ?>" value="<?php echo $transFee; ?>"  <?php if ($isTransFeeDisabled) { echo "disabled"; } ?> /></td>
+            <!-- ↑追加 -->
+            </td>
+          </tr>
+          <tr class="border">
+          </tr>
+            <?php $i ++; ?>
+          <?php } ?>
+        </tbody>
+        <tr>
+            <td class="c_data" colspan="20" >
+                <input type="submit" id="submit_button" value="　ネットDE受取確定　" />
+            </td>
+        </tr>
+      </table>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+
+<script type="text/javascript">
+//チェックボックス全件選択
+function allChecked(check, targetForm, colnm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        var str = targetForm.elements[j].name;
+        if (str.indexOf(colnm) == 0){
+            // オブジェクトがイネーブル時に限り処理を行う
+            if (!targetForm.elements[j].disabled) {
+                targetForm.elements[j].checked = check;
+            }
+        }
+    }
+}
+</script>
+</html>

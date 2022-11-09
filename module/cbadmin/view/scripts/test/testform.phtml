@@ -1,0 +1,94 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+?>
+  <style>
+    .input_error_message {
+        color: red;
+    }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3>テスト用フォーム</h3>
+    <form name="form" method="post" action="test/credit">
+      <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="data">【与信テスト】</td>
+          </tr>
+          <tr>
+            <td class="label">注文Seq</td>
+            <td class="data"><input name="OrderSeq" type="text" id="OrderSeq" /><?php show_error_message($this->error["OrderSeq"]); ?></td>
+          </tr>
+          <tr>
+            <td class="data" colspan="2">結果：<?php echo $this->result; ?></td>
+          </tr>
+          <tr align="center">
+            <td colspan="2">
+              <input type="submit" value="与信テスト実行" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <form name="claimform" method="post" action="test/claim">
+      <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="data">【請求SPテスト】</td>
+          </tr>
+          <tr>
+            <td class="label">注文Seq</td>
+            <td class="data"><input name="OrderSeq" type="text" id="OrderSeq" /><?php show_error_message($this->error["OrderSeq"]); ?></td>
+          </tr>
+          <tr>
+            <td class="label">請求金額</td>
+            <td class="data"><input name="ClaimAmount" type="text" id="ClaimAmount" /><?php show_error_message($this->error["ClaimAmount"]); ?></td>
+          </tr>
+          <tr>
+            <td class="label">請求パターン</td>
+            <td class="data"><input name="ClaimPattern" type="text" id="ClaimPattern" value="2" />※ テスト用のため再１で固定</td>
+          </tr>
+          <tr>
+            <td class="label">遅延損害金</td>
+            <td class="data"><input name="DamageAmount" type="text" id="DamageAmount" value="0" />※ テスト用のため 0 円で固定</td>
+          </tr>
+          <tr>
+            <td class="label">再請求手数料</td>
+            <td class="data"><input name="ReClaimFee" type="text" id="ReClaimFee" /><?php show_error_message($this->error["ReclaimFee"]); ?></td>
+          </tr>
+          <tr>
+            <td class="label">遅延日数算出基準日</td>
+            <td class="data"><input name="DamageDays" type="text" id="DamageDays" value="0" />※ テスト用のため 0 で固定</td>
+          </tr>
+          <tr>
+            <td class="data" colspan="2">結果：<?php echo $this->result2; ?></td>
+          </tr>
+          <tr align="center">
+            <td colspan="2">
+              <input type="submit" value="請求SPテスト実行" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    </div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">臨時立替</h3>
+    <form name="form" method="post" action="rworder/sppaydone">
+      <!-- count関数対策 -->
+      <?php if (!empty($this->list)) { ?>
+      <input type="hidden" name="oseq" value="<?php echo $this->list[0]["OrderSeq"]; ?>" />
+      <?php } ?>
+
+      <table style="clear:both; margin: 0px 0px 25px 25px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>注文日</th>
+            <th>購入者名</th>
+            <th>サイト</th>
+            <th>利用額</th>
+            <th>決済手数料</th>
+            <th>請求手数料</th>
+            <th>役務提供予定日</th>
+            <th>印紙代</th>
+            <th>入金方法</th>
+            <th>立替金額</th>
+          </tr>
+          <?php foreach ( $this->list as $row ) { ?>
+          <tr>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $row["OrderSeq"]; ?>"><?php echo f_e($row["OrderId"]); ?></a></td>
+            <td class="c_data"><?php echo f_e($row["ReceiptOrderDate"]); ?></td>
+            <td class="l_data"><?php echo f_e($row["NameKj"]); ?></td>
+            <td class="c_data"><?php echo f_e($row["SiteId"]); ?></td>
+            <td class="r_data"><?php echo f_e($row["UseAmount"]); ?></td>
+            <td class="r_data"><?php echo f_e($row["SettlementFee"]); ?></td>
+            <td class="r_data"><?php echo f_e($row["ClaimFee"]); ?></td>
+            <td class="c_data"><?php echo f_e($row["ServiceExpectedDate"]); ?></td>
+            <td class="r_data"><?php echo f_e($row["StampFee"]); ?></td>
+            <td class="c_data"><?php echo f_e($row["ReceiptClass"]); ?></td>
+            <td class="r_data"><?php echo f_e($row["ChargeAmount"]); ?></td>
+          </tr>
+          <?php } ?>
+          <tr class="border">
+            <td><img src="../images/spacer_gray.gif" height="1" width="1"></td>
+          </tr>
+          <tr>
+            <td colspan="11" class="c_data" style="font-size: 16px; color: red;">立替確定と臨時立替を同日で行う場合は、立替確定後に臨時確定処理をしてください</td>
+          </tr>
+          <tr>
+            <td colspan="11" class="c_data">
+              <input style="margin: 8px; " type="submit" value="　　臨時立替　確定　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,639 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title><?php echo $this->title; ?></title>
+    <script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+    <link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdfkaikei.css" />
+  </head>
+  <body>
+<?php $isFirst = true; ?>
+<?php foreach ($this->datas as $data) { ?>
+<?php   if ($isFirst) { ?>
+    <div class="title">直営日次統計表</div>
+<?php     $isFirst = false; ?>
+<?php   } else { ?>
+    <div class="title" style="page-break-before: always;">直営日次統計表</div>
+<?php   } ?>
+    <div class="header">
+      <div class="box_wrap_hf">
+        <div class="box_left_header"><?php if ($this->DailyMonthlyFlg == 0) { echo "算出日："; } else { echo "算出月："; } ?></div>
+        <div class="box_left_header"><?php if ($this->DailyMonthlyFlg == 0) { echo date('Y/m/d', strtotime($data['ProcessingDate'])); } else { echo date('Y/m', strtotime($data['AccountDate'])); } ?></div>
+        <div class="box_left_header">会計月：</div>
+        <div class="box_left_header"><?php echo date('Y/m', strtotime($data['AccountDate'])); ?></div>
+      </div>
+      <div class="box_wrap_hf">
+        <div class="box_left_header">加盟店コード：</div>
+        <div class="box_left_header"><?php echo $data['EnterpriseId']; ?></div>
+        <div class="box_left_header">加盟店名：</div>
+        <div class="box_left_header" style="width: 800px"><?php echo $data['EnterpriseNameKj']; ?></div>
+      </div>
+    </div>
+    <div class="box_wrap">
+      <div class="box_left">
+        <table class="datatable" style="margin-left: 0px; width: 260px;" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td style="width: 130px; height: 20px; background-color: #FFCF9E;">前日時点未収金残高</td>
+            <td class="r_head" style="width: 130px;"><?php echo f_nf($data['DB__AccountsReceivableBalance'], '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+      <div class="box_left">
+        <table class="datatable" style="margin-left: 0px; width: 260px;" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td style="width: 130px; height: 20px; background-color: #FFCF9E;">月初未収金残高</td>
+            <td class="r_head" style="width: 130px;"><?php echo f_nf($data['MB__AccountsReceivableBalance'], '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="box_wrap">
+      <div class="box_left">
+        ●当日精算
+        <table class="datatable" style="margin-left: 0px; width: 260px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <th class="monthly" style="height: 60px; width: 130px;">立替件数</th>
+            <th class="monthly" style="width: 130px;">立替金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_ChargeCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ChargeAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px;">キャンセル件数</th>
+            <th class="monthly">キャンセル立替金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_CancelCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_CancelAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;">　</td>
+            <td class="r_data">　</td>
+          </tr>
+          <tr>
+            <td class="r_subsum" style="height: 20px;"><?php echo f_nf($data['D_ChargeCount'] + $data['D_CancelCount'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_ChargeAmount'] + $data['D_CancelAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;">　</td>
+            <td class="r_data">　</td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px; width: 130px;">無保証立替金戻し件数</th>
+            <th class="monthly" style="width: 130px;">無保証立替金戻し金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_SettlementBackCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_SettlementBackAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">OEM移管件数</th>
+            <th class="monthly">OEM移管金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_OemTransferCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_OemTransferAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 60px;">再発行手数料件数</th>
+            <th class="monthly">再発行手数料額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_ReClaimFeeCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ReClaimFeeAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px;">遅延損害金件数</th>
+            <th class="monthly">遅延損害金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_DamageCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_DamageAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">入金件数</th>
+            <th class="monthly">入金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_ReceiptCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ReceiptAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">返金件数</th>
+            <th class="monthly">返金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_RepayCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_RepayAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">貸倒件数</th>
+            <th class="monthly">貸倒金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_BadDebtCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_BadDebtAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">その他件数</th>
+            <th class="monthly">その他金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_OtherPaymentCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_OtherPaymentAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_meisai" style="height: 20px;">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <th class="r_meisai" style="height: 20px; background-color: #FFCF9E;">当日時点未収金残高</th>
+            <td class="r_head"><?php echo f_nf($data['D_AccountsReceivableBalance'], '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+      <div class="box_left">
+        ●当月累計精算
+        <table class="datatable" style="margin-left: 0px; width: 260px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <th class="monthly" style="height: 60px; width: 130px;">立替件数</th>
+            <th class="monthly" style="width: 130px;">立替金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_ChargeCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ChargeAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px;">キャンセル件数</th>
+            <th class="monthly">キャンセル立替金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_CancelCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_CancelAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;">　</td>
+            <td class="r_data">　</td>
+          </tr>
+          <tr>
+            <td class="r_subsum" style="height: 20px;"><?php echo f_nf($data['M_ChargeCount'] + $data['M_CancelCount'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_ChargeAmount'] + $data['M_CancelAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;">　</td>
+            <td class="r_data">　</td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px; width: 130px;">無保証立替金戻し件数</th>
+            <th class="monthly" style="width: 130px;">無保証立替金戻し金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_SettlementBackCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_SettlementBackAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">OEM移管件数</th>
+            <th class="monthly">OEM移管金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_TransferCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_TransferAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 60px;">再発行手数料件数</th>
+            <th class="monthly">再発行手数料額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_ReClaimFeeCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ReClaimFeeAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px;">遅延損害金件数</th>
+            <th class="monthly">遅延損害金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_DamageCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_DamageAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">入金件数</th>
+            <th class="monthly">入金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_ReceiptCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ReceiptAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">返金件数</th>
+            <th class="monthly">返金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_RepayCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_RepayAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">貸倒件数</th>
+            <th class="monthly">貸倒金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_BadDebtCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_BadDebtAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 20px;">その他件数</th>
+            <th class="monthly">その他金額</th>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_OtherPaymentCount'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_OtherPaymentAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="r_meisai" style="height: 20px;">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td style="height: 20px; background-color: #FFCF9E;">当月時点未収金残高</td>
+            <td class="r_head"><?php echo f_nf($data['M_AccountsReceivableBalance'], '#,##0' ); ?></td>
+          </tr>
+<?php // 以下は月次のみ表示 ?>
+<?php   if ($this->DailyMonthlyFlg == 1) {?>
+          <tr>
+            <td style="height: 20px; background-color: #FFCF9E;">消費者未収金明細残高</td>
+            <td class="r_head"><?php echo f_nf($data['M_SuspensePaymentsAmount'], '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_sagaku" style="height: 20px;">差額</td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_AccountsReceivableBalanceDiff'], '#,##0' ); ?></td>
+          </tr>
+<?php   } ?>
+        </table>
+      </div>
+      <div class="box_left_wide">
+        ●当日CB売上
+        <table class="datatable" style="margin-left: 0px; width: 1385px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <th class="monthly" style="height: 60px; width: 90px;">決済手数料</th>
+            <th class="monthly" style="width: 90px;">請求手数料</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">同梱月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">API月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">与信結果通知サービス月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">次回請求与信結果通知サービス月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 90px;">再発行手数料</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 90px;">遅延損害金</th>
+            <td class="r_meisai" style="width: 90px;">　</td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_SettlementFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_MonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_MonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_IncludeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_IncludeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ApiMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_ApiMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_CreditNoticeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_NCreditNoticeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_AddClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_AddClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_DamageInterestAmount'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px; width: 95px;">キャンセル決済手数料</th>
+            <th class="monthly" style="width: 95px;">キャンセル請求手数料</th>
+            <th class="tax" style="width: 70px;">消費税</th>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['D_CanSettlementFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_CanClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['D_CanClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 合計 -->
+          <tr>
+            <td class="r_subsum" style="height: 20px;"><?php echo f_nf($data['D_SettlementFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_ClaimFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_ClaimFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_MonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_MonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_IncludeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_IncludeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_ApiMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_ApiMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_AddClaimFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_AddClaimFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_DamageInterestAmountTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['D_AllTotal'], '#,##0' ); ?></td>
+          </tr>
+          <!-- 売上明細 -->
+          <tr>
+            <td class="r_meisai" style="height: 20px;"><?php echo f_nf($data['D_SettlementFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_ClaimFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_ClaimFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_MonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_MonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_IncludeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_IncludeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_ApiMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_ApiMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 手数料明細 -->
+          <tr>
+            <td class="r_meisai" style="height: 20px;">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai"><?php echo f_nf($data['D_AddClaimFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_AddClaimFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['D_DamageInterestAmountOther'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 差額 -->
+          <tr>
+            <td class="r_sagaku" style="height: 20px;"><?php echo f_nf($data['D_SettlementFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_ClaimFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_ClaimFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_MonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_MonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_IncludeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_IncludeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_ApiMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_ApiMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_CreditNoticeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_NCreditNoticeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_AddClaimFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_AddClaimFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['D_DamageInterestAmountDiff'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+        </table>
+        <p class="line">　</p>
+        ●当月累計CB売上
+        <table class="datatable" style="margin-left: 0px; width: 1385px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <th class="monthly" style="height: 60px; width: 90px;">決済手数料</th>
+            <th class="monthly" style="width: 90px;">請求手数料</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">同梱月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">API月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">与信結果通知サービス月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 103px;">次回請求与信結果通知サービス月額固定費</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 90px;">再発行手数料</th>
+            <th class="tax" style="width: 60px;">消費税</th>
+            <th class="monthly" style="width: 90px;">遅延損害金</th>
+            <td class="r_meisai" style="width: 90px;">　</td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_SettlementFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_MonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_MonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_IncludeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_IncludeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ApiMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_ApiMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_CreditNoticeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_NCreditNoticeMonthlyFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_AddClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_AddClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_DamageInterestAmount'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <th class="monthly" style="height: 40px; width: 90px;">キャンセル決済手数料</th>
+            <th class="monthly" style="width: 90px;">キャンセル請求手数料</th>
+            <th class="tax" style="width: 80px;">消費税</th>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;"><?php echo f_nf($data['M_CanSettlementFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_CanClaimFee'], '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf($data['M_CanClaimFeeTax'], '#,##0' ); ?></td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="r_data" style="height: 20px;">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_data">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 合計 -->
+          <tr>
+            <td class="r_subsum" style="height: 20px;"><?php echo f_nf($data['M_SettlementFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_ClaimFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_ClaimFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_MonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_MonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_IncludeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_IncludeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_ApiMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_ApiMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_AddClaimFeeTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_AddClaimFeeTaxTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_DamageInterestAmountTotal'], '#,##0' ); ?></td>
+            <td class="r_subsum"><?php echo f_nf($data['M_AllTotal'], '#,##0' ); ?></td>
+          </tr>
+<?php // 以下は月次のみ表示 ?>
+<?php   if ($this->DailyMonthlyFlg == 1) {?>
+          <!-- 売上明細 -->
+          <tr>
+            <td class="r_meisai" style="height: 20px;"><?php echo f_nf($data['M_SettlementFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_ClaimFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_ClaimFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_MonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_MonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_IncludeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_IncludeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_ApiMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_ApiMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 手数料明細 -->
+          <tr>
+            <td class="r_meisai" style="height: 20px;">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai"><?php echo f_nf($data['M_AddClaimFeeOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_AddClaimFeeTaxOther'], '#,##0' ); ?></td>
+            <td class="r_meisai"><?php echo f_nf($data['M_DamageInterestAmountOther'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <!-- 差額 -->
+          <tr>
+            <td class="r_sagaku" style="height: 20px;"><?php echo f_nf($data['M_SettlementFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_ClaimFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_ClaimFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_MonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_MonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_IncludeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_IncludeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_ApiMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_ApiMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_CreditNoticeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_NCreditNoticeMonthlyFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_AddClaimFeeDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_AddClaimFeeTaxDiff'], '#,##0' ); ?></td>
+            <td class="r_sagaku"><?php echo f_nf($data['M_DamageInterestAmountDiff'], '#,##0' ); ?></td>
+            <td class="r_meisai">　</td>
+          </tr>
+<?php   } ?>
+        </table>
+      </div>
+    </div>
+<?php } ?>
+  </body>
+</html>

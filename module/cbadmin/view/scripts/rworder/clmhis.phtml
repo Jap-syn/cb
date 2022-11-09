@@ -1,0 +1,341 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function clmLabel($clm_ptn) {
+  $map = array(
+    '1' => '初回請求',
+    '2' => '再請求１',
+    '3' => '再請求２',
+    '4' => '再請求３',
+    '5' => '内容証明',
+    '6' => '再請求４',
+    '7' => '再請求５',
+    '8' => '再請求６',
+    '9' => '再請求７'
+  );
+  return isset($map[$clm_ptn]) ? $map[$clm_ptn] : sprintf('(%s：未定義)', $clm_ptn);
+}
+function clmClass($clm_ptn) {
+  $map = array(
+    '1' => '1st',
+    '2' => 're1',
+    '3' => 're2',
+    '4' => 're3',
+    '5' => 'ns',
+    '6' => 're4',
+    '7' => 're5',
+    '8' => 're6',
+    '9' => 're7'
+  );
+  return isset($map[$clm_ptn]) ? $map[$clm_ptn] : sprintf('unknown-%s', $clm_ptn);
+}
+
+function statusLabel($ds, $cnl, $reason) {
+  if($ds == 91) {
+    $map = array(
+      '1' => '入金済みクローズ',
+      '2' => 'キャンセル済み',
+      '3' => '与信NG',
+      '4' => '損害確定済み'
+    );
+    if(isset($map[$reason])) return $map[$reason];
+    return sprintf('謎：(%s / %s / %s)', $ds, $cnl, $reason);
+  }
+  if($cnl) return 'キャンセル申請中';
+  $map = array(
+    '11' => '社内与信実行待ち',
+    '12' => 'リアルタイム与信実行待ち',
+    '15' => '社内与信確定待ち',
+    '21' => '社内与信保留待ち',
+    '25' => 'DMIインポート待ち',
+    '31' => '伝票番号登録待ち',
+    '41' => '請求書印刷待ち',
+    '51' => '入金確認待ち',
+    '61' => '一部入金',
+  );
+  return $map[$ds];
+}
+
+function kindLabel($kind) {
+  $map = array(
+    '0' => '固定',
+    '1' => '決ステ',
+    '2' => 'JNB',
+    '3' => 'SMBC'
+  );
+  return $map[(int)$kind];
+}
+?>
+<style type="text/css">
+div.account-title,
+div.account-detail {
+  line-height: 1.2;
+}
+div.account-detail {
+  margin-left: 14px;
+}
+#contents table.datatable th,
+#contents table.datatable td {
+  padding: 1px 2px;
+}
+#contents table.datatable tr.even td {
+  background-color: #f8f8f8;
+}
+#contents table.datatable .type {
+  width: 62px;
+}
+#contents table.datatable .date {
+  width: 55px;
+}
+#contents table.datatable .acc-bank,
+#contents table.datatable .acc-yucho {
+  width: 200px;
+}
+#contents table.datatable .acc-cvs {
+  width: 230px;
+}
+#contents table.datatable tr td.ptn,
+#contents table.datatable tr td.ptn * {
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.6;
+}
+#contents table.datatable tr td.ptn .more-info {
+  font-size: 10px;
+  font-weight: normal;
+}
+#contents table.datatable tr td.ptn.ptn-1st {
+  background-color: #B2FD8B;
+}
+#contents table.datatable tr td.ptn.ptn-re1 {
+  background-color: #CAF167;
+}
+#contents table.datatable tr td.ptn.ptn-re2 {
+  background-color: #D7EA53;
+}
+#contents table.datatable tr td.ptn.ptn-re3 {
+  background-color: #E5E43F;
+}
+#contents table.datatable tr td.ptn.ptn-ns {
+  background-color: #000;
+  color: #fff;
+}
+#contents table.datatable tr td.ptn.ptn-re4 {
+  background-color: #EECF2D;
+}
+#contents table.datatable tr td.ptn.ptn-re5 {
+  background-color: #ED981E;
+  color: #000;
+}
+#contents table.datatable tr td.ptn.ptn-re6 {
+  background-color: #E74F11;
+  color: white;
+}
+#contents table.datatable tr td.ptn.ptn-re7 {
+  background-color: #E21406;
+  color: white;
+}
+#contents table.datatable tr td.newest {
+  background-color: lightcyan;
+  color: royalblue;
+  font-weight: bold;
+}
+#contents h4.category-title {
+    width: 840px;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-right: 0;
+    border: solid #ddd 1px;
+    border-bottom-width: 0;
+}
+a.jnb-acc-info {
+	display: block;
+	background-color: azure;
+	color: navy;
+	border-radius: 4px;
+	margin: 0 0 0 30px;
+	padding: 0 2px;
+	font-size: 10px;
+	border: solid 2px royalblue;
+	font-size: 12px;
+	font-weight: bold;
+	color: blue;
+	text-align: center;
+  width: 180px;
+  line-height: 22px;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      <?php echo f_e($this->oc['NameKj']); ?>
+      (<?php echo f_e($this->oc['OrderId']); ?>　／　<span id="oseq"><?php echo f_e($this->oc['OrderSeq']); ?>)
+      の請求履歴一覧
+    </h3>
+    <div style="margin: 5px 25px; text-align: right; padding: 0 8px; height: 27px; line-height: 27px;">
+      <div style="float: left">
+        <span style="font-weight: bold; margin: 0 8px 0 14px">ステータス</span>
+        <?php echo f_e(statusLabel($this->oc['DataStatus'], $this->oc['Cnl_Status'], $this->oc['CloseReason'])); ?>
+        <?php if($this->oc['Rct_Status']) { ?>(<?php echo f_df($this->oc['Rct_ReceiptDate'], 'Y 年 n月 j日'); ?> 入金)<?php } ?>
+      </div>
+    <?php if($this->jnbAcc) { ?>
+      <?php
+      $url = sprintf('jnbrcpt/index#%s', $this->jnbAcc['NotificationSeq']);
+      $info = sprintf('%s受信、%s円', f_df($this->jnbAcc['ReceivedDate'], 'y/m/d H:i'), f_nf($this->jnbAcc['ReceiptAmount'], '#,##0'));
+      ?>
+      <div style="float: left">
+        <a target="_blank" class="jnb-acc-info" href="<?php echo f_e($url); ?>" title="<?php echo f_e($info); ?>"><!--
+        -->要処理のJNB入金通知アリ<!--
+        --></a>
+      </div>
+    <?php } ?>
+    <?php if($this->smbcAcc) { ?>
+      <?php
+      $url = sprintf('smbcparcpt/index#%s', $this->smbcAcc['NotificationSeq']);
+      $info = sprintf('%s受信、%s円', f_df($this->smbcAcc['ReceivedDate'], 'y/m/d H:i'), f_nf($this->smbcAcc['ReceiptAmount'], '#,##0'));
+      ?>
+      <div style="float: left">
+        <a target="_blank" class="jnb-acc-info" href="<?php echo f_e($url); ?>" title="<?php echo f_e($info); ?>"><!--
+        -->要処理のSMBC入金通知アリ<!--
+        --></a>
+      </div>
+    <?php } ?>
+      <a href="rworder/detail/oseq/<?php echo f_e($this->oc['OrderSeq']); ?>">注文詳細へ戻る</a>
+      <div style="clear: both; float: none; font-size: 0; height: 0; line-height: 0"></div>
+    </div>
+  <!-- count関数対策 -->
+  <?php if(!empty($this->list)) { ?>
+    <table style="width: 862px;margin: 5px 25px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th rowspan="3">No.</th>
+          <th rowspan="3" class="type">PTN</th>
+          <th class="date">請求日</th>
+          <th rowspan="3" class="amount">請求額</th>
+          <th rowspan="3" class="acc acc-bank">銀行</th>
+          <th rowspan="3" class="acc acc-yucho">ゆうちょ</th>
+          <th rowspan="3" class="acc acc-cvs">コンビニ</th>
+        </tr>
+        <tr>
+          <th class="date">印刷日</th>
+        </tr>
+        <tr>
+          <th class="date">期限日</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php $newest_used = false; ?>
+      <?php foreach(array_reverse($this->list) as $i => $his) { ?>
+        <?php
+        $claimAmount = (int)substr($his['Cv_BarcodeString2'], 9, 6);
+        $newest =
+          !$his['PrintedFlg'] ||
+          (
+            f_df($this->oc['Clm_L_ClaimDate'], 'Ymd') == f_df($his['ClaimDate'], 'Ymd') &&
+            $this->oc['Clm_L_ClaimPattern'] == $his['ClaimPattern']
+          );
+        if($newest_used) {
+          $newest = false;
+        } else {
+          if($newest) $newest_used = true;
+        }
+        ?>
+        <tr class="<?php echo f_e($i % 2 == 0 ? 'odd' : 'even'); ?>">
+          <td class="r_data<?php if($newest) echo ' newest'; ?>" rowspan="3"<?php if($newest) echo ' title="最終請求"'; ?>><?php echo f_e($i + 1); ?></td>
+          <td class="c_data ptn ptn-<?php echo f_e(clmClass($his['ClaimPattern'])); ?>" rowspan="3">
+            <div>
+              <?php echo f_e(clmLabel($his['ClaimPattern'])); ?>
+            </div>
+            <div class="more-info">
+              <?php echo f_e(kindLabel($his['Bk_ServiceKind'])); ?> /
+              <?php
+              switch ($his['CreditTransferMethod'] ) {
+                  case 1:
+                  case 2:
+                      echo '口振初回';
+                      break;
+                  case 3:
+                      echo '口振';
+                      break;
+                  default:
+                      echo strlen($his['EnterpriseBillingCode']) ? '同梱' : '別送';
+                      break;
+              }
+              ?>
+            </div>
+          </td>
+          <td class="c_data"><?php echo f_df($his['ClaimDate'], 'y/m/d'); ?></td>
+          <td class="r_data" rowspan="3"><?php echo f_nf($claimAmount, '#,##0'); ?></td>
+          <td class="l_data" rowspan="3">
+          <?php if(isset($his['ConfirmNumber']) && isset($his['CustomerNumber'])){ ?>
+            <div class="account-title">ペイジー決済</div>
+            <div class="account-detail">
+              <?php echo f_e($his['ConfirmNumber']); ?><br />
+              <?php echo f_e($his['CustomerNumber']); ?><br />
+              <?php echo f_e($this->bk_number); ?>
+            </div>
+          <?php }else{?>
+            <?php if(isset($his['ClaimAccountSeq'])) { ?>
+              <div class="account-title"><?php $bk_account = sprintf('%s-%s', $his['Bk_BranchCode'], $his['Bk_AccountNumber']); ?>
+                <?php echo f_e(sprintf('%s%s', $his['Bk_BankName'], $his['Bk_BranchName'])); ?>
+              </div>
+              <div class="account-detail">
+              <?php if($his['Bk_ServiceKind'] == 2) { ?>
+                <a href="jnb/history/account/<?php echo f_e($bk_account); ?>" target="_blank">
+                  <?php echo f_e($bk_account); ?>
+                </a>
+              <?php } elseif($his['Bk_ServiceKind'] == 3) { ?>
+                <a href="smbcpa/history/account/<?php echo f_e($bk_account); ?>" target="_blank">
+                  <?php echo f_e($bk_account); ?>
+                </a>
+              <?php } else { ?>
+                <?php echo f_e($bk_account); ?>
+              <?php } ?><br />
+                <?php echo f_e($his['Bk_AccountHolderKn']); ?>
+              </div>
+            <?php } ?>
+          <?php } ?>
+          </td>
+          <td class="l_data" rowspan="3">
+          <?php if(isset($his['ClaimAccountSeq'])) { ?>
+            <div class="account-title">
+              <?php echo f_e($his['Yu_SubscriberName']); ?>
+            </div>
+            <div class="account-detail">
+              <?php echo f_e($his['Yu_AccountNumber']); ?>
+            </div>
+          <?php } ?>
+          </td>
+          <td class="l_data" rowspan="3">
+          <?php if(isset($his['ClaimAccountSeq'])) { ?>
+            <div class="account-title">
+              <?php echo f_e($his['Cv_ReceiptAgentName']); ?>
+            </div>
+            <div class="account-detail">
+              <?php echo f_e($his['Cv_BarcodeString1']); ?><br />
+              <?php echo f_e($his['Cv_BarcodeString2']); ?>
+            </div>
+          <?php } ?>
+          </td>
+        </tr>
+        <tr class="<?php echo f_e($i % 2 == 0 ? 'odd' : 'even'); ?>">
+          <td class="c_data"><?php echo strlen($his['PrintedDate']) ? f_df($his['PrintedDate'], 'y/m/d') : '(未印刷)'; ?></td>
+        </tr>
+        <tr class="<?php echo f_e($i % 2 == 0 ? 'odd' : 'even'); ?>">
+          <td class="c_data"><?php echo f_df($his['LimitDate'], 'y/m/d'); ?></td>
+        </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+  <?php } else { ?>
+    <div style="margin: 5px 25px">請求履歴がありません</div>
+  <?php } ?>
+  </div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

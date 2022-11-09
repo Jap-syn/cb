@@ -1,0 +1,171 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#contents table.formtable {
+  margin-bottom: 40px;
+}
+#contents table.formtable .th-id,
+#contents table.formtable .ptime {
+  width: 90px;
+}
+#contents table.formtable .ps-id {
+  width: 160px;
+}
+#contents table.formtable .act {
+  width: 120px;
+}
+#contents table.formtable .proc-warning {
+  background-color: yellow;
+  color: red;
+  font-weight: bold;
+}
+#contents .page_error_message p {
+  margin: 2px 0;
+}
+</style>
+<script type="text/javascript">
+function calcPath(relativePath) {
+  var base = (document.getElementsByTagName('base')[0] || { href : '' }).href;
+  return [base.replace(/\/*$/, ''), relativePath.replace(/^\/*/, '')].join('/');
+}
+function stopRunningThread(threadId) {
+  if(!confirm('本当に自動入金プロセスを停止しますか？')) return;
+  location.href = calcPath('jnbmon/stop/th/' + threadId);
+}
+
+function clearClosedThread(threadId) {
+  location.href = calcPath('jnbmon/clear/th/' + threadId);
+}
+Event.observe(window, 'load', function() {
+  document.getElementsByClassName('stop-running-button').each(function(btn) {
+    Event.observe(btn, 'click', function() {
+      stopRunningThread(this.value);
+    }.bindAsEventListener(btn));
+  });
+  document.getElementsByClassName('clear-closed-button').each(function(btn) {
+    Event.observe(btn, 'click', function() {
+      clearClosedThread(this.value);
+    }.bindAsEventListener(btn));
+  });
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbmon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      自動入金処理の実行状況
+      <span style="font-weight: normal">(<?php echo date('Y年 n月 j日 H:i'); ?> 時点)</span>
+    </h3>
+  <?php if($this->abend_count > 0) { ?>
+    <div class="page_error_message">
+      <p>
+        自動入金プロセスが長期間停止している可能性があります！！
+      </p>
+      <p style="font-weight: bold">
+        最終動作時間から10分以上経過しているようなら実行中プロセスを一端停止して、次回の実行待ち状態に復帰してください！！
+      </p>
+    </div>
+  <?php } ?>
+
+    <h4 class="category-title">実行中プロセス</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="th-id">スレッドID</th>
+          <th class="ps-id">サーバプロセスID</th>
+          <th>起動日時</th>
+          <th>最終動作日時</th>
+          <th class="ptime">稼働時間</th>
+          <th class="act">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!-- count関数対策 -->
+      <?php if(empty($this->running_threads)) { ?>
+        <tr>
+          <td class="l_data" colspan="6">実行中プロセスはありません。しばらくしてもプロセスが起動していない場合はシステム管理者までお知らせください</td>
+        </tr>
+      <?php } else { ?>
+        <?php foreach($this->running_threads as $th) { ?>
+        <tr>
+          <td class="r_data"><?php echo f_e($th['ThreadId']); ?></td>
+          <td class="r_data"><?php echo f_e($th['UserData']); ?></td>
+          <td class="c_data"><?php echo f_df($th['CreateDate'], 'Y年 n月 j日 H:i'); ?></td>
+          <td class="c_data"><?php echo f_df($th['LastAccessDate'], 'Y年 n月 j日 H:i'); ?></td>
+          <td class="r_data"><?php echo f_sec(strtotime(date('Y-m-d H:i:s')) - strtotime($th['CreateDate'])); ?></td>
+          <td class="c_data">
+            <button type="button" class="stop-running-button" value="<?php echo f_e($th['ThreadId']); ?>">プロセスを停止</button>
+          </td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </tbody>
+    </table>
+
+    <h4 class="category-title">停止されたプロセス (直近5件)</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="th-id">スレッドID</th>
+          <th class="ps-id">サーバプロセスID</th>
+          <th>起動日時</th>
+          <th>最終動作日時</th>
+          <th class="ptime">稼働時間</th>
+          <th class="act">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      <!-- count関数対策 -->
+      <?php if(empty($this->closed_threads)) { ?>
+        <tr>
+          <td class="l_data" colspan="6">最近停止されたプロセスはありません</td>
+        </tr>
+      <?php } else { ?>
+        <?php foreach($this->closed_threads as $i => $th) { ?>
+        <?php if($i > 4) break; ?>
+        <tr>
+          <td class="r_data"><?php echo f_e($th['ThreadId']); ?></td>
+          <td class="r_data"><?php echo f_e($th['UserData']); ?></td>
+          <td class="c_data"><?php echo f_df($th['CreateDate'], 'Y年 n月 j日 H:i'); ?></td>
+          <td class="c_data"><?php echo f_df($th['LastAccessDate'], 'Y年 n月 j日 H:i'); ?></td>
+          <td class="r_data"><?php echo f_sec(strtotime($th['LastAccessDate']) - strtotime($th['CreateDate'])); ?></td>
+          <td class="c_data">
+            <button type="button" class="clear-closed-button" value="<?php echo f_e($th['ThreadId']); ?>">この記録を削除</button>
+          </td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </tbody>
+    </table>
+
+    <h4 class="category-title">その他の状態</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <tbody>
+        <tr>
+          <td class="r_label" style="width: 320px">スイープされていないロックエラープロセス数</td>
+          <td class="l_data<?php if($this->abend_count > 0) echo ' proc-warning'; ?>"><?php echo f_nf($this->abend_count, '#,##0'); ?> 件</td>
+        </tr>
+        <tr>
+          <td class="l_data" colspan="2">
+            自動入金プロセスが正常に稼働している場合、この件数はほとんどの場合0件になります。<br />
+            もしこの件数が多いようであれば、自動入金プロセスが長時間応答をしていない可能性が高いと思われます。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

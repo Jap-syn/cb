@@ -1,0 +1,111 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<script type="text/javascript">
+<!--
+
+function p(action)
+{
+	f = document.getElementById("form");
+	f.action = action;
+	f.submit();
+}
+
+function prev()
+{
+	if('<?php echo $this->bfrdatas; ?>' == 0)
+	{
+		document.getElementById('button1').disabled = true;
+		document.getElementById('button3').disabled = true;
+	}
+	else
+	{
+		document.getElementById('button1').disabled = false;
+		document.getElementById('button3').disabled = false;
+	}
+}
+function next()
+{
+	if('<?php echo $this->nxtdatas; ?>' == 0)
+	{
+		document.getElementById('button2').disabled = true;
+		document.getElementById('button4').disabled = true;
+	}
+	else
+	{
+		document.getElementById('button2').disabled = false;
+		document.getElementById('button4').disabled = false;
+	}
+}
+//-->
+</script>
+<body onLoad="javascript:prev();  javascript:next();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/calendar/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">カレンダーメンテナンス　</h3>
+    <h4>※前月あるいは次月に遷移することによって入力内容が反映されます。</h4>
+    <form name="form" id="form" method="post" action="calendar/index">
+      <table width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="c_data" colspan="<?php echo (6+sizeof($this->ct_cals)*2); ?>" style="font-size: 16px;">
+              <b><input type="button" id="button1" value="←前月" onClick="javascript:p('<?php echo $this->prevpage; ?>'); javascript:prev();" />　　　<?php echo f_e($this->year); ?>年<?php echo f_e($this->month); ?>月　　　<input type="button" id="button2" value="次月→" onClick="javascript:p('<?php echo $this->nextpage; ?>');" /></b>
+            </td>
+          </tr>
+          <tr>
+            <th rowspan="2" style="position: sticky;top: 0;">日付</th>
+            <th rowspan="2" style="position: sticky;top: 0;">曜日</th>
+            <th rowspan="2" style="position: sticky;top: 0;">祝祭日</th>
+            <th rowspan="2" style="position: sticky;top: 0;">営業日</th>
+            <th rowspan="2" style="position: sticky;top: 0;">東洋紙業</th>
+            <?php foreach ($this->ct_cals as $row) { ?>
+                <th colspan="2" style="position: sticky;top: 0;"><?php echo $row['name']; ?></th>
+            <?php } ?>
+            <th rowspan="2" style="position: sticky;top: 0;">備考</th>
+          </tr>
+          <tr>
+              <?php foreach ($this->ct_cals as $row) { ?>
+              <th style="position: sticky;top: 22px;">振替日</th>
+              <th style="position: sticky;top: 22px;">振込日</th>
+              <?php } ?>
+          </tr>
+          <?php $i = 1; foreach ($this->datas as $row) { ?>
+          <tr class="data">
+            <td class="c_data"><input type="hidden" name="BusinessDate<?php echo $i; ?>" id="BusinessDate<?php echo $i; ?>" value="<?php echo $row['BusinessDate']; ?>" /><?php echo $row['BusinessDate']; ?></td>
+            <td class="c_data"><font color="<?php switch($row['WeekDay']) {case 0: echo 'red'; break; case 6: echo 'blue'; break; default: echo 'black'; break; } ?>"><?php echo $this->codeMaster->getWeekdayCaption($row['WeekDay']); ?></font></td>
+            <td class="c_data"><input size="40" type="text" name="Label<?php echo $i; ?>" id="Label<?php echo $i; ?>" value="<?php echo $row['Label']; ?>" /></td>
+            <td class="c_data"><input type="checkbox" name="BusinessFlg<?php echo $i; ?>" id="BusinessFlg<?php echo $i; ?>" <?php if ($row['BusinessFlg'] == 1) echo 'checked'; ?> /></td>
+            <td class="c_data"><input type="checkbox" name="ToyoBusinessFlg<?php echo $i; ?>" id="ToyoBusinessFlg<?php echo $i; ?>" <?php if ($row['ToyoBusinessFlg'] == 1) echo 'checked'; ?> /></td>
+              <?php foreach ($this->ct_cals as $key => $val) { ?>
+                  <td class="c_data"><input type="checkbox" name="ExecFlg_<?php echo $key; ?>_1_<?php echo $i; ?>" id="ExecFlg_<?php echo $key; ?>_1_<?php echo $i; ?>" <?php if ($val[1][$i-1]['ExecFlg'] == 1) echo 'checked'; ?> /></td>
+                  <td class="c_data"><input type="checkbox" name="ExecFlg_<?php echo $key; ?>_2_<?php echo $i; ?>" id="ExecFlg_<?php echo $key; ?>_2_<?php echo $i; ?>" <?php if ($val[2][$i-1]['ExecFlg'] == 1) echo 'checked'; ?> /></td>
+              <?php } ?>
+            <td class="c_data" style="width: 300px;"><?php echo f_e($row['Note']); ?></td>
+            </tr>
+          <tr class="border">
+            <td colspan="5">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php $i++; } ?>
+          <tr>
+            <td class="c_data" colspan="<?php echo (6+sizeof($this->ct_cals)*2); ?>" style="font-size: 16px;">
+              <b><input type="button" id="button3" value="←前月" onClick="javascript:p('<?php echo $this->prevpage; ?>');" />　　　<?php echo f_e($this->year); ?>年<?php echo f_e($this->month); ?>月　　　<input type="button" id="button4" value="次月→" onClick="javascript:p('<?php echo $this->nextpage; ?>');" /></b>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

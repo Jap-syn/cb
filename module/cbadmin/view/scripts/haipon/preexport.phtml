@@ -1,0 +1,33 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+    setTimeout(function() {
+        $('export-form').submit();
+    }, 250);
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/haipon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">配ポンインポートファイル出力</h3>
+    <div style="margin: 5px 25px; margin-bottom: 80px;">
+        ダウンロードの準備をしています...
+        <form id="export-form" method="post" action="haipon/export" style="display: none">
+            <input type="hidden" name="mode" value="exec" />
+            <input type="hidden" name="exp-params" value="<?php echo f_e($this->params); ?>" />
+        </form>
+    </div>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

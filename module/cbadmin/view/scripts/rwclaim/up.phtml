@@ -1,0 +1,31 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求書発行</h3>
+    <h4><?php echo $this->transferCount; ?> 件の請求データを印刷済みに更新しました。</h4>
+    <?php if ($this->errorCount > 0) { ?>
+    <h4 style="color: red;">
+      <?php echo $this->errorCount; ?> 件の請求データはエラーにより処理されませんでした。以下の事由が考えられます。
+      <ul>
+        <li>支払期限日算出に不整合がある</li>
+        <li>OEM先の請求口座情報が登録されていない</li>
+        <li>その他データベーストラブル等</li>
+      </ul>各種設定を見直してください
+    </h4>
+    <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

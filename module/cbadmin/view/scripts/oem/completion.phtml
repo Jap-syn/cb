@@ -1,0 +1,43 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>OEM先登録完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">OEM名</td>
+    <td class="data"><?php echo escape($this->data["OemNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">OEMカナ</td>
+    <td class="data"><?php echo escape($this->data["OemNameKn"]); ?></td>
+  </tr>
+  </tr>  <tr>
+    <td class="label">ログインID</td>
+    <td class="data"><?php echo $this->data["LoginId"]; ?></td>
+  </tr>
+  <tr>
+    <td class="label">パスワード</td>
+    <td class="data"><?php echo escape(nvl($this->data["GeneratedPassword"], '(暗号化済み)')); ?></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="c_data">
+      <a href="oem/detail/oid/<?php echo f_e($this->oid); ?>">詳細画面へ</a>
+      ｜
+      <a href="oem/edit/oid/<?php echo f_e($this->oid); ?>">編集画面へ</a>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright(c)2010 SAISON INFORMATION SYSTEMS CO.,LTD.  -->
+<!-- Command Client Config File                                 -->
+<webft xmlns:webft="http://www.hulft.com/webft/ws">
+    <!-- Common Information -->
+    <common>
+        <!-- Connection Information -->
+        <info_connection>
+            <!-- HULFT-WebFileTransfer Server URL -->
+            <server_url>https://ft.sakura-utopia.jp/webft/</server_url>
+            <!-- Proxy Information -->
+            <info_proxy>
+                <!-- Proxy Server -->
+                <proxy_server></proxy_server>
+                <!-- Proxy Port -->
+                <proxy_port></proxy_port>
+                <!-- Proxy Connection ID -->
+                <proxy_connection_id></proxy_connection_id>
+                <!-- Proxy Connection Password -->
+                <proxy_connection_passwd></proxy_connection_passwd>
+            </info_proxy>
+            <!-- Wait Time Before Request Time-out(Sec.) -->
+            <!-- from 0(Unlimited) to 3600               -->
+            <request_timeout>0</request_timeout>
+            <!-- Connection Retry Count -->
+            <!-- from 0 to 10           -->
+            <connection_retry_count>0</connection_retry_count>
+            <!-- Connection Retry Interval(Sec.) -->
+            <!-- from 0 to 3600                  -->
+            <connection_retry_interval>0</connection_retry_interval>
+        </info_connection>
+        <!-- Login Information -->
+        <info_login>
+            <!-- Login Group ID -->
+            <group_id>cbl30</group_id>
+            <!-- Login User ID -->
+            <user_id>cbl30-user</user_id>
+            <!-- Login Password -->
+            <passwd>B$0708rt</passwd>
+            <!-- Login Type -->
+            <login_type>0</login_type>
+        </info_login>
+        <!-- Language Information -->
+        <info_language>
+            <!-- language_type -->
+            <language_type></language_type>
+        </info_language>
+    </common>
+
+    <!-- Specific Information -->
+    <specific>
+    	<!-- Command-based Client Update Information -->
+        <info_hcupdate>
+            <!-- Command-based Client to Be Updated -->
+            <hccommand></hccommand>
+            <!-- Auto Update Flag of Command-based Client -->
+            <force_flag>false</force_flag>
+        </info_hcupdate>
+    
+        <!-- Upload Command Information -->
+        <info_upload>
+            <!-- File Update Flag -->
+            <update_flag>false</update_flag>
+
+            <!-- Upload Information                                                 -->
+            <!-- Limit Downloads                                                    -->
+            <!-- -1 or from 1 to 9999                                               -->
+            <!-- Selecting '-1' makes downloading unlimited within the 'save_limit' -->
+            <download_limit>-1</download_limit>
+            <!-- Storing Period -->
+            <!-- from 1 to 99999  -->
+            <save_limit>30</save_limit>
+            <!-- Data Verification Flag -->
+            <data_check_flag>true</data_check_flag>
+            <!-- Compress/Extract Flag -->
+            <client_compress_flag>false</client_compress_flag>
+            <!-- Cipher Flag -->
+            <client_cipher_flag>false</client_cipher_flag>
+            <!-- Cipher Type             -->
+            <!-- 0 AES-128 bit Algorithm -->
+            <!-- 1 AES-256 bit Algorithm -->
+            <client_cipher_type>0</client_cipher_type>
+            <!-- Cipher Key -->
+            <client_cipher_key></client_cipher_key>
+            <!-- Comment -->
+            <comment></comment>
+
+            <!-- Upload Retry Count -->
+            <!-- from 0 to 10       -->
+            <upload_retry_count>0</upload_retry_count>
+            <!-- Upload Retry Interval(Sec.) -->
+            <!-- from 0 to 3600              -->
+            <upload_retry_interval>0</upload_retry_interval>
+
+        </info_upload>
+
+        <!-- Download Command Information -->
+        <info_download>
+            <!-- Downloaded File Update Flag -->
+            <local_file_update_flag>false</local_file_update_flag>
+
+            <!-- Download Information   -->
+            <!-- Data Verification Flag -->
+            <data_check_flag>true</data_check_flag>
+
+            <!-- Compress/Extract Flag -->
+            <client_compress_flag>false</client_compress_flag>
+
+            <!-- Cipher Flag -->
+            <client_cipher_flag>false</client_cipher_flag>
+
+            <!-- Cipher Type             -->
+            <!-- 0 AES-128 bit Algorithm -->
+            <!-- 1 AES-256 bit Algorithm -->
+            <client_cipher_type>0</client_cipher_type>
+
+            <!-- Cipher Key -->
+            <client_cipher_key></client_cipher_key>
+
+            <!-- Download Retry Count -->
+            <!-- from 0 to 10         -->
+            <download_retry_count>3</download_retry_count>
+
+            <!-- Download Retry Interval(Sec.) -->
+            <!-- from 0 to 3600                -->
+            <download_retry_interval>10</download_retry_interval>
+
+        </info_download>
+
+        <!-- GetObjectInformation Command Information -->
+        <info_get_object>
+            <!-- Object Path -->
+            <object_path>/</object_path>
+        </info_get_object>
+
+        <!-- CleanFolder Command Information -->
+        <info_clean_folder>
+            <!-- Conditions for Extracting Folders to Be Cleared  -->
+            <!-- Object ID -->
+            <object_id></object_id>
+            <!-- Object Path -->
+            <object_path></object_path>
+        </info_clean_folder>
+
+        <!-- DeleteObjectInformation Command Information -->
+        <info_delete_object>
+            <!-- Conditions for Extracting Files or Folders to Be Deleted -->
+            <!-- Object ID -->
+            <object_id></object_id>
+            <!-- Object Path -->
+            <object_path></object_path>
+        </info_delete_object>
+
+        <!-- GetTransferLog Command Information -->
+        <info_get_transfer_log>
+            <!-- Search Condition -->
+            <!-- Object ID -->
+            <object_id></object_id>
+            <!-- Parent Object ID -->
+            <parent_object_id></parent_object_id>
+            <!-- Type       -->
+            <!-- 0 All      -->
+            <!-- 1 Upload   -->
+            <!-- 2 Download -->
+            <load_type>0</load_type>
+            <!-- Outcome   -->
+            <!-- 0 All     -->
+            <!-- 1 Success -->
+            <!-- 2 Failure -->
+            <status>0</status>
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+            <!-- Identifier -->
+            <operation_id></operation_id>
+
+            <!-- Output Condition -->
+            <!-- Output Format    -->
+            <!-- 0 : CSV format   -->
+            <!-- 1 : XML format   -->
+            <output_type>0</output_type>
+            <!-- Output Header Flag            -->
+            <!-- Set this only for XML format  -->
+            <output_header_flag>true</output_header_flag>
+            <!-- Output Item -->
+            <output_item>
+                <load_type/>
+                <name/>
+                <object_id/>
+                <parent_object_id/>
+                <start_date/>
+                <start_time/>
+                <end_date/>
+                <end_time/>
+                <return_code/>
+                <detail_code/>
+                <size/>
+                <trans_rate/>
+                <group_id/>
+                <user_id/>
+                <operation_id/>
+                <comment/>
+            </output_item>
+        </info_get_transfer_log>
+
+        <!-- DeleteTransferLog Command Information -->
+        <info_delete_transfer_log>
+            <!-- Delete Condition -->
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+        </info_delete_transfer_log>
+
+        <!-- GetFoldereventLog Command Information -->
+        <info_get_folderevent_log>
+            <!-- Search Condition -->
+            <!-- Object ID -->
+            <object_id></object_id>
+            <!-- Folder Event ID -->
+            <folder_event_id></folder_event_id>
+            <!-- Outcome   -->
+            <!-- 0 All     -->
+            <!-- 1 Success -->
+            <!-- 2 Failure -->
+            <status>0</status>
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+            <!-- Identifier -->
+            <operation_id></operation_id>
+
+            <!-- Output Condition -->
+            <!-- Output Format    -->
+            <!-- 0 : CSV format   -->
+            <!-- 1 : XML format   -->
+            <output_type>0</output_type>
+            <!-- Output Header Flag            -->
+            <!-- Set this only for XML format  -->
+            <output_header_flag>true</output_header_flag>
+            <!-- Output Item -->
+            <output_item>
+                <folder_event_id/>
+                <object_id/>
+                <load_type/>
+                <event_filter/>
+                <event_trigger/>
+                <start_date/>
+                <start_time/>
+                <end_date/>
+                <end_time/>
+                <return_code/>
+                <detail_code/>
+                <hulft_return_code/>
+                <hulft_detail_code/>
+                <hulft_type/>
+                <hulft_fileid/>
+                <cmd1_return_code/>
+                <cmd2_return_code/>
+                <cmd3_return_code/>
+                <cmd1_detail_code/>
+                <cmd2_detail_code/>
+                <cmd3_detail_code/>
+                <cmd1_command_string/>
+                <cmd2_command_string/>
+                <cmd3_command_string/>
+                <mail_return_code/>
+                <mail_detail_code/>
+                <mail_to/>
+                <mail_cc/>
+                <mail_bcc/>
+                <mail_subject/>
+                <mail_message/>
+                <move_return_code/>
+                <move_destination_path/>
+                <group_id/>
+                <user_id/>
+                <operation_id/>
+                <comment/>
+            </output_item>
+        </info_get_folderevent_log>
+
+        <!-- DeleteFoldereventLog Command Information -->
+        <info_delete_folderevent_log>
+            <!-- Delete Condition -->
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+        </info_delete_folderevent_log>
+
+        <!-- GetOperationLog Command Information -->
+        <info_get_operation_log>
+            <!-- Search Condition -->
+            <!-- Operation Log Type      -->
+            <!-- 0 Command Execution Log -->
+            <!-- 1 File Access Log       -->
+            <operation_type>0</operation_type>
+            <!-- Identifier -->
+            <operation_id></operation_id>
+            <!-- Operation Name -->
+            <operation_name></operation_name>
+            <!-- Group ID -->
+            <group_id></group_id>
+            <!-- User ID -->
+            <user_id></user_id>
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+
+            <!-- Output Condition -->
+            <!-- Output Format    -->
+            <!-- 0 : CSV format   -->
+            <!-- 1 : XML format   -->
+            <output_type>0</output_type>
+            <!-- Output Header Flag            -->
+            <!-- Set this only for XML format  -->
+            <output_header_flag>true</output_header_flag>
+            <!-- Output Item           -->
+            <!-- Command Execution Log -->
+            <output_item>
+                <group_id/>
+                <user_id/>
+                <ip_address/>
+                <command_key/>
+                <command_parameter/>
+                <host_name/>
+                <operation_date/>
+                <operation_time/>
+                <operation_id/>
+            </output_item>
+            <!-- File Access Log -->
+            <!-- <output_item>
+                <group_id/>
+                <user_id/>
+                <ip_address/>
+                <file_type/>
+                <file_access_type/>
+                <file_key/>
+                <host_name/>
+                <operation_date/>
+                <operation_time/>
+                <operation_id/>
+            </output_item> -->
+        </info_get_operation_log>
+
+        <!-- DeleteOperationLog Command Information -->
+        <info_delete_operation_log>
+            <!-- Operation Log Type      -->
+            <!-- 0 Command Execution Log -->
+            <!-- 1 File Access Log       -->
+            <operation_type>0</operation_type>
+            <!-- Delete Condition -->
+            <!-- Date(from)     -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_from></date_from>
+            <!-- Date(to)       -->
+            <!-- YYYYMMDDHHMMSS -->
+            <date_to></date_to>
+        </info_delete_operation_log>
+
+        <!-- ImportGroupInformation Command Information -->
+        <info_import_group>
+            <!-- Update (replace) Flag When Importing -->
+            <update_flag></update_flag>
+            <!-- Local File to Import -->
+            <import_file></import_file>
+        </info_import_group>
+
+        <!-- ExportGroupInformation Command Information -->
+        <info_export_group>
+            <!-- Update (replace) Flag When Exporting -->
+            <update_flag></update_flag>
+            <!-- Folder That Stores File to Export Data -->
+            <export_directory></export_directory>
+            <!-- Name of File to Export Data -->
+            <export_file_name></export_file_name>
+        </info_export_group>
+
+        <!-- ImportUserInformation Command Information -->
+        <info_import_user>
+            <!-- Update (replace) Flag When Importing -->
+            <update_flag></update_flag>
+            <!-- Local File to Import -->
+            <import_file></import_file>
+        </info_import_user>
+
+        <!-- ExportUserInformation Command Information -->
+        <info_export_user>
+            <!-- Update (replace) Flag When Exporting -->
+            <update_flag></update_flag>
+            <!-- Folder That Stores File to Export Data -->
+            <export_directory></export_directory>
+            <!-- Name of File to Export Data -->
+            <export_file_name></export_file_name>
+            <!-- Conditions for Extracting Data to Export -->
+            <!-- Group ID -->
+            <group_id></group_id>
+            <!-- Right Group  -->
+            <auth_id></auth_id>
+        </info_export_user>
+
+        <!-- ImportAuthorization Command Information -->
+        <info_import_authorization>
+            <!-- Update (replace) Flag When Importing -->
+            <update_flag></update_flag>
+            <!-- Local File to Import -->
+            <import_file></import_file>
+        </info_import_authorization>
+
+        <!-- ExportAuthorization Command Information -->
+        <info_export_authorization>
+            <!-- Update (replace) Flag When Exporting -->
+            <update_flag></update_flag>
+            <!-- Folder That Stores File to Export Data -->
+            <export_directory></export_directory>
+            <!-- Name of File to Export Data -->
+            <export_file_name></export_file_name>
+        </info_export_authorization>
+
+        <!-- ImportFolder Command Information -->
+        <info_import_folder>
+            <!-- Update (replace) Flag When Importing -->
+            <update_flag></update_flag>
+            <!-- Local File to Import -->
+            <import_file></import_file>
+        </info_import_folder>
+
+        <!-- ExportFolder Command Information -->
+        <info_export_folder>
+            <!-- Update (replace) Flag When Exporting -->
+            <update_flag></update_flag>
+            <!-- Folder That Stores File to Export Data -->
+            <export_directory></export_directory>
+            <!-- Name of File to Export Data -->
+            <export_file_name></export_file_name>
+        </info_export_folder>
+
+        <!-- ImportFolderEvent Command Information -->
+        <info_import_folder_event>
+            <!-- Update (replace) Flag When Importing -->
+            <update_flag></update_flag>
+            <!-- Local File to Import -->
+            <import_file></import_file>
+        </info_import_folder_event>
+
+        <!-- ExportFolderEvent Command Information -->
+        <info_export_folder_event>
+            <!-- Update (replace) Flag When Exporting -->
+            <update_flag></update_flag>
+            <!-- Folder That Stores File to Export Data -->
+            <export_directory></export_directory>
+            <!-- Name of File to Export Data -->
+            <export_file_name></export_file_name>
+        </info_export_folder_event>
+        
+        <!-- CleanUserInformation Command Information -->
+        <info_clean_user>
+        
+        </info_clean_user>
+    </specific>
+</webft>

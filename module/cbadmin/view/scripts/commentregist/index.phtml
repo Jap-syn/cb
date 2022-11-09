@@ -1,0 +1,151 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+foreach( $this->codeManagementList as $codeManagement ) {
+    if( $this->selectCodeId == $codeManagement['CodeId'] ) {
+        $currentCodeManagement = $codeManagement;
+        break;
+    }
+}
+?>
+<style>
+  dl.error-message {
+    margin: 8px 0px;
+    border: double 3px gray;
+    background-color: mistyrose;
+  }
+  dl.error-message dt {
+    margin: 4px;
+    margin-bottom: 10px;
+    color: gray;
+  }
+  dl.error-message dd {
+    margin-left: 40px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: firebrick;
+  }
+</style>
+<script type="text/javascript">
+<!--
+function check()
+{
+<?php 
+  // count関数対策
+  $codeListCount = 0;
+  if (!empty($this->codeList)){
+    $codeListCount = count($this->codeList);
+  }
+  echo 'var listCnt = ' . $codeListCount . ';' ?>
+
+	// keycode_new が空ではない
+	if( document.form.keycode_new.value.trim() != "" ) {
+		for (var i = 0; i < listCnt; i++) {
+			var codes = document.getElementsByName('keycode_' + i.toString());
+			if (codes.length > 0) {
+				if (codes[0].value == document.form.keycode_new.value.trim()) {
+					alert('科目コードが重複しています。');
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	// 新規項目が全て空
+	else {
+		if( document.form.keycontent_new.value == "" ) {
+			if( document.form.class1_new.value == "" ) {
+				if( document.form.class2_new.value == "" ) {
+					if( document.form.class3_new.value == "" ) {
+						if( document.form.note_new.value == "" ) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	alert( '科目コードは必須です。' );
+	return false;
+}
+-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/commentregist/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">コメント登録・修正</h3>
+    <?php 
+    // count関数対策
+    if(!empty($this->errors)) { ?>
+    <dl class="error-message">
+      <dt>※：入力に不備があります。登録内容を見直してください。</dt>
+      <?php foreach ($this->errors as $error) { ?>
+      <dd><?php echo $error; ?></dd>
+      <?php } ?>
+    </dl>
+    <?php } ?>
+    <h4>
+    <form name="sform" method="post" action="commentregist/index">
+      <select name="codeid" id="codeid" ><?php foreach( $this->codeManagementList as $codeManagement ) { echo '<option value="' . $codeManagement['CodeId']; if( $codeManagement['CodeId'] == $this->selectCodeId ) { echo '" selected="selected'; } echo '">' . $codeManagement['CodeName'] . '</option>'; } ?></select>
+      <input type="submit" id="submit_button" value="　検　索　" />
+    </form>
+    </h4>
+    <form name="form" method="post" action="commentregist/up" onSubmit="return check();">
+    <table style="table-layout: auto;" width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th>有効</th>
+          <th>科目コード</th>
+          <th>科目名称</th>
+          <th>区分１<?php if( $currentCodeManagement['Class1ValidFlg'] == 0 ) { echo '使用不可'; } ?></th>
+          <th>区分２<?php if( $currentCodeManagement['Class2ValidFlg'] == 0 ) { echo '使用不可'; } ?></th>
+          <th>区分３<?php if( $currentCodeManagement['Class3ValidFlg'] == 0 ) { echo '使用不可'; } ?></th>
+          <th>備考</th>
+      </tr>
+      </thead>
+      <tbody>
+        <?php $i = 0; foreach( $this->codeList as $codeList ) { ?>
+        <tr class="data">
+          <td class="c_data"><input type="checkbox" name="valid_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 ) { echo 'disabled="disabled"'; } if( $codeList['ValidFlg'] == 1 ) { echo ' checked="checked"'; } ?> /></td>
+          <td class="l_label"><?php echo $codeList['KeyCode'] ?><input type="hidden" size="10" name="keycode_<?php echo $i; ?>" value="<?php echo $codeList['KeyCode']; ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="keycontent_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 ) { echo 'disabled="disabled" '; } echo 'value="' . f_e( $codeList['KeyContent'] ); ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="class1_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 || $currentCodeManagement['Class1ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } echo 'value="' . f_e( $codeList['Class1'] ); ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="class2_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 || $currentCodeManagement['Class2ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } echo 'value="' . f_e( $codeList['Class2'] ); ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="class3_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 || $currentCodeManagement['Class3ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } echo 'value="' . f_e( $codeList['Class3'] ); ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="note_<?php echo $i; ?>" <?php if( $codeList['SystemFlg'] == 1 ) { echo 'disabled="disabled" '; } echo 'value="' . f_e( $codeList['Note'] ); ?>" /></td>
+        </tr>
+        <?php $i++; } ?>
+        <tr class="data">
+          <td class="c_data">　新規　</td>
+          <td class="c_data"><input type="text" size="10" name="keycode_new" value="<?php echo f_e($this->newCode['KeyCode']) ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="keycontent_new" value="<?php echo f_e($this->newCode['KeyContent']) ?>" /></td>
+          <td class="c_data"><input type="text" size="10" name="class1_new" value="<?php echo f_e($this->newCode['Class1']) ?>" <?php if( $currentCodeManagement['Class1ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } ?> /></td>
+          <td class="c_data"><input type="text" size="10" name="class2_new" value="<?php echo f_e($this->newCode['Class2']) ?>" <?php if( $currentCodeManagement['Class2ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } ?> /></td>
+          <td class="c_data"><input type="text" size="10" name="class3_new" value="<?php echo f_e($this->newCode['Class3']) ?>" <?php if( $currentCodeManagement['Class3ValidFlg'] == 0 ) { echo 'disabled="disabled" '; } ?> /></td>
+          <td class="c_data"><input type="text" size="10" name="note_new" value="<?php echo f_e($this->newCode['Note']) ?>" /></td>
+        </tr>
+        <tr>
+          <td colspan="7" class="c_data">
+            <input type="hidden" name="codeid" value="<?php echo f_e($this->selectCodeId); ?>" />
+            <input type="submit" value="　更　新　" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'cbadmin/page_footer.php' );
+?>
+</div>
+</body>
+</html>

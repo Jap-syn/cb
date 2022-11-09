@@ -1,0 +1,90 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+  td.status {
+	font-weight: bold;
+  }
+  td.valid {
+	background-color : azure !important;
+	color: darkgreen !important;
+  }
+  td.invalid {
+	background-color : lavenderblush !important;
+	color: crimson !important;
+  }
+  .cat_title a {
+	margin-left: 24px;
+  }
+  	hr {
+	   border-width: 1px 0px 0px 0px; /* 太さ */
+	   border-style: dotted; /* 線種 */
+	   border-color: silver; /* 線色 */
+	   height: 3px; /* 高さ */
+	}
+
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3>請求取りまとめ設定詳細情報</h3>
+
+<div style="float: left; width: 450px;">
+  <table class="datatable" width="450" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+          <td colspan="2" class="l_data cat_title">【請求取りまとめモード】
+		<a href="combinedclaim/edit/eid/<?php echo $this->enterprise['EnterpriseId']; ?>">編集</a>
+		</a>
+	  </td>
+    </tr>
+    <tr>
+      <td class="label">事業者ID</td>
+      <td class="data"><?php echo f_e($this->enterprise['EnterpriseId']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">事業者名</td>
+      <td class="data"><?php echo f_e($this->enterprise['EnterpriseNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求取りまとめモード</td>
+      <td class="data"><?php echo f_e($this->combinedClaimModeCap); ?></td>
+    </tr>
+<!-- 2015/09/07 未使用のため非表示 Stt
+    <tr>
+      <td class="label">請求取りまとめ（定期購入）</td>
+      <td class="data"><?php echo f_e($this->combinedClaimFlgRegCap); ?></td>
+    </tr>
+2015/09/07 未使用のため非表示 End -->
+    <tr>
+      <td class="label">自動請求取りまとめ指定日</td>
+      <td class="data"><?php echo f_e($this->enterprise['AutoCombinedClaimDay']); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【サイト毎の請求取りまとめ】</td>
+    </tr>
+    <tr>
+      <td class="label">サイト毎の請求取りまとめ</td>
+      <td class="data">
+      <?php $i=0; foreach($this->sites as $site) { ?>
+        <?php ;echo f_e($site["SiteNameKj"]); ?>(<?php echo f_e($site["SiteId"]); ?>) : <?php echo f_e($this->combinedClaimCap[$i]); ?></br><hr>
+      <?php $i++;} ?>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div style="float: none; clear: both"></div>
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

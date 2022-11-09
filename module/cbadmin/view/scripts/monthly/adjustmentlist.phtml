@@ -1,0 +1,91 @@
+<?php
+$totalAdjustmentAmount = 0;     // 総調整額
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/monthly/page_menu2.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">月次明細（調整額明細）</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1">
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    -->
+    <form name="form">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <!-- count関数対策 -->
+<?php if(empty($this->list)) { ?>
+	　　　明細はありません。
+<?php } else { ?>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 50px">No</th>
+            <th style="width: 85px">立替締日</th>
+            <th style="width: 100px">注文ID</th>
+            <th style="width: 100px">任意注文番号</th>
+            <th style="width: 100px">購入者</th>
+            <th style="width: 85px">注文日</th>
+            <th style="width: 400px">科目</th>
+            <th style="width: 90px">精算<br />調整額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          $i = 0;
+          // ount関数対策
+          $listCount = 0;	
+          if (!empty($this->list)) {	
+              $listCount = count($this->list);	
+          }	
+          for ($j=0; $j<$listCount; $j++) {
+              $row = $this->list[$j];
+          ?>
+          <tr>
+            <td class="seq_col c_data"><?php echo (++$i); ?></td>
+            <td class="date_col c_data"><?php echo date('Y/m/d', strtotime($row['FixedDate'])); ?></td>
+            <td class="c_data"><?php echo f_e($row['OrderId']); ?></td>
+            <td class="c_data"><?php echo f_e($row['Ent_OrderId']); ?></td>
+            <td class="l_data"><?php echo f_e($row['NameKj']); ?></td>
+            <td class="c_data"><?php echo (!is_null($row['ReceiptOrderDate'])) ? date('Y/m/d', strtotime($row['ReceiptOrderDate'])) : ''; ?></td>
+            <td class="l_data"><?php echo f_e($row['kamoku']); ?></td>
+            <td class="money_col r_data"><?php echo nvl(number_format($row['AdjustmentAmount']), '&nbsp;'); ?></td>
+          </tr>
+          <?php
+              $totalAdjustmentAmount += (int)$row['AdjustmentAmount'];
+          }
+          ?>
+
+          <tr class="summary">
+            <td class="seq_col r_data" colspan="7">お取引先計</td>
+            <td class="money_col total_col r_data"><?php echo f_nf((int)$totalAdjustmentAmount, '\ #,##0'); ?></td>
+          </tr>
+
+        </tbody>
+      </table>
+<?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

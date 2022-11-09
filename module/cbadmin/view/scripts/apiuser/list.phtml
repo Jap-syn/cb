@@ -1,0 +1,164 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$toggleUrl = f_path($this->baseUrl, 'apiuser/list');
+if($this->selectOemId != -1) {
+  $toggleUrl = f_path($toggleUrl, sprintf('OemId/%d', $this->selectOemId));
+}
+if(!$this->showInvalid) {
+  $toggleUrl = f_path($toggleUrl, 'showInvalid/true');
+}
+$toggleMsg = $this->showInvalid ? '無効なAPIユーザーは表示しない' : '無効なAPIユーザーも表示する';
+?>
+  <style>
+  table.datatable tr.disabled,
+  table.datatable tr.disabled td {
+	background-color: silver;
+  }
+  .page_nav .pager a.command,
+  .page_nav .pager a.command:link,
+  .page_nav .pager a.command:hover,
+  .page_nav .pager a.command:active,
+  .page_nav .pager a.command:visited {
+	color: blue;
+	border: solid 1px silver;
+	padding: 4px 12px;
+  }
+  .page_nav .pager a.command:hover {
+	color : blue;
+	background-color: azure;
+	border-color: blue;
+  }
+  </style>
+  <script type="text/javascript">
+  Event.observe(window, 'load', function() {
+	window.filtered = <?php echo $this->showInvalid ? 'true' : 'false'; ?>;
+	Event.observe($('OemId'), 'change', selectOem);
+  });
+  function selectOem() {
+	var
+	  nvl = function(val, if_null) {
+		if(if_null == null) if_null = '';
+		return val == null ? if_null : val;
+	  },
+	  buildPath = function(a, b, sep) {
+		sep = nvl(sep, '/');
+		return [
+		  nvl(a).replace(/[\\\/]+$/, ''),
+		  nvl(b).replace(/^[\\\n]+/, '')
+		].join(sep);
+	  },
+	  baseUrl = (document.getElementsByTagName('base')[0] || { href : '' }).href;
+	  url = buildPath(baseUrl, 'apiuser/list'),
+	  opt = $('OemId').options[$('OemId').selectedIndex];
+	  if(nvl(opt.value).length) {
+		url= buildPath(url, 'OemId/' + opt.value);
+	  }
+	  if(window.filtered) {
+		url = buildPath(url, 'showInvalid/true');
+	  }
+	  location.href = url;
+  }
+  </script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/apiuser/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">APIユーザー 一覧</h3>
+	  <div class="page_nav">
+		APIユーザ登録元OEM
+		<select id="OemId" name="OemId" >
+		<option value="">全て</option>
+
+		<?php foreach($this->oemList as $value => $caption) { ?>
+		  <?php $selected = $this->selectOemId == $value ? ' selected="selected"' : '';?>
+		  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+		<?php } ?>
+		</select>
+		<span class="pager">
+		  <a class="command" href="<?php echo f_e($toggleUrl); ?>" title="一覧の表示方法を切り替えます">
+		  <?php echo f_e($toggleMsg); ?>
+		  </a>
+		</span>
+		<div style="float: none; clear: both; font-size: 0px; line-height: 1px;">&nbsp;</div>
+	  </div>
+
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th rowspan="2" style="width: 60px">APIユーザーID</th>
+            <th>APIユーザー名</th>
+			<th>OEM先</th>
+            <th>担当者名</th>
+            <th>担当部署</th>
+            <th>連絡先</th>
+            <th>サイト数</th>
+			<th rowspan="2">操作</th>
+          </tr>
+          <tr>
+            <th colspan="6">備考</th>
+          </tr>
+          <?php foreach ($this->list as $row) { //$row = $this->list[$i]; ?>
+		  <?php
+			if( $row['ValidFlg'] == 0 ) {
+			  if( ! $this->showInvalid ) continue;
+			  $rowClass = 'data disabled';
+			} else {
+			  $rowClass = 'data';
+			}
+		  ?>
+          <tr class="<?php echo $rowClass; ?>">
+            <td rowspan="2" class="r_data"><?php echo $row['ApiUserId']; ?></td>
+			<td class="l_data">
+				<a href="apiuser/detail/id/<?php echo $row['ApiUserId']; ?>">
+					<?php  echo escape($row['ApiUserNameKj']); ?>
+				</a>
+			</td>
+			<td class="l_data">
+			<?php if($row['oem']) { ?>
+			  <a href="oem/detail/oid/<?php echo f_e($row['oem']); ?>" target="_blank">
+				[<?php echo f_e($row['oem']); ?>] <?php echo f_e($this->oemList[$row['oem']]); ?>
+			  </a>
+			<?php } else { ?>
+			  <span><?php echo f_e($this->oemList[$row['oem']]); ?>
+			<?php } ?>
+			</td>
+            <td class="l_data"><?php echo escape($row['CpNameKj']); ?></td>
+            <td class="l_data"><?php echo escape($row['DivisionName']); ?></td>
+            <td class="l_data"><?php echo escape($row['ContactPhoneNumber']); ?></td>
+			<td class="r_data">
+			<?php if($row['relCount'] > 0) { ?>
+			  <a href="<?php echo f_e(sprintf('apirel/api2ent/oemId/%d/id/%d', $row['oem'] , $row['ApiUserId'])); ?>" target="_blank">
+				<?php echo f_e($row['relCount']); ?>
+			  </a>
+			<?php } else { ?>
+			-
+			<?php } ?>
+			</td>
+            <td class="c_data" rowspan="2">
+                <a href="apiuser/edit/id/<?php echo $row['ApiUserId']; ?>">編集</a><br />
+                <a href="apirel/api2ent/oemId/<?php echo $row['oem']."/id/".$row['ApiUserId'] ?>">サイト設定</a>
+            </td>
+          </tr>
+          <tr class="<?php echo $rowClass; ?>">
+            <td colspan="6" class="l_data"><?php if ($row['Note'] == "") echo "　"; else echo escape($row['Note']); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="7">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

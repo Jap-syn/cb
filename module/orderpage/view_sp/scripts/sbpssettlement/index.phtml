@@ -1,0 +1,25 @@
+<form action="<?php echo $this->purchase_url;?>" method="POST" id="form" acceptCharset="Shift_JIS">
+    <input type='hidden' name="pay_method" value="<?php echo $this->sbps_send_data['pay_method'];?>" />
+    <input type='hidden' name="merchant_id" value="<?php echo $this->sbps_send_data['merchant_id'];?>" />
+    <input type='hidden' name="service_id" value="<?php echo $this->sbps_send_data['service_id'];?>" />
+    <input type='hidden' name="cust_code" value="<?php echo $this->sbps_send_data['cust_code'];?>" />
+    <input type='hidden' name="order_id" value="<?php echo $this->sbps_send_data['order_id'];?>" />
+    <input type='hidden' name="item_id" value="<?php echo $this->sbps_send_data['item_id'];?>" />
+    <input type='hidden' name="item_name" value="<?php echo $this->sbps_send_data['item_name']; ?>"/>
+    <input type='hidden' name="amount" value="<?php echo $this->sbps_send_data['amount'];?>" />
+    <input type='hidden' name="pay_type" value="<?php echo $this->sbps_send_data['pay_type'];?>" />
+    <input type='hidden' name="service_type" value="<?php echo $this->sbps_send_data['service_type'];?>" />
+    <input type='hidden' name="success_url" value="<?php echo $this->sbps_send_data['success_url'];?>" />
+    <input type='hidden' name="cancel_url" value="<?php echo $this->sbps_send_data['cancel_url'];?>" />
+    <input type='hidden' name="error_url" value="<?php echo $this->sbps_send_data['error_url'];?>" />
+    <input type='hidden' name="pagecon_url" value="<?php echo $this->sbps_send_data['pagecon_url'];?>" />
+    <input type='hidden' name="free1" value="<?php echo $this->sbps_send_data['free1'];?>" />
+    <input type='hidden' name="free2" value="<?php echo $this->sbps_send_data['free2'];?>" />
+	<input type='hidden' name="dtl_rowno" value="<?php echo $this->sbps_send_data['dtl_rowno'];?>" />
+    <input type='hidden' name="request_date" value="<?php echo $this->sbps_send_data['request_date'];?>" />
+    <input type='hidden' name="limit_second" value="<?php echo $this->sbps_send_data['limit_second'];?>" />
+    <input type='hidden' name="sps_hashcode" value="<?php echo $this->sbps_send_data['sps_hashcode'];?>" />
+</form>
+<script>
+    document.getElementById("form").submit();
+</script>

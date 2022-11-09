@@ -1,0 +1,361 @@
+<?php
+use Zend\Json\Json;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use oemmember\classes\OrderInputInfo;
+use oemmember\classes\OrderEnums;
+use oemmember\classes\DuplicateRegistrationConfig;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$hasList = !empty($this->order_list) ? true : false;
+$commandBar = new CoralViewCommandBar(
+	// title
+	'入力内容を確認して、登録を実行してください',
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'confirmed',
+				CoralViewCommandBarButton::OPTION_HREF => 'order/save/mode/save',
+				CoralViewCommandBarButton::OPTION_TEXT => 'この内容で登録',
+				CoralViewCommandBarButton::OPTION_TITLE => '現在の内容で問題ない場合はここをクリックして登録を完了させてください'
+			)
+		),
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'rollback',
+				CoralViewCommandBarButton::OPTION_HREF => 'order/order/mode/rollback',
+				CoralViewCommandBarButton::OPTION_TEXT => '内容を修正する',
+				CoralViewCommandBarButton::OPTION_TITLE => '登録内容を修正するにはここをクリックして前の画面に戻ります'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+
+<!-- 任意番号エラー -->
+	<div class="error_ent_container" id="validate_ent_area" style="display: none">
+		<h4>任意番号</h4>
+		<ul class="error_ent_table">
+		</ul>
+	</div>
+	<!-- 注文基本情報 -->
+<?php
+	foreach( $this->form_info->getGroups() as $groupName => $group ) {
+		if( $groupName == OrderInputInfo::ARRKEY_ITEMS ) continue;
+?>
+	<h3>
+		【<?php echo $group->getLabel(); ?>】
+	</h3>
+
+<?php
+	if( $groupName == OrderInputInfo::ARRKEY_DELIV ) {
+		if( (isset($this->postData['AnotherDeliFlg']) ? $this->postData['AnotherDeliFlg'] : null) != OrderEnums::AnotherDeliFlg_ANOTHER_SPEC ) {
+?>
+	<div>別配送先を指定しない</div>
+<?php
+			continue;
+		}
+	}
+?>
+	<table class="order_items" id="<?php echo $groupName; ?>" border="yes" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th class="item_name">項目名</th>
+				<th class="item_value">入力</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach( $group->getItems() as $item ) { ?>
+			<tr
+			    <?php
+                      if      ($item->getName() == 'O_ServiceExpectedDate' && !$this->isShowServiceTargetClass) { echo ' style="display:none"'; }
+                      else if ($item->getName() == 'O_T_OrderClass' && !$this->isShowTOrderClass) { echo ' style="display:none"'; }
+                      else if ($item->getName() == 'O_ClaimSendingClass' && !$this->isShowSelfBillingFlg) { echo ' style="display:none"'; }
+                      else if ($this->isShowReOrderFlg && ($item->getName() == 'C_PrefectureName' || $item->getName() == 'C_City' || $item->getName() == 'C_Town' || $item->getName() == 'C_Building' ||
+                                                           $item->getName() == 'D_PrefectureName' || $item->getName() == 'D_City' || $item->getName() == 'D_Town' || $item->getName() == 'D_Building')) { echo ' style="display:none"'; }
+                      else if (!$this->isShowReOrderFlg && ($item->getName() == 'C_Address' || $item->getName() == 'D_Address')) { echo ' style="display:none"'; }			    ?>
+			>
+				<td class="item_name"><?php echo $item->getCaption(); ?></td>
+				<td class="item_value"><?php
+					$data = isset($this->postData[ $item->getName() ]) ? $this->postData[ $item->getName() ] : null;
+					$type = null;
+					$format = null;
+					switch( $item->getName() ) {
+						case 'O_ReceiptOrderDate'://'O_RecepitOrderDate'
+							$type = 'date';
+							$format = 'Y年m月d日';
+							break;
+						case 'O_SiteId':
+							foreach( $this->site_list as $site ) {
+								if( $site['SiteId'] == $data ) {
+									$data = $site['SiteNameKj'];
+									break;
+								}
+							}
+							break;
+						case 'O_T_OrderClass':
+						    $data = isset($this->testorderclass_info[ $data ]) ? $this->testorderclass_info[ $data ] : null;
+						    break;
+ 						case 'O_ClaimSendingClass':
+						    $data = isset($this->claimsendingclass_info[ $data ]) ? $this->claimsendingclass_info[ $data ] : null;
+ 						    break;
+ 						case 'O_CreditTransferRequestFlg':
+ 						    $data = isset($this->creditTransferRequestFlg_info[ $data ]) ? $this->creditTransferRequestFlg_info[ $data ] : null;
+ 						    break;
+						case 'C_PrefectureName':
+						case 'D_PrefectureName':
+							$data = isset($this->prefecture_info[ $data ]) ? $this->prefecture_info[ $data ] : null;
+							break;
+					}
+					echo ( ( empty( $data ) && "$data" !== '0' ) ? '(未指定)' : valueFormat( $data, $type, $format ) );
+
+                    if ($item->getName() == 'O_T_OrderClass') {
+                        echo "<br>";
+                        echo '（設定与信結果）' . $this->cmst87ar[$this->postData['cmst87']];
+                    }
+
+				?></td>
+			</tr>
+			<?php } ?>
+		</tbody>
+	</table>
+<?php
+	}
+	$groupName = OrderInputInfo::ARRKEY_DELIV;
+	$group = $this->form_info->getGroup( $groupName );
+?>
+
+	<!-- 商品情報フォーム -->
+	<h3>【商品情報（請求書に記載される項目）】</h3>
+	<table class="order_items" id="<?php echo $groupName; ?>" border="yes" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th class="item_value">
+					商品名／購入品目
+				</th>
+				<th class="item_value">
+					単価
+				</th>
+				<th class="item_value">
+					数量
+				</th>
+				<th class="item_value">
+					金額（単価 × 数量）
+				</th>
+				<th class="item_value">
+                    消費税率
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- 商品情報 -->
+<?php
+			setReplaceEmpty(true);
+
+            $postedItems = isset($this->postData['I_ItemList']) ?
+                Json::decode( process_slashes( $this->postData['I_ItemList'], Json::TYPE_ARRAY ) ) :
+                array();
+			if( $postedItems == null ) $postedItems = array( array( 'i_itemnamekj' => '', 'i_unitprice' => '', 'i_itemnum' => '' ) );
+
+			$total_receipt = 0;
+			$postedItemsCount = 0;
+			if (!empty($postedItems)) {
+                $postedItemsCount = count( $postedItems );
+            }
+			for($i = 0; $i < $postedItemsCount; $i++) {
+				$postedItem = (array)$postedItems[ $i ];
+				$receipt = ((int)($postedItem['i_unitprice'])) * ((double)($postedItem['i_itemnum']));
+                if ((int)$this->userInfo->UseAmountFractionClass == 0) { $total_receipt += floor( $receipt ); }
+                if ((int)$this->userInfo->UseAmountFractionClass == 1) { $total_receipt += round( $receipt ); }
+                if ((int)$this->userInfo->UseAmountFractionClass == 2) { $total_receipt += ceil(  $receipt ); }
+?>
+			<tr class="item_row must_row">
+				<td class="item_value"><?php echo valueFormat( isset($postedItem['i_itemnamekj']) ? $postedItem['i_itemnamekj'] : null ); ?></td>
+				<td class="item_value">\ <?php echo valueFormat( isset($postedItem['i_unitprice']) ? $postedItem['i_unitprice'] : null, 'number', '#,##0' ); ?></td>
+				<td class="item_value"><?php
+                    if (is_int($postedItem['i_itemnum'])) {
+                        echo valueFormat( $postedItem['i_itemnum'], 'number', '#,##0' );
+                    }
+                    else {
+                        echo number_format($postedItem['i_itemnum'], $this->userInfo->DispDecimalPoint);
+                    }
+                ?>
+                </td>
+                <td class="item_value">\ <?php
+                    if ((int)$this->userInfo->UseAmountFractionClass == 0) { echo valueFormat(floor( $receipt ), 'number', '#,##0' ); }
+                    if ((int)$this->userInfo->UseAmountFractionClass == 1) { echo valueFormat(round( $receipt ), 'number', '#,##0' ); }
+                    if ((int)$this->userInfo->UseAmountFractionClass == 2) { echo valueFormat(ceil(  $receipt ), 'number', '#,##0' ); }
+				?>
+ 				</td>
+
+ 				<td class="item_value"><?php echo  $postedItem['i_taxrate'] . "%"?></td>
+
+			</tr>
+<?php
+			}
+?>
+
+			<!-- 送料 -->
+			<tr class="extra_item_row">
+				<td class="item_name" colspan="3">
+					商品送料
+				</td>
+				<td class="item_value" colspan="2">\ <?php echo valueFormat( isset($this->postData['I_UnitPrice_' . $this->order_item_carriage__]) ? $this->postData['I_UnitPrice_' . $this->order_item_carriage__] : null, 'number', '#,##0' ); ?></td>
+			</tr>
+			<!-- 手数料 -->
+			<tr class="extra_item_row">
+				<td class="item_name" colspan="3">
+					店舗手数料
+				</td>
+				<td class="item_value" colspan="2">\ <?php echo valueFormat( isset($this->postData['I_UnitPrice_' . $this->order_item_charge__]) ? $this->postData['I_UnitPrice_' . $this->order_item_charge__] : null, 'number', '#,##0' ); ?></td>
+			</tr>
+            <?php if ($this->userInfo->TaxClass == 1) { ?>
+			<!-- 手数料 -->
+			<tr class="extra_item_row">
+				<td class="item_name" colspan="3">
+					外税
+				</td>
+				<td class="item_value" colspan="2">\ <?php echo valueFormat( isset($this->postData['I_UnitPrice_' . $this->order_item_taxclass__]) ? $this->postData['I_UnitPrice_' . $this->order_item_taxclass__] : null, 'number', '#,##0' ); ?></td>
+			</tr>
+            <?php } ?>
+			<!-- 請求金額合計 -->
+			<tr class="extra_item_row">
+				<td class="item_name" colspan="3" style="font-weight: bold">
+					請求金額合計
+				</td>
+				<td class="item_value" colspan="2">\ <?php
+					$total_receipt += isset($this->postData['I_UnitPrice_' . $this->order_item_carriage__]) ?
+                    					   ((int)($this->postData['I_UnitPrice_' . $this->order_item_carriage__])) :
+                    					   0;
+					$total_receipt += isset($this->postData['I_UnitPrice_' . $this->order_item_charge__]) ?
+					                       ((int)($this->postData['I_UnitPrice_' . $this->order_item_charge__])) :
+					                       0;
+
+					if ($this->userInfo->TaxClass == 1) {
+                    $total_receipt += isset($this->postData['I_UnitPrice_' . $this->order_item_taxclass__]) ?
+                                           ((int)($this->postData['I_UnitPrice_' . $this->order_item_taxclass__])) :
+                                           0;
+                    }
+
+					echo valueFormat( $total_receipt, 'number', '#,##0' );
+				?></td>
+			</tr>
+		</tbody>
+	</table>
+	<?php $config = new DuplicateRegistrationConfig(); ?>
+	<center class="submit_area">
+		<button id="submit_order" type="button" <?php if( (('1' == $this->caution && !$config->order) || '1' == $this->caution2 || '1' == $this->caution3 || '1' == $this->caution4)) echo 'disabled="disabled"'; ?>>この内容で登録する</button>&nbsp;
+		<button id="correct_order" type="button">内容を修正する</button>
+	</center>
+	<div class="error_ent_check">
+	<?php if('1' == $this->caution || '1' == $this->caution2 || '1' == $this->caution3 || '1' == $this->caution4) { ?>
+		<td>(警告を無視する)<input type='checkbox' id='EntOrderIdCheck' name='EntOrderIdCheck' onclick="buttonSetting()"/></td>
+	<?php } ?>
+	</div>
+	<script>
+	Event.observe( window, "load", function() {
+		<?php if((('1' == $this->caution&& !$config->order) || '1' == $this->caution2 || '1' == $this->caution3 || '1' == $this->caution4)) { ?>
+			var entarea = $("validate_ent_area");
+			Element.hide( entarea );
+
+			var enttitle = entarea.getElementsByTagName("h4")[0];
+			var entroot = document.getElementsByClassName("error_ent_table", entarea)[0];
+			var inner = "";
+			var duplicationpast = "<li>過去に登録された任意注文番号と重複しています。</li>";
+			<?php if('1' == $this->caution) { ?>
+			inner = inner + duplicationpast;
+			<?php }?>
+            <?php if('1' == $this->caution2) { ?>
+            inner = inner + "<li>注文日に有効期間外を指定しています。</li>";
+            <?php }?>
+            <?php if('1' == $this->caution3) { ?>
+            inner = inner + "<li>郵便番号と住所が一致しません。</li>";
+            <?php }?>
+            <?php if('1' == $this->caution4) { ?>
+            inner = inner + "<li>住所が郵便番号検索された状態のままです。</li>";
+            <?php }?>
+			entroot.innerHTML = inner;
+			enttitle.innerHTML = "登録内容に警告があります。このまま登録する場合は、登録ボタン下にある「警告を無視する」チェックボックスをチェックしてください";
+
+			Element.show( entarea );
+			setTimeout( function() {
+				bytefx.scroll( entarea, 70 );
+			}, 0 );
+		<?php }?>
+	});
+
+	Event.observe( $("submit_order"), "click", function(evt) {
+		window.location.href = "{0}order/save/mode/save".format( document.getElementsByTagName("base")[0].href );
+	}.bindAsEventListener( $("submit_order") ) );
+	Event.observe( $("correct_order"), "click", function(evt) {
+		window.location.href = "{0}order/order/mode/rollback".format( document.getElementsByTagName("base")[0].href );
+	}.bindAsEventListener( $("submit_order") ) );
+
+	//登録ボタン制御
+	function buttonSetting(){
+		// 警告無視チェック状態を取得
+		var
+			e_id = 'EntOrderIdCheck',
+			allow_dup_regist = ($(e_id) || { checked : false }).checked;
+
+		// チェック状態を保存
+		var
+			url = '{0}ajax/dupconfig/mode/set/key/order/value/{1}'.format(
+				document.getElementsByTagName('base')[0].href,
+				allow_dup_regist
+			),
+			terminate = function() {
+				$(e_id).checked = allow_dup_regist;
+				$('submit_order').disabled = !allow_dup_regist;
+			}
+
+		new Ajax.Request(url, {
+			'method' : 'post',
+			onComplete : function(xhr) {
+				try {
+					var config = xhr.responseText.parseJSON();
+					allow_dup_regist = !!(config || { order : false }).order;
+				} catch(e) {}
+				terminate();
+			}
+		});
+	}
+	</script>
+	<p/>
+</div>
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>
+

@@ -1,0 +1,32 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  var url = [
+      (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+      'template/index'
+  ].join('/');
+  setTimeout(function() {
+    window.location.href = url;
+  }, 2000);
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/template/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3><?php echo $this->contentsTitle; ?></h3>
+    <p style="margin: 5px 25px">しばらくお待ちください...</p>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

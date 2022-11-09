@@ -1,0 +1,119 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style>
+
+	table.margin0 {
+		margin-bottom: 0px;
+		font-size: 12px;
+	}
+	.scroll {
+		height: 300px;
+		overflow-y: scroll;
+		border: 1px lightgray solid;
+		margin-bottom: 10px;
+	}
+	.scroll table {
+		width: 862px;
+		margin: 0px;
+	}
+	.scrollbar {
+		width: 12px;
+		background-color: lightgray;
+	}
+	.width_80 {
+		width: 80px;
+	}
+	.width_81 {
+		width: 81px;
+	}
+	.width_100 {
+		width: 100px;
+	}
+	.width_101 {
+		width: 101px;
+	}
+	.width_220 {
+		width: 220px;
+	}
+	.l_height {
+		line-height: 15px;
+	}
+</style>
+</head>
+<body>
+    <div id="wrapper">
+        <?php echo $this->render('page_header.php'); ?>
+        <?php echo $this->render('page_menu.php'); ?>
+        <!-- start contents -->
+        <div id="contents">
+            <h3 class="contents_title">キャンセル返金明細</h3>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <tbody>
+                    <tr>
+                        <td class="l_data">
+                            <?php echo f_e($this->from."～".$this->to);?>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">	  
+                <tbody>
+                    <tr>
+                        <td class="r_label width_250 under">対象店舗名</td>
+                        <td class="c_data under" style="background-color: lightyellow;"><?php echo $this->cancel_data['EnterpriseName'];?></td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗キャンセル返金総額</td>
+                        <td class="r_data"><?php echo $this->cancel_data['RepayTotal'];?>円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗キャンセル返金額(CB)</td>
+                        <td class="r_data">CBからの返金額：<?php echo $this->cancel_data['CbRefund'];?> 円</td>
+                    </tr>
+                    <tr>
+                        <td class="r_label">対象店舗キャンセル返金額(OEM)</td>
+                        <td class="r_data">OEMからの返金額：<?php echo $this->cancel_data['OemRefund'];?> 円</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">	  
+                <tbody>
+                    <tr>
+                        <td class="c_label width_81">注文ID</td>
+                        <td class="c_label width_80">任意注文番号</td>
+                        <td class="c_label width_100">購入者</td>
+                        <td class="c_label width_80">注文日</td>
+                        <td class="c_label width_80">立替締日</td>
+                        <td class="c_label width_80">キャンセル日</td>
+                        <td class="c_label width_100">請求額</td>
+                        <td class="c_label width_220">キャンセル返金額</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="scroll">
+                <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+
+                    <tbody>
+                        <?php foreach($this->cancel_detail_data as $value){?>
+                            <tr>
+                                <td class="c_data width_81"><?php echo f_e(nvl($value['OrderId'], 0));?></td>
+                                <td class="c_data width_80"><?php echo f_e(nvl($value['Ent_OrderId'], ""));?></td>
+                                <td class="c_data width_100"><?php echo f_e(nvl($value['NameKj'], 0));?></td>
+                                <td class="c_data width_80"><?php echo f_e(nvl($value['ReceiptOrderDate'], ""));?></td>
+                                <td class="c_data width_80"><?php echo f_e(nvl($value['Chg_FixedDate'],""));?></td>
+                                <td class="c_data width_80"><?php echo f_e(nvl($value['CancelDate'],""));?></td>
+                                <td class="c_data width_100"><?php echo f_e(nvl($value['UseAmount'],0));?>円</td>
+                                <td class="c_data width_220 l_height">合計返金額：<?php echo f_e(nvl($value['RepayTotal']),0);?>円<br />CBからの返金額：<?php echo f_e(nvl($value['CbFee'],0));?>円<br />OEMからの返金額：<?php echo f_e(nvl($value['OemFee']));?>円<br /></td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+	        </div>
+  <!-- end contents --> 
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

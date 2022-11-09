@@ -1,0 +1,279 @@
+<?php
+use models\Logic\LogicOemClaimAccount;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#contents table td {
+  line-height: 1.6;
+}
+.detail-item {
+  display: block;
+  margin: 0;
+  float: left;
+  min-width: 31%;
+  overflow: visible;
+  /*font-size: 11px;*/
+  padding-left: 8px;
+}
+.detail-item-s {
+  min-width: 23%;
+}
+.detail-item-m {
+  min-width: 45%;
+}
+.detail-item-l {
+  min-width: 96%;
+}
+.clear-float {
+  display: block;
+  width: 100%;
+  height: 0;
+  font-size: 0;
+  line-height: 0;
+  clear: both;
+  float: none;
+}
+.acc-policy {
+  font-size: 10px;
+  font-weight: bold;
+  color: darkgreen;
+  background-color: honeydew;
+  border: solid 2px darkgreen;
+  border-radius: 3px;
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 3px;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/claimaccount/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求口座一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th style="width: 32px" rowspan="3">OEM ID</th>
+            <th style="width: 185px" rowspan="3">OEM名</th>
+            <th style="width: 45px" rowspan="3">区分</th>
+            <th>銀行口座</th>
+            <th style="width: 60px" rowspan="3">操作</th>
+          </tr>
+          <tr>
+            <th>ゆうちょ口座</th>
+          </tr>
+          <tr>
+            <th>コンビニ収納代行</th>
+          </tr>
+      <?php foreach ($this->list as $row) { ?>
+      <?php $use_smbc = !empty($row['Bk_AccountId']) && $row['Bk_ServiceKind'] == 1; ?>
+      <?php $use_jnb = !empty($row['Jnb_Id']); ?>
+      <?php $use_smbcpa = !empty($row['Smbcpa_Id']); ?>
+      <?php $row_span = 3 + ($use_smbc ? 1 : 0) + ($use_jnb ? 1 : 0) + ($use_smbcpa ? 1 : 0); ?>
+          <tr class="data" title="<?php echo f_df($row['Smbc_ModifiedDate'], 'Y-m-d H:i:s'); ?>">
+            <td class="r_data" rowspan="<?php echo f_e($row_span); ?>"><?php echo $row['OemId'] ? f_e($row['OemId']) : '&nbsp;'; ?></td>
+            <td class="l_data" rowspan="<?php echo f_e($row_span); ?>" style="position: relative;">
+            <?php if($row['OemId']) { ?>
+              <a href="oem/detail/oid/<?php echo f_e($row['OemId']); ?>" target="_blank"><?php echo f_e($row['NameKj']); ?></a>
+            <?php } else { ?>
+              <?php echo f_e($row['NameKj']); ?>
+            <?php } ?>
+            <?php if($row['ReservedCount']) { ?>
+              <div style="margin-left: 12px; font-size: 12px;">
+                未印刷の請求： <?php echo f_nf($row['ReservedCount'], '#,##0'); ?> 件
+              </div>
+            <?php } ?>
+            <?php if($row['ReclaimAccountPolicy']) { ?>
+              <span class="acc-policy">再：CB名義</span>
+            <?php } ?>
+            </td>
+
+          <?php if(!empty($row['Bk_AccountId'])) { ?>
+<?php /* 銀行口座：データあり */ ?>
+            <td class="l_data" rowspan="<?php echo f_e($row_span); ?>">
+              <?php
+              $info = array();
+              if($use_smbc) $info[] = LogicOemClaimAccount::SERVICE_KIND_LABEL_S_SMBC;
+              if($use_jnb) $info[] = LogicOemClaimAccount::SERVICE_KIND_LABEL_S_JNB;
+              if($use_smbcpa) $info[] = LogicOemClaimAccount::SERVICE_KIND_LABEL_S_SMBCPA;
+              // count関数対策
+              echo f_br(!empty($info) ? join("\n", $info) : LogicOemClaimAccount::SERVICE_KIND_LABEL_S_DEFAULT);
+              ?>
+            </td>
+            <td class="l_data">
+              <div>
+                銀行名・支店名： <?php echo f_e(sprintf('%s %s', $row['Bk_BankName'], $row['Bk_BranchName'])); ?>
+              </div>
+              <div class="detail-item detail-item-s">
+                銀行コード： <?php echo f_e($row['Bk_BankCode']); ?>
+              </div>
+              <div class="detail-item detail-item-s">
+                支店コード： <?php echo f_e($row['Bk_BranchCode']); ?>
+              </div>
+              <div class="detail-item detail-item-s">
+                <?php $map = $this->master_map[LogicOemClaimAccount::MAPKEY_BK_DEPOSIT_CLASS]; ?>
+                口座種別： <?php echo f_e(nvl($map[$row['Bk_DepositClass']], $row['Bk_DepositClass'])); ?>
+              </div>
+              <div class="detail-item detail-item-s">
+                口座番号： <?php echo f_e($row['Bk_AccountNumber']); ?>
+              </div>
+              <div class="detail-item">
+                口座名義： <?php echo f_e($row['Bk_AccountHolder']); ?>
+              </div>
+              <div class="detail-item">
+                口座名義カナ： <?php echo f_e($row['Bk_AccountHolderKn']); ?>
+              </div>
+              <div class="clear-float"></div>
+            </td>
+          <?php } else { ?>
+<?php /* 銀行口座：データなし */ ?>
+            <td class="l_data" colspan="2" rowspan="<?php echo f_e($row_span); ?>">（未設定）</td>
+          <?php } ?>
+            <td class="c_data" rowspan="<?php echo f_e($row_span); ?>">
+              <div>
+                <a href="claimaccount/detail/oid/<?php echo f_e($row['OemId']); ?>">詳細</a>
+              </div>
+              <div>
+                <a href="claimaccount/edit/oid/<?php echo f_e($row['OemId']); ?>">編集</a>
+              </div>
+            </td>
+          </tr>
+        <?php if(!empty($row['Bk_AccountId'])) { ?>
+          <tr>
+            <td class="l_data">
+              <div>
+                加入者名： <?php echo f_e($row['Yu_SubscriberName']); ?>
+              </div>
+              <div class="detail-item">
+                口座番号： <?php echo f_e($row['Yu_AccountNumber']); ?>
+              </div>
+              <div class="detail-item">
+                <?php $map = $this->master_map[LogicOemClaimAccount::MAPKEY_YU_CHARGE_CLASS]; ?>
+                払込負担区分： <?php echo f_e(nvl($map[$row['Yu_ChargeClass']], $row['Yu_ChargeClass'])); ?>
+              </div>
+              <div class="detail-item">
+                加入者固有データ： <?php echo f_e($row['Yu_SubscriberData']); ?>
+              </div>
+              <div class="clear-float"></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="l_data">
+              <div>
+                収容代行会社名： <?php echo f_e($row['Cv_ReceiptAgentName']); ?>
+              </div>
+              <div class="detail-item">
+                収容代行会社コード： <?php echo f_e($row['Cv_ReceiptAgentCode']); ?>
+              </div>
+              <div class="detail-item">
+                加入者コード： <?php echo f_e($row['Cv_SubscriberCode']); ?>
+              </div>
+              <div class="detail-item detail-item-l">
+                加入者名： <?php echo f_e($row['Cv_SubscriberName']); ?>
+              </div>
+              <div class="clear-float"></div>
+            </td>
+          </tr>
+          <?php if($use_smbc) { ?>
+          <tr>
+            <td class="l_data">
+              <div>
+                SMBC決済ステーション連携アカウント名： <?php echo f_e($row['Smbc_DisplayName']); ?>
+              </div>
+              <div class="detail-item">
+                APIバージョン： <?php echo f_e($row['Smbc_ApiVersion']); ?>
+              </div>
+              <div class="detail-item">
+                決済手段区分： <?php echo f_e($row['Smbc_BillMethod']); ?>
+              </div>
+              <div class="detail-item">
+                決済種別コード： <?php echo f_e($row['Smbc_KessaiId']); ?>
+              </div>
+              <div class="detail-item">
+                契約コード： <?php echo f_e($row['Smbc_ShopCd']); ?>
+              </div>
+              <div class="detail-item">
+                収納企業コード： <?php echo f_e(join('／', array($row['Smbc_SyunoCoCd1'], $row['Smbc_SyunoCoCd2'], $row['Smbc_SyunoCoCd3']))); ?>
+              </div>
+              <div class="detail-item">
+                ゆうちょ設定： <?php echo f_e(join('／', array($row['Smbc_Yu_SubscriberName'], $row['Smbc_Yu_AccountNumber']))); ?>
+              </div>
+              <div class="detail-item">
+                コンビニ収納設定： <?php echo f_e(join('／', array($row['Smbc_Cv_ReceiptAgentName'], $row['Smbc_Cv_ReceiptAgentCode'], $row['Smbc_Cv_SubscriberName']))); ?>
+              </div>
+              <div class="clear-float"></div>
+            </td>
+          </tr>
+          <?php } ?>
+          <?php if($use_jnb) { ?>
+          <tr>
+            <td class="l_data">
+              <div>
+                JNBバーチャル口座名称： <?php echo f_e($row['Jnb_DisplayName']); ?>
+              </div>
+              <div class="detail-item">
+                銀行コード： <?php echo f_e($row['Jnb_BankCode']); ?>
+              </div>
+              <div class="detail-item detail-item-m">
+                銀行名： <?php echo f_e($row['Jnb_BankName']); ?>
+              </div>
+              <div class="detail-item detail-item-l">
+                登録口座数：　
+                <?php if(!$row['Jnb_GroupCount']) { ?>未登録
+                <?php } else { ?>
+                  <?php echo f_nf((int)$row['Jnb_TotalAccounts'], '#,##0'); ?>
+                  (<?php echo f_nf((int)$row['Jnb_GroupCount'], '#,##0'); ?> グループ)
+                <?php } ?>
+              <div class="clear-float"></div>
+            </td>
+          </tr>
+          <?php } ?>
+          <?php if($use_smbcpa) { ?>
+          <tr>
+            <td class="l_data">
+              <div>
+                SMBCバーチャル口座名称： <?php echo f_e($row['Smbcpa_DisplayName']); ?>
+              </div>
+              <div class="detail-item">
+                銀行コード： <?php echo f_e($row['Smbcpa_BankCode']); ?>
+              </div>
+              <div class="detail-item detail-item-m">
+                銀行名： <?php echo f_e($row['Smbcpa_BankName']); ?>
+              </div>
+              <div class="detail-item detail-item-l">
+                登録口座数：　
+                <?php if(!$row['Smbcpa_GroupCount']) { ?>未登録
+                <?php } else { ?>
+                  <?php echo f_nf((int)$row['Smbcpa_TotalAccounts'], '#,##0'); ?>
+                  (<?php echo f_nf((int)$row['Smbcpa_GroupCount'], '#,##0'); ?> グループ)
+                <?php } ?>
+              <div class="clear-float"></div>
+            </td>
+          </tr>
+          <?php } ?>
+        <?php } else { ?>
+          <tr></tr>
+          <tr></tr>
+        <?php } ?>
+          <tr class="border">
+            <td colspan="4">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+      <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

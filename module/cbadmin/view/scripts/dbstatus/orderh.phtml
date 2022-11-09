@@ -1,0 +1,537 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+h3#content-title.seq-loading {
+	background-image: url('../images/loading_mini_01.gif');
+	background-position: 2px center;
+	background-repeat: no-repeat;
+	color: #444;
+	border-left-color: darkgoldenrod;
+	background-color: #ffd030;
+}
+h3#content-title.loading {
+	color: #444;
+	border-left-color: darkgoldenrod;
+	background-color: #ffd030;
+}
+#contents table.order-count-table {
+	width: 300px;
+}
+table.order-count-table td {
+	background-color: white;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+table.order-count-table td.updated {
+	font-weight: bold;
+	color: royalblue;
+}
+table.order-count-table td.row_header {
+}
+table.order-count-table tr.total-row td {
+	border-top: double 3px silver;
+	font-weight: bold;
+}
+table.order-count-table tr.total-row td.row_header {
+}
+table.order-count-table tr.current-hour td {
+	background-color: aliceblue;
+	font-weight: bold;
+}
+#tool-container {
+	width: 300px;
+	margin: 5px 25px;
+	margin-bottom: 25px;
+	text-align: right;
+}
+#tool-container #clear-cache {
+	padding: 4px 8px;
+}
+#access-info {
+	width: 288px;
+	margin: 0px 25px 5px 25px;
+	border: double 3px silver;
+	color: dimgray;
+	background-color: lemonchiffon;
+	padding: 4px;
+}
+#time-gauge-container {
+	width: 302px;
+	margin: 5px 25px 0 25px;
+	border: none 0px;
+	background-color: white;
+	height: 1px;
+	overflow: hidden;
+}
+#time-gauge {
+	background-color: limegreen;
+	width: 100%;
+}
+#time-gauge.step1 {
+	background-color: limegreen;
+	width: 80%;
+}
+#time-gauge.step2 {
+	background-color: limegreen;
+	width: 60%;
+}
+#time-gauge.step3 {
+	background-color: darkorange;
+	width: 40%;
+}
+#time-gauge.step4 {
+	background-color: red;
+	width: 20%;
+}
+#time-gauge.step5 {
+	background-color: red;
+	width: 0%;
+}
+
+#console {
+	margin: 5px 25px;
+	margin-top: 0px;
+	font-size: 12px;
+	height: 150px;
+	padding: 0;
+	overflow: auto;
+	border: solid 1px silver;
+}
+#console .log {
+	white-space: nowrap;
+	padding: 1px;
+	border: dotted 1px silver;
+	line-height: 16px;
+}
+#console .log.error {
+	background-color: mistyrose;
+	color: firebrick;
+	font-weight: bold;
+	line-height: 14px;
+}
+</style>
+<script type="text/javascript">
+var Application = {
+	baseUrl : (document.getElementsByTagName('base')[0] || { href : '' }).href,
+	
+	// nvl ユーティリティ
+	nvl : function (data, if_null) {
+		if (if_null == null) if_null = '';
+		return data === null ? if_null : data;
+	},
+	
+	// パス結合ユーティリティ
+	buildPath : function (path1, path2) {
+		return [Application.nvl(path1).replace(/[\/]*$/, ''), Application.nvl(path2).replace(/^[\/]*/, '')].join('/');
+	},
+	
+	// AjaxリクエストURL構築ユーティリティ
+	buildAppPath : function (path) {
+		return Application.buildPath(Application.baseUrl, Application.nvl(path));
+	}
+	
+};
+var ComboStorage = Object.extend(Class.create(), {
+	cookieName : 'ComboStorageStore',
+	hasLocalStorage :
+		('localStorage' in window) &&
+		('setItem' in window.localStorage) &&
+		(window.localStorage.setItem instanceof Function),
+	
+	__instances : {},
+	
+	getStorage : function(key) {
+		return (!(key in ComboStorage.__instances)) ?
+			new ComboStorage(key, arguments[1]) :
+			ComboStorage.__instances[key];
+	},
+	getAllStorages : function() {
+		return Object.extend({}, ComboStorage.__instances);
+	},
+	__setInstance : function(instance) {
+		if(instance instanceof ComboStorage) {
+			var key = instance.key;
+			ComboStorage.__instances[key] = instance;
+		}
+	}
+	
+});
+ComboStorage.prototype = {
+	initialize : function(key, useCookie) {
+		this.key = key;
+		this.useCookie = !!useCookie;
+		this._data = null;
+		if(ComboStorage.hasLocalStorage) {
+			this._data = window.localStorage[this.key];
+		} else if(this.useCookie) {
+			var cookie =
+				Application.nvl(new CookieManager().getCookie(ComboStorage.cookieName), '{}')
+					.parseJSON();
+			this._data = (key in cookie) ? cookie[key] : null;
+		}
+		ComboStorage.__setInstance(this);
+	},
+	hasData : function() {
+		return this._data != null;
+	},
+	load : function() {
+		var result = null;
+		if(this.hasData()) {
+			try {
+				result = this._data.parseJSON();
+			} catch(e) {
+				this._data = null;
+			}
+		}
+		return result;
+	},
+	save : function(value) {
+		var data = this._data = (value != null ? value.toJSONString() : null);
+		if(ComboStorage.hasLocalStorage) {
+			if(data != null) {
+				window.localStorage[this.key] = data;
+			} else {
+				delete window.localStorage[this.key];
+			}
+		} else if(this.useCookie) {
+			var cookie =
+				Application.nvl(new CookieManager().getCookie(ComboStorage.cookieName), '{}')
+					.parseJSON();
+			if(data != null) {
+				cookie[this.key] = data;
+			} else {
+				delete cookie[this.key];
+			}
+			new CookieManager()
+				.setCookie(ComboStorage.cookieName, cookie.toJSONString());
+		}
+		return this;
+	}
+};
+
+var CacheManager = Class.create();
+Object.extend(CacheManager, {
+	DEFAULT_STORAGE_KEY : 'cbadmin-dbstatus-ordercounts',
+	requestThreshold : 5 * 1000,
+	getEmptyData : function() {
+		var result = {};
+		$R(0, 23).each(function(n) {
+			result[('00' + n).slice(-2)] = 0;
+		});
+		result['ttl'] = 0;
+		return result;
+	}
+});
+
+CacheManager.prototype = {
+	initialize : function() {
+		this.storageKey = arguments[0] || (CacheManager.DEFAULT_STORAGE_KEY + '-h');
+		this.seqStorageKey = '{0}_seq'.format(this.storageKey.replace(/-h$/, ''));
+		this.lastAccess = null;
+		this.loading = false;
+		this.storage = ComboStorage.getStorage(this.storageKey);
+		this.seqStorage = ComboStorage.getStorage(this.seqStorageKey, true);
+		this.pageCache = this.storage.load();
+		this.seqCache = this.seqStorage.load();
+	},
+	// ベース注文SEQを取得する
+	loadSeq : function(callback) {
+		var
+			_self = this,
+			
+			// 更新処理開始ハンドラ
+			begin = function() {
+				this.loading = true;
+				new Element.ClassNames($('content-title')).add('seq-loading');
+			},
+			
+			// 更新処理完了ハンドラ
+			terminate = function(seq) {
+				if(arguments[1]) this.loading = false;
+				new Element.ClassNames($('content-title')).remove('seq-loading');
+				(callback || Prototype.K)(seq);
+			};
+		
+		// Ajax非実行中でキャッシュがないか期限切れの場合のみAjax実行
+		if(!this.loading && (!this.seqCache || !this.seqCache.seq || this.seqCache.date < new Date().format('yyyy-MM-dd'))) {
+			new Ajax.Request(Application.buildAppPath('dbstatus/todayminseq'), {
+				method : 'post',
+				asynchronous : true,
+				onComplete : function(xhr) {
+					var
+						seqInfo = xhr.responseText.parseJSON(),
+						success = !!seqInfo,
+						seq = (seqInfo && Number(seqInfo.seq)) > 0 ? Number(seqInfo.seq) : 0;
+					
+					// パースした結果が配列でなく、'error'プロパティがあったら
+					// サーバ側エラー
+					if('error' in seqInfo) {
+						throw new Error(seqInfo.error);
+					}
+					
+					if(seq) {
+						// SEQが有効な場合のみキャッシュを更新
+						_self.seqStorage.save({
+							date : new Date().format('yyyy-MM-dd'),
+							seq : seq
+						});
+						_self.seqCache = _self.seqStorage.load();
+					} else {
+						_self.seqCache = null;
+					}
+					terminate(_self.seqCache ? _self.seqCache.seq : 0, !!seq);
+				},
+				onException : function(ajax, error) {
+					terminate(null);
+					err_log('SEQ取得時エラー：{0}'.format(error));
+				}
+			});
+			begin();
+		} else {
+			terminate(this.seqCache.seq);
+		}
+	},
+	// 注文登録数データを取得する
+	load : function(callback) {
+		// 先にベース注文SEQを取得してから本データを取得
+		this.loadSeq(function(seq) {
+			var
+				_self = this,
+				
+				// ローカルストレージのキャッシュ
+				data = this.storage.load();
+				
+				// 更新処理開始ハンドラ
+				begin = function() {
+				},
+				
+				// 更新処理完了ハンドラ
+				terminate = function(data, lastAccess) {
+					(callback || Prototype.K)(data, lastAccess);
+					if(arguments[2]) this.loading = false;
+				}.bind(this),
+				
+				// 指定の日付が期限切れかを判断
+				isExpired = function(dt) {
+					return (new Date().valueOf() - dt.valueOf()) > CacheManager.requestThreshold;
+				};
+			
+			// Ajax非実行中でキャッシュがないか期限切れの場合のみAjax実行
+			if(!this.loading && (!data || isExpired(Date.parseExact(data.lastAccess, 'yyyy-MM-dd HH:mm:ss')))) {
+				// サーバから新しいデータを取得
+				this.loading = true;
+				new Ajax.Request(Application.buildAppPath('dbstatus/ordercounth'), {
+					method : 'post',
+					asynchronous : true,
+					postBody : $H({ seq : seq }).toQueryString(),
+					onComplete : function(xhr) {
+						var
+							counts = xhr.responseText.parseJSON(),
+							success = !!counts;
+						if(!success) {
+							// リクエスト失敗時は空データを使用する
+							counts = CacheManager.getEmptyData();
+						}
+						
+						// パースした結果が配列でなく、'error'プロパティがあったら
+						// サーバ側エラー
+						if(!(counts instanceof Array) && 'error' in counts) {
+							throw new Error(counts.error);
+						}
+					
+						if(success) {
+							// リクエストが成功していた場合のみローカルストレージとオンメモリキャッシュに退避
+							var cache = {
+								lastAccess : new Date().format('yyyy-MM-dd HH:mm:ss'),
+								cacheData : counts
+							};
+							_self.storage.save(cache);
+							_self.pageCache = cache;
+						}
+						
+						// 結果を返す
+						terminate(cache.cacheData, cache.lastAccess, true);
+					},
+					onException : function(ajax, error) {
+						// 例外発生時は空データを使用
+						terminate(CacheManager.getEmptyData(), new Date().format('yyyy-MM-dd HH:mm:ss'), true);
+						err_log('件数取得時エラー：{0}'.format(error));
+					}
+				});
+			} else {
+				// キャッシュを返す
+				setTimeout(function() {
+					var time = (data && data.lastAccess) || new Date().format('yyyy-MM-dd HH:mm:ss');
+					terminate((data && data.cacheData) || CacheManager.getEmptyData(), time);
+				}, 250);
+			}
+			begin();
+		}.bind(this));
+	}
+};
+
+// 初期化処理
+Event.observe(window, 'load', function() {
+	Ajax.Responders.register({
+		onCreate : function() {
+			new Element.ClassNames($('content-title')).add('loading');
+		},
+		onComplete : function() {
+			new Element.ClassNames($('content-title')).remove('loading');
+		}
+	});
+	
+	var
+		// キャッシュマネージャインスタンス
+		cache = window.__cacheManager = new CacheManager(),
+		
+		// データロードハンドラ
+		update = function(data, lastAccess) {
+			$H(data).each(function(pair) {
+				var
+					id = 'ds-{0}-col'.format(pair.key),
+					cur_value = $(id).innerHTML.stripTags();
+				
+				// 一致するキーを含むIDを持つセルの値を更新
+				($(id) || { innerHTML : null}).innerHTML =
+					(isNaN(pair.value) || pair.value < 0 ) ?
+						'-' :
+						Number(pair.value).format('0');
+				new Element.ClassNames($(id))[cur_value != $(id).innerHTML ? 'add' : 'remove']('updated');
+			});
+		};
+	// キャッシュが存在する場合は初期表示する
+	if(cache.pageCache) {
+		update(cache.pageCache.cacheData, cache.pageCache.lastAccess);
+	}
+	(function polling() {
+		cache.load(function(data, lastAccess) {
+			update(data, lastAccess);
+			// ベース注文SEQの有無で実行間隔を変更する
+			var interval = (cache.seqCache && cache.seqCache.seq) ?
+				CacheManager.requestThreshold :
+				[CacheManager.requestThreshold * 3, 60 * 1000].max()
+			setTimeout(polling, interval);
+			new Element.ClassNames($('time-gauge')).each(function(cn) {
+				new Element.ClassNames($('time-gauge')).remove(cn);
+			});
+			var
+				stepMax = 100,
+				stepInterval = parseInt(interval / stepMax),
+				step = 0;
+			setTimeout(function() {
+				if(++step <= stepMax) {
+					new Element.ClassNames($('time-gauge')).set('step{0}'.format(Math.floor(step / (stepMax * 0.2))));
+					$('time-gauge').style.width = '{0}%'.format(100 - (step * (100 / stepMax)));
+					setTimeout(arguments.callee, stepInterval);
+				}
+			}, stepInterval);
+			if(lastAccess) {
+				var
+					last = Date.parseExact(lastAccess, 'yyyy-MM-dd HH:mm:ss'),
+					next = new Date(last.valueOf() + interval);
+				$('access-info').innerHTML = '次回取得予定：{0:M月d日 H:mm:ss}'.format(next);
+			}
+			if(interval != CacheManager.requestThreshold) {
+				log('基準SEQが無効なため、次回は{0}秒後にトライします'.format(parseInt(interval / 1000)));
+			}
+		});
+	})();
+	
+	// キャッシュクリアボタン
+	Event.observe($('tool-container'), 'click', function() {
+		cache.storage.save(null);
+		cache.seqStorage.save(null);
+		cache.lastAccess = new Date(
+			new Date().valueOf() - (CacheManager.requestThreshold * 2) ).format('yyyy-MM-dd HH:mm:ss');
+		$('access-info').innerHTML = '次回取得予定：-';
+		setTimeout(function() {
+			window.location.reload();
+		}, 0);
+	});
+});
+// ログ出力
+function log(msg, isError) {
+	var limit = 300;	// 表示の上限
+	
+	var line = Object.extend(document.createElement('div'), {
+		className : ['log', (isError ? 'error' : null)].compact().join(' '),
+		innerHTML : '[{0:yyyy-MM-dd HH:mm:ss.fff}] {1}'.format(new Date(), Application.nvl(msg)).escapeHTML()
+	});
+	$('console').appendChild(line);
+	
+	// 自動スクロール
+	var f = function() {
+		$('console').scrollTop = $('console').scrollHeight;
+	};
+	
+	// 上限に達したら古いログから削除
+	var line_nums = $('console').childNodes.length;
+	if(line_nums > limit) {
+		setTimeout(function() {
+			for(var i = line_nums - limit; i > 0; i--) {
+				$('console').removeChild($('console').childNodes[0]);
+			}
+			setTimeout(f, 0);
+		}, 0);
+	} else {
+		setTimeout(f, 0);
+	}
+}
+
+// エラーログ出力
+function err_log(msg) {
+	log(msg, true);
+}
+
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 id="content-title" class="contents_title">本日の時間帯別登録状況</h3>
+	<div id="time-gauge-container"><div id="time-gauge">&nbsp;</div></div>
+	<div id="access-info">次回取得予定：(未定)</div>
+	<table class="datatable order-count-table" cellpadding="1" cellspacing="1" border="0">
+		<thead>
+			<tr>
+				<th>時間</th>
+				<th style="width: 150px">登録件数</th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach($this->data as $ds => $item) { ?>
+		<?php
+		if($ds == 'ttl') {
+			$cls = 'total-row';
+		} else if($ds == date('H')) {
+			$cls = 'current-hour';
+		} else {
+			$cls = null;
+		}
+		?>
+			<tr <?php if($cls) echo sprintf(' class="%s";', $cls); ?>>
+				<td class="r_data row_header"><?php echo f_e($ds == 'ttl' ? '合計' : sprintf('%d:00 ～ %d:59', $ds, $ds)); ?></td>
+				<td class="r_data" id="ds-<?php echo f_e($ds); ?>-col">&nbsp;</td>
+			</tr>
+		<?php } ?>
+		</tbody>
+	</table>
+	<div id="tool-container">
+		<button id="clear-cache" type="button">キャッシュをクリアして再読み込み</button>
+	</div>
+	<hr />
+	<h4>エラーログ</h4>
+	<div id="console"></div>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

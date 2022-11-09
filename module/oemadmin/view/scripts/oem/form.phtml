@@ -1,0 +1,97 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+$fd = $this->data;
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+?>
+</head>
+<body >
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/oem/page_menu.php'); ?>
+    <div class="title"><span>情報編集</span></div>
+<form name="form" method="post" action="oem/confirm">
+  <input name="form[isNew]" id="isNew" value="<?php echo $fd['isNew'] ? 1 : 0; ?>" type="hidden" />
+  <input name="form[OemId]" id="OemId" type="hidden" value="<?php echo f_e($fd['OemId']); ?>" />
+
+  <!-- OEM情報 -->
+  <table class="datatable">
+  <tbody>
+    <tr>
+      <td colspan="2" class="l_data">【ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_300">担当者名<font color="red">*</font></td>
+      <td class="l_data"><input size="40" name="form[CpNameKj]" type="text" id="CpNameKj" value="<?php echo f_e($fd['CpNameKj']); ?>" />
+      <?php show_error_message($this->error['CpNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名カナ<font color="red">*</font></td>
+      <td class="l_data"><input size="40" name="form[CpNameKn]" type="text" id="CpNameKn" value="<?php echo f_e($fd['CpNameKn']); ?>" />
+      <?php show_error_message($this->error['CpNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">部署名</td>
+      <td class="l_data"><input size="40" name="form[DivisionName]" type="text" id="DivisionName" value="<?php echo f_e($fd['DivisionName']); ?>" />
+      <?php show_error_message($this->error['DivisionName']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス<font color="red">*</font></td>
+      <td class="l_data"><input size="40" name="form[MailAddress]" type="text" id="MailAddress" value="<?php echo f_e($fd['MailAddress']); ?>" />
+      <?php show_error_message($this->error['MailAddress']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先電話番号<font color="red">*</font></td>
+      <td class="l_data"><input name="form[ContactPhoneNumber]" type="text" id="ContactPhoneNumber" value="<?php echo f_e($fd['ContactPhoneNumber']); ?>" />
+      <?php show_error_message($this->error['ContactPhoneNumber']); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先FAX番号</td>
+      <td class="l_data"><input name="form[ContactFaxNumber]" type="text" id="ContactFaxNumber" value="<?php echo f_e($fd['ContactFaxNumber']); ?>" />
+      <?php show_error_message($this->error['ContactFaxNumber']); ?></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="btncontents">
+        <input class="default_btn" type="submit" id="submit_button" value="確　認" />
+		&nbsp;
+	<input class="default_btn" type="button" id="cancel_edit" value="キャンセル" />
+  </div>
+</form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	function disable_buttons() {
+		["submit_button", "cancel_edit"].each(function(id) {
+			$(id).disabled = true;
+		});
+	}
+
+	Event.observe($("cancel_edit"), "click", function() {
+		//if(! confirm("キャンセルすると、編集途中の事業者データは破棄されます。キャンセルしてよろしいですか？") ) return;
+		var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+		disable_buttons();
+		var url = [
+		    base.replace(/\/$/, ""),
+    		"<?php echo (!$fd['isNew'] && $fd['OemId']) ? sprintf('oem/detail/eid/%s', $fd['OemId']) : 'index/index'; ?>"
+		].join("/");
+		window.location.href = url;
+	});
+	Event.observe($("submit_button"), "click", function() {
+		setTimeout(disable_buttons, 0);
+	});
+});
+</script>
+</html>

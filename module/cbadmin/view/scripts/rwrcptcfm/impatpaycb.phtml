@@ -1,0 +1,231 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+body.atpaycb #wrapper,
+body.atpaycb #wrapper > div {
+/*    background-color: #C1E4E9;*/
+/*    background-color: #DBD0E6;*/
+/*    background-color: #BBC8E6;*/
+    background-color: #C0A2C7;
+}
+
+-->
+</style>
+</head>
+<body class="atpaycb">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">＠ペイメントインポート</h3>
+    <h4><?php echo $this->message; ?></h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>支払方法</th>
+            <th>取込件数</th>
+            <th>支払金額総計</th>
+            <th>請求金額総計</th>
+            <th>差額総計</th>
+          </tr>
+          <?php if (isset($this->summary)) { ?>
+          <?php foreach ($this->summary as $key => $classSummary) { ?>
+          <tr>
+            <td class="l_data"><?php if ($key == 1) echo 'コンビニ'; else if ($key == 2) echo '郵振'; else if ($key == 3) echo '銀行'; else if ($key == 4) echo 'LINEPay'; else if ($key == 6) echo 'PayPay'; else if ($key == 7) echo 'PayB'; else if ($key == 10) echo 'ゆうちょPay'; else if ($key == 11) echo '楽天銀行コンビニ払'; ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['recordCount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['paymentAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['claimAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['sagakuAmount'], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <p>入金エラーデータ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>支払方法</th>
+            <th>注文ID</th>
+            <th>支払金額</th>
+            <th>請求金額</th>
+            <th>差額</th>
+            <th>収納日付</th>
+            <th>エラー</th>
+          </tr>
+          <?php
+          // count関数対策
+            $datasCount = 0;
+            if (!empty($this->datas)) {
+            $datasCount = count($this->datas);
+            }
+            for ($i = 0 ; $i < $datasCount ; $i++) { ?>
+          <tr>
+            <td class="l_data">
+            <?php
+                  switch($this->datas[$i][1])
+                  {
+                    case 1:
+                        echo 'コンビニ';
+                        break;
+                    case 2:
+                        echo '郵振';
+                        break;
+                    case 3:
+                        echo '代引';
+                        break;
+                    case 4:
+                        echo 'LINEPay';
+                        break;
+                    case 5:
+                        echo 'クレジット(GMOMP)';
+                        break;
+                    case 6:
+                        echo 'PayPay';
+                        break;
+                    case 7:
+                        echo 'PayB';
+                        break;
+                    case 10:
+                        echo 'ゆうちょPay';
+                        break;
+                    case 11:
+                        echo '楽天銀行コンビニ払';
+                        break;
+                    default:
+                        echo 'n/a:' . $this->datas[$i][1];
+                        break;
+                  }
+            ?>
+            </td>
+            <td class="l_data"><?php echo $this->datas[$i][0]; ?></td>
+            <td class="r_data"><?php echo $this->datas[$i][2]; ?></td>
+            <td class="r_data"><?php echo $this->datas[$i][7]; ?></td>
+            <td class="r_data"><?php echo $this->datas[$i][8]; ?></td>
+            <td class="r_data"><?php echo $this->datas[$i][4]; ?></td>
+            <td class="l_data"><?php echo $this->datas[$i][6]; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <p>取消データ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>支払方法</th>
+            <th>注文SEQ</th>
+            <th>回収区分</th>
+            <th>キー情報</th>
+            <th>入金金額</th>
+          </tr>
+          <?php
+          // count関数対策
+            $cdatasCount = 0;
+            if (!empty($this->cdatas)) {
+            $cdatasCount = count($this->cdatas);
+            }
+            for ($i = 0 ; $i < $cdatasCount ; $i++) { ?>
+          <tr>
+            <td class="l_data">
+            <?php
+                  switch($this->cdatas[$i]->PayWayType)
+                  {
+                    case 1:
+                        echo 'コンビニ';
+                        break;
+                    case 2:
+                        echo '郵振';
+                        break;
+                    case 3:
+                        echo '代引';
+                        break;
+                    case 4:
+                        echo 'LINEPay';
+                        break;
+                    case 5:
+                        echo 'クレジット(GMOMP)';
+                        break;
+                    case 6:
+                        echo 'PayPay';
+                        break;
+                    case 7:
+                        echo 'PayB';
+                        break;
+                    case 10:
+                        echo 'ゆうちょPay';
+                        break;
+                    case 11:
+                        echo '楽天銀行コンビニ払';
+                        break;
+                    default:
+                        echo 'n/a:' . $this->edatas[$i]->PayWayType;
+                        break;
+                  }
+            ?>
+            </td>
+            <td class="l_data"><?php echo $this->cdatas[$i]->AtobaraiOrderSeq; ?></td>
+            <td class="l_data">
+            <?php
+                  switch($this->edatas[$i]->CollectionType)
+                  {
+                    case 1:
+                        echo '通常回収';
+                        break;
+                    case 2:
+                        echo '金額訂正';
+                        break;
+                    case 3:
+                        echo '返品';
+                        break;
+                    case 4:
+                        echo '代引取消';
+                        break;
+                    case 5:
+                        echo '事故';
+                        break;
+                    default:
+                        echo 'n/a:' . $this->cdatas[$i]->PayWayType;
+                        break;
+                  }
+            ?>
+            </td>
+            <td class="l_data"><?php echo $this->cdatas[$i]->KeyInfo; ?></td>
+            <td class="r_data"><?php echo f_nf(nvl($this->cdatas[$i]->PaymentAmount,0), '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <p>その他(入金処理対象外データ)</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>支払方法</th>
+            <th>取込件数</th>
+            <th>支払金額総計</th>
+          </tr>
+           <?php if (isset($this->summary2)) { ?>
+          <?php foreach ($this->summary2 as $key => $classSummary) { ?>
+          <tr>
+            <td class="l_data"><?php if ($key == 1) echo '(確報)コンビニ'; else if ($key == 2) echo '(確報)郵振'; else if ($key == 3) echo '(確報)銀行'; else if ($key == 9) echo '(速報)コンビニ'; ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['recordCount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['paymentAmount'], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+          <?php } ?>
+        </tbody>
+      </table>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

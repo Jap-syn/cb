@@ -1,0 +1,200 @@
+<?php
+use models\View\ViewChargeConfirm;
+use cbadmin\Application;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$mdlViewChargeConfirm = new ViewChargeConfirm(Application::getInstance()->dbAdapter);
+
+?>
+</head>
+  <script>
+    function setDateParam(d, e, p, flg)
+    {
+      if (flg == 0) {
+        if (!window.confirm('振込ﾃﾞｰﾀDLが実施されていません。支払完了にしていいですか？')) { return false; }
+      } else {
+        if (!window.confirm('処理を実行してもよろしいですか？')) { return false; }
+      }
+
+      // 指定された確定日と予定日を頼りに、支払完了の消し込みを行う。
+      $('DecisionDate').value = d;
+      $('ExecScheduleDate').value = e;
+      $('OemId').value = p;
+    }
+    function doFix() {
+        if(window.confirm('処理を実行してもよろしいですか？')){
+            var link = ($('toFix') || (function(b) {
+                return [(b || { href : ''}).href, 'paying/fix'].map(function(p) { return p.replace(/^\/*/, '').replace(/\/*$/, ''); }).join('/');
+              })(document.getElementsByTagName('base')[0]));
+              $('cmd1').innerHTML = '<span style="color:gray">確定処理中...</span>';
+              setTimeout(function() {
+                window.location.href = link;
+              }, 100);
+        }
+    }
+  </script>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/paying/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3 class="contents_title">立替確認</h3>
+      <div style="clear:both;">
+        <?php if (isset($this->errSetChargeFixedDate)) { ?>
+        <table style="clear:both;" class="datatable" cellpadding="1" cellspacing="0" border="0">
+          <td class="c_data">
+            <span style="color: red; font-size: 15px;">次回立替締日が正しく設定されていない加盟店が存在します。システム担当者にご連絡ください。</span>
+          <td/>
+        </table>
+        <?php } ?>
+        <div id="lbl1">
+          今日は　<?php echo $this->genzai; ?>　です。<br />
+          <span style="color: red;">※立替実行日前日（毎週木曜日）に「立替確定処理」を行ってください。</span>
+        </div>
+        <div id="cmd1"><a id="toFix" href="paying/fix" onclick="doFix();return false">立替確定処理</a></div>
+
+        <?php if (isset($this->errClaimFeeDK)) { ?>
+        <table style="clear:both;" class="datatable" cellpadding="1" cellspacing="0" border="0">
+          <td class="c_data">
+            <span style="color: red; font-size: 15px;">以下の注文は「立替時の請求手数料」に誤りがあります。ご確認ください。</span>
+          <td/>
+        </table>
+        <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <th>事業者ID</th>
+              <th>事業者名</th>
+              <th>注文ID</th>
+              <th>立替時の請求手数料</th>
+              <th>マスタの請求手数料(税込)</th>
+              <th>キャンセル確定日</th>
+            </tr>
+            <?php foreach ($this->errClaimFeeDK as $row) { ?>
+            <tr>
+              <td class="c_data" width="100"><?php echo $row['LoginId']; ?></td>
+              <td class="l_data" width="250"><?php echo $row['EnterpriseNameKj']; ?></td>
+              <td class="c_data" width="100"><a href="rworder/detail/oseq/<?php echo f_e($row['OrderSeq']); ?>" target="_blank""><?php echo f_e($row['OrderId']); ?></td>
+              <td class="r_data"><?php echo f_nf($row['ClaimFee'], '#,##0'); ?></td>
+              <td class="r_data"><?php echo f_nf($row['ClaimFeeDK'], '#,##0'); ?></td>
+              <td class="c_data"><?php echo $row['ApprovalDate']; ?></td>
+            <tr>
+            <?php } ?>
+          </tbody>
+        </table>
+        <?php } ?>
+
+      </div>
+      <form id="form" name="form" method="post" action="paying/execcharge">
+        <input type="hidden" name="DecisionDate" id="DecisionDate" />
+        <input type="hidden" name="ExecScheduleDate" id="ExecScheduleDate" />
+        <input type="hidden" name="OemId" id="OemId" />
+      <?php foreach($this->list as $oem_key=>$oem_data){?>
+        <table style="clear:both;" class="datatable" cellpadding="1" cellspacing="0" border="0">
+          <td class="c_data">
+            <span style="color: red;"><?php if($oem_key == 0){ echo "キャッチボール加盟店";}else{ echo $this->oem_data[$oem_key]['OemNameKj']."/".$this->oem_data[$oem_key]['PayingMethodName'];}?></span>
+          </td>
+        </table>
+        <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <th>立替確定日</th>
+              <th>立替予定日
+              <th>締めＰ</th>
+              <th>立替締め日</th>
+              <th>事業者数</th>
+              <th>立替額</th>
+              <th>事業者計</th>
+              <th>立替総額</th>
+              <th>立替実行確認</th>
+            </tr>
+          <?php foreach($oem_data as $key=>$value) { ?>
+            <tr>
+              <td rowspan="<?php echo $this->count ?>" class="c_data">
+                <?php echo $value["DecisionDate"]; ?>
+              </td>
+              <td rowspan="<?php echo $this->count ?>" class="c_data">
+                <a href="paying/dlist2/d/<?php echo isset($value["DecisionDate"]) ? $value["DecisionDate"] : 0; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>/oemid/<?php echo $oem_key;?>/execFlg/0" target="_blank">
+                  <?php echo $value["ExecScheduleDate"]; ?>
+                </a>
+              </td>
+            <?php for ($i = 1; $i <= $this->count; $i++) { ?>
+            <?php   $fildnamenm = 'P' . $i . 'NM' ?>
+            <?php   $fildnamefd = 'P' . $i . 'FD' ?>
+            <?php   $fildnamecnt = 'P' . $i . 'CNT' ?>
+            <?php   $fildnamepay = 'P' . $i . 'PAY' ?>
+            <?php   if ($i == 1) {?>
+               <td class="c_data"><?php echo $value[$fildnamenm]; ?></td>
+               <td class="c_data"><?php echo $value[$fildnamefd]; ?></td>
+               <td class="r_data"><?php echo $value[$fildnamecnt]; ?></td>
+               <td class="r_data"><?php echo valueFormat($value[$fildnamepay], 'number', '#,##0'); ?></td>
+            <?php   } ?>
+            <?php } ?>
+              <td rowspan="<?php echo $this->count ?>" style="font-size: 18px;" class="r_data"><?php echo $value["CTOTAL"]; ?></td>
+              <td rowspan="<?php echo $this->count ?>" style="font-size: 18px;" class="r_data"><?php echo valueFormat($value["PTOTAL"], 'number', '#,##0'); ?></td>
+              <td rowspan="<?php echo $this->count ?>" class="c_data">
+              <?php if (! empty($value["DecisionDate"])) { ?>
+                <input type="submit" value="　支払完了　" onClick="return setDateParam('<?php echo $value["DecisionDate"]; ?>', '<?php echo $value["ExecScheduleDate"]; ?>', '<?php echo $oem_key; ?>', '<?php echo $value["PayingDataDownloadFlg"]; ?>');" />
+              <?php } ?>
+              <?php if( $oem_key != 0 && $this->oem_data[$oem_key]['PayingMethod'] != 0) { ?>
+              <?php } else {?>
+              <?php   if ($mdlViewChargeConfirm->isPayingDataDownLoad($value['SeqList'])) { ?>
+                <div style="margin-top:10px;">
+                  <a href="paying/transdatadl/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>/OemId/<?php echo $value["OemId"] ?>" target="_blank" onclick="transdatadl()">振込データＤＬ</a>
+                </div>
+              <?php   } else { ?>
+              <?php   } ?>
+              <?php } ?>
+              <?php if($mdlViewChargeConfirm->isClaimPdfDownLoad($value['SeqList'])) { ?>
+                <div style="margin-top:10px;">
+                  <a href="paying/eachtimebillingdl/d/<?php echo $value["DecisionDate"]; ?>/e/<?php echo $value["ExecScheduleDate"]; ?>/OemId/<?php echo $value["OemId"] ?>">都度請求ＤＬ</a>
+                </div>
+              <?php } ?>
+              </td>
+            </tr>
+          <?php   for ($i = 1; $i <= $this->count; $i++) { ?>
+          <?php     $fildnamenm = 'P' . $i . 'NM' ?>
+          <?php     $fildnamefd = 'P' . $i . 'FD' ?>
+          <?php     $fildnamecnt = 'P' . $i . 'CNT' ?>
+          <?php     $fildnamepay = 'P' . $i . 'PAY' ?>
+          <?php     if ($i != 1) {?>
+            <tr>
+              <td class="c_data"><?php echo $value[$fildnamenm]; ?></td>
+              <td class="c_data"><?php echo $value[$fildnamefd]; ?></td>
+              <td class="r_data"><?php echo $value[$fildnamecnt]; ?></td>
+              <td class="r_data"><?php echo valueFormat($value[$fildnamepay], 'number', '#,##0'); ?></td>
+            </tr>
+          <?php     } ?>
+          <?php   } ?>
+            <tr class="border">
+              <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+              </td>
+            </tr>
+          <?php } ?>
+        </tbody>
+        </table>
+      <?php } ?>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script type="text/javascript">
+  function transdatadl() {
+    // クリックされたらリロードする
+    var wait = 0;
+    var intvl = setInterval(function() {
+      wait++;
+      if (wait == 50){
+        clearInterval(intvl);
+        location.reload(true);
+      }
+    }, 50);
+  }
+</script>
+</html>

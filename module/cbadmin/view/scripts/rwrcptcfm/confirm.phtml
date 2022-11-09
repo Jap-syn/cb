@@ -1,0 +1,145 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+    background-color: #ffddff;
+}
+
+-->
+</style></head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu_rcpt.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金確認</h3>
+  <!-- count関数対策 -->
+<?php if(!empty($this->list)) { ?>
+    <h4><span style="color: blue;">以下の入金が指定されました。　内容を確認してください。</span></h4>
+    <form name="form" method="post" action="rwrcptcfm/rcpt">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+              <th>注文ID</th>
+              <th>請求先氏名</th>
+              <th>請求額</th>
+              <th>入金形態</th>
+              <th>入金日</th>
+              <th>実入金額</th>
+          </tr>
+          <?php
+          // count関数対策
+            $l = 0;
+            if (!empty($this->list)){
+              $l = count($this->list);
+            }
+          for ($i = 0; $i < $l; $i++) { ?>
+          <tr <?php if( isset($this->list[$i]["DamageRecord"]) ) { echo $this->list[$i]["DamageRecord"]; } ?>>
+            <td class="l_data target_cell">
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" id="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>" />
+              <input type="hidden" name="OrderId<?php echo $i; ?>" id="OrderId<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderId"]; ?>" />
+              <input type="hidden" name="OutOfAmends<?php echo $i; ?>" id="OutOfAmends<?php echo $i; ?>" value="<?php echo $this->list[$i]["OutOfAmends"]; ?>" />
+              <?php echo $this->list[$i]["OrderId"]; ?>
+            </td>
+            <td class="l_data target_cell">
+              <input type="hidden" name="NameKj<?php echo $i; ?>" id="NameKj<?php echo $i; ?>" value="<?php echo $this->list[$i]["NameKj"]; ?>" />
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>">
+                <?php echo f_trim($this->list[$i]["NameKj"]); ?>
+              </a>
+            </td>
+            <td class="r_data target_cell">
+              <input type="hidden" name="ClaimTotalAmount<?php echo $i; ?>" id="ClaimTotalAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]["ClaimTotalAmount"]; ?>" />
+              <?php echo $this->list[$i]["ClaimTotalAmount"]; ?>
+            </td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["receiptFormTag"]; ?></td>
+            <td class="l_data target_cell">
+              <input size="15" style="text-align: right;" type="text" name="Rct_ReceiptDate<?php echo $i; ?>" id="Rct_ReceiptDate<?php echo $i; ?>" value="<?php echo $this->list[$i]["Rct_ReceiptDate"]; ?>" />
+            </td>
+            <td class="r_data target_cell">
+              <input size="10" style="text-align: right;" type="text" name="Rct_ReceiptAmount<?php echo $i; ?>" id="Rct_ReceiptAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]["Rct_ReceiptAmount"]; ?>" />
+            </td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="6" class="c_data">
+              <input type="hidden" name="page" value="<?php echo $this->current_page; ?>" />
+              <input type="submit" value="　　入金確定　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+<?php } else { /* 入金対象0件時 */ ?>
+    <h4><span style="color: blue;">指定入金のうち入金可能なデータは0件です。</span></h4>
+    <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <tr>
+          <td colspan="5" class="c_data">
+            <a href="rwrcptcfm/list/page/<?php echo $this->current_page; ?>">入金確認待ちリストへ</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+<?php } ?>
+
+    <!-- 実入金額エラーの表示　ここから -->
+    <!-- count関数対策 -->
+    <?php if (!empty($this->error)) { ?>
+    <h4><span style="color: red;">以下のデータは入金日または実入金額が不正なため処理されませんでした。</span></h4>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+              <th>注文SEQ</th>
+              <th>注文ID</th>
+              <th>請求先氏名</th>
+              <th>入金形態</th>
+              <th>実入金額</th>
+          </tr>
+          <?php
+          // count関数対策
+            $errorCount = count($this->error);
+            for ($i = 0 ; $i < $errorCount ; $i++) { ?>
+          <tr>
+            <td class="r_data">
+              <?php echo $this->error[$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data"><?php echo $this->error[$i]["OrderId"]; ?></td>
+            <td class="l_data"><?php echo f_trim($this->error[$i]["NameKj"]); ?></td>
+            <td class="c_data"><?php echo $this->error[$i]["Rct_ReceiptMethod"]; ?></td>
+            <td class="r_data"><?php echo $this->error[$i]["Rct_ReceiptAmount"]; ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="5" class="c_data">
+              <a href="rwrcptcfm/list/page/<?php echo $this->current_page; ?>">入金確認待ちリストへ</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <?php } ?>
+    <!-- 実入金額エラーの表示　ここまで -->
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

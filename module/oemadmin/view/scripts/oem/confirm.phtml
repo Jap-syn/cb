@@ -1,0 +1,89 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+$map = $this->master_map;
+$d = $this->data;
+?>
+<style>
+    .search_btn {
+        border: 1px gray solid;
+        border-radius: 3px;
+        padding: 2px 15px;
+        color: black;
+        background-color: whitesmoke;
+        font-family: "ＭＳ ゴシック", arial, helvetica, clean, sans-serif;
+    }
+    table.datatable {
+        margin-top: 10px;
+    }
+    .datatable td.label {
+        height: 28px;
+        padding: 4px 10px 3px 0px;
+    }
+    .datatable td {
+        vertical-align: middle;
+    }
+</style>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/oem/page_menu.php'); ?>
+    <div class="title"><span>登録内容確認</span></div>
+<table class="datatable">
+    </tr>
+      <td colspan="2" class="l_data">【ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="r_label width_300">担当者名</td>
+      <td class="l_data"><?php echo f_e($this->data["CpNameKj"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">担当者名カナ</td>
+      <td class="l_data"><?php echo f_e($this->data["CpNameKn"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">部署名</td>
+      <td class="l_data"><?php echo f_e($this->data["DivisionName"]); ?> </td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data"><?php echo f_e($this->data["MailAddress"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先電話番号</td>
+      <td class="l_data"><?php echo f_e($this->data["ContactPhoneNumber"]); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">連絡先FAX番号</td>
+      <td class="l_data"><?php echo f_e($this->data["ContactFaxNumber"]); ?></td>
+    </tr>
+</table>
+
+<form id="saveForm" action="oem/save" method="post">
+  <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+  <div class="btncontents">
+    <a class="default_btn" id="doSave" href="javascript:void(0)">確　定</a>　
+    <a class="default_btn" id="cancelSave" href="javascript:void(0)">戻　る</a>
+  </div>
+</form>
+
+
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("doSave"), "click", function() {
+    $("saveForm").submit();
+    return false;
+  });
+  Event.observe($("cancelSave"), "click", function() {
+    $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+    $("saveForm").submit();
+    return false;
+  });
+});
+</script>
+</body>
+</html>

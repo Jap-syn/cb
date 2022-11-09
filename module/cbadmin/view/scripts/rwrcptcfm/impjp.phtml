@@ -1,0 +1,70 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">ゆうちょ入金CSVインポート</h3>
+	<h4><?php echo $this->message; ?></h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>顧客番号</th>
+            <th>支払金額</th>
+            <th>請求金額</th>
+            <th>差額</th>
+            <th>収納日付</th>
+            <th>エラー</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $dataCount = 0;
+            if (!empty($this->data)) {
+            $dataCount = count($this->data);
+            }
+            for ($i = 0 ; $i < $dataCount ; $i++) { ?>
+          <tr>
+            <td class="l_data"><?php echo $this->data[$i][7]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][2]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][12]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][13]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][1]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][11]; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <!-- count関数対策 -->
+      <?php if (!empty($this->canceldata)) { ?>
+      <h4><span style="color: red;">要チェック！　取消として通知されたデータが存在します。</span></h4>
+      <table style="clear:both; font-size: 11px;" width="550" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>顧客番号</th>
+            <th>氏名</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $cancelDataCount = count($this->canceldata);
+            for ($i = 0 ; $i < $cancelDataCount ; $i++) { ?>
+          <tr>
+            <td width="150" class="c_data"><?php echo $this->canceldata[$i][0]; ?></td>
+            <td class="l_data"><?php echo $this->canceldata[$i][1]; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

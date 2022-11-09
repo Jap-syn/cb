@@ -1,0 +1,76 @@
+/**
+ * —Ş—ZŠŒŸõŒ‹‰Ê
+ *----------------------------------------------------------*/
+
+/* —^MNG */
+.orderstatus_close_ng,
+.orderstatus_close_ng td,
+.orderstatus_close_ng td a {
+	color: ghostwhite;
+	background-color: #839fe6;
+}
+
+/* ƒLƒƒƒ“ƒZƒ‹ */
+.orderstatus_close_cancel,
+.orderstatus_close_cancel td,
+.orderstatus_close_cancel td a {
+	color: ghostwhite;
+	background-color: #88aa88;
+}
+
+/* ƒLƒƒƒ“ƒZƒ‹\¿ */
+.orderstatus_request_cancel,
+.orderstatus_request_cancel td,
+.orderstatus_request_cancel td a {
+	color: ghostwhite;
+	background-color: #88aa88;
+}
+
+/* x•¥Ï‚İ(ŠúŒÀ“à) */
+.orderstatus_receipted_normal,
+.orderstatus_receipted_normal td {
+	color: black;
+	background-color: #dbfefe;
+}
+
+/* x•¥Ï‚İ(ŠúŒÀ’´‰ß) */
+.orderstatus_receipted_damaged,
+.orderstatus_receipted_damaged td {
+	color: black;
+	background-color: #e3c7fa;
+}
+
+/* x•¥Ï‚İ(ŠúŒÀ“à:‰ßè“ü‹à) */
+.orderstatus_receipted_normal_excesspayment,
+.orderstatus_receipted_normal_excesspayment td {
+	color: black;
+	background-color: #00ffff;
+}
+
+/* x•¥Ï‚İ(ŠúŒÀ’´‰ß:‰ßè“ü‹à) */
+.orderstatus_receipted_damaged_excesspayment,
+.orderstatus_receipted_damaged_excesspayment td {
+	color: black;
+	background-color: #00ffff;
+}
+
+/* –¢“ü‹à */
+.orderstatus_noreceipt_normal,
+.orderstatus_noreceipt_normal td {
+	color: firebrick;
+	background-color: #ffde8e;
+}
+.orderstatus_noreceipt_normal td a {
+	color: sienna;
+}
+
+/* •s•¥‚¢ */
+.orderstatus_noreceipt_damaged,
+.orderstatus_noreceipt_damaged td {
+	color: firebrick;
+	background-color: #ffcae6;
+}
+.orderstatus_noreceipt_damaged td a {
+	color: sienna;
+}
+

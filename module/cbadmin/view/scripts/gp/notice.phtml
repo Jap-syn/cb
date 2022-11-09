@@ -1,0 +1,120 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+textarea {
+	font-size: 12px;
+	height: 150px;
+	width: 600px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+-->
+</style>
+<script language="javascript">
+<!--
+function confirm()
+{
+	var element = document.getElementById('code');
+	document.getElementById('confirm').innerHTML = document.getElementById('notice' + element.selectedIndex).value;
+	document.getElementById('confirmcap').innerHTML = '<b>●　表示確認</b>';
+	document.getElementById('confirmtable').style.visibility = 'visible';
+}
+function changenotice(obj){
+ 	var val = obj.options[obj.selectedIndex].value;
+ 	if (val == 0){
+ 		document.getElementById('notice0').style.display = '';
+ 		document.getElementById('notice1').style.display = 'none';
+ 		document.getElementById('notice2').style.display = 'none';
+ 		document.getElementById('notice0').disabled = false;
+ 		document.getElementById('notice1').disabled = true;
+ 		document.getElementById('notice2').disabled = true;
+ 	}
+ 	if (val == 1){
+ 		document.getElementById('notice0').style.display = 'none';
+ 		document.getElementById('notice1').style.display = '';
+ 		document.getElementById('notice2').style.display = 'none';
+ 		document.getElementById('notice0').disabled = true;
+ 	 	document.getElementById('notice1').disabled = false;
+ 	 	document.getElementById('notice2').disabled = true;
+ 	}
+ 	if (val == 2){
+ 		document.getElementById('notice0').style.display = 'none';
+ 		document.getElementById('notice1').style.display = 'none';
+ 		document.getElementById('notice2').style.display = '';
+ 		document.getElementById('notice0').disabled = true;
+ 	 	document.getElementById('notice1').disabled = true;
+ 	 	document.getElementById('notice2').disabled = false;
+ 	 }
+
+}
+-->
+</script>
+
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/gp/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>お知らせ設定</h3>
+<div id="updated" align="center"><?php echo $this->updated; ?></div>
+<form name="form" method="post" action="gp/up">
+<div align="center">
+  <table id="confirmtable" style="visibility: hidden;" class="datatable" width="650" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+      <tr>
+        <td class="l_data"><div id="confirmcap"></div></td>
+      </tr>
+      <tr>
+        <td class="l_data"><div id="confirm"></div></td>
+      </tr>
+    </tbody>
+  </table>
+  <table class="datatable" width="650" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+  <tr>
+      <td class="l_data">
+        ﾒｯｾｰｼﾞ区分
+        <select id = "code" name = "code" onChange = "changenotice(this)" >
+            <option value="0">CB</option>
+            <option value="1">OEM</option>
+            <option value="2">加盟店</option>
+        </select>
+        <?php echo $this->code; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="l_data">
+        <b>●　HTMLで記述してください。</b>　　
+      </td>
+    </tr>
+    <tr>
+      <td class="c_data">
+
+        <textarea name="notice0" id="notice0" ><?php echo f_e($this->notice[0]); ?></textarea>
+        <textarea name="notice1" id="notice1"  style="display:none"><?php echo f_e($this->notice[1]); ?></textarea>
+        <textarea name="notice2" id="notice2"  style="display:none"><?php echo f_e($this->notice[2]); ?></textarea>
+      </td>
+
+    </tr>
+    <tr align="center">
+      <td>
+        <input type="submit" value="　設　定　" />　　　
+        <input type="button" value="　表示確認　" onClick="javascript:confirm();" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</div>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

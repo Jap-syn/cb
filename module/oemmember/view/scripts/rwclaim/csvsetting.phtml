@@ -1,0 +1,100 @@
+<?php
+use oemmember\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+
+$encodes = $this->encodes;
+$encode = '';
+foreach( $encodes as $value ) {
+    if( $value == $this->data['CharacterCode'] ) {
+        $encode = $value;
+        break;
+    }
+}
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+<style>
+table#settingtable {
+    width: 600px;
+    margin: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+#settingtable tr {
+    background-color: white;
+    font: black
+}
+#settingtable td {
+    font-size: 14px;
+    padding: 5px;
+}
+#buttons {
+    text-align: center;"
+}
+#buttons input {
+    margin: 10px;
+    padding: 5px;
+    background-color: lightgrey;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+<?php if (isset($this->message)) { ?>
+<div id="message" align="center"><?php echo $this->message; ?></div>
+<?php } ?>
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+    // title
+    '請求書のCSV設定を行います。'
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+<form id='form' name='form' action="rwclaim/update/tid/<?php echo $this->data['TemplateId']; ?>/tclass/<?php echo $this->data['TemplateClass']; ?>/eid/<?php echo $this->data['Seq']; ?>" method="post">
+<table id="settingtable" cellpadding="0" cellspacing="0" border="1">
+<tr><td align="center">項目</td><td align="center">設定</td><td align="center">備考</td></tr>
+<tr><td>ヘッダ行出力</td><td><input type="checkbox" name="title" value="1" <?php if( $this->data['TitleClass'] == 1 ) echo 'checked="checked"'; ?>/>　出力する</td><td>　</td></tr>
+<tr><td>商品明細数</td><td><select name="items" value="<?php echo $this->items; ?>"><?php for( $i = 4; $i <= 99; $i++ ) { echo '<option value="'. $i . '"'; if( $i == $this->items ) { echo ' selected'; } echo '>'. $i; } ?></option></select></td><td>4～99</td></tr>
+<tr><td>商品明細出力区分</td><td><?php echo $this->itemsType; ?></td><td>　</td></tr>
+<tr><td>文字エンコード</td><td>
+<select name="encode" value="<?php echo $encode; ?>"><?php foreach( $encodes as $value ) { echo '<option value="' . $value . '" ' . ($encode == $value ? 'selected' : '') . '>' . $value . '</option>'; } ?></select></td><td>　</td></tr>
+<tr><td>データのないフィールドの設定</td><td><input type="checkbox" name="nodatafield" value="1" <?php if( $this->data['NoDataFieldSettingFlg'] == 1 ) echo 'checked="checked"'; ?>/>　スペース1文字を詰める</td><td>　</td></tr>
+</table>
+<div id="buttons">
+<input type="button" value="初期設定" onclick="location.href='<?php echo $this->baseUrl;?>/rwclaim/init/tid/<?php echo $this->data['TemplateId']; ?>/tclass/<?php echo $this->data['TemplateClass']; ?>/eid/<?php echo $this->data['Seq']; ?>'"/>
+<input type="submit" value="設定反映" />
+<input type="button" value="　　戻る　　" onclick="location.href='<?php echo $this->baseUrl;?>/rwclaim/list'"/>
+<a target="_blank" href="<?php echo $this->baseUrl;?>/rwclaim/changecsv/tid/<?php echo $this->data['TemplateId']; ?>/tclass/<?php echo $this->data['TemplateClass']; ?>/eid/<?php echo $this->data['Seq']; ?>" class="tabs" >CSV項目設定</a>
+</div>
+</form>
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</div>
+</body>
+<script>
+</script>
+</html>
+

@@ -1,0 +1,225 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+    <style>
+* {
+    margin: 0px;
+    margin-left: 0px;
+}
+
+/* general */
+body {
+    font-size: 16px;
+    font-family: Century;
+}
+section {
+    font-size: 16px;
+    font-family: "Meiryo UI";
+    font-weight: bold;
+}
+span {
+    display: block;
+    position: absolute;
+}
+
+.r_data {
+    text-align: right;
+}
+
+.l_data {
+    text-align: left;
+}
+
+.c_data {
+    text-align: center;
+}
+
+.c_b_data {
+    text-align: center;
+    border-style: none none solid none;
+    border-width: 2px;
+}
+
+.c_trl_data {
+    text-align: center;
+    border-style: solid solid none solid;
+    border-width: 2px;
+    border-color: Gray;
+}
+
+.c_rl_data {
+    text-align: center;
+    border-style: none solid none solid;
+    border-width: 2px;
+    border-color: Gray;
+}
+
+.c_brl_data {
+    text-align: center;
+    border-style: none solid solid solid;
+    border-width: 2px;
+    border-color: Gray;
+}
+
+.r_b_data {
+    text-align: right;
+    border-style: none none solid none;
+    border-width: 2px;
+}
+
+.wb {
+    word-wrap: break-word;
+/*    word-break: break-all; */
+    overflow: hidden;
+}
+
+.strcut {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+
+.print_page {
+    page-break-after: always; /* 各ページの終わりに改ページ */
+}
+.tel_table { /* TEL, FAX, 担当 調整用 */
+    border-collapse:collapse;
+}
+.tel_table td,tr{
+    padding: 0;
+}
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/receiptpdfoutput/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message.php' );
+?>
+<!-- start contents -->
+        <div id="contents">
+            <section class="print_page" style="padding-left: 10px;">
+                <div style="width: 990px; height: 1370px; border: 1px solid;">
+                    <!-- 余白設定 -->
+                    <div style="position: relative; top: <?php echo 7.5 + nvl($this->PrintAdjustmentY, 0); ?>px; left: <?php echo nvl($this->PrintAdjustmentX, 0); ?>px;">
+                        <!-- 表題 -->
+                        <div style="text-align: center; height: 15px; font-size: 30px; background-color: silver;"></div>
+                        <div style="text-align: center; height: 30px; font-size: 30px; background-color: silver;">領　収　書</div>
+                        <div style="text-align: center; height: 15px; font-size: 30px; background-color: silver;"></div>
+                        <!-- 宛先 -->
+                        <span style="top:  85px; left:   0px; width: 400px; font-size: 25px;" class="c_b_data"><?php echo $this->orderClaim['NameKj']; ?></span>
+                        <span style="top:  85px; left: 400px; width:  60px; font-size: 20px;" class="r_data">様</span>
+                        <?php if ($this->ReceiptIssueHistoryCount > 0) { ?>
+                        <span style="top:  70px; left: 800px; width: 120px; font-size: 25px; padding: 5px; border: solid silver; border-radius: 9px;" class="c_data">再発行</span>
+                        <?php } ?>
+                        <!-- 発行日 -->
+                        <span style="top: 150px; left: 657px; width: 320px; font-size: 20px;" class="l_data"><?php echo '発行日　'. date( 'Y年m月d日' ); ?></span>
+                        <!-- 請求金額 -->
+                        <span style="top: 200px; left: 0px; margin: 0px 0px 100px 100px; font-size: 30px;">
+                            <table style="border-style: none none double none; margin: 0px; padding: 0px; height: 60px;">
+                                <tbody>
+                                    <tr>
+                                        <td style="border: none ; margin: 0px; padding: 15px 0px 5px 0px; text-align: right;  width: 150px;">金額</td>
+                                        <td style="border: none ; margin: 0px; padding: 0px; text-align: center; width: 460px; font-size: 50px; font-family: Century; font-weight: normal;"><?php echo '￥'. f_nf($this->claimHistory['ClaimAmount'], '#,##0'). '＊'; ?></td>
+                                        <td style="border: none ; margin: 0px; padding: 15px 0px 5px 0px; text-align: left;   width: 150px;">（税込）</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </span>
+                        <span style="top: 270px; left: 140px; width: 500px; height: 50px; font-size: 20px; font-family: Century;" class="l_data">但<?php echo '　'. $this->orderClaim['ReceiptIssueProviso']; ?></span>
+                        <span style="top: 330px; left: 140px; width: 260px; font-size: 20px;" class="l_data">上記正に領収いたしました。</span>
+                        <?php if (!is_null($orderClaim['Payment'])) { ?>
+                        <span style="top: 350px; left: 150px; font-size: 16px;" class="l_data"><?php echo $orderClaim['Payment']; ?></span>
+                        <?php } ?>
+                        <!-- 顧客情報 -->
+                        <div style="font-size: 16px;">
+                            <span style="top: 390px; left: 100px;">
+                                <table style="border-style: none; margin: 0px; padding: 0px; width: 470px;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="r_data" style="border-style: none ; width: 260px;">後払い注文ID</td>
+                                            <td class="c_b_data" style="width: 200px; font-family: Century; font-weight: normal;"><?php echo $this->orderClaim['OrderId']; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="r_data" style="border-style: none ; width: 260px;">商品・サービス購入日付</td>
+                                            <td class="c_b_data" style="width: 200px; font-family: Century; font-weight: normal;"><?php echo f_df($this->Deli_JournalIncDate, 'Y年m月d日'); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="r_data" style="border-style: none ; width: 260px;">決済確定日</td>
+                                            <td class="c_b_data" style="width: 200px; font-family: Century; font-weight: normal;"><?php echo f_df($this->orderClaim['CreditSettlementDecisionDate'], 'Y年m月d日'); ?></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </span>
+                        </div>
+                        <!-- 収入印紙 -->
+                        <div style="font-size: 25px; color: silver; display: none;">
+                            <span style="top: 490px; left:  20px; width: 100px; height: 25px;" class="c_trl_data"></span>
+                            <span style="top: 515px; left:  20px; width: 100px; height: 25px;" class="c_rl_data">印 収</span>
+                            <span style="top: 540px; left:  20px; width: 100px; height: 15px; font-size: 15px;" class="c_rl_data"></span>
+                            <span style="top: 555px; left:  20px; width: 100px; height: 25px;" class="c_rl_data">紙 入</span>
+                            <span style="top: 580px; left:  20px; width: 100px; height: 25px;" class="c_brl_data"></span>
+                        </div>
+                        <!-- 請求金額内訳 -->
+                        <div style="font-size: 25px;">
+                            <span style="top: 500px; left:  100px;">
+                                <table style="border-style: none; margin: 0px; padding: 0px; width: 470px;">
+                                    <tbody>
+                                        <tr height="30px">
+                                            <td class="r_data" style="border-style: none ; width: 160px;">内　　訳</td>
+                                            <td class="r_b_data" style="width: 300px;"></td>
+                                        </tr>
+                                        <tr height="30px">
+                                            <td class="r_data" style="border-style: none ; width: 160px;">税抜金額</td>
+                                            <td class="r_b_data" style="width: 300px; font-family: Century; font-weight: normal;"><?php echo '￥'. f_nf(($this->claimHistory['ClaimAmount'] - $this->claimHistory['TaxAmount']), '#,##0'). '＊'; ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                        </tr>
+                                        <tr height="30px">
+                                            <td class="r_data" style="border-style: none ; width: 160px;">消費税等</td>
+                                            <td class="r_b_data" style="width: 300px; font-family: Century; font-weight: normal;"><?php echo '￥'. f_nf($this->claimHistory['TaxAmount'], '#,##0'). '＊'; ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </span>
+                        </div>
+                        <!-- キャッチボールスタンプ -->
+                        <div style="display: inline-block; width: 35px; padding: 5px; display: none;">
+                            <span  style="top: 470px; left: 860px;" align="right">
+                                <img src="<?php echo $this->documentRoot; ?>/images/member/cb_stamp" width="96" height="99" />
+                            </span>
+                        </div>
+                        <!-- 縦幅のマージン -->
+                        <div style="height: 450px;">
+                        </div>
+                        <div style="font-size: 20px;"; align="right">
+                            <div style="width: 310px; margin-right: 20px;" align="left">
+<?php echo 'ご購入店：'. $this->orderClaim['SiteNameKj'] ?><br /><br />
+<?php echo $this->enterprise['EnterpriseNameKj'] ?><br />
+<?php echo '〒'. $this->enterprise['PostalCode'] ?><br />
+<?php echo $this->enterprise['PrefectureName']. $this->enterprise['City']. $this->enterprise['Town']. $this->enterprise['Building'] ?><br />
+<table class="tel_table">
+<tr><td><?php echo 'TEL</td><td>：'. $this->enterprise['Phone'] ?></td></tr>
+<?php echo ( isset($this->enterprise['Fax']) && !empty($this->enterprise['Fax']) ) ? '<tr><td>FAX</td><td>：'. $this->enterprise['Fax']. '</td></tr>' : '' ?>
+</table>
+                            </div>
+                        </div>
+                        <div  style="top: 702px; left: 0px;">※本書は電子的に保有している領収データを画面に表示したものです。<br>※Ａ４縦に印刷し、下部の余白は切ってお使いください。</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/receiptpdfoutput/page_footer.php' );
+?>
+        </div>
+    </body>
+</html>

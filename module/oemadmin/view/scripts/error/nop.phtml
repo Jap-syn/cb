@@ -1,0 +1,33 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style>
+    #errormess {
+        margin: 20px;
+    }
+    h4 {
+        margin: 0;
+        font-weight: bold;
+    }
+    .default_btn {
+        border: 1px gray solid;
+        border-radius: 3px;
+        padding: 2px 10px;
+        background-color: whitesmoke;
+        color: #333;
+    }
+</style>
+</head>
+<body>
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+    <div class="title"><span>権限がありません</span></div>
+    <div id="errormess">指定された操作は権限不足のため処理できません。<br />管理者に確認してください。</div>
+    <div style="text-align: center;">
+      <a class="default_btn" href=".">トップへ</a>
+    </div>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

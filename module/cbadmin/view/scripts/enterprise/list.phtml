@@ -1,0 +1,135 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+  .ent-options .ent-option {
+    margin: 0 4px;
+    font-size: 11px;
+  }
+</style>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  if($('oem-filter')) {
+    Event.observe($('oem-filter'), 'change', function() {
+      var val = $('oem-filter').value, className = val > -1 ? ['oem-', val].join('') : null;
+      document.getElementsByClassName('ent-row').each(function(tr) {
+        var cn = new Element.ClassNames(tr);
+        var visible = !className || cn.include(className);
+        Element[visible ? 'show' : 'hide'](tr);
+      });
+    });
+  }
+});
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterprise/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title"><?php if(isset($this->mode)) echo 'OEM先'; ?>事業者一覧</h3>
+        <div class="page_nav" style="margin-bottom: -8px; padding-top: 10px; padding-bottom: 14px; text-align: right">
+          <a class="download_link" href="enterprise/ucsv">CSV取込（登録・修正）</a>
+          <a class="download_link" href="enterprise/dcsv">一覧をCSVダウンロード</a>
+          <div style="float: none; clear: both; height: 0; font-size: 0; line-height: 0"></div>
+        </div>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th rowspan="3">事業者ID</th>
+            <th>ログインID</th>
+            <th>事業者名</th>
+            <th>プラン</th>
+            <th style="width:100px">締め日</th>
+            <th style="width:115px">担当者名</th>
+            <th style="width:100px">担当部署</th>
+            <th style="width:85px">連絡先</th>
+            <th rowspan="3">操作</th>
+          </tr>
+          <tr>
+            <th colspan="7">各種オプション</th>
+          </tr>
+          <tr>
+            <th colspan="7">備考：事業者対応内容</th>
+          </tr>
+          <?php foreach ($this->list as $row) { //$row = $this->list[$i]; ?>
+          <tr class="data ent-row oem-<?php echo f_e(nvl($row['OemId'], 0)); ?>">
+            <td rowspan="3" class="r_data"><?php echo f_e($row['EnterpriseId']); ?></td>
+            <td class="c_data"><?php echo f_e($row['LoginId']); ?></td>
+            <td class="l_data"><a href="enterprise/detail/eid/<?php echo f_e($row['EnterpriseId']); ?>"><?php echo f_e($row['EnterpriseNameKj']); ?></a></td>
+            <td class="l_data"><?php echo f_e($this->codeMaster->getPlanCaption($row['Plan'])); ?></td>
+            <td class="l_data"><?php echo f_e($this->codeMaster->getFixPatternCaption($row['FixPattern'])); ?></td>
+            <td class="l_data"><?php echo f_e($row['CpNameKj']) . '<br />(' . f_e($row['CpNameKn']) . ')'; ?></td>
+            <td class="l_data"><?php echo f_e($row['DivisionName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['ContactPhoneNumber']); ?></td>
+            <td rowspan="3" class="c_data">
+              <a href="enterprise/edit/eid/<?php echo f_e($row['EnterpriseId']); ?>">編集</a><br />
+              <a href="site/list/eid/<?php echo f_e($row['EnterpriseId']); ?>">Site</a>
+            </td>
+          </tr>
+          <tr class="data ent-row oem-<?php echo f_e(nvl($row['OemId'], 0)); ?>">
+            <td colspan="7" class="l_data ent-options">
+              <?php
+              $opt = $this->optionMap[$row['EnterpriseId']];
+              if($opt) {
+                $cols = array(
+                  sprintf('<span class="ent-option">与信モード：%s</span>', f_e($this->master_map['AutoCreditJudgeMode'][$opt['AutoCreditJudgeMode']])),
+                  sprintf('<span class="ent-option">与信結果通知：%s</span>', f_e($this->master_map['CjMailMode'][$opt['CjMailMode']])),
+                  sprintf('<span class="ent-option">取りまとめ請求：%s</span>', f_e($this->master_map['CombinedClaimMode'][$opt['CombinedClaimMode']]))
+                );
+                if($opt['UseApi']) $cols[] = '<span class="ent-option">API利用</span>';
+                if($opt['UseSelfBilling']) $cols[] = '<span class="ent-option">同梱利用</span>';
+                if($opt['CanJournalUpdate']) $cols[] = '<span class="ent-option">伝票番号更新可能</span>';
+                if($opt['UseFirstClaimLayout']) $cols[] = '<span class="ent-option">初回封書</span>';
+                if($opt['UseAutoJournalInc']) $cols[] = '<span class="ent-option">伝票自動仮登録</span>';
+                echo join('/', $cols);
+              } else {
+                echo '&nbsp;';
+              }
+            ?>
+            </td>
+          </tr>
+          <tr class="data ent-row oem-<?php echo f_e(nvl($row['OemId'], 0)); ?>">
+            <td colspan="7" class="l_data"><?php echo strlen($row['Note']) ? f_e($row['Note']) : '&nbsp;'; ?></td>
+          </tr>
+          <tr class="border ent-row oem-<?php echo f_e(nvl($row['OemId'], 0)); ?>">
+            <td colspan="9">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

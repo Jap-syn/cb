@@ -1,0 +1,888 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->data;
+//$fd['ValidFlg'] = !isset($fd['ValidFlg']) ? 1 : $fd['ValidFlg'];
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+
+?>
+<style>
+.input_error_message {
+    color: red;
+}
+</style>
+</head>
+<script type="text/javascript">
+<?php echo $this->render('cbadmin/searchzip.php'); ?>
+</script>
+<body>
+  <div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oem/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>OEM先登録</h3>
+<!-- count関数対策 -->
+<?php if(!empty($this->error)) { ?>
+<div style="border: double 3px firebrick; background-color: lemonchiffon; margin: 5px 25px; padding: 5px 10px; color: crimson">
+    ※：入力に不備があります。登録内容を見直してください。
+</div>
+<?php } ?>
+<?php if(isset($this->imageParged)) { ?>
+<div style="border: double 3px firebrick; background-color: lemonchiffon; margin: 5px 25px; padding: 5px 10px; color: crimson">
+    ※：<?php echo f_e($this->imageParged); ?>
+</div>
+<?php } ?>
+<form name="form" method="post" action="oem/confirm" enctype="multipart/form-data">
+  <input name="form[isNew]" id="isNew" value="<?php echo $fd['isNew'] ? 1 : 0; ?>" type="hidden" />
+  <input name="form[OemId]" id="OemId" type="hidden" value="<?php echo f_e($fd['OemId']); ?>" />
+
+  <!-- OEM情報 -->
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－基本情報】</td>
+    </tr>
+    <tr>
+      <td class="label">申込日<font color="red">*</font></td>
+      <td class="data"><input name="form[ApplicationDate]" type="text" id="ApplicationDate" value="<?php echo f_e($fd['ApplicationDate']); ?>" />
+      <?php show_error_message($this->error['ApplicationDate']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">キャッチボール営業担当<font color="red">*</font></td>
+      <td class="data">
+        <input name="form[Salesman]" type="text" id="Salesman" value="<?php echo f_e($fd['Salesman']); ?>" />
+        <?php show_error_message($this->error['Salesman']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">OEM先名<font color="red">*</font></td>
+      <td class="data">
+        <input name="form[OemNameKj]" type="text" id="OemNameKj" value="<?php echo f_e($fd['OemNameKj']); ?>" />
+        <?php show_error_message($this->error['OemNameKj']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">OEM先名カナ<font color="red">*</font></td>
+      <td class="data">
+        <input name="form[OemNameKn]" type="text" id="OemNameKn" value="<?php echo f_e($fd['OemNameKn']); ?>" />
+        <?php show_error_message($this->error['OemNameKn']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">所在地<font color="red">*</font></td>
+      <td class="data">〒
+        <input name="form[PostalCode]" type="text" id="PostalCode" value="<?php echo f_e($fd['PostalCode']); ?>" />
+        <input type="button" value="検索" onClick="getAddress($('PostalCode').value);" /><br />
+        <select id="PrefectureCode" name="form[PrefectureCode]" value="<?php echo f_e($fd['PrefectureCode']); ?>">
+        <?php foreach($this->master_map['Prefecture'] as $value => $caption) { ?>
+          <?php $selected = $fd['PrefectureCode'] == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+
+        <?php } ?>
+        </select>
+        　(市区郡)<input size="30" name="form[City]" type="text" id="City" value="<?php echo f_e($fd['City']); ?>" /><br />
+        　(町域)<input size="50" name="form[Town]" type="text" id="Town" value="<?php echo f_e($fd['Town']); ?>" /><br />
+        　(建物)<input size="50" name="form[Building]" type="text" id="Building" value="<?php echo f_e($fd['Building']); ?>" />
+        <?php show_error_message($this->error['PostalCode']); ?>
+        <?php show_error_message($this->error['PrefectureCode']); ?>
+        <?php show_error_message($this->error['City']); ?>
+        <?php show_error_message($this->error['Town']); ?>
+        <?php show_error_message($this->error['Building']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">代表者氏名<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[RepNameKj]" type="text" id="RepNameKj" value="<?php echo f_e($fd['RepNameKj']); ?>" />
+      <?php show_error_message($this->error['RepNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表者氏名カナ<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[RepNameKn]" type="text" id="RepNameKn" value="<?php echo f_e($fd["RepNameKn"]); ?>" />
+      <?php show_error_message($this->error['RepNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表電話番号<font color="red">*</font></td>
+      <td class="data"><input name="form[Phone]" type="text" id="Phone" value="<?php echo f_e($fd['Phone']); ?>" />
+      <?php show_error_message($this->error['Phone']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">代表FAX番号</td>
+      <td class="data"><input name="form[Fax]" type="text" id="Fax" value="<?php echo f_e($fd['Fax']); ?>" />
+      <?php show_error_message($this->error['Fax']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">
+        アクセス識別ID<?php if($fd['isNew']) { ?><font color="red">*</font><?php } ?>
+      </td>
+      <td class="data" style="vertical-align: top">
+      <?php if($fd['isNew']) { ?>
+        <input name="form[AccessId]" type="text" size="40" id="AccessId" value="<?php echo f_e($fd['AccessId']); ?>" />
+      <?php } else { ?>
+        <input name="form[AccessId]" type="hidden" value="<?php echo f_e($fd['AccessId']); ?>" />
+        <?php echo f_e($fd['AccessId']); ?>
+      <?php } ?>
+        <div>※：このOEM先がアクセスするURLの一部に使用される識別IDです。新規時のみ入力可</div>
+        <?php show_error_message($this->error['AccessId']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">
+        管理者ログインID<?php if($fd['isNew']) { ?><font color="red">*</font><?php } ?>
+      </td>
+      <td class="data" style="vertical-align: top">
+      <?php if($fd['isNew']) { ?>
+        <input name="form[EntLoginId]" type="text" size="40" id="EntLoginId" value="<?php echo f_e($fd['EntLoginId']); ?>" />
+        <div>※：このOEM先の管理者が使用するログインID。入力内容に、OEM IDのプレフィクスが自動付与されます。新規時のみ入力可</div>
+      <?php } else { ?>
+        <input name="form[EntLoginId]" type="hidden" value="<?php echo f_e($fd['EntLoginId']); ?>" />
+        <?php echo f_e($fd['EntLoginId']); ?>
+        <div>※：このOEM先の管理者が使用するログインID。新規時のみ入力可</div>
+      <?php } ?>
+        <?php show_error_message($this->error['EntLoginId']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">
+        ログインID固有プレフィックス<?php if($fd['isNew']) { ?><font color="red">*</font><?php } ?>
+      </td>
+      <td class="data" style="vertical-align: top">
+      <?php if($fd['isNew']) { ?>
+        <input name="form[EntLoginIdPrefix]" type="text" size="10" id="AccessId" value="<?php echo f_e($fd['EntLoginIdPrefix']); ?>" />
+      <?php } else { ?>
+        <input name="form[EntLoginIdPrefix]" type="hidden" value="<?php echo f_e($fd['EntLoginIdPrefix']); ?>" />
+        <?php echo f_e($fd['EntLoginIdPrefix']); ?>
+      <?php } ?>
+        <div>※：ログインIDに付与される固有のプレフィックスです。新規時のみ入力可</div>
+        <?php show_error_message($this->error['EntLoginIdPrefix']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">
+        注文ID固有プレフィックス<?php if($fd['isNew']) { ?><font color="red">*</font><?php } ?>
+      </td>
+      <td class="data" style="vertical-align: top">
+      <?php if($fd['isNew']) { ?>
+        <input name="form[OrderIdPrefix]" type="text" size="10" id="OrderIdPrefix" value="<?php echo f_e($fd['OrderIdPrefix']); ?>" />
+      <?php } else { ?>
+        <input name="form[OrderIdPrefix]" type="hidden" value="<?php echo f_e($fd['OrderIdPrefix']); ?>" />
+        <?php echo f_e($fd['OrderIdPrefix']); ?>
+      <?php } ?>
+        <div>※：注文IDに付与される固有のプレフィックスです。新規時のみ入力可</div>
+        <?php show_error_message($this->error['OrderIdPrefix']); ?>
+      </td>
+    </tr>
+    <tr>
+        <td class="r_label">立替方法<font color="red">*</font>
+        </td>
+
+        <td class="l_data">
+            <input type="radio" name="form[PayingMethod]" id="PayingMethod"  value="0" <?php if($fd['PayingMethod'] == 0){ echo "checked";}?>/> CB立替　　
+            <input type="radio" name="form[PayingMethod]" id="PayingMethod"  value="1" <?php if($fd['PayingMethod'] == 1){ echo "checked";}?>/>OEM立替
+            <?php show_error_message($this->error['Payingmethod']); ?>
+
+        </td>
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－画面表示設定】</td>
+    </tr>
+    <tr>
+      <td class="label">サービス名称<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[ServiceName]" type="text" id="ServiceName" value="<?php echo f_e($fd['ServiceName']); ?>" />&emsp;※入力例　後払いドットコム
+      <?php show_error_message($this->error['ServiceName']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">サポート電話番号</td>
+      <td class="data"><input name="form[ServicePhone]" type="text" id="SupportTel" value="<?php echo f_e($fd['ServicePhone']); ?>" />&emsp;※入力例　0120-667-690
+      <?php show_error_message($this->error['ServicePhone']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">サポート時間帯</td>
+      <td class="data">
+        <input name="form[SupportTime]" type="text" id="SupportTime" value="<?php echo f_e($fd['SupportTime']); ?>" />※入力例　10:00 ～ 18:00（土・日・祝日を除く）
+        <?php show_error_message($this->error['SupportTime']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">サポートメールアドレス</td>
+      <td class="data"><input size="40" name="form[SupportMail]" type="text" id="SupportMail" value="<?php echo f_e($fd['SupportMail']); ?>" />&emsp;※入力例　customer@ato-barai.com
+      <?php show_error_message($this->error['SupportMail']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">コピーライト</td>
+      <td class="data"><input size="40" name="form[Copyright]" type="text" id="Copyright" value="<?php echo f_e($fd['Copyright']); ?>" />&emsp;※入力例　Copyright(C) 2007 By CatchBall, Inc.
+      <?php show_error_message($this->error['Copyright']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">ヘルプのリンク先</td>
+      <td class="data"><input size="40" name="form[HelpUrl]" type="text" id="HelpUrl" value="<?php echo f_e($fd['HelpUrl']); ?>" />
+      <?php show_error_message($this->error['HelpUrl']); ?></td>
+    </tr>
+
+    <tr>
+      <td class="label">イメージ</td>
+        <td class="data">
+            ロゴ(大)：<input name="form[LargeLogo]" type="file" id="LargeLogo" value="<?php echo f_e($fd['LargeLogo']); ?>" />
+            &emsp;※ログイン、ページ左上に表示するロゴ
+        <?php if(isset($fd['LargeLogo'])) { ?>
+            <img src="data:image/jpeg;base64,<?php echo f_e($fd['LargeLogo']); ?>" style="height: 16px; border: solid 1px #eee" />
+        <?php } ?>
+            <br />
+
+            ロゴ(小)：<input name="form[SmallLogo]" type="file" id="SmallLogo" value="<?php echo f_e($fd['SmallLogo']); ?>" />
+            &emsp;※請求書等に表示するロゴ
+        <?php if(isset($fd['SmallLogo'])) { ?>
+            <img src="data:image/jpeg;base64,<?php echo f_e($fd['SmallLogo']); ?>" style="height: 16px; border: solid 1px #eee" />
+        <?php } ?>
+
+            <br />
+            印影：<input name="form[Imprint]" type="file" id="Imprint" value="<?php echo f_e($fd['Imprint']); ?>" />
+            &emsp;※請求書等に表示する印影
+        <?php if(isset($fd['Imprint'])) { ?>
+            <img src="data:image/jpeg;base64,<?php echo f_e($fd['Imprint']); ?>" style="height: 16px; border: solid 1px #eee" />
+        <?php } ?>
+
+            <?php show_error_message($this->error['LargeLogo']); ?>
+            <?php show_error_message($this->error['SmallLogo']); ?>
+            <?php show_error_message($this->error['Imprint']); ?>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">favicon</td>
+        <td class="data">
+            <?php if( $fd['isNew'] ) { $current_favicon_type = 'empty'; } else { $current_favicon_type = $fd['FavIconType'] == 'url' ? 'url' : ($fd['FavIconType'] == 'empty' ? 'empty' : 'local'); } ?>
+            <div>
+                <label for="favicon-type-empty">
+                    <input id="favicon-type-empty" type="radio" name="favicon_type" value="empty"<?php if($current_favicon_type == 'empty') echo ' checked="checked"'; ?> />
+                    登録しない
+                </label>
+                <input name="form[FavIcon]" type="hidden" value="empty" />
+            </div>
+            <div>
+                <label for="favicon-type-local">
+                    <input id="favicon-type-local" type="radio" name="favicon_type" value="local"<?php if($current_favicon_type == 'local') echo ' checked="checked"'; ?> />
+                    ファイルアップロード：
+                </label>
+                <input name="form[FavIcon]" type="file" id="favicon-file"<?php if($current_favicon_type != 'local') echo ' disabled="disabled"'; ?> />
+            <?php if($current_favicon_type == 'local' && isset($fd['FavIcon'])) { ?>
+                <img src="data:<?php echo f_e(nvl($fd['FavIconType'], 'image/vnd.microsoft.icon')); ?>;base64,<?php echo f_e($fd['FavIcon']); ?>" style="height: 16px; border: solid 1px #eee" />
+            <?php } ?>
+            </div>
+            <div>
+                <label for="favicon-type-url">
+                    <input id="favicon-type-url" type="radio" name="favicon_type" value="url"<?php if($current_favicon_type == 'url') echo ' checked="checked"'; ?> />
+                    外部URL：
+                </label>
+                <input name="form[FavIconUrl]" type="text" size="80" id="favicon-url" value="<?php echo f_e($current_favicon_type == 'url' ? $fd['FavIconUrl'] : ''); ?>"<?php if($current_favicon_type != 'url') echo ' disabled="disabled"'; ?> />
+            <?php if($current_favicon_type == 'url' && isset($fd['FavIconUrl'])) { ?>
+                <img src="<?php echo f_e($fd['FavIconUrl']); ?>" style="height: 16px; border: solid 1px #eee" />
+            <?php } ?>
+            </div>
+            <div>
+                ※：ブラウザウィンドウ等に表示されるアイコン
+            </div>
+            <?php show_error_message($this->error['FavIcon']); ?>
+            <?php show_error_message($this->error['FavIconUrl']); ?>
+        </td>
+    </tr>
+
+    <tr>
+      <td colspan="2" class="data">【OEM先情報－ご連絡先】</td>
+    </tr>
+    <tr>
+      <td class="label">担当者名<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[CpNameKj]" type="text" id="CpNameKj" value="<?php echo f_e($fd['CpNameKj']); ?>" />
+      <?php show_error_message($this->error['CpNameKj']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">担当者名カナ<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[CpNameKn]" type="text" id="CpNameKn" value="<?php echo f_e($fd['CpNameKn']); ?>" />
+      <?php show_error_message($this->error['CpNameKn']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">部署名</td>
+      <td class="data"><input size="40" name="form[DivisionName]" type="text" id="DivisionName" value="<?php echo f_e($fd['DivisionName']); ?>" />
+      <?php show_error_message($this->error['DivisionName']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">メールアドレス<font color="red">*</font></td>
+      <td class="data"><input size="40" name="form[MailAddress]" type="text" id="MailAddress" value="<?php echo f_e($fd['MailAddress']); ?>" />
+      <?php show_error_message($this->error['MailAddress']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先電話番号<font color="red">*</font></td>
+      <td class="data"><input name="form[ContactPhoneNumber]" type="text" id="ContactPhoneNumber" value="<?php echo f_e($fd['ContactPhoneNumber']); ?>" />
+      <?php show_error_message($this->error['ContactPhoneNumber']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">連絡先FAX番号</td>
+      <td class="data"><input name="form[ContactFaxNumber]" type="text" id="ContactFaxNumber" value="<?php echo f_e($fd['ContactFaxNumber']); ?>" />
+      <?php show_error_message($this->error['ContactFaxNumber']); ?></td>
+    </tr>
+    <tr>
+        <td class="label">
+            事業者情報編集の制限
+        </td>
+        <td class="data">
+            <label for="EntAccountEditLimitation">
+                <input name="form[EntAccountEditLimitation]" type="checkbox" id="EntAccountEditLimitation" value="1"<?php if($fd['EntAccountEditLimitation']) echo ' checked="checked"'; ?> />
+                制限する
+            </label>
+            <div>※：事業者向け管理画面の「連絡先ご担当の変更」の利用を制限するかを設定</div>
+            <?php show_error_message($this->error['EntAccountEditLimitation']); ?></td>
+    </tr>
+    <tr>
+        <td class="label">
+            編集画面追加メッセージ
+        </td>
+        <td class="data">
+            <input name="form[EntAccountAdditionalMessage]" type="text" size="80" id="EntAccountAdditionalMessage" value="<?php echo f_e($fd['EntAccountAdditionalMessage']); ?>" />
+            <div>※：事業者向け管理画面に追加で表示するメッセージを編集</div>
+            <?php show_error_message($this->error['EntAccountAdditionalMessage']); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【サービス内容】</td>
+    </tr>
+    <tr>
+      <td class="label">サービス開始日<font color="red">*</font></td>
+      <td class="data"><input name="form[ServiceInDate]" type="text" id="ServiceInDate" value="<?php echo f_e($fd['ServiceInDate']); ?>" />
+      <?php show_error_message($this->error['ServiceInDate']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">標準決済手数料率<font color="red">*</font></td>
+      <td class="data">
+      <?php foreach ($this->plan as $key => $value) {
+              echo $value['PricePlanName']; ?>：
+        <input size="10" name="form[SettlementFeeRate<?php echo $value['PricePlanId']; ?>]" type="text" id="SettlementFeeRate<?php echo $value['PricePlanId']; ?>" value="<?php echo doubleval($value['SettlementFeeRate']); ?>" />　％　（小数点以下有効桁数：5桁）<br />
+        <?php show_error_message($this->error['SettlementFeeRate' . $value['PricePlanId']]); ?>
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">標準請求手数料<font color="red">*</font></td>
+      <td class="data">
+        別送：<input size="10" name="form[ClaimFeeBS]" type="text" id="ClaimFeeBS" value="<?php echo f_e($fd['ClaimFeeBS']); ?>" />　円<br />
+        同梱：<input size="10" name="form[ClaimFeeDK]" type="text" id="ClaimFeeDK" value="<?php echo f_e($fd['ClaimFeeDK']); ?>" />　円<br />
+        口振紙初回登録手数料：<input size="10" name="form[FirstCreditTransferClaimFeeOem]" type="text" id="FirstCreditTransferClaimFeeOem" value="<?php echo f_e($fd['FirstCreditTransferClaimFeeOem']); ?>" />　円<br />
+        口振WEB初回登録手数料：<input size="10" name="form[FirstCreditTransferClaimFeeWebOem]" type="text" id="FirstCreditTransferClaimFeeWebOem" value="<?php echo f_e($fd['FirstCreditTransferClaimFeeWebOem']); ?>" />　円<br />
+        口振引落手数料：<input size="10" name="form[CreditTransferClaimFeeOem]" type="text" id="CreditTransferClaimFeeOem" value="<?php echo f_e($fd['CreditTransferClaimFeeOem']); ?>" />　円
+        <?php show_error_message($this->error['ClaimFeeBS']); ?>
+        <?php show_error_message($this->error['ClaimFeeDK']); ?>
+        <?php show_error_message($this->error['FirstCreditTransferClaimFeeOem']); ?>
+        <?php show_error_message($this->error['FirstCreditTransferClaimFeeWebOem']); ?>
+        <?php show_error_message($this->error['CreditTransferClaimFeeOem']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">標準店舗月額固定費<font color="red">*</font></td>
+      <td class="data">
+      <?php foreach ($this->plan as $key => $value) {
+              echo $value['PricePlanName']; ?>：
+        <input size="10" name="form[EntMonthlyFee<?php echo $value['PricePlanId']; ?>]" type="text" id="EntMonthlyFee<?php echo $value['PricePlanId']; ?>" value="<?php echo f_e($value['EntMonthlyFee']); ?>" />　円<br />
+        <?php show_error_message($this->error['EntMonthlyFee' . $value['PricePlanId']]); ?>
+      <?php } ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">月額固定費<font color="red">*</font></td>
+      <td class="data"><input name="form[MonthlyFee]" type="text" id="MonthlyFee" value="<?php echo f_e($fd['MonthlyFee']); ?>" />　円
+      <?php show_error_message($this->error['MonthlyFee']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">次回請求月額固定費<font color="red">*</font></td>
+      <td class="data"><input name="form[N_MonthlyFee]" type="text" id="N_MonthlyFee" value="<?php echo f_e($fd['N_MonthlyFee']); ?>" />　円　※OEM月次締め処理によって更新されます。
+      <?php show_error_message($this->error['N_MonthlyFee']); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="label">金融機関<font color="red">*</font></td>
+      <td class="data">
+        銀行名<input size="30" name="form[FfName]" type="text" id="FfName" value="<?php echo f_e($fd['FfName']); ?>" />　
+        銀行番号<input size="10" name="form[FfCode]" type="text" id="FfCode" value="<?php echo f_e($fd['FfCode']); ?>" /><br />
+        支店名<input size="30" name="form[FfBranchName]" type="text" id="FfBranchName" value="<?php echo f_e($fd['FfBranchName']); ?>" />　
+        支店番号<input size="10" name="form[FfBranchCode]" type="text" id="FfBranchCode" value="<?php echo f_e($fd['FfBranchCode']); ?>" /><br />
+        口座種別
+          <span class="radio_set">
+          <?php if( $fd['isNew'] ) $fd['FfAccountClass'] = 1; ?>
+          <?php foreach($this->master_map['FfAccountClass'] as $value => $caption) { ?>
+            <label for="FfAccountClass<?php echo f_e($value); ?>">
+              <?php $checked = $fd['FfAccountClass'] == $value ? ' checked="checked"' : ''; ?>
+              <input name="form[FfAccountClass]" id="FfAccountClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+              <?php echo f_e($caption); ?>
+            </label>
+
+          <?php } ?>
+          </span><br />
+        口座番号<input name="form[FfAccountNumber]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountNumber']); ?>" /><br />
+        口座名義<input size="30" name="form[FfAccountName]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountName']); ?>" />
+        <?php show_error_message($this->error['FfName']); ?>
+        <?php show_error_message($this->error['FfCode']); ?>
+        <?php show_error_message($this->error['FfBranchName']); ?>
+        <?php show_error_message($this->error['FfBranchCode']); ?>
+        <?php show_error_message($this->error['FfAccountClass']); ?>
+        <?php show_error_message($this->error['FfAccountNumber']); ?>
+        <?php show_error_message($this->error['FfAccountName']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">振込手数料<font color="red">*</font></td>
+      <td class="data">
+        <select id="TcClass" name="form[TcClass]" value="<?php echo f_e($fd['TcClass']); ?>">
+        <?php foreach($this->master_map['TcClass'] as $value => $caption) { ?>
+          <?php $selected = $fd['TcClass'] == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+
+        <?php } ?>
+        </select>
+        <?php show_error_message($this->error['TcClass']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【立替金振込手数料】</td>
+    </tr>
+    <tr>
+      <td class="label">同行振込手数料<font color="red">*</font></td>
+      <td class="data">
+        30,000円未満：<input size="10" name="form[SameFfTcFeeUnderThirtyK]" type="text" id="SameFfTcFeeUnderThirtyK" value="<?php echo f_e($fd['SameFfTcFeeUnderThirtyK']); ?>" />　円　</br>
+        30,000円以上：<input size="10" name="form[SameFfTcFeeThirtyKAndOver]" type="text" id="SameFfTcFeeThirtyKAndOver" value="<?php echo f_e($fd['SameFfTcFeeThirtyKAndOver']); ?>" />　円　
+        <?php show_error_message($this->error['SameFfTcFeeUnderThirtyK']); ?>
+        <?php show_error_message($this->error['SameFfTcFeeThirtyKAndOver']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">他行振込手数料<font color="red">*</font></td>
+      <td class="data">
+        30,000円未満：<input size="10" name="form[OtherFfTcFeeUnderThirtyK]" type="text" id="OtherFfTcFeeUnderThirtyK" value="<?php echo f_e($fd['OtherFfTcFeeUnderThirtyK']); ?>" />　円　</br>
+        30,000円以上：<input size="10" name="form[OtherFfTcFeeThirtyKAndOver]" type="text" id="OtherFfTcFeeThirtyKAndOver" value="<?php echo f_e($fd['OtherFfTcFeeThirtyKAndOver']); ?>" />　円　
+        <?php show_error_message($this->error['OtherFfTcFeeUnderThirtyK']); ?>
+        <?php show_error_message($this->error['OtherFfTcFeeThirtyKAndOver']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【全銀フォーマット】</td>
+    </tr>
+    <tr>
+    <td class="label">固定長</td>
+    <td class="data">
+        <input name="form[FixedLengthFlg]" type="checkbox" id="FixedLengthFlg" value="1"<?php if($fd['FixedLengthFlg']) echo ' checked="checked"'; ?> />
+        <label for="FixedLengthFlg">固定長にする</label>
+    </td>
+    </tr>
+    <!--
+    <tr>
+    <td class="label">消費税表示</td>
+    <td class="data">
+        <input name="form[DspTaxFlg]" type="checkbox" id="DspTaxFlg" value="1"<?php if($fd['DspTaxFlg']) echo ' checked="checked"'; ?> />
+        <label for="DspTaxFlg">消費税を表示する</label>
+    </td>
+    </tr>
+    -->
+    <tr>
+      <td class="label">委託者コード</td>
+      <td class="data"><input name="form[ConsignorCode]" type="text" id="ConsignorCode" value="<?php echo f_e($fd['ConsignorCode']); ?>" />
+      <?php show_error_message($this->error['ConsignorCode']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">委託者名</td>
+      <td class="data"><input  size="40" name="form[ConsignorName]" type="text" id="ConsignorName" value="<?php echo f_e($fd['ConsignorName']); ?>" />　（半角カタカナ）
+      <?php show_error_message($this->error['ConsignorName']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向金融機関番号</td>
+      <td class="data"><input name="form[RemittingBankCode]" type="text" id="RemittingBankCode" value="<?php echo f_e($fd['RemittingBankCode']); ?>" />
+      <?php show_error_message($this->error['RemittingBankCode']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向金融機関名</td>
+      <td class="data"><input name="form[RemittingBankName]" type="text" id="RemittingBankName" value="<?php echo f_e($fd['RemittingBankName']); ?>" />　（半角カタカナ）
+      <?php show_error_message($this->error['RemittingBankName']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向支店番号</td>
+      <td class="data"><input name="form[RemittingBranchCode]" type="text" id="RemittingBranchCode" value="<?php echo f_e($fd['RemittingBranchCode']); ?>" />
+      <?php show_error_message($this->error['RemittingBranchCode']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">仕向支店名</td>
+      <td class="data"><input name="form[RemittingBranchName]" type="text" id="RemittingBranchName" value="<?php echo f_e($fd['RemittingBranchName']); ?>" />　（半角カタカナ）
+      <?php show_error_message($this->error['RemittingBranchName']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">預金種目</td>
+      <td class="data"><input name="form[AccountClass]" type="text" id="AccountClass" value="<?php echo f_e($fd['AccountClass']); ?>" />
+      <?php show_error_message($this->error['AccountClass']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">口座番号</td>
+      <td class="data"><input name="form[AccountNumber]" type="text" id="AccountNumber" value="<?php echo f_e($fd['AccountNumber']); ?>" />
+      <?php show_error_message($this->error['AccountNumber']); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【その他】</td>
+    </tr>
+<!--
+    <tr>
+      <td class="label">有効フラッグ<font color="red">*</font></td>
+
+      <td class="data">
+          <span class="radio_set">
+                  <?php $test = array('無効', '有効'); //後にDB登録？ ?>
+          <?php foreach($test as $value => $caption) { ?>
+            <label for="ValidFlg<?php echo f_e($value); ?>">
+              <?php $checked = $fd['ValidFlg'] == $value ? ' checked="checked"' : ''; ?>
+              <input name="form[ValidFlg]" id="ValidFlg<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+              <?php echo f_e($caption); ?>
+            </label>
+
+          <?php } ?>
+          </span><br />
+      </td>
+    </tr>
+-->
+
+
+    <tr>
+      <td class="label">延滞起算猶予</td>
+      <td class="data"><input name="form[KisanbiDelayDays]" type="text" id="KisanbiDelayDays" value="<?php echo f_e($fd['KisanbiDelayDays']); ?>" />
+      <?php show_error_message($this->error['KisanbiDelayDays']); ?></td>
+    </tr>
+    <tr>
+        <td class="label">OEM締パターン<font color="red">*</font></td>
+        <td class="data">
+            <input type="radio" id="OemFixedPattern" name="form[OemFixedPattern]" value=0 <?php if ( $fd['OemFixedPattern'] == 0 ) { echo 'checked'; } ?>>日付指定
+            <input type="radio" id="OemFixedPattern" name="form[OemFixedPattern]" value=1 <?php if ( $fd['OemFixedPattern'] == 1 ) { echo 'checked'; } ?>>週締め
+        </td>
+    </tr>
+    <tr>
+        <td class="label">OEM締日<font color="red">*</font></td>
+        <td class="data">
+        毎月<input name="form[OemFixedDay1]" size="3" type="text" id="OemFixedDay1" value="<?php echo f_e($fd['OemFixedDay1']); ?>" />日　
+        毎月<input name="form[OemFixedDay2]" size="3" type="text" id="OemFixedDay2" value="<?php echo f_e($fd['OemFixedDay2']); ?>" />日　
+        毎月<input name="form[OemFixedDay3]" size="3" type="text" id="OemFixedDay3" value="<?php echo f_e($fd['OemFixedDay3']); ?>" />日
+        <?php show_error_message($this->error['OemFixedDay']); ?></td>
+    </tr>
+    <tr>
+        <td class="label">精算予定日<font color="red">*</font></td>
+        <td class="data">
+        <input id="radio_day" type="radio" name="form[day_week]" value="day" <?php if($fd['day_week'] == 'day' || $fd['SettlementDay1'] <= 31){ echo "checked";}?>>
+        毎月<input name="form[SettlementDay1]" size="3" type="text" id="SettlementDay1" value="<?php echo $fd['SettlementDay1'] <= 31 ? f_e($fd['SettlementDay1']) : ''; ?>" />日　
+        毎月<input name="form[SettlementDay2]" size="3" type="text" id="SettlementDay2" value="<?php echo $fd['SettlementDay2'] <= 31 ? f_e($fd['SettlementDay2']) : ''; ?>" />日　
+        毎月<input name="form[SettlementDay3]" size="3" type="text" id="SettlementDay3" value="<?php echo $fd['SettlementDay2'] <= 31 ? f_e($fd['SettlementDay3']) : ''; ?>" />日
+        <?php show_error_message($this->error['SettlementDay_day']); ?>
+        <br>
+        <input id="radio_week" type="radio"  name="form[day_week]" value="week" <?php if($fd['day_week'] == 'week' || $fd['SettlementDay1'] > 31){ echo "checked";}?>>
+        締日翌週<select name="form[SettlementWeek1]" id="SettlementWeek1"  value="<?php echo f_e($fd['SettlementWeek1']); ?>"><option value="">-</option><option value="41" <?php if($fd['SettlementDay1'] == 41  || $fd['SettlementWeek1'] == 41) echo ' selected="selected"';?>>月</option><option value="42" <?php if($fd['SettlementDay1'] == 42 || $fd['SettlementWeek1'] == 42) echo "selected";?>>火</option><option value="43" <?php if($fd['SettlementDay1'] == 43 || $fd['SettlementWeek1'] == 43) echo "selected";?>>水</option><option value="44" <?php if($fd['SettlementDay1'] == 44 || $fd['SettlementWeek1'] == 44) echo "selected";?>>木</option><option value="45" <?php if($fd['SettlementDay1'] == 45 || $fd['SettlementWeek1'] == 45) echo "selected";?>>金</option></select>曜日　
+        締日翌週<select name="form[SettlementWeek2]" id="SettlementWeek2"  value="<?php echo f_e($fd['SettlementWeek2']); ?>"><option value="">-</option><option value="41" <?php if($fd['SettlementDay2'] == 41  || $fd['SettlementWeek2'] == 41) echo ' selected="selected"';?>>月</option><option value="42" <?php if($fd['SettlementDay2'] == 42 || $fd['SettlementWeek2'] == 42) echo "selected";?>>火</option><option value="43" <?php if($fd['SettlementDay2'] == 43 || $fd['SettlementWeek2'] == 43) echo "selected";?>>水</option><option value="44" <?php if($fd['SettlementDay2'] == 44 || $fd['SettlementWeek2'] == 44) echo "selected";?>>木</option><option value="45" <?php if($fd['SettlementDay2'] == 45 || $fd['SettlementWeek2'] == 45) echo "selected";?>>金</option></select>曜日　
+        締日翌週<select name="form[SettlementWeek3]" id="SettlementWeek3"  value="<?php echo f_e($fd['SettlementWeek3']); ?>"><option value="">-</option><option value="41" <?php if($fd['SettlementDay3'] == 41  || $fd['SettlementWeek3'] == 41) echo ' selected="selected"';?>>月</option><option value="42" <?php if($fd['SettlementDay3'] == 42 || $fd['SettlementWeek3'] == 42) echo "selected";?>>火</option><option value="43" <?php if($fd['SettlementDay3'] == 43 || $fd['SettlementWeek3'] == 43) echo "selected";?>>水</option><option value="44" <?php if($fd['SettlementDay3'] == 44 || $fd['SettlementWeek3'] == 44) echo "selected";?>>木</option><option value="45" <?php if($fd['SettlementDay3'] == 45 || $fd['SettlementWeek3'] == 45) echo "selected";?>>金</option></select>曜日　
+        <?php show_error_message($this->error['SettlementDay_week']); ?>
+       </td>
+    </tr>
+    <tr>
+        <td class="label">OEM締日（週締め）<font color="red">*</font></td>
+        <td class="data">
+            毎週
+            <select name="form[OemFixedDay_Week]" id="OemFixedDay_Week">
+                <option value="">-</option>
+                <option value="1" <?php if ( $fd['OemFixedDay_Week'] == 1 ) echo 'selected="selected"'; ?>>月</option>
+                <option value="2" <?php if ( $fd['OemFixedDay_Week'] == 2 ) echo 'selected="selected"'; ?>>火</option>
+                <option value="3" <?php if ( $fd['OemFixedDay_Week'] == 3 ) echo 'selected="selected"'; ?>>水</option>
+                <option value="4" <?php if ( $fd['OemFixedDay_Week'] == 4 ) echo 'selected="selected"'; ?>>木</option>
+                <option value="5" <?php if ( $fd['OemFixedDay_Week'] == 5 ) echo 'selected="selected"'; ?>>金</option>
+                <option value="6" <?php if ( $fd['OemFixedDay_Week'] == 6 ) echo 'selected="selected"'; ?>>土</option>
+                <option value="7" <?php if ( $fd['OemFixedDay_Week'] == 7 ) echo 'selected="selected"'; ?>>日</option>
+            </select>
+            曜日
+            <?php show_error_message($this->error['OemFixedDay_Week']); ?>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">精算予定日（週締め）<font color="red">*</font></td>
+        <td class="data">
+            締日翌週
+            <select name="form[SettlementDay_Week]" id="SettlementDay_Week">
+                <option value="">-</option>
+                <option value="1" <?php if ( $fd['SettlementDay_Week'] == 1 ) echo 'selected="selected"'; ?>>月</option>
+                <option value="2" <?php if ( $fd['SettlementDay_Week'] == 2 ) echo 'selected="selected"'; ?>>火</option>
+                <option value="3" <?php if ( $fd['SettlementDay_Week'] == 3 ) echo 'selected="selected"'; ?>>水</option>
+                <option value="4" <?php if ( $fd['SettlementDay_Week'] == 4 ) echo 'selected="selected"'; ?>>木</option>
+                <option value="5" <?php if ( $fd['SettlementDay_Week'] == 5 ) echo 'selected="selected"'; ?>>金</option>
+            </select>
+            曜日
+            <?php show_error_message($this->error['SettlementDay_Week']); ?>
+       </td>
+    </tr>
+    <tr>
+        <td class="label">再請求時の名義</td>
+        <td class="data">
+            <input name="form[ReclaimAccountPolicy]" type="checkbox" id="ReclaimAccountPolicy" value="1"<?php if($fd['ReclaimAccountPolicy']) echo ' checked="checked"'; ?> />
+            <label for="ReclaimAccountPolicy">再請求以降はキャッチボール名義にする</label>
+            <div>
+                ※：チェックを入れると、再請求1以降の請求書の名義・口座情報等が<a href="claimaccount/detail/oid/0" target="_blank">キャッチボール向け</a>に設定されている内容になります。
+            </div>
+            <div>
+                ※：この項目の変更は、すでにジョブ転送済みの請求書には反映されません。
+            </div>
+            <?php show_error_message($this->error['ReclaimAccountPolicy']); ?>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">着荷日タイムマシン禁止</td>
+    <td class="data">
+        <input name="form[TimemachineNgFlg]" type="checkbox" id="TimemachineNgFlg" value="1"<?php if($fd['TimemachineNgFlg']) echo ' checked="checked"'; ?> />
+        <label for="ReclaimAccountPolicy">着荷日タイムマシンは禁止とし登録日が設定される</label>
+        <?php show_error_message($this->error['TimemachineNgFlg']); ?></td>
+    </td>
+    </tr>
+    <tr>
+        <td class="label">請求書発行履歴</td>
+        <td class="data">
+            <input name="form[RecordClaimPrintedDateFlg]" type="checkbox" id="RecordClaimPrintedDateFlg" value="1"<?php if($fd['RecordClaimPrintedDateFlg']) echo ' checked="checked"'; ?> />
+            <label for="RecordClaimPrintedDateFlg">OEM備考に記録する</label>
+        </td>
+    </tr>
+    <tr>
+    <td class="label">消費税表示</td>
+    <td class="data">
+        <input name="form[DspTaxFlg]" type="checkbox" id="DspTaxFlg" value="1"<?php if($fd['DspTaxFlg']) echo ' checked="checked"'; ?> />
+        <label for="DspTaxFlg">消費税を表示する</label>
+    </td>
+    </tr>
+    <tr>
+    <td class="label">振込手数料明細加算</td>
+    <td class="data">
+        <input name="form[AddTcClass]" type="checkbox" id="DspTaxFlg" value="1"<?php if($fd['AddTcClass']) echo ' checked="checked"'; ?> />
+        <label for="AddTcClass">振込み手数料を加算する</label>
+    </td>
+    </tr>
+    <tr>
+    <tr>
+      <td class="label">備考</td>
+      <td class="data">
+      <textarea name="form[Note]" id="Note" rows="3" cols="60"><?php echo f_e($fd['Note']); ?></textarea>
+      <?php show_error_message($this->error['Note']); ?></td>
+    </tr>
+    <tr style="display: none;">
+      <td class="label">任意注文番号印刷</td>
+      <td class="data">
+      <input type="radio" name="form[PrintEntOrderIdOnClaimFlg]" id="PrintEntOrderIdOnClaimFlg"  value="1" <?php if($fd['isNew'] == 1 || $fd['PrintEntOrderIdOnClaimFlg'] == 1){ echo "checked";}?>/>あり　　
+      <input type="radio" name="form[PrintEntOrderIdOnClaimFlg]" id="PrintEntOrderIdOnClaimFlg"  value="0" <?php if($fd['isNew'] != 1 && $fd['PrintEntOrderIdOnClaimFlg'] == 0){ echo "checked";}?>/>なし
+      <?php show_error_message($this->error['PrintEntOrderIdOnClaimFlg']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">与信判定基準</td>
+      <td class="data">
+        <select id="CreditCriterion" name="form[CreditCriterion]" value="<?php echo f_e($fd['CreditCriterion']); ?>">
+        <?php foreach($this->credit_criterion as $value => $caption) { ?>
+        <?php $selected = $fd['CreditCriterion'] == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+        <?php } ?>
+        </select>
+        <?php show_error_message($this->error['CreditCriterion']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">与信自動化有効期間</td>
+      <td class="data"><input name="form[AutoCreditDateFrom]" type="text" id="AutoCreditDateFrom" value="<?php echo f_e($fd['AutoCreditDateFrom']); ?>" />　～　
+      <input name="form[AutoCreditDateTo]" type="text" id="AutoCreditDateTo" value="<?php echo f_e($fd['AutoCreditDateTo']); ?>" />
+      <?php show_error_message($this->error['AutoCreditDate']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">債権移行</td>
+      <td class="data">
+      <input type="radio" name="form[OemClaimTransFlg]" id="OemClaimTransFlg"  value="1" <?php if($fd['isNew'] == 1 || $fd['OemClaimTransFlg'] == 1){ echo "checked";}?>/>する　　
+      <input type="radio" name="form[OemClaimTransFlg]" id="OemClaimTransFlg"  value="0" <?php if($fd['isNew'] != 1 && $fd['OemClaimTransFlg'] == 0){ echo "checked";}?>/>しない
+      <?php show_error_message($this->error['JapanPostPrintFlg']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">債権移行基準日数</td>
+      <td class="data"><input name="form[OemClaimTransDays]" type="text" id="OemClaimTransDays" value="<?php echo f_e($fd['OemClaimTransDays']); ?>" />　日
+      <?php show_error_message($this->error['OemClaimTransDays']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">スタイルシート設定</td>
+      <td class="data">
+        <select id="StyleSheets" name="form[StyleSheets]" value="<?php echo f_e($fd['StyleSheets']); ?>">
+        <?php foreach($this->master_map['StyleSheets'] as $value => $caption) { ?>
+          <?php $selected = $fd['StyleSheets'] == $value ? ' selected="selected"' : ''; ?>
+          <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+        <?php } ?>
+        </select>
+        <?php show_error_message($this->error['StyleSheets']); ?>
+      </td>
+    </tr>
+    <tr>
+        <td class="label">発行元会社名見出し</td>
+        <td class="data">
+            <input name="form[ChangeIssuerNameFlg]" type="checkbox" id="ChangeIssuerNameFlg" value="1"<?php if($fd['ChangeIssuerNameFlg']) echo ' checked="checked"'; ?> />
+            <label for="ChangeIssuerNameFlg">ご利用明細をCB名義で表示する</label>
+        </td>
+    </tr>
+
+    </tbody>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td style="padding: 2px 0px">
+        <input type="submit" id="submit_button" value="　確　定　" />
+        &nbsp;
+        <input type="button" id="cancel_edit" value="キャンセル" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    function disable_buttons() {
+        ["submit_button", "cancel_edit"].each(function(id) {
+            $(id).disabled = true;
+        });
+    }
+
+    Event.observe($("cancel_edit"), "click", function() {
+        //if(! confirm("キャンセルすると、編集途中の事業者データは破棄されます。キャンセルしてよろしいですか？") ) return;
+        var base = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+        disable_buttons();
+        var url = [
+            base.replace(/\/$/, ""),
+            "<?php echo (!$fd['isNew'] && $fd['OmeId']) ? sprintf('oem/detail/oid/%s', $fd['OmeId']) : 'oem/list'; ?>"
+        ].join("/");
+        window.location.href = url;
+    });
+    Event.observe($("submit_button"), "click", function() {
+        setTimeout(disable_buttons, 0);
+    });
+    Event.observe($('favicon-type-empty'), 'click', function() {
+        $('favicon-file').disabled = true;
+        $('favicon-url').disabled = true;
+    });
+    Event.observe($('favicon-type-local'), 'click', function() {
+        $('favicon-file').disabled = false;
+        $('favicon-url').disabled = true;
+    });
+    Event.observe($('favicon-type-url'), 'click', function() {
+        $('favicon-file').disabled = true;
+        $('favicon-url').disabled = false;
+    });
+
+//     Event.observe($('day_week'), 'change', function() {
+//     	for(var i=0;i=this.length;i++){
+//             if(this[i].ckecked){
+//                 if(radio_btn[i].value == "week"){
+//                     document.getElementByID('SettlementDay1').disabled = true;
+//                     document.getElementByID('SettlementDay2').disabled = true;
+//                     document.getElementByID('SettlementDay3').disabled = true;
+//                 }else{
+//                	    document.getElementByID('SettlementWeek1').disabled = true;
+//                	    document.getElementByID('SettlementWeek2').disabled = true;
+//                	    document.getElementByID('SettlementWeek3').disabled = true;
+//                 }
+//             }
+//        }
+//     });
+
+    var radio_day_week = document.querySelectorAll('input[name="form[day_week]"]');
+    var radio_week = document.getElementById("radio_week");
+    var radio_day = document.getElementById("radio_day");
+    var OemFixedPattern = document.querySelectorAll('input[name="form[OemFixedPattern]"]');
+
+    radio_check_change();
+    radio_day.addEventListener('change', function(e){
+        radio_check_change();
+    });
+
+	radio_week.addEventListener('change', function(e){
+    	radio_check_change();
+    });
+
+    clickOemFixedPattern();
+    OemFixedPattern[0].addEventListener('change', function(e){
+        clickOemFixedPattern();
+    });
+    OemFixedPattern[1].addEventListener('change', function(e){
+        clickOemFixedPattern();
+    });
+
+    // 精算予定日の切り替え制御
+    function radio_check_change(){
+        if(radio_day_week[0].checked){
+            document.getElementById('SettlementWeek1').disabled = true;
+            document.getElementById('SettlementWeek2').disabled = true;
+            document.getElementById('SettlementWeek3').disabled = true;
+            document.getElementById('SettlementWeek1').value = "";
+            document.getElementById('SettlementWeek2').value = "";
+            document.getElementById('SettlementWeek3').value = "";
+            document.getElementById('SettlementDay1').disabled = false;
+            document.getElementById('SettlementDay2').disabled = false;
+            document.getElementById('SettlementDay3').disabled = false;
+        }else if(radio_day_week[1].checked){
+            document.getElementById('SettlementDay1').disabled = true;
+            document.getElementById('SettlementDay2').disabled = true;
+            document.getElementById('SettlementDay3').disabled = true;
+            document.getElementById('SettlementDay1').value = "";
+            document.getElementById('SettlementDay2').value = "";
+            document.getElementById('SettlementDay3').value = "";
+            document.getElementById('SettlementWeek1').disabled = false;
+            document.getElementById('SettlementWeek2').disabled = false;
+            document.getElementById('SettlementWeek3').disabled = false;
+        }
+    }
+
+    // OEM締パターン切り替え制御
+    function clickOemFixedPattern()
+    {
+        if ( OemFixedPattern[0].checked )
+        {
+            // OEM締パターン：日付指定
+            document.getElementById('OemFixedDay1').disabled = false;
+            document.getElementById('OemFixedDay2').disabled = false;
+            document.getElementById('OemFixedDay3').disabled = false;
+            document.getElementById('radio_day').disabled = false;
+            document.getElementById('SettlementDay1').disabled = false;
+            document.getElementById('SettlementDay2').disabled = false;
+            document.getElementById('SettlementDay3').disabled = false;
+            document.getElementById('radio_week').disabled = false;
+            document.getElementById('SettlementWeek1').disabled = false;
+            document.getElementById('SettlementWeek2').disabled = false;
+            document.getElementById('SettlementWeek3').disabled = false;
+            document.getElementById('OemFixedDay_Week').disabled = true;
+            document.getElementById('SettlementDay_Week').disabled = true;
+            // 精算予定日の切り替え制御
+            radio_check_change();
+        } else {
+            // OEM締パターン：週締め
+            document.getElementById('OemFixedDay1').disabled = true;
+            document.getElementById('OemFixedDay2').disabled = true;
+            document.getElementById('OemFixedDay3').disabled = true;
+            document.getElementById('radio_day').disabled = true;
+            document.getElementById('SettlementDay1').disabled = true;
+            document.getElementById('SettlementDay2').disabled = true;
+            document.getElementById('SettlementDay3').disabled = true;
+            document.getElementById('radio_week').disabled = true;
+            document.getElementById('SettlementWeek1').disabled = true;
+            document.getElementById('SettlementWeek2').disabled = true;
+            document.getElementById('SettlementWeek3').disabled = true;
+            document.getElementById('OemFixedDay_Week').disabled = false;
+            document.getElementById('SettlementDay_Week').disabled = false;
+        }
+    }
+});
+</script>
+</html>

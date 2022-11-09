@@ -1,0 +1,254 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+	background-color: #ffddff;
+}
+
+/* [paging] */
+.page_nav {
+	border-top-width: 1px;
+	margin-bottom: -5px;
+}
+
+#loading_message {
+	margin: 5px 25px;
+	color: gray;
+	padding: 0px;
+	padding-left: 24px;
+	font-size: 16px;
+	background-image: url('../images/loading_mini_01.gif');
+	background-position: 2px center;
+	background-repeat: no-repeat;
+	border: solid 1px #ffcc00;
+}
+tr.border td {
+	background-color: #ddd;
+	padding: 0px !important;
+	font-size: 3px !important;
+	line-height: 3px !important;
+}
+
+ul#rcpt-list {
+	width: 862px;
+	margin: 5px 25px;
+	padding: 0;
+	font-size: 12px;
+	border: solid 0px #ddd;
+	border-width: 1px 0 0 1px;
+	overflow: hidden;
+}
+ul#rcpt-list li {
+	margin: 0;
+	padding: 0;
+	border: solid 0px #ddd;
+	border-width: 0 1px 1px 0;
+	overflow: hidden;
+}
+ul#rcpt-list li .cell {
+	float: left;
+	border: solid 0px #ddd;
+	border-right-width: 1px;
+	display: block;
+	margin: 0;
+	padding: 2px 0 2px 5px;
+	height: 100%;
+}
+ul#rcpt-list li.head {
+	background-color: #888;
+}
+ul#rcpt-list li.head .cell {
+	height: 42px;
+	text-align: center !important;
+	margin: 0;
+	color: white;
+	line-height: 42px;
+}
+ul#rcpt-list li .cell.col01 {	/* 注文ID */
+	width: 63px;
+	text-align: left;
+}
+ul#rcpt-list li .cell.col02 {	/* 初回期限 */
+	width: 25px;
+}
+ul#rcpt-list li .cell.col03 {	/* 最終請求 */
+	width: 25px;
+}
+ul#rcpt-list li .cell.col04 {	/* 支払期限 */
+	width: 25px;
+}
+ul#rcpt-list li .cell.col05 {	/* 請求 */
+	width: 29px;
+}
+ul#rcpt-list li .cell.col06 {	/* 属性 */
+	width: 17px;
+}
+ul#rcpt-list li .cell.col07 {	/* 請求先氏名 */
+	width: 201px;
+}
+ul#rcpt-list li .cell.col08 {	/* 請求額 */
+	width: 38px;
+}
+ul#rcpt-list li .cell.col09 {	/* 入金形態 */
+	width: 162px;
+}
+ul#rcpt-list li .cell.col10 {	/* 入金日 */
+	width: 115px;
+}
+ul#rcpt-list li .cell.col11 {	/* 実入金額 */
+	width: 95px;
+	border-right-width: 0;
+}
+ul#rcpt-list li.head .col02,
+ul#rcpt-list li.head .col03,
+ul#rcpt-list li.head .col04 {
+	line-height: 21px;
+}
+
+ul#rcpt-list li.damage {
+	background: #ffddff;
+}
+-->
+</style></head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金確認</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        <table style="margin-top: 75px; margin-bottom:75px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td colspan="2" class="c_label">入金確認待ち</td>
+            <td colspan="2" class="c_label">初回請求期限切れ</td>
+          </tr>
+          <tr>
+            <td width="100" class="r_data"><span class="cnt"><?php echo $this->confirmationCnt; ?>　件</span></td>
+            <td width="150" class="r_data"><span class="cnt"><?php echo $this->valueFormat($this->confirmationAmount, 'number', '#,##0'); ?>　円</span></td>
+            <td width="100" class="r_data"><span class="cnt"><?php echo $this->expireCnt; ?>　件</span></td>
+            <td width="150" class="r_data"><span class="cnt"><?php echo $this->valueFormat($this->expireAmount, 'number', '#,##0'); ?>　円</span></td>
+          </tr>
+        </table>
+      </div>
+      <div id="cmd1"><a href="rwrcptcfm/impbpform">銀行・郵便局CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impform">コンビニ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/imptform">ところくん入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impcfform">ＣＦ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impjpform">ゆうちょ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impapform">アプラス入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impatpayform">＠Payment(EG社)インポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impatpaycbform">＠ペイメントインポート</a></div>
+    </div>
+	<div style="clear: both; float: none;">&nbsp;</div>
+	<?php /*echo $this->render('page_navigation.php');*/ ?>
+
+<div id="loading_message">now loading...</div>
+	<?php $list_begin_time = microtime(true); ?>
+    <form name="form" method="post" action="rwrcptcfm/confirm" style="display: none;" id="main_form">
+	<ul id="rcpt-list">
+		<li class="head">
+			<div class="cell col01">注文ID</div>
+			<div class="cell col02">初回<br />期限</div>
+			<div class="cell col03">最終<br />請求</div>
+			<div class="cell col04">支払<br />期限</div>
+			<div class="cell col05">請求</div>
+			<div class="cell col06">属性</div>
+			<div class="cell col07">請求先氏名</div>
+			<div class="cell col08">請求額</div>
+			<div class="cell col09">入金形態</div>
+			<div class="cell col10">入金日</div>
+			<div class="cell col11">実入金額</div>
+		</li>
+	<?php
+          // count関数対策
+		  $l = 0;
+          if (!empty($this->list)){
+              $l = count($this->list);
+          }
+		  for ($i = 0; $i < $l; $i++) { ?>
+		<?php $item = $this->list[$i]; ?>
+		<li <?php echo $item['DamageRecord']; ?>>
+			<div class="cell col01">
+				<?php $id = 'OrderSeq'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderSeq']; ?>" />
+				<?php $id = 'OrderId'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OrderId']; ?>" />
+				<?php $id = 'OutOfAmends'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['OutOfAmends']; ?>" />
+				<?php echo $item['OrderId']; ?>
+			</div>
+			<div class="cell col02"><?php echo date('m/d', strtotime($item['Clm_F_LimitDate'])); ?></div>
+			<div class="cell col03"><?php echo date('m/d', strtotime($item['Clm_L_ClaimDate'])); ?></div>
+			<div class="cell col04"><?php echo date('m/d', strtotime($item['Clm_L_LimitDate'])); ?></div>
+			<div class="cell col05"><?php echo $item['Clm_L_ClaimPattern']; ?></div>
+			<div class="cell col06"><?php echo $item['IncreArCaption']; ?></div>
+			<div class="cell col07">
+				<?php $id = 'NameKj'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo f_e($item['NameKj']); ?>" />
+				<a target="_blank" href="rworder/detail/oseq/<?php echo f_e($item['OrderSeq']); ?>">
+				<?php echo f_e(f_trim($item['NameKj'])); ?></a>
+			</div>
+			<div class="cell col08">
+				<?php $id = 'ClaimTotalAmount'.$i; ?><input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $item['ClaimTotalAmount']; ?>" />
+				<?php echo number_format($item['ClaimTotalAmount']); ?>
+			</div>
+			<div class="cell col09"><?php echo $item['receiptFormTag']; ?></div>
+			<div class="cell col10">
+				<?php $id = 'Rct_ReceiptDate'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+			</div>
+			<div class="cell col11">
+				<?php $id = 'Rct_ReceiptAmount'.$i; ?><input style="width: 85%; text-align: right;" type="text" name="<?php echo $id; ?>" id="<?php echo $id; ?>" />
+			</div>
+		</li>
+	<?php } ?>
+		<li>
+			<div style="text-align: center">
+              <input type="hidden" name="page" value="<?php echo $this->current_page; ?>" />
+              <input type="submit" value="　　入金確定　　" />
+			</div>
+		</li>
+	</ul>
+    </form>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	var start = new Date();
+	Element.show($("main_form"));
+	setTimeout(function() {
+		Element.hide($("loading_message"));
+		alert((new Date().valueOf() - start.valueOf()) / 1000);
+		fixHeight();
+	}, 0);
+	function fixHeight() {
+	var list = $A($('rcpt-list').getElementsByTagName('li')).findAll(function(li) {
+		return ! new Element.ClassNames(li).include('head');
+	}), index = 0;
+	(function() {
+		for(var i = 0; i < 3; i++) {
+			var item = list[index];
+			if(!item) break;
+			var h = item.clientHeight;
+			if(h > 30) {
+				document.getElementsByClassName('cell', item).each(function(cell) {
+					cell.style.height = '{0}px'.format(h - 4);
+				});
+			}
+			index++;
+		}
+		if(list[index]) setTimeout(arguments.callee, 0);
+	})();
+	}
+});
+</script>
+</html>

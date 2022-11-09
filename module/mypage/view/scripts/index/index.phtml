@@ -1,0 +1,219 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+   <div style="clear: both;" id="my_title">ご購入履歴</div>
+
+    <?php
+    echo $this->render( 'mypage/menu.php' );
+    ?>
+
+    <?php foreach( $this->orderList as $order ) { ?>
+        <div id="order_info">
+            <div id="lbl_01">注文日：<?php echo f_df( $order['ReceiptOrderDate'], 'Y/m/d' ); ?></div>
+        </div>
+        <div id="d_01">
+            <span class="c_red">
+            <?php if( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] >= 1 ) { ?>
+            <font class="c_blue_02">キャンセル受付済みです。</font>
+            <?php } else { if( $this->orderStatus[$order['OrderSeq']]['DataStatus'] < 51 ) { ?>
+            請求書発行準備中です。お手数ですがしばらくお待ち下さい。
+            <?php } else if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) { ?>
+            <font class="c_blue_01">お支払いありがとうございます。またのご利用をお待ちしています。</font>
+            <?php } else if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 0 || ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) ) {
+            if( ( $d = ( !empty( $order['PromPayDate'] ) ? strtotime( $order['PromPayDate'] ) - strtotime( date( 'Y-m-d' ) ) : strtotime( $order['F_LimitDate'] ) - strtotime( date( 'Y-m-d' ) ) ) ) >= 0 ) { ?>
+            支払期限まであと<?php echo $d / (60 * 60 * 24); ?>日です。
+            <?php } else if( ( $d = ( !empty( $order['PromPayDate'] ) ? strtotime( $order['PromPayDate'] ) - strtotime( date( 'Y-m-d') ) : strtotime( $order['F_LimitDate'] ) - strtotime( date( 'Y-m-d' ) ) ) ) < 0 ) { ?>
+            支払期限を<?php echo ($d * -1) / (60 * 60 * 24); ?>日過ぎています。<br />速やかなお支払いをお願い致します。
+            <?php } } } ?></span>
+        </div>
+        <div id="d_01">
+            <span class="c_blue_01">
+                <?php if( ( $this->orderStatus[$order['OrderSeq']]['DataStatus'] >= 51 ) && ( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] == 0 ) && ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 0 || ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) ) ) {
+                    if( !empty( $order['MypageReissueRequestDate'] ) && ( $order['MypageReissueClass'] != 91 && $order['MypageReissueClass'] != 92 )) { ?>
+                                請求書再発行を受け付け済みです。<br />速やかに新しい請求書をご送付致しますのでしばらくお待ちください。
+                    <?php } else if( !empty( $order['MypageReissueRequestDate'] ) && ( $order['MypageReissueClass'] == 91 || $order['MypageReissueClass'] == 92 )) { ?>
+                    <?php echo f_df( $order['MAXClaimDate'], 'Y/m/d' ); ?>に請求書を再発送致しました。
+                <?php } } ?>
+            </span>
+        </div>
+        <div id="order_info">
+            <div id="lbl_03">
+                注文ID：<?php echo f_e( $order['OrderId'] ); ?><br />
+                購入店注文番号：<?php echo f_e( $order['Ent_OrderId'] ); ?><br />
+                購入店名：<?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { echo f_e( $order['SiteNameKj'] ); } else { echo f_e( $order['EnterpriseNameKj'] ); } ?><br />
+                <?php if( $order['CombinedClaimTargetStatus'] != 11 && !empty( $order['Url'] ) ) { ?>
+                <div id="lable_03">
+                    <a href="<?php echo $order['Url']; ?>" target="_blank" float="right">購入店ページへ</a>
+                </div>
+                <?php } ?>
+            </div>
+        </div>
+        <div id="bill_info">
+            <div style="clear: both;">
+                <?php if( $this->orderStatus[$order['OrderSeq']]['DataStatus'] == 51 && $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] == 0 )  { ?><div id="d_02"><button style="height: 28px;" type="button" onclick="window.open('billreiss/index/orderseq/<?php echo f_e( $order['OrderSeq'] ); ?>', '_blank');">請求書がお手元<br />にない場合</button></div> <?php } ?>
+
+                <?php if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { ?><div id="d_03"><span>ご請求残　　<?php echo f_nf( nvl( $order['ClaimedBalance'], 0 ), '\#,##0' ); ?></span></div><?php } ?>
+
+                <div id="d_04">
+                    請求書：<?php if( empty( $order['F_ClaimDate'] ) ) { echo '未発行'; } else { echo '発行済み'; } ?><br />
+                    発行日：<?php if( empty( $order['F_ClaimDate'] ) ) { echo '－'; } else { echo f_df( $order['F_ClaimDate'], 'Y-m-d' ); } ?><br />
+                    お支払：<?php if( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] >= 1 ) { echo '<font class="c_blue_02">キャンセル済み</font>'; }
+                    else { if( $this->orderStatus[$order['OrderSeq']]['DataStatus'] < 51 ) { echo 'ご請求前'; } else if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] != 1 ) { echo '<font class="c_red">未入金</font>'; }
+                    else if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) { echo '<font class="c_red">残あり</font>'; }
+                    else if( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) { echo '<font class="c_blue_01">支払済み</font>'; } } ?><br />
+                    <?php if( ( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] == 0 ) && ( $this->orderStatus[$order['OrderSeq']]['DataStatus'] >= 51 ) && ( ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] != 1 ) || ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] > 0 ) )) {
+                        if( !empty( $order['PromPayDate'] ) ) { echo '約束日：' . $order['PromPayDate'] . '<br />'; }
+                        else { echo '期限日：' . $order['F_LimitDate'] . '<br />'; } }
+                    if( ( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] == 0 )&& ( $this->orderStatus[$order['OrderSeq']]['Rct_Status'] == 1 && $order['ClaimedBalance'] <= 0 ) ) { echo 'お支払日：' . $order['MAXReceiptDate'] . '<br />'; }
+                    if( $this->orderStatus[$order['OrderSeq']]['Cnl_Status'] >= 1 ) { echo 'キャンセル日：' . $order['CancelDate'] . '<br />'; } ?>
+                </div>
+            </div>
+        </div>
+
+        <div id="order_detail">
+            <div id="d_05">
+              <div id="lbl_04">ご請求金額</div>
+              <div id="lbl_05"><?php echo f_nf( nvl( $this->orderClaimAmount[$order['OrderSeq']], 0 ), '\#,##0' ); ?></div>
+            </div>
+
+            <table width="560px" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+                <tr>
+                    <th class="th_01" width="60%">購入した商品</th>
+                    <th class="th_01" width="10%">単価</th>
+                    <th class="th_01" width="10%">点数</th>
+                    <th class="th_01" width="10%">小計</th>
+                </tr>
+            </thead>
+            <tbody>
+              <?php $i = 0; foreach( $this->deliList[$order['OrderSeq']] as $items ) { ?>
+              <?php foreach( $items as $item ) { ?>
+              <tr>
+                  <td class="l_data"><?php echo $item['ItemNameKj']; ?><?php if ($this->orderStatus[$order['OrderSeq']]['Cnl_Status'] == 0) {echo $item['Cnl_Status'] == 0 ? '' : '<font color="red">(キャンセル済)</font>';} ?></td>
+                  <td class="r_data"><?php if( !empty( $item['UnitPrice'] ) ) { echo f_nf( nvl( $item['UnitPrice'], 0 ), '#,##0' ); } ?></td>
+                  <td class="r_data"><?php if( !empty( $item['UnitPrice'] ) ) { echo f_nf( nvl( $item['ItemNum'], 0 ), '#,##0' ); } ?></td>
+                  <td class="r_data"><?php echo f_nf( nvl( $item['SumMoney'], 0 ), '#,##0' ); ?></td>
+              </tr>
+              <?php } } if( !empty( $this->sumCarriage[$order['OrderSeq']] ) ) { ?>
+              <tr>
+                  <td class="l_data">送料</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+              </tr>
+              <?php } if( !empty( $this->sumSettlementFee[$order['OrderSeq']] ) ) { ?>
+              <tr>
+                  <td class="l_data">決済手数料</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+              </tr>
+              <?php } if( !empty( $this->sumTax[$order['OrderSeq']] ) ) { ?>
+              <tr>
+              <td class="l_data">税額</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumTax[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( nvl( $this->sumTax[$order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+              </tr>
+              <?php } if( !empty( $order['ClaimFee'] ) ) { ?>
+              <tr>
+                  <td class="l_data">再請求手数料</td>
+                  <td class="r_data"><?php echo $order['ClaimFee']; ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( $order['ClaimFee'], '#,##0' ); ?></td>
+              </tr>
+              <?php } if( !empty( $order['DamageInterestAmount'] ) ) { ?>
+              <tr>
+                  <td class="l_data">遅延損害金</td>
+                  <td class="r_data"><?php echo $order['DamageInterestAmount']; ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( $order['DamageInterestAmount'], '#,##0' ); ?></td>
+              </tr>
+              <?php } if( !empty( $order['AdditionalClaimFee'] ) ) { ?>
+              <tr>
+                  <td class="l_data" >追加請求手数料</td>
+                  <td class="r_data"><?php echo $order['AdditionalClaimFee']; ?></td>
+                  <td class="r_data">1</td>
+                  <td class="r_data"><?php echo f_nf( $order['AdditionalClaimFee'], '#,##0' ); ?></td>
+              </tr>
+              <?php } ?>
+              </tbody>
+            </table>
+        </div>
+
+        <div id="deli_info">
+            <?php
+            $deliListCount = 0;
+            if( !empty( $this->deliList[$order['OrderSeq']] ) ) {
+                $deliListCount = count( $this->deliList[$order['OrderSeq']] );
+            }
+            $j = 1; foreach( $this->deliList[$order['OrderSeq']] as $deliDests ) {
+            if( $deliListCount > 1 ) {
+             ?>
+            <div id="info_title">お届け先<?php echo $j++; ?></div>
+            <input type="hidden" value="<?php echo $deliDests[0]['OrderSeq']; ?>" />
+            <table width="540px" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr><td colspan="2"><span class="f_bold">〒　</span><?php echo f_e( $deliDests[0]['PostalCode'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['UnitingAddress'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">お届け先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['DestNameKj'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['Phone'] ); ?></td></tr>
+            </tbody>
+            </table>
+            <table width="540px" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+                <tr>
+                  <th class="th_01">お届け商品</th>
+                  <th class="th_01">点数</th>
+                </tr>
+            </thead>
+            <?php foreach( $deliDests as $deliDest ) {?>
+            <tbody>
+                <tr>
+                    <td class="l_data"><?php echo $deliDest['ItemNameKj']; ?></td>
+                    <td class="r_data"><?php if( !empty( $deliDest['UnitPrice'] ) ) { echo f_nf( nvl( $deliDest['ItemNum'], 0 ), '#,##0' ); } ?></td>
+                </tr>
+            </tbody>
+            <?php } ?>
+            </table>
+            <?php } else { ?>
+            <div id="info_title">お届け先</div>
+            <input type="hidden" value="<?php echo $deliDests[0]['OrderSeq']; ?>" />
+            <table width="540px" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr><td colspan="2"><span class="f_bold">〒　</span><?php echo f_e( $deliDests[0]['PostalCode'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">住所</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['UnitingAddress'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">お届け先名</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['DestNameKj'] ); ?></td></tr>
+                <tr><td class="f_bold" width="200px">電話</td><td class="f_bold" width="5px">：</td><td><?php echo f_e( $deliDests[0]['Phone'] ); ?></td></tr>
+            </tbody>
+            </table>
+            <?php } } ?>
+        </div>
+    <?php } ?>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

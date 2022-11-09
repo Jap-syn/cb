@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/regist/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+?>
+<!-- start contents -->
+<div id="contents">
+    <div style="clear: both;" id="my_title">登録完了</div>
+    <div class="mt_100">
+        <?php
+        echo $this->render( 'mypage/regist/list.php' );
+        ?>
+    </div>
+    <br />
+    <div id="msg" class="f_bold">ご入力いただいたメールアドレス宛に登録完了の案内メールをお送りいたしました。</div>
+    <div id="complete"><br/>
+        <input id="red_btn" type="button" value="ログイン画面ヘ" onclick="window.location.href='login/login'"  />
+    </div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

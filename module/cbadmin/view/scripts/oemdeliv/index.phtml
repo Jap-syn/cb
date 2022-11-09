@@ -1,0 +1,53 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+</style>
+<script type="text/javascript">
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemdeliv/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM先一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>OEMID</th>
+            <th>OEM先名</th>
+            <th>OEM先名かな</th>
+            <th>配送方法</th>
+          </tr>
+        <?php foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td class="r_data"><?php echo f_e($row['OemId']); ?></td>
+            <td class="l_data">
+                <a href="oem/detail/oid/<?php echo f_e($row['OemId']); ?>"><?php echo f_e($row['OemNameKj']); ?></a>
+            </td>
+            <td class="l_data"><?php echo f_e($row['OemNameKn']); ?></td>
+            <td class="c_data">
+              <a href="oemdeliv/oem/oid/<?php echo f_e($row['OemId']); ?>">
+                <?php echo f_e($row['DelivCount'] ? sprintf('%s 件', $row['DelivCount']) : '(未設定)'); ?>
+              </a>
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

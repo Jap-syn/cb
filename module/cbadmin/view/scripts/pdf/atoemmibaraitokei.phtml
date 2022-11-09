@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title><?php echo $this->title; ?></title>
+    <link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdfkaikei.css" />
+    <script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+  </head>
+  <body>
+<?php $isFirst = true; ?>
+<?php foreach ($this->datas as $data) { ?>
+<?php   if ($isFirst) { ?>
+    <div class="title">OEM未払金・売掛金・加盟店未収金統計表</div>
+<?php     $isFirst = false; ?>
+<?php   } else { ?>
+    <div class="title" style="page-break-before: always;">OEM未払金・売掛金・加盟店未収金統計表</div>
+<?php   } ?>
+    <div class="header">
+      <div class="box_wrap_hf">
+        <div class="box_left_header">集計月：</div>
+        <div class="box_left_header"><?php echo date('Y/m', strtotime($data['AccountDate'])); ?></div>
+      </div>
+      <div class="box_wrap_hf">
+        <div class="box_left_header">OEMコード：</div>
+        <div class="box_left_header"><?php echo $data['OemId']; ?></div>
+        <div class="box_left_header">OEM名：</div>
+        <div class="box_left_header" style="width: 800px"><?php echo $data['OemNameKj']; ?></div>
+      </div>
+      <div class="box_wrap_hf">
+        <div class="box_left_header">加盟店コード：</div>
+        <div class="box_left_header"><?php echo $data['EnterpriseId']; ?></div>
+        <div class="box_left_header">加盟店名：</div>
+        <div class="box_left_header" style="width: 800px"><?php echo $data['EnterpriseNameKj']; ?></div>
+      </div>
+    </div>
+    <div class="box_wrap" style="width: 1355px">
+      <div class="box_left" style="width: 425px">
+        <table class="datatable" style="margin-left: 10px; width: 400px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td class="l_meisai" colspan="2" style="width: 100px;">●OEM未払金</td>
+            <td class="r_meisai" style="width: 100px;">件数</td>
+            <td class="r_meisai" style="width: 100px;">金額</td>
+          </tr>
+          <tr>
+            <td class="l_header" colspan="3">前月未払金残</th>
+            <td class="r_header"><?php echo f_nf(nvl($data['AP_AccountsPayableBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月発生(成約)</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AP_ChargeCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_ChargeAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月キャンセル</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AP_CancelCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_CalcelAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月無保証立替金戻し</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_SettlementBackAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="3" style="color: #4169E1;">売掛金相殺</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_AccountsReceivableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="3" style="color: #D2691E;">OEM未収金相殺</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_AccountsPayableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="3" style="color: #2E8B57;">その他未収金相殺</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_OtherAccountsPayableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="3" style="color: #9932CC;">OEM未収金へ振替</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_AccountsPayableTransfer'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月実支払額</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_AmountPayment'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">貸倒金額</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AP_BadDebtAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_footer" colspan="3">当月未払金残</th>
+            <td class="r_footer"><?php echo f_nf(nvl($data['AP_PreAccountsPayableBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="2">　</th>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="3">OEM未払金兼売掛金明細</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AP_UseAmountTotal'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_sagaku" colspan="3">差額</th>
+            <td class="r_sagaku"><?php echo f_nf(nvl($data['AP_Difference'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="2">　</th>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="2">　</td>
+            <td class="r_meisai">件数</td>
+            <td class="r_meisai">金額</td>
+          </tr>
+          <tr>
+            <td class="l_header2" colspan="3" style="color: #2E8B57;">その他未収金相殺</th>
+            <td class="r_header2"><?php echo f_nf(nvl($data['Other_AccountsPayableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai3" colspan="2">　①印紙代</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['Other_StampFeeCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai3"><?php echo f_nf(nvl($data['Other_StampFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai3" colspan="2">　②振込手数料</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['Other_TransferCommissionCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai3"><?php echo f_nf(nvl($data['Other_TransferCommission'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai3" colspan="2">　③調整金額</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['Other_AdjustmentAmountCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai3"><?php echo f_nf(nvl($data['Other_AdjustmentAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_footer2" colspan="2">　④加盟店への返金</th>
+            <td class="c_footer2"><?php echo f_nf(nvl($data['Other_RefundCount'], 0), '#,##0' ); ?></td>
+            <td class="r_footer2"><?php echo f_nf(nvl($data['Other_Refund'], 0), '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+      <div class="box_left" style="width: 425px">
+        <table class="datatable" style="margin-left: 10px; width: 400px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td class="l_meisai" colspan="2" style="width: 100px;">●OEM売掛金</td>
+            <td class="r_meisai" style="width: 100px;">件数</td>
+            <td class="r_meisai" style="width: 100px;">金額</td>
+          </tr>
+          <tr>
+            <td class="l_header" colspan="3">前月売掛金残</th>
+            <td class="r_header"><?php echo f_nf(nvl($data['AR_AccountsReceivableBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="3">当月売上増加</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_AccountsReceivableIncrease'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="2">　①OEM決済手数料</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemSettlementFeeAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="2">　②OEM請求手数料</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemClaimFeeAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="2">　③OEM月額固定費</th>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemMonthlyFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="3">　④OEM同梱月額固定費</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemIncludeMonthlyFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="3">　⑤OEMAPI月額固定費</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemApiMonthlyFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="3">　⑥OEM与信結果通知サービス月額固定費</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemCreditNoticeMonthlyFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr style="background-color: #F5F5DC;">
+            <td class="l_meisai2" colspan="3">　⑦OEM次回請求与信結果通知サービス月額固定費</th>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_OemNCreditNoticeMonthlyFee'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2" style="color: #4169E1;">未払金相殺</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AR_AccountsPayableOffsetCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_AccountsPayableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月入金(実入金)</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_AccountsMonthPayment'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">貸倒金額</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AR_BadDebtAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_footer" colspan="3">当月末売掛金残</th>
+            <td class="r_footer"><?php echo f_nf(nvl($data['AR_PreAccountsReceivableBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="2">　</th>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="3">OEM未払金兼売掛金明細</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AR_AccountsReceivableToal'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_sagaku" colspan="3">差額</th>
+            <td class="r_sagaku"><?php echo f_nf(nvl($data['AR_Difference'], 0), '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+      <div class="box_left" style="width: 425px">
+        <table class="datatable" style="margin-left: 10px; width: 400px;" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td class="l_meisai" colspan="2" style="width: 100px;">●OEM未収金</td>
+            <td class="r_meisai" style="width: 100px;">件数</td>
+            <td class="r_meisai" style="width: 100px;">金額</td>
+          </tr>
+          <tr>
+            <td class="l_header" colspan="3">前月OEM未収金残</th>
+            <td class="r_header"><?php echo f_nf(nvl($data['AD_AccountsDueBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2" style="color: #9932CC;">OEM未収金移管金額</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AD_TransferAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2" style="color: #D2691E;">未払金相殺</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AD_AccountsPayableOffset'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">当月入金(実入金)</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AD_AccountsMonthCount'], 0), '#,##0' ); ?></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AD_AccountsMonthPayment'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai2" colspan="2">貸倒金額</th>
+            <td class="r_meisai"></td>
+            <td class="r_meisai2"><?php echo f_nf(nvl($data['AD_BadDebtAmount'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_footer" colspan="3">当月末OEM未収金</th>
+            <td class="r_footer"><?php echo f_nf(nvl($data['AD_PerAccountsDueBalance'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="2">　</th>
+            <td class="r_meisai">　</td>
+            <td class="r_meisai">　</td>
+          </tr>
+          <tr>
+            <td class="l_meisai" colspan="3">OEM未払金兼売掛金明細</th>
+            <td class="r_meisai"><?php echo f_nf(nvl($data['AD_CurrentAccountsDue'], 0), '#,##0' ); ?></td>
+          </tr>
+          <tr>
+            <td class="l_sagaku" colspan="3">差額</th>
+            <td class="r_sagaku"><?php echo f_nf(nvl($data['AD_Difference'], 0), '#,##0' ); ?></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+<?php } ?>
+</body>
+</html>

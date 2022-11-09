@@ -1,0 +1,293 @@
+* {
+    margin: 0px;
+    margin-left: 0px;
+}
+
+/* general */
+body {
+    width: 100%;
+    height: 100%;
+    font: migu-1m-regular;
+    font-size: 16px;
+    font-family: migu-1m-regular, sans-serif;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: auto;
+}
+
+/* 共通CSS */
+/* 横並び */
+/* 幅は基本設定：各HTML内で指定すること。 */
+.box_wrap {
+    width: 1950px;
+    margin-left: 15px;
+    padding-top: 15px;
+/*    border:solid 1px red; */
+}
+
+.box_wrap .box_left {
+    width: 260px;
+    margin-left: 5px;
+    font-size: 13px;
+    display: inline-block;
+    vertical-align: top;
+/*    border:solid 1px blue; */
+}
+
+.box_wrap .box_left_wide {
+    width: 1385px;
+    margin-left: 5px;
+    font-size: 13px;
+    display: inline-block;
+/*    border:solid 1px darkcyan; */
+}
+
+.box_wrap_hf {
+    width: 950px;
+    margin-left: 15px;
+/*    border:solid 1px orange; */
+}
+
+.box_wrap_hf .box_left_header {
+    width: 100px;
+    margin-left: 0px;
+    font-size: 13px;
+    display: inline-block;
+/*    border:solid 1px green; */
+}
+
+/* その他 */
+.title {
+    font: migu-1m-bold;
+    font-size: 18px;
+    width: 400px;
+    text-align: left;
+    text-decoration: underline;
+    margin-left: 10px;
+    margin-top: 10px;
+/*    border:solid 1px darkblue; */
+}
+
+.header {
+    display: inline-block;
+    width: 1300px;
+    margin-left: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+/*    border:solid 1px deeppink; */
+}
+
+.line {
+    line-height: 20px;
+}
+
+/* テーブル関連 */
+/* *** 共通CSS *** */
+table.datatable {
+    margin-left: 5px;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+td.r_sagaku {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: double 3px black;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+td.l_sagaku {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: double 3px black;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+td.r_meisai {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border: none;
+}
+
+td.l_meisai {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border: none;
+}
+/* *************** */
+
+/* 日次統計表用CSS */
+th {
+    text-align: left;
+    padding: 2px 0px 2px 0px;
+    background-color: #B0C4DE;
+}
+
+th.monthly {
+    border: solid 1px black;
+}
+
+th.tax {
+    background-color: #B0E0E6;
+    border: solid 1px black;
+}
+
+td.l_data {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border: solid 1px black;
+}
+
+td.r_data {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border: solid 1px black;
+}
+
+td.r_head {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    vertical-align: bottom;
+}
+
+td.l_label {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    background-color: #FFCF9E;
+    border: solid 1px black;
+}
+
+td.r_subsum {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border: solid 1px black;
+    background-color: #D3D3D3;
+}
+/* *************** */
+
+/* 未払金・売掛金・未収金統計表用CSS */
+td.l_header {
+    font: migu-1m-bold;
+    font-size: 12px;
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: solid 2px black;
+    border-left: solid 2px black;
+    border-right: none;
+    border-bottom: solid 1px black;
+}
+
+td.r_header {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: solid 2px black;
+    border-left: none;
+    border-right: solid 2px black;
+    border-bottom: solid 1px black;
+}
+
+td.l_footer {
+    font: migu-1m-bold;
+    font-size: 12px;
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: double 3px black;
+    border-left: solid 2px black;
+    border-right: none;
+    border-bottom: solid 2px black;
+}
+
+td.r_footer {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: double 3px black;
+    border-left: none;
+    border-right: solid 2px black;
+    border-bottom: solid 2px black;
+}
+
+td.l_meisai2 {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: none;
+    border-left: solid 2px black;
+    border-right: none;
+    border-bottom: none;
+}
+
+td.r_meisai2 {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: none;
+    border-left: none;
+    border-right: solid 2px black;
+    border-bottom: none;
+}
+
+td.l_header2 {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: solid 1px black;
+    border-left: solid 1px black;
+    border-right: none;
+    border-bottom: none;
+}
+
+td.r_header2 {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: solid 1px black;
+    border-left: none;
+    border-right: solid 1px black;
+    border-bottom: none;
+}
+
+td.l_footer2 {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: none;
+    border-left: solid 1px black;
+    border-right: none;
+    border-bottom: solid 1px black;
+}
+
+td.c_footer2 {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: solid 1px black;
+}
+
+td.r_footer2 {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: none;
+    border-left: none;
+    border-right: solid 1px black;
+    border-bottom: solid 1px black;
+}
+
+td.l_meisai3 {
+    text-align: left;
+    padding: 2px 0px 2px 5px;
+    border-top: none;
+    border-left: solid 1px black;
+    border-right: none;
+    border-bottom: none;
+}
+
+td.r_meisai3 {
+    text-align: right;
+    padding: 2px 5px 2px 0px;
+    border-top: none;
+    border-left: none;
+    border-right: solid 1px black;
+    border-bottom: none;
+}
+/* ********************************* */

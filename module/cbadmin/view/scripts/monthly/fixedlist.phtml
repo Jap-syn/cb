@@ -1,0 +1,111 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/monthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">月次明細</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1">
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    -->
+    <form name="form" method="post">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->fixedMonthTag; ?>
+              <input style="margin: 0px 20px; " type="submit" value="　表　示　" onClick="form.action='monthly/fixedlist';return true" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>事業者LID</th>
+            <th>事業者名</th>
+            <th>注文<br />件数</th>
+            <th>注文総額</th>
+            <th>決済<br />手数料</th>
+            <th>請求<br />手数料</th>
+            <th>印紙代</th>
+            <th>月額<br />固定費</th>
+            <th>前月<br />不足</th>
+            <th>CNL<br />返金</th>
+            <th>振込<br />手数料</th>
+            <th>精算<br />調整額</th>
+            <th>立替精算<br />戻し額</th>
+            <th>請求金額</th>
+            <th>支払総額</th>
+          </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <tr>
+            <td class="c_data">
+              <?php echo $row['LoginId']; ?>
+            </td>
+            <td class="l_data">
+              <a target="_blank" href="monthly/summary/eid/<?php echo f_e($row['EnterpriseId']); ?>/ym/<?php echo f_e($row['FixedMonth']); ?>" />
+              <?php echo $row['EnterpriseNameKj']; ?>
+              </a>
+            </td>
+            <td class="r_data">
+              <?php echo $row['OrderCount']; ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['OrderAmount'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['SettlementFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['ClaimFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['StampFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['MonthlyFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['CarryOverMonthlyFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['CancelRepaymentAmount'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['FfTransferFee'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['AdjustmentAmount'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['PayBackAmount'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['ClaimAmount'], '#,##0'); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf($row['PaymentAmount'], '#,##0'); ?>
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

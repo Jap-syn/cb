@@ -1,0 +1,62 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>パスワード変更</h3>
+<font color="red">　　　<?php echo f_e($this->msg); ?></font>
+<form id="login_form" name="form" method="POST" action="login/chgpw/cmd/e">
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td width="400" class="r_label">現在のパスワード</td>
+    <td class="l_data">
+      <input type="password" id="opw" name="opw" style="width: 140px;" value="<?php echo f_e($this->error['opw']); ?>" />
+      <div style="float:right;width: 290px;"><?php echo $this->error['eopw']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+  <tr>
+    <td class="r_label">新しいパスワード</td>
+    <td class="l_data">
+      <input type="password" id="npw1" name="npw1" style="width: 140px;" value="<?php echo f_e($this->error['npw1']); ?>" />
+      <div style="float:right;width: 290px;"><?php echo $this->error['enpw1']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>  <tr>
+    <td class="r_label">確認</td>
+    <td class="l_data">
+      <input type="password" id="npw2" name="npw2" style="width: 140px;" value="<?php echo f_e($this->error['npw2']); ?>" />
+      <div style="float:right; width: 290px;"><?php echo $this->error['enpw2']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="data">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><button type="submit">　　O　K　　</button><?php if ($this->mode == 2) { ?>　<input type="button" value="　キャンセル　" onclick="location.href='index/index'" /><?php } ?></td>
+  </tr>
+</table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe( window, "load", function(evt) {
+  Event.observe( $("login_form"), "submit", function(evt) {
+    if( $("npw1").value.trim().length == 0 ) {
+      alert( "パスワードを空にすることはできません。" );
+      Event.stop( evt );
+      return;
+    }
+  }.bindAsEventListener( $("login_form") ) );
+}.bindAsEventListener( window ) );
+</script>
+</html>

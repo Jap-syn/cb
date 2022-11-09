@@ -1,0 +1,49 @@
+* {
+    margin: 0px;
+    margin-left: 0px;
+}
+
+/* general */
+body {
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
+    font-family: migu-1p-regular, sans-serif;
+}
+
+span {
+    display: block;
+    position: absolute;
+}
+
+.r_data {
+    text-align: right;
+}
+
+.l_data {
+    text-align: left;
+}
+
+.c_data {
+    text-align: center;
+}
+
+.wb {
+    word-wrap: break-word;
+/*    word-break: break-all; */
+    overflow: hidden;
+}
+
+.strcut {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ocra {
+    font-family: ocra, migu-1p-regular, sans-serif;
+}
+
+.ocrb {
+    font-family: ocrb, migu-1p-regular, sans-serif;
+}

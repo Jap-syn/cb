@@ -1,0 +1,54 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/operator/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>オペレーター登録完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">ID</td>
+    <td class="data"><?php echo f_e($this->data["OpId"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">ログインID</td>
+    <td class="data"><?php echo f_e($this->data["LoginId"]); ?></td>
+  </tr>
+  <?php if( isset($this->data['GeneratedPassword']) ) { ?>
+  <tr>
+    <td class="label">パスワード</td>
+    <td class="data"><?php echo f_e($this->data["GeneratedPassword"]); ?></td>
+  </tr>
+  <?php } ?>
+  <tr>
+    <td class="label">氏名</td>
+    <td class="data"><?php echo f_e($this->data["NameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">氏名カナ</td>
+    <td class="data"><?php echo f_e($this->data["NameKn"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">所属</td>
+    <td class="data"><?php echo f_e($this->data["Division"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">権限</td>
+    <td class="data"><?php echo f_e($this->data["RoleCodeName"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">有効／無効</td>
+    <td class="data"><?php echo ($this->data["ValidFlg"] == 1) ? '有効' : '無効'; ?></td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

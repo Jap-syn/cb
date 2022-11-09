@@ -1,0 +1,105 @@
+/* OEM毎の設定 */
+#header_logo {
+    width:140px;
+    height: 25px;
+    margin-top: 20px;
+    margin-left: 10px;
+    //background: url('../images/oemcom.png');
+    //background-repeat: no-repeat;
+}
+div#footer:after {
+    content: "Copyright(C) 2014 By Oem.";
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    line-height: 1;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+}
+html {
+    font-family: arial, sans-serif;
+    color: #333;
+    background-color: whitesmoke;
+}
+#logincontents {
+    margin: 150px auto;
+}
+#frame {
+    height: 335px;
+    width: 400px;
+    position: absolute;
+    overflow: auto;
+    top: 50%;
+    left: 50%;
+    margin-top: -250px;
+    margin-left: -200px;
+    border-top: 5px coral solid;
+    border-bottom: 5px coral solid;
+    border-left: 1px coral solid;
+    border-right: 1px coral solid;
+    border-radius: 10px;
+    background-color: white;
+}
+#frame img{
+    //margin: 20px 0 0 15px;
+}
+#loginheadertitle {
+    width: 80%;
+    margin: 20px auto;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: coral;
+    font-size: 90%;
+    font-weight: bold;
+    text-align: center;
+}
+.title {
+    margin: 25px 0 0 20px;
+}
+.login_param {
+    background-color: white;
+    width: 300px;
+    height: 30px;
+    margin: 5px 0 0 45px;
+    font-size: 150%;
+    padding-left: 5px;
+    border: 1px grey solid;
+    border-radius: 5px;
+}
+.login_focused_param {
+    background-color: lightgoldenrodyellow;
+}
+#loginbutton {
+    width: 100%;
+    margin-top: 30px;
+    text-align: center;
+
+}
+#loginbutton input {
+    border: 2px coral solid;
+    border-radius: 5px;
+    background-color: lightgray;
+    padding: 5px 20px;
+    font-weight: bold;
+}
+#loginbutton input:hover {
+    color: white;
+    background-color: gray;
+}
+#loginfooter {
+    height: 15px;
+    width: 400px;
+    position: absolute;
+    overflow: auto;
+    top: 50%;
+    left: 50%;
+    margin-top: 97px;
+    margin-left: -200px;
+    font-size: 80%;
+    text-align: right;
+}

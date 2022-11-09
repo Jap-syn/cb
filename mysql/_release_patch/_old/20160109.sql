@@ -1,0 +1,1 @@
+ALTER TABLE T_ClaimHistory ADD COLUMN `MailRetryCount` TINYINT NOT NULL DEFAULT 0 AFTER `PrintedStatus`;

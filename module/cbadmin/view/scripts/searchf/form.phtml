@@ -1,0 +1,228 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searchf/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">不払検索</h3>
+    <form name="form" method="post" action="searchf/search">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th>項目</th>
+          <th>指定値</th>
+          <th>項目補足</th>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【基本情報】</td>
+        </tr>
+        <tr>
+          <td class="r_label">注文ID</td>
+          <td class="l_data"><input type="text" name="OrderId" id="OrderId" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">注文日</td>
+          <td class="l_data"><input type="text" name="OrderDateF" id="OrderDateF" />～<input type="text" name="OrderDateT" id="OrderDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">注文登録日</td>
+          <td class="l_data"><input type="text" name="RegistDateF" id="RegistDateF" />～<input type="text" name="RegistDateT" id="RegistDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">役務提供予定日</td>
+          <td class="l_data"><input type="text" name="ServiceExpectedDateF" id="ServiceExpectedDateF" />～<input type="text" name="ServiceExpectedDateT" id="ServiceExpectedDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【請求先・配送先】</td>
+        </tr>
+        <tr>
+          <td class="r_label">氏名</td>
+          <td class="l_data"><input type="text" size="50" name="NameKj" id="NameKj" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">氏名カナ</td>
+          <td class="l_data"><input type="text" size="50" name="NameKn" id="NameKn" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">住所</td>
+          <td class="l_data"><input type="text" size="50" name="Address" id="Address" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">電話番号</td>
+          <td class="l_data"><input type="text" name="Phone" id="Phone" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data"><input type="text" size="50" name="MailAddress" id="MailAddress" /></td>
+          <td class="l_data">部分一致検索（請求先のみ）</td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店顧客番号</td>
+          <td class="l_data"><input type="text" size="50" name="EntCustId" id="EntCustId" /></td>
+          <td class="l_data">部分一致検索（請求先のみ）</td>
+        </tr>
+        <tr>
+          <td class="r_label">顧客ステータス</td>
+          <td class="l_data"><?php echo $this->custStsTag; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【金額】</td>
+        </tr>
+        <tr>
+          <td class="r_label">利用金額</td>
+          <td class="l_data"><input type="text" name="UseAmountF" id="UseAmountF" />～<input type="text" name="UseAmountT" id="UseAmountT" /></td>
+          <td class="l_data">以上、以下で入力（以下未入力は以上と＝）</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【OEM】</td>
+        </tr>
+        <tr>
+          <td class="r_label">OEM先</td>
+          <td class="l_data"><?php echo $this->oemTag; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【事業者】</td>
+        </tr>
+        <tr>
+          <td class="r_label">事業者名</td>
+          <td class="l_data"><input type="text" size="50" name="EnterpriseNameKj" id="EnterpriseNameKj" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">事業者ID</td>
+          <td class="l_data"><input type="text" size="20" name="LoginId" id="LoginId" /></td>
+          <td class="l_data">完全一致</td>
+        </tr>
+        <tr>
+          <td class="r_label">サイト名</td>
+          <td class="l_data"><input type="text" size="50" name="SiteName" id="SiteName" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">サイトID</td>
+          <td class="l_data"><input type="text" size="20" name="SiteId" id="SiteId" /></td>
+          <td class="l_data">完全一致</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求代行プラン</td>
+          <td class="l_data"><?php echo $this->BillingAgentStsTag; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【請求書発行】</td>
+        </tr>
+        <tr>
+          <td class="r_label">初回支払期限</td>
+          <td class="l_data"><input type="text" name="LimitDateF" id="LimitDateF" />～<input type="text" name="LimitDateT" id="LimitDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【入金】</td>
+        </tr>
+        <tr>
+          <td class="r_label">入金有無</td>
+          <td class="l_data"><input type="checkbox" name="IsReceipt" id="IsReceipt" />入金済みのものも含む</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">入金日</td>
+          <td class="l_data"><input type="text" name="ReceiptDateF" id="ReceiptDateF" />～<input type="text" name="ReceiptDateT" id="ReceiptDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">入金遅れ日数</td>
+          <td class="l_data"><input type="text" name="ReceiptPastDaysF" id="ReceiptPastDaysF" />～<input type="text" name="ReceiptPastDaysT" id="ReceiptPastDaysT" /></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【不払管理項目】</td>
+        </tr>
+        <tr>
+          <td class="r_label">超過日数</td>
+          <td class="l_data"><input type="text" name="PastDaysF" id="PastDaysF" />～<input type="text" name="PastDaysT" id="PastDaysT" /></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">督促分類</td>
+          <td class="l_data"><?php echo $this->custom['RemindClassTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">支払約束日</td>
+          <td class="l_data"><input type="text" name="PromPayDateF" id="PromPayDateF" />～<input type="text" name="PromPayDateT" id="PromPayDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力</td>
+        </tr>
+        <tr>
+          <td class="r_label">TEL有効</td>
+          <td class="l_data"><?php echo $this->custom['ValidTelTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">住所有効</td>
+          <td class="l_data"><?php echo $this->custom['ValidAddressTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">メール有効</td>
+          <td class="l_data"><?php echo $this->custom['ValidMailTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">請求ストップ</td>
+          <td class="l_data"><?php echo $this->custom['ClaimStopTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">訪問済</td>
+          <td class="l_data"><?php echo $this->custom['VisitFlgTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">架電</td>
+          <td class="l_data"><?php echo $this->custom['CalledTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">最終回収手段</td>
+          <td class="l_data"><?php echo $this->custom['FinalityCollectionMeanTag']; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_label">【その他】</td>
+        </tr>
+        <tr>
+          <td class="r_label">備考</td>
+          <td class="l_data"><input type="text" size="50" name="Note" id="Note" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="c_label"><input type="submit" name="search_button" id="search_button" value="　検　索　" />
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

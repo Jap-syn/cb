@@ -1,0 +1,346 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+h3#content-title.loading {
+	color: #444;
+	border-left-color: darkgoldenrod;
+	background-color: #ffd030;
+}
+#thread-count {
+	margin: 5px 25px;
+	padding: 5px;
+	padding-left: 10px;
+	border: solid 1px silver;
+    font-size: 14px;
+    line-height: 14px;
+    height: 14px;
+}
+
+table#thread-table tr.odd {
+	background-color: azure;
+}
+table#thread-table tr.even {
+	background-color: white;
+}
+table#thread-table td {
+	padding: 4px 2px;
+	font-size: 13px;
+	line-height: 1.25;
+}
+table#thread-table tr.notice td,
+table#thread-table tr.warn td {
+	font-weight: bold;
+}
+table#thread-table tr.warn td {
+	color: firebrick;
+}
+#thread-list .col_thread_id,
+#thread-list .col_time {
+	text-align: right;
+}
+#thread-list .col_cmd {
+	text-align: center;
+}
+#thread-list .col_cmd button {
+	padding: 2px 6px;
+}
+#console {
+	margin: 5px 25px;
+	margin-top: 0px;
+	font-size: 13px;
+	height: 150px;
+	padding: 0;
+	overflow: auto;
+	border: solid 1px silver;
+}
+#console .log {
+	white-space: nowrap;
+	padding: 1px;
+	border: dotted 1px silver;
+	line-height: 16px;
+}
+#console .log.error {
+	background-color: mistyrose;
+	color: firebrick;
+	font-weight: bold;
+	line-height: 14px;
+}
+
+a.custom-button {
+	display: inline-block;
+	border: solid 1px silver;
+	padding: 0px 16px;
+	color: dimgray;
+}
+a.custom-button:hover {
+	text-decoration: none;
+	background-color: azure;
+	color: blue;
+}
+#toggle-slowlog-visible {
+	float: right;
+	position: relative;
+	margin-right: 8px;
+}
+#thread-list .clickable {
+	cursor: pointer;
+}
+
+#release-non-lock-all {
+    float: right;
+    font-size: 14px;
+    line-height: 17px;
+    margin-top: -3px;
+    margin-right: -16px;
+}
+.clear-float {
+    display: block;
+    height: 0;
+    font-size: 0;
+    line-height: 0;
+    border: none 0;
+    float: none;
+    clear: both;
+}
+</style>
+<script type="text/javascript">
+window.pollingTimer = null;
+window.pollingStepTimer = null;
+window.pollingInterval = 5000;
+
+var Application = {
+	baseUrl : (document.getElementsByTagName('base')[0] || { href : '' }).href,
+
+	// nvl ユーティリティ
+	nvl : function (data, if_null) {
+		if (if_null == null) if_null = '';
+		return data === null ? if_null : data;
+	},
+
+	// パス結合ユーティリティ
+	buildPath : function (path1, path2) {
+		return [Application.nvl(path1).replace(/[\/]*$/, ''), Application.nvl(path2).replace(/^[\/]*/, '')].join('/');
+	},
+
+	// AjaxリクエストURL構築ユーティリティ
+	buildAppPath : function (path) {
+		return Application.buildPath(Application.baseUrl, Application.nvl(path));
+	}
+
+};
+
+Event.observe(window, 'load', function() {
+    window.isRequesting = false;
+	Ajax.Responders.register({
+		onCreate : function() {
+			new Element.ClassNames($('content-title')).add('loading');
+		},
+		onComplete : function() {
+			new Element.ClassNames($('content-title')).remove('loading');
+		}
+	});
+
+    Event.observe($('release-non-lock-all'), 'click', function(evt) {
+        if(this.disabled) return;
+        this.disabled = true;
+        this.style.visibility = 'hidden';
+        setTimeout(releaseNonLockOrders, 0);
+    }.bindAsEventListener($('release-non-lock-all')));
+
+    fetchOrderList();
+	setInterval(fetchOrderList, 10000);
+});
+// プロセスリストを非同期取得し表示を更新する
+function fetchOrderList() {
+    if(window.isRequesting) {
+        setTimeout(fetchOrderList, 100);
+        log('fetchOrderList delayed');
+        return;
+    }
+	window.isRequesting = true;
+    log('fetchOrderList begin');
+    var terminate = function() {
+        window.isRequesting = false;
+        log('fetchOrderList end');
+    };
+    new Ajax.Request(Application.buildAppPath('api/getapiorders'), {
+        method : 'get',
+        asynchronous : true,
+        onComplete : function(xhr) {
+            terminate();
+            var data = xhr.responseText.parseJSON();
+            if(!data) {
+                throw new Error('invalid data');
+            }
+
+            $('thread-list').innerHTML = '';
+            $('thread-count').innerHTML = '{0:0} 件'.format(data.length).escapeHTML();
+            var hasNonLock = false;
+            $('release-non-lock-all').disabled = true;
+            $('release-non-lock-all').style.visibility = 'hidden';
+            data.each(function(item, idx) {
+                if(item.ThreadId == null && item.ProcessTime >= 30) hasNonLock = true;
+
+                var
+                    d = document,
+                    ex = Object.extend,
+                    tr = ex(d.createElement('tr'), { className : idx % 2 ? 'odd' : 'even' }),
+                    createCol = function(text, href, target) {
+                        var
+                            col = d.createElement('td'),
+                            textItem = { innerHTML : String(Application.nvl(text)).escapeHTML() };
+                        if(href) {
+                            var a = ex(d.createElement('a'), ex(textItem, { href : href }));
+                            if(target) a.target = target;
+                            col.appendChild(a);
+                            return col;
+                        } else {
+                            return ex(col, textItem);
+                        }
+                    };
+                tr.appendChild(createCol(item.OrderId, Application.buildAppPath('rworder/detail/oseq/{0}'.format(item.OrderSeq)), '_blank'));
+                tr.appendChild(createCol('{0:0} sec'.format(Number(item.ProcessTime))));
+                tr.appendChild(createCol((function(v) {
+                    var map = {
+                        11 : '与信実行待ち',
+                        12 : 'ﾘｱﾙﾀｲﾑ与信実行待ち',
+                        15 : '社内与信確定待ち',
+                        21 : '社内与信保留',
+                        31 : '伝票登録待ち',
+                        41 : '請求書印刷待ち',
+                        51 : '入金確認待ち',
+                        61 : '一部入金',
+                        91 : 'クローズ'
+                    };
+                    return ['[{0}] '.format(v), map[v] || ''].join('');
+                })(item.DataStatus)));
+                tr.appendChild(createCol((function(v) {
+                    if(v == null) return 'ロックなし';
+                    return '{0} (id: {1})'.format(v ? 'ロック中' : 'ロック待ち', item.ThreadId);
+                })(item.Status)));
+                if((item.DataStatus != 12 && item.ProcessTime >= 30) || item.ProcessTime >= 60) {
+                    tr.appendChild(createCol((function() {
+                        var parts = [];
+                        if(item.DataStatus == 12) parts.push('与信再試行');
+                        if(item.Status !== null) parts.push('ロック解除');
+                        return parts.join('・');
+                    })(), 'javascript:doUnlock({0})'.format(Number(item.OrderSeq))));
+                } else {
+                    tr.appendChild(createCol(' '));
+                }
+                $('thread-list').appendChild(tr);
+            });
+            $('release-non-lock-all').disabled = !hasNonLock;
+            $('release-non-lock-all').style.visibility = hasNonLock ? '' : 'hidden';
+        },
+        onException : function(ajax, err) {
+            terminate();
+            // 処理エラー時
+            log(err);
+        }
+    });
+}
+function log() {
+    if(('console' in window) && ('log' in window.console)) {
+        window.console.log.apply(window.console, $A(arguments));
+    }
+}
+function doUnlock(item) {
+    // 他のリクエストが完了していない場合は先送り
+    if(window.isRequesting) {
+        setTimeout(function() {
+            log('doUnlock delayed', item);
+            doUnlock(item);
+        }, 100);
+        return;
+    }
+
+	window.isRequesting = true;
+    log('doUnlock begin', item);
+    var
+        url = Application.buildAppPath('api/releaseapiorder/oseq/{0}'.format(item)),
+        terminate = function() {
+            window.isRequesting = false;
+            log('doUnlock end');
+        };
+    new Ajax.Request(url, {
+        method : 'get',
+        onComplete : function(xhr) {
+            terminate();
+            var data = xhr.responseText.parseJSON();
+            if(data) {
+                log(data);
+            } else {
+                log('oops !!');
+            }
+            setTimeout(fetchOrderList, 0);
+        }
+    });
+}
+function releaseNonLockOrders() {
+    // 他のリクエストが完了していない場合は先送り
+    if(window.isRequesting) {
+        setTimeout(releaseNonLockOrders, 100);
+        return;
+    }
+	window.isRequesting = true;
+    log('releaseNonLockOrders begin');
+    var
+        url = Application.buildAppPath('api/rollbackapiorders'),
+        terminate = function() {
+            window.isRequesting = false;
+            log('releaseNonLockOrders end');
+        };
+    new Ajax.Request(url, {
+        method : 'get',
+        onComplete : function(xhr) {
+            terminate();
+            var data = xhr.responseText.parseJSON();
+            if(data) {
+                log(data);
+            } else {
+                log('oops !!');
+            }
+            setTimeout(fetchOrderList, 0);
+        }
+    });
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/dbstatus/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 id="content-title" class="contents_title">
+        処理中API注文登録一覧
+        <button id="release-non-lock-all" type="button">ロックなし注文をすべて与信再試行</button>
+        <div class="clear-float"></div>
+    </h3>
+
+    <div id="thread-count"></div>
+	<div style="min-height: 400px">
+		<table id="thread-table" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th style="width: 62px">注文ID</th>
+					<th style="width: 50px">実行時間</th>
+					<th style="width: 80px">注文状態</th>
+                    <th style="width: 80px">与信状態</th>
+					<th style="width: 100px">操作</th>
+				</tr>
+			</thead>
+			<tbody id="thread-list"></tbody>
+		</table>
+	</div>
+	<hr />
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

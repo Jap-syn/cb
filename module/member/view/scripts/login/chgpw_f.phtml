@@ -1,0 +1,78 @@
+<?php
+
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+?>
+<div id="header_menu" class="header_menu" style="line-height:100%">
+    <h3>
+        <a id="logout_menu" href="login/logout" style="line-height:100%">⇒ログアウト</a>
+    </h3>
+</div>
+
+<div class="page_title">パスワード変更　
+</div>
+
+
+<div class="main_contents">
+
+</br>
+<font color="red">　<?php echo f_e($this->msg); ?></font>
+</br></br>
+<center>
+<form name="form" method="POST" action="login/chgpw/cmd/e">
+<table width="900" cellpadding="5" cellspacing="0" border="1">
+  <tr>
+    <td width="435" align="right">現在のパスワード</td>
+    <td>
+      <input type="password" id="opw" name="opw" style="width: 140px;" value="<?php echo f_e($this->error['opw']); ?>" />
+      <div style="float:right;width: 290px;"><?php echo $this->error['eopw']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="right">新しいパスワード</td>
+    <td>
+      <input type="password" id="npw1" name="npw1" style="width: 140px;" value="<?php echo f_e($this->error['npw1']); ?>" />
+      <div style="float:right;width: 290px;"><?php echo $this->error['enpw1']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>  <tr>
+    <td align="right">新しいパスワード（確認）</td>
+    <td>
+      <input type="password" id="npw2" name="npw2" style="width: 140px;" value="<?php echo f_e($this->error['npw2']); ?>" />
+      <div style="float:right; width: 290px;"><?php echo $this->error['enpw2']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+</table>
+</br>
+<button type="submit" disabled="disabled">　　O　K　　</button>
+<?php if ($this->mode == 2) { ?>　<button type="button" onclick="location.href='index/index'">キャンセル</button><?php } ?>
+</form>
+</center>
+</div>
+</br>
+<?php
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+
+</html>
+

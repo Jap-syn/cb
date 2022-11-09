@@ -1,0 +1,197 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$fd = $this->data;
+function show_error_message($messages) {
+	if( empty($messages) ) return;
+	if( ! is_array($messages) ) $messages = array($messages);
+	$list = array();
+	foreach($messages as $msg) $list[] = f_e($msg);
+	echo '<div class="input_error_message">';
+	echo join('<br />', $list);
+	echo '</div>';
+}
+
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+</style>
+</head>
+<body onLoad="javascript:changeFixPattern(); changeLimitDatePattern(); ">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>返金指示入力</h3>
+<form name="form" method="post" action="rwsprcpt/repaysave">
+  <input name="form[oseq]" id="oseq" type="hidden" value="<?php echo f_e($fd['oseq']); ?>" />
+
+  <!-- 事業者情報 -->
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <th>項目</th>
+      <th>指定値</th>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【入金状況】</td>
+    </tr>
+    <tr>
+      <td class="label" width="200">注文ID</td>
+      <td class="data"><?php echo $this->row['OrderId']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">初回期限</td>
+      <td class="data"><?php echo $this->row['F_LimitDate']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">最終請求</td>
+      <td class="data"><?php echo $this->row['ClaimDate']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">支払期限</td>
+      <td class="data"><?php echo $this->row['LimitDate']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求回</td>
+      <td class="data"><?php echo $this->row['ClaimCaption']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">属性</td>
+      <td class="data"><?php echo $this->row['IncreCaption']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求先氏名</td>
+      <td class="data"><?php echo $this->row['NameKj']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求先住所</td>
+      <td class="data"><?php echo $this->row['UnitingAddress']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">元金額</td>
+      <td class="data"><?php echo f_nf($this->row['UseAmount'], '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">請求金額</td>
+      <td class="data"><?php echo f_nf($this->row['ClaimAmount'], '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">入金形態</td>
+      <td class="data"><?php echo $this->row['ReceiptClass']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">入金日</td>
+      <td class="data"><?php echo $this->row['ReceiptDate']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">実入金額</td>
+      <td class="data"><?php echo f_nf($this->row['ReceiptAmount'], '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">比較回</td>
+      <td class="data"><?php echo $this->row['ClaimPattern']; ?></td>
+    </tr>
+    <tr>
+      <td class="label">比較金額</td>
+      <td class="data"><?php echo f_nf($this->row['MinClaimAmount'], '#,##0'); ?></td>
+    </tr>
+    <tr>
+      <td class="label">過剰金</td>
+      <td class="data"><?php echo f_nf((-1) * $this->row['ClaimedBalance'], '#,##0'); ?></td>
+    </tr>
+
+    <tr>
+      <td colspan="2" class="data">【入金口座】</td>
+    </tr>
+    <tr>
+      <td class="label">処理方法<font color="red">*</font></td>
+      <td class="l_data">
+		  <span class="radio_set">
+		  <?php foreach($this->master_map['RcptMethod'] as $value => $caption) { ?>
+			<label for="RcptMethod<?php echo f_e($value); ?>">
+			  <?php $checked = $fd['RcptMethod'] == $value ? ' checked="checked"' : ''; ?>
+			  <input name="form[RcptMethod]" id="RcptMethod<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+			  <?php echo f_e($caption); ?>
+			</label>
+		  <?php } ?>
+		  </span>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">金融機関</td>
+      <td class="data">
+        銀行名<input size="30" name="form[FfName]" type="text" id="FfName" value="<?php echo f_e($fd['FfName']); ?>" />　
+        銀行番号<input size="10" name="form[FfCode]" type="text" id="FfCode" value="<?php echo f_e($fd['FfCode']); ?>" /><br />
+        支店名<input size="30" name="form[FfBranchName]" type="text" id="FfBranchName" value="<?php echo f_e($fd['FfBranchName']); ?>" />　
+        支店番号<input size="10" name="form[FfBranchCode]" type="text" id="FfBranchCode" value="<?php echo f_e($fd['FfBranchCode']); ?>" /><br />
+        口座種別
+		  <span class="radio_set">
+		  <?php foreach($this->master_map['FfAccountClass'] as $value => $caption) { ?>
+			<label for="FfAccountClass<?php echo f_e($value); ?>">
+			  <?php $checked = $fd['FfAccountClass'] == $value ? ' checked="checked"' : ''; ?>
+			  <input name="form[FfAccountClass]" id="FfAccountClass<?php echo f_e($value); ?>" type="radio" value="<?php echo f_e($value); ?>"<?php echo $checked; ?> />
+			  <?php echo f_e($caption); ?>
+			</label>
+		  <?php } ?>
+		  </span><br />
+        口座番号<input name="form[FfAccountNumber]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountNumber']); ?>" /><br />
+        口座名義<input size="30" name="form[FfAccountName]" type="text" id="FfAccountNumber" value="<?php echo f_e($fd['FfAccountName']); ?>" />
+        <?php show_error_message($this->error['FfName']); ?>
+        <?php show_error_message($this->error['FfCode']); ?>
+        <?php show_error_message($this->error['FfBranchName']); ?>
+        <?php show_error_message($this->error['FfBranchCode']); ?>
+        <?php show_error_message($this->error['FfAccountClass']); ?>
+        <?php show_error_message($this->error['FfAccountNumber']); ?>
+        <?php show_error_message($this->error['FfAccountName']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">振込手数料</td>
+      <td class="data">
+		<select id="TcClass" name="form[TcClass]" value="<?php echo f_e($fd['TcClass']); ?>">
+		<?php foreach($this->master_map['TcClass'] as $value => $caption) { ?>
+		  <?php $selected = $fd['TcClass'] == $value ? ' selected="selected"' : ''; ?>
+		  <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+		<?php } ?>
+		</select>
+        <?php show_error_message($this->error['TcClass']); ?>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="data">【返金情報】</td>
+    </tr>
+    <tr>
+      <td class="label">振込金額<font color="red">*</font></td>
+      <td class="data"><input name="form[paymentAmount]" type="text" id="paymentAmount" value="<?php echo f_e($fd['paymentAmount']); ?>" />　※振込み金額を入力します
+      <?php show_error_message($this->error['paymentAmount']); ?></td>
+    </tr>
+    <tr>
+      <td class="label">返金予定日<font color="red">*</font></td>
+      <td class="data"><input name="form[repayExpectedDate]" type="text" id="repayExpectedDate" value="<?php echo f_e($fd['repayExpectedDate']); ?>" />　※YYYY-MM-DD形式で入力します
+      <?php show_error_message($this->error['repayExpectedDate']); ?></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td style="padding: 2px 0px">
+        <input type="submit" id="btnSave" value="　登　録　" />
+		&nbsp;
+		<input type="button" id="btnClose" value="　　閉じる　　" onclick="window.close();" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

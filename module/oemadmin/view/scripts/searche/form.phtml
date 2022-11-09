@@ -1,0 +1,213 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+
+</head>
+<body>
+    <!-- start contents -->
+    <div id="contents">
+        <?php echo $this->render('oemadmin/page_header.php'); ?>
+        <?php echo $this->render('oemadmin/searche/page_menu.php'); ?>
+        <div class="title"><span>事業者検索</span></div>
+        <form name="form" method="post" action="searche/search">
+            <table class="datatable clear">
+                <tr>
+                    <th>項目</th>
+                    <th>指定値</th>
+                    <th>項目補足</th>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【基本情報】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者ID</td>
+                    <td class="l_data"><input type="text" name="LoginId" id="LoginId" /></td>
+                    <td class="l_data">後方一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者名</td>
+                    <td class="l_data"><input type="text" size="50" name="EnterpriseNameKj" id="EnterpriseNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">事業者名カナ</td>
+                    <td class="l_data"><input type="text" size="50" name="EnterpriseNameKn" id="EnterpriseNameKn" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">所在地</td>
+                    <td class="l_data"><input type="text" size="50" name="UnitingAddress" id="UnitingAddress" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">代表者氏名</td>
+                    <td class="l_data"><input type="text" size="50" name="RepNameKj" id="RepNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">代表者氏名カナ</td>
+                    <td class="l_data"><input type="text" size="50" name="RepNameKn" id="RepNameKn" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">推定月商</td>
+                    <td class="l_data"><?php echo $this->preSalesTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">業種</td>
+                    <td class="l_data"><?php echo $this->industryTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【連絡先情報】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">担当者氏名</td>
+                    <td class="l_data"><input type="text" size="50" name="CpNameKj" id="CpNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">担当者氏名カナ</td>
+                    <td class="l_data"><input type="text" size="50" name="CpNameKn" id="CpNameKn" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">部署名</td>
+                    <td class="l_data"><input type="text" size="50" name="DivisionName" id="DivisionName" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">電話番号</td>
+                    <td class="l_data"><input type="text" size="50" name="ContactPhoneNumber" id="ContactPhoneNumber" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">メールアドレス</td>
+                    <td class="l_data"><input type="text" size="50" name="MailAddress" id="MailAddress" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【サイト情報】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">サイト名</td>
+                    <td class="l_data"><input type="text" size="50" name="SiteNameKj" id="SiteNameKj" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">URL</td>
+                    <td class="l_data"><input type="text" size="50" name="Url" id="Url" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">形態</td>
+                    <td class="l_data"><?php echo $this->siteFormTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【審査状況】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">お申込み日</td>
+                    <td class="l_data"><input type="text" name="ApplicationDateF" id="ApplicationDateF" />～<input type="text" name="ApplicationDateT" id="ApplicationDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">書類審査</td>
+                    <td class="l_data"><?php echo $this->docCollectSelectTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">審査結果</td>
+                    <td class="l_data"><?php echo $this->examinationResultSelectTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">サービス開始日</td>
+                    <td class="l_data"><input type="text" name="ServiceInDateF" id="ServiceInDateF" />～<input type="text" name="ServiceInDateT" id="ServiceInDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">掲載確認日</td>
+                    <td class="l_data"><input type="text" name="PublishingConfirmDateF" id="PublishingConfirmDateF" />～<input type="text" name="PublishingConfirmDateT" id="PublishingConfirmT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【サービス内容】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">ご利用プラン</td>
+                    <td class="l_data"><?php echo $this->planTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">月額固定費</td>
+                    <td class="l_data"><input type="text" name="MonthlyFeeF" id="MonthlyFeeF" />～<input type="text" name="MonthlyFeeT" id="MonthlyFeeT" /></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">決済手数料率</td>
+                    <td class="l_data"><input type="text" name="SettlementFeeRateF" id="SettlementFeeRateF" />～<input type="text" name="SettlementFeeRateT" id="SettlementFeeRateT" /></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">請求手数料</td>
+                    <td class="l_data"><input type="text" name="ClaimFeeF" id="ClaimFeeF" />～<input type="text" name="ClaimFeeT" id="ClaimFeeT" /></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">締め日パターン</td>
+                    <td class="l_data"><?php echo $this->fixPatternTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td class="r_label">営業担当</td>
+                    <td class="l_data"><input type="text" size="50" name="Salesman" id="Salesman" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【入金口座】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">金融機関名</td>
+                    <td class="l_data"><input type="text" size="50" name="FfName" id="FfName" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">口座番号</td>
+                    <td class="l_data"><input type="text" name="FfAccountNumber" id="FfAccountNumber" /></td>
+                    <td class="l_data">完全一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">振込手数料</td>
+                    <td class="l_data"><?php echo $this->tcClassTag; ?></td>
+                    <td class="l_data"></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="l_label">【その他】</td>
+                </tr>
+                <tr>
+                    <td class="r_label">備考</td>
+                    <td class="l_data"><input type="text" size="50" name="Note" id="Note" /></td>
+                    <td class="l_data">部分一致検索</td>
+                </tr>
+                <tr>
+                    <td class="r_label">登録日</td>
+                    <td class="l_data"><input type="text" name="RegistDateF" id="RegistDateF" />～<input type="text" name="RegistDateT" id="RegistDateT" /></td>
+                    <td class="l_data">YYYY-MM-DD形式で入力</td>
+                </tr>
+                <tr>
+                    <td class="r_label">繰り越し残</td>
+                    <td class="l_data"><input type="text" name="RemCarryOver" id="RemCarryOver" />以下</td>
+                    <td class="l_data">入力時のみ絞り込み</td>
+                </tr>
+            </table>
+            <div class="btncontents"><input type="submit" class="default_btn" value="検　索" /></div>
+        </form>
+        <?php echo $this->render('oemadmin/page_footer.php'); ?>
+    </div>
+    <!-- end contents -->
+</body>
+</html>

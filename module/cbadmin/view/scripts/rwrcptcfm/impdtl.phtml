@@ -1,0 +1,139 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+body.atpay #wrapper,
+-->
+</style>
+</head>
+<body class="atpay">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">詳細入金インポート</h3>
+    <h4><?php echo $this->message; ?></h4>
+
+      <!-- ■サマリー(例外発生なし＆入金エラーデータなし＆サマリーあり時に表示)■- -->
+      <!-- count関数対策 -->
+      <?php if (!isset($this->isException) && empty($this->edata) && isset($this->summary)) { ?>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>支払方法</th>
+            <th>取込件数</th>
+            <th>支払金額総計</th>
+            <th>請求金額総計</th>
+            <th>差額総計</th>
+          </tr>
+          <?php foreach ($this->summary as $key => $classSummary) { ?>
+          <tr>
+            <td class="l_data"><?php if ($key == 1) echo 'コンビニ'; else if ($key == 2) echo '郵振'; else if ($key == 3) echo '銀行'; else if ($key == 9) echo 'その他'; ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['recordCount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['paymentAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['claimAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($classSummary['sagakuAmount'], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+
+      <!-- ■過不足入金データ(例外発生なし＆インフォメーションデータあり時に表示)■- -->
+      <!-- count関数対策 -->
+      <?php if (!isset($this->isException) && !empty($this->idata)) { ?>
+      <p>過不足入金データ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>行</th>
+            <th>注文ID</th>
+            <th>入金元</th>
+            <th>入金方法</th>
+            <th>詳細入金方法</th>
+            <th>入金日</th>
+            <th>入金予定日</th>
+            <th>実入金額</th>
+            <th>過不足金</th>
+            <th> </th>
+          </tr>
+          <?php
+          // count関数対策
+            $idataCount = 0;
+            if (!empty($this->idata)) {
+            $idataCount = count($this->idata);
+            }
+            for ($i = 0 ; $i < $idataCount ; $i++) { ?>
+          <tr>
+            <td class="c_data" width="35" ><?php echo $this->idata[$i]['LineNumber']; ?></td>
+            <td class="c_data" width="70" ><?php echo $this->idata[$i]['DataRow'][0]; ?></td>
+            <td class="l_data" width="70" ><?php echo $this->idata[$i]['DataRow'][1]; ?></td>
+            <td class="l_data" width="60" ><?php echo $this->idata[$i]['DataRow'][2]; ?></td>
+            <td class="l_data" width="100"><?php echo $this->idata[$i]['DataRow'][3]; ?></td>
+            <td class="c_data" width="70" ><?php echo $this->idata[$i]['DataRow'][4]; ?></td>
+            <td class="c_data" width="70" ><?php echo $this->idata[$i]['DataRow'][5]; ?></td>
+            <td class="r_data" width="60" ><?php echo f_nf($this->idata[$i]['DataRow'][6], '#,##0'); ?></td>
+            <td class="r_data" width="60" ><?php echo f_nf($this->idata[$i]['ClaimedBalance'], '#,##0'); ?></td>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $this->idata[$i]['OrderSeq']; ?>">注文詳細へ</a></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+
+      <!-- ■入金エラーデータ(入金エラーデータあり時に表示 ※例外発生有無に依存しない)■- -->
+      <!-- count関数対策 -->
+      <?php if (!empty($this->edata)) { ?>
+      <p>入金エラーデータ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>行</th>
+            <th>注文ID</th>
+            <th>入金元</th>
+            <th>入金方法</th>
+            <th>詳細入金方法</th>
+            <th>入金日</th>
+            <th>入金予定日</th>
+            <th>実入金額</th>
+            <th>エラー</th>
+          </tr>
+          <?php
+          // count関数対策
+            $edataCount = count($this->edata);
+            for ($i = 0 ; $i < $edataCount ; $i++) { ?>
+          <tr>
+            <td class="c_data" width="35" ><?php echo $this->edata[$i]['LineNumber']; ?></td>
+            <td class="c_data" width="70" ><?php echo f_e($this->edata[$i]['DataRow'][0]); ?></td>
+            <td class="l_data" width="70" ><?php echo f_e($this->edata[$i]['DataRow'][1]); ?></td>
+            <td class="l_data" width="60" ><?php echo f_e($this->edata[$i]['DataRow'][2]); ?></td>
+            <td class="l_data" width="100"><?php echo f_e($this->edata[$i]['DataRow'][3]); ?></td>
+            <td class="c_data" width="70" ><?php echo f_e($this->edata[$i]['DataRow'][4]); ?></td>
+            <td class="c_data" width="70" ><?php echo f_e($this->edata[$i]['DataRow'][5]); ?></td>
+            <td class="r_data" width="60" ><?php echo f_e(f_nf($this->edata[$i]['DataRow'][6], '#,##0')); ?></td>
+            <td class="l_data">
+            <?php $j = 0; ?>
+            <?php foreach ($this->edata[$i]['ErrorInfo'] as $key => $value) { ?>
+            <?php     if ($j > 0) { ?><br/><?php } ?>
+            <?php     echo $value[0]; ?>
+            <?php     $j++; ?>
+            <?php } ?>
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

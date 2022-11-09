@@ -1,0 +1,205 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+use Coral\Base\BaseHtmlUtils;
+static $j = 0;
+?>
+</head>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3 class="contents_title">「<?php echo f_e($this->enterpriseNameKj) . '／' . f_e($this->siteNameKj); ?>」　代理店一覧</h3>
+      <form id="siteagencyform" action="site/agencyconfirm" method="post">
+        <table class="datatable" id="basetable" width="862" cellpadding="1" cellspacing="1" border="0">
+          <thead>
+            <tr>
+              <th>指示</th>
+              <th>代理店一覧</th>
+              <th>代理店手数料率</th>
+              <th>代理店手数料按分比率</th>
+              <th>月額固定費</th>
+            </tr>
+          </thead>
+          <tbody>
+            <input type="hidden" name="sid" id="sid" value="<?php echo f_e($this->sid); ?>">
+            <input type="hidden" name="eid" id="eid" value="<?php echo $this->eid; ?>">
+            <!-- count関数対策 -->
+          <?php if (!empty($this->list)) { ?>
+            <?php foreach ($this->list as $list) { ?>
+            <tr id="AgencyId_<?php echo $list['AgencyId']; ?>">
+              <td class="c_data" style="width:62px">
+                <input type="checkbox" name="item_delete_chk_<?php echo $list['AgencyId']; ?>">
+                <input type="button" id="item_delete_button" name="item_delete_button_<?php echo $list['AgencyId']; ?>" value="　削除　" onclick="deleteRow(this);" style="display: none; margin-left: 8px;">
+              </td>
+              <td class="c_data">
+                <select name="Agency_<?php echo $list['AgencyId']; ?>" id="Agency">
+                  <option value="-1">-----</option>
+                <?php foreach( $this->agencylist as $itemCode ) { ?>
+                  <option value="<?php echo $itemCode['AgencyId']; ?>"<?php if( $itemCode['AgencyId'] == $list['AgencyId'] ) { echo ' selected="selected"'; } ?>>
+                    <?php echo $itemCode['AgencyNameKj']; ?>
+                  </option>
+                <?php } ?>
+                </select>
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="AgencyFeeRate_<?php echo $list['AgencyId']; ?>" class="AgencyFeeRate" value="<?php echo $list['AgencyFeeRate']; ?>">％（小数点以下有効桁数:5桁）
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="AgencyDivideFeeRate_<?php echo $list['AgencyId']; ?>" class="AgencyDivideFeeRate" value="<?php echo $list['AgencyDivideFeeRate']; ?>">％（小数点以下有効桁数:5桁）
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="MonthlyFee_<?php echo $list['AgencyId']; ?>" class="MonthlyFee" value="<?php echo $list['MonthlyFee']; ?>">円
+              </td>
+            </tr>
+            <?php } ?>
+          <?php } else { ?>
+            <tr id="AgencyId_<?php echo $list['AgencyId']; ?>" style="display: none">
+              <td class="c_data" style="width:62px">
+                <input type="button" id="item_delete_button" name="item_delete_button_<?php echo $list['AgencyId']; ?>" value="　削除　" onclick="deleteRow(this);" style="margin-left: 8px;">
+              </td>
+              <td class="c_data">
+                <select name="Agency_<?php echo $list['AgencyId']; ?>" id="Agency">
+                  <option value="-1">-----</option>
+                <?php foreach( $this->agencylist as $itemCode ) { ?>
+                  <option value="<?php echo $itemCode['AgencyId']; ?>"<?php if( $itemCode['AgencyId'] == $list['ItemCode'] ) { echo ' selected="selected"'; } ?>>
+                    <?php echo $itemCode['AgencyNameKj']; ?>
+                  </option>
+                <?php } ?>
+                </select>
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="AgencyFeeRate_<?php echo $list['AgencyId']; ?>" class="AgencyFeeRate" value="<?php echo $list['AgencyFeeRate']; ?>">
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="AgencyDivideFeeRate_<?php echo $list['AgencyId']; ?>" class="AgencyDivideFeeRate" value="<?php echo $list['AgencyDivideFeeRate']; ?>">
+              </td>
+              <td class="l_data">
+                <input type="text" size="10" name="MonthlyFee_<?php echo $list['AgencyId']; ?>" class="MonthlyFee" value="<?php echo $list['MonthlyFee']; ?>">
+              </td>
+            </tr>
+          <?php } ?>
+            <tr class="data">
+              <td class="l_data" colspan="7">
+                <input type="button" id="btnAddRow" value="行追加" onclick="insertRow();">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table width="862" cellpadding="1" cellspacing="1" border="0" style="font-size: 12px">
+          <tr>
+            <td class="l_data" colspan="7" style="text-align: center">
+              <input type="button" id="btnUpdate" name="btnUpdate" value="　更新　">
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+  function insertRow() {
+    var table = document.getElementById( "basetable" );
+    var rows = table.rows.length;
+
+    // 前の行が新規追加行でない場合
+    var beforeRowId = table.rows[ rows - 2 ].id;
+    if (beforeRowId.match( /AgencyId/ ) != null || beforeRowId == null || beforeRowId == '') {
+        var name = "new_1";
+    } else {
+        var name = beforeRowId.replace( /\d+/, function( i ) { return ++i; } );
+    }
+
+    var row = table.insertRow(rows - 1);
+    row.id = name;
+
+    var button = document.getElementById("item_delete_button").cloneNode(true);
+    button.style.display = "block";
+    button.name = "item_delete_button_" + name;
+    var select = document.getElementById("Agency").cloneNode(true);
+    select.name = "Agency_" + name;
+
+    var text = document.createElement("input");
+    text.type = "text";
+    text.size = "10";
+    text.name = "AgencyFeeRate_" + name;
+    var label = document.createTextNode("％");
+    var label2 = document.createTextNode("（小数点以下有効桁数:5桁）");
+
+    var text2 = document.createElement("input");
+    text2.type = "text";
+    text2.size = "10";
+    text2.name = "AgencyDivideFeeRate_" + name;
+    var label3 = document.createTextNode("％");
+    var label4 = document.createTextNode("（小数点以下有効桁数:5桁）");
+
+    var text3 = document.createElement("input");
+    text3.type = "text";
+    text3.size = "10";
+    text3.name = "MonthlyFee_" + name;
+    var label5 = document.createTextNode("円");
+    var label6 = document.createTextNode("");
+
+    // 項目の削除
+    var cell0 = row.insertCell(0);
+    cell0.className = "c_data";
+    cell0.appendChild(button);
+
+    // 代理店一覧
+    var cell1 = row.insertCell(1);
+    cell1.className = "l_data";
+    cell1.appendChild(select);
+
+    // 代理店手数料率
+    var cell2 = row.insertCell(2);
+    cell2.className = "l_data";
+    cell2.appendChild(text);
+    cell2.appendChild(label);
+    cell2.appendChild(label2);
+
+    // 代理店手数料按分比率
+    var cell3 = row.insertCell(3);
+    cell3.className = "l_data";
+    cell3.appendChild(text2);
+    cell3.appendChild(label3);
+    cell3.appendChild(label4);
+
+    // 月額固定費
+    var cell4 = row.insertCell(4);
+    cell4.className = "l_data";
+    cell4.appendChild(text3);
+    cell4.appendChild(label5);
+    cell4.appendChild(label6);
+  }
+
+  // 行削除
+  function deleteRow(obj) {
+    // 削除ボタンが押された行を取得
+    tr = obj.parentNode.parentNode;
+    // インデックスを取得して行を削除
+    tr.parentNode.deleteRow(tr.sectionRowIndex);
+  }
+
+  // 更新ボタン押下時
+  Event.observe($("btnUpdate"), "click", function() {
+    var str = Form.serialize('siteagencyform');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/site/agencyconfirm?" + str;
+    var ajax = new Ajax.Request( url, {method: 'get', asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] == 1) {
+      // 成功⇒ページをリロード（再読み込み）
+      alert("更新しました");
+      window.location.reload(true);
+    } else {
+      // 失敗⇒メッセージ送出
+      alert(res['status']);
+    }
+  });
+</script>
+</html>

@@ -1,0 +1,133 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM精算明細一覧</h3>
+    <form name="form" method="post" action="oemmonthly/settlementlist">
+    <input type="hidden" name="oemid" value="<?php echo f_e( $this->oemInfo['OemId'] ); ?>" />
+    <table style="font-size: 12px;" width="862" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->fixedMonthTag; ?>
+                <input class="default_btn" type="submit" style="margin-top: 1px;" value="　表　示　" />
+            </td>
+            <td class="c_data">
+            </td>
+            <td class="r_data">
+                <a class="download_link" href="<?php echo 'oemmonthly/dorderichiran/oemid/'.f_e($this->oemInfo['OemId']).'/fd/'.f_e($this->fd); ?>">↓注文明細ダウンロード</a>
+                <a class="download_link" href="<?php echo 'oemmonthly/dmeisaiichiran/oemid/'.f_e($this->oemInfo['OemId']).'/fd/'.f_e($this->fd); ?>">↓CSVダウンロード</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>事業者LID</th>
+            <th>事業者名</th>
+            <th>注文<br />件数</th>
+            <th>注文総額</th>
+            <th>決済<br />手数料</th>
+            <th>請求<br />手数料</th>
+            <th>OEM<br />手数料</th>
+            <th>代理店<br />手数料</th>
+            <th>印紙代</th>
+            <th>月額<br />固定費</th>
+            <th>OEM<br />固定費</th>
+            <th>代理店<br />固定費</th>
+            <th>前月<br />不足</th>
+            <th>CNL<br />返金</th>
+            <th>振込<br />手数料</th>
+            <th>精算<br />調整額</th>
+            <th>立替戻し</th>
+            <th>請求金額</th>
+            <th>支払総額</th>
+          </tr>
+          <?php 
+            // count関数対策
+              $enterprise_settlement_count = 0;
+              if (!empty($this->enterprise_settlement)) {
+                  $enterprise_settlement_count = count($this->enterprise_settlement);
+              }
+              for ($i = 0 ; $i < $enterprise_settlement_count ; $i++) { ?>
+          <tr>
+            <td class="c_data">
+              <?php echo f_e( $this->enterprise_settlement[$i]['LoginId'] ); ?>
+            </td>
+            <td class="l_data">
+              <a target="_blank" href="oemmonthly/summary/oemid/<?php echo f_e( $this->oemInfo['OemId'] ); ?>/eid/<?php echo f_e( $this->enterprise_settlement[$i]['EnterpriseId'] ); ?>/fd/<?php echo f_e( $this->fd ); ?>" />
+              <?php echo f_e( $this->enterprise_settlement[$i]['EnterpriseNameKj'] ); ?>
+              </a>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['OrderCount'], 0 ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['UseAmount'], 0 ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( intval( $this->enterprise_settlement[$i]['CB_SettlementFee'] ) + intval( $this->enterprise_settlement[$i]['OM_SettlementFee'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( intval( $this->enterprise_settlement[$i]['CB_ClaimFeeBS'] ) + intval( $this->enterprise_settlement[$i]['CB_ClaimFeeDK'] ) + intval( $this->enterprise_settlement[$i]['OM_ClaimFeeBS'] ) + intval( $this->enterprise_settlement[$i]['OM_ClaimFeeDK'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( intval( $this->enterprise_settlement[$i]['OM_SettlementFee'] ) + intval( $this->enterprise_settlement[$i]['OM_ClaimFeeBS'] ) + intval( $this->enterprise_settlement[$i]['OM_ClaimFeeDK'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['AgencyFee'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_StampFeeTotal'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_MonthlyFee'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['OM_EntMonthlyFee'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( intval( $this->enterprise_settlement[$i]['PC_MonthlyFee'] ) - intval( $this->enterprise_settlement[$i]['CB_EntMonthlyFee'] ) - intval( $this->enterprise_settlement[$i]['OM_EntMonthlyFee'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_CarryOver'], 0 ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_CalcelAmount'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_TransferCommission'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_AdjustmentAmount'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PayBackAmount'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['PC_DecisionPayment'] ), '#,##0' ); ?>
+            </td>
+            <td class="r_data">
+              <?php echo f_nf( nvl( $this->enterprise_settlement[$i]['FixedTransferAmount'] ), '#,##0' ); ?>
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

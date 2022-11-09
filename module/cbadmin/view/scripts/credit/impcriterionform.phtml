@@ -1,0 +1,42 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">与信ｼｽﾃﾑ判定基準CSV登録・修正</h3>
+    <?php if (isset($this->errors) && !empty($this->errors)) { ?>
+    <h4>※：入力に不備があります。登録内容を見直してください。 <br>
+            以下のデータの入力に不備があったため、データは更新されませんでした。</h4>
+    <ul class="error_info_container">
+      <?php foreach($this->errors as $error) { ?>
+        <font color="red"><li><?php echo ($error['line'] == 0 ? "" : $error['line'] . "行目：") . $error['message']; ?></li></font>
+      <?php } ?>
+    </ul>
+    <?php } ?>
+    <form name="form" enctype="multipart/form-data" method="post" action="credit/impcriterionconfirm">
+      <div id="formdiv">
+        <input type="file" name="csvFile" size="50" />
+        <button type="submit">　　登録実行　　</button>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

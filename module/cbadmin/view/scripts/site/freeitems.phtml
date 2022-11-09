@@ -1,0 +1,132 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+		<style type="text/css">
+			<!--
+            .input_error_message {
+              color: red;
+            }
+			#contents table {
+				margin: 0px;
+				padding: 0px;
+			}
+
+			td.r_label {
+				text-align: right;
+				padding: 0px 5px 0px 0px;
+				background-color: #eeeeee;
+				white-space: nowrap;
+			}
+
+			td.l_data {
+				text-align: left;
+				padding: 0px 0px 0px 5px;
+				background-color: #ffffff;
+			}
+
+			td.l_data span.wrap_container {
+				/*width: 398px;*/
+				overflow: hidden;
+				float: left;
+			}
+
+			td.c_data {
+				text-align: center;
+				padding: 2px 0px 2px 0px;
+				background-color: #ffffff;
+			}
+
+			div {
+				margin: 0px;
+				padding: 0px;
+				font-size: 12px;
+				font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+			}
+
+			div.block_container {
+				margin: 10px 25px;
+			}
+			div.block_container table.datatable {
+				width: 750px;
+			}
+			form button {
+				padding: 2px 12px;
+			}
+			form .submit_parts {
+				line-height: 18px;
+				margin: 4px 10px;
+			}
+			-->
+		</style>
+	</head>
+	<body>
+		<div id="wrapper">
+			<?php echo $this->render('cbadmin/page_header.php'); ?>
+			<?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+
+			<!-- start contents -->
+			<div id="contents">
+				<h3>自由項目設定</h3>
+				<div class="block_container">
+					<form name="form" id="form" method="post" action="site/freeitemssave">
+						<input type="hidden" name="SiteId" id="SiteId" value="<?php echo f_e($this->data['SiteId']); ?>" />
+						<input type="hidden" name="sid" id="sid" value="<?php echo f_e($this->data['SiteId']); ?>" />
+						<input type="hidden" name="SiteNameKj"  value="<?php echo f_e($this->data["SiteNameKj"]); ?>"/>
+						<input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+						<input name="image_uploaded" value="<?php echo $this->imageUploaded ? 1 : 0; ?>"  type="hidden" />
+
+						<table class="datatable" cellpadding="1" cellspacing="1" border="0">
+							<?php if ( isset($this->data["SiteId"]) && strlen($this->data["SiteId"]) > 0 ) { ?>
+							<tr>
+								<td width="250" class="r_label">サイトID</td>
+								<td class="l_data"><?php echo f_e($this->data["SiteId"]); ?></td>
+							</tr>
+							<tr>
+								<td class="r_label">サイト名</td>
+								<td class="l_data"><?php echo f_e($this->data["SiteNameKj"]); ?></td>
+							</tr>
+							<tr>
+								<td class="r_label">ログインID</td>
+								<td class="l_data"><?php echo f_e($this->entdata['LoginId']); ?></td>
+							</tr>
+							<?php } ?>
+							<?php for ($i = 0; $i < 20; $i++) { ?>
+							<tr>
+								<td class="r_label">自由項目<?php echo mb_substr('　　'. mb_convert_kana(($i + 1), 'N'), -2); ?></td>
+								<td class="l_data">
+								    <input type="text" size="65" maxlength="60" name="Free<?php echo ($i + 1); ?>" id="Free<?php echo ($i + 1); ?>" value="<?php echo f_e($this->data['Free'. ($i + 1)]);?>" />
+								    <?php show_error_message($this->errors['Free'. ($i + 1)]); ?>
+								</td>
+							</tr>
+							<?php } ?>
+							<tr>
+								<td colspan="2" class="c_data">
+									<button type="submit" style="margin-left: 12px">登録</button>
+									<a id="cancelSave" class="submit_parts" href="javascript:void(0)">サイト編集に戻る</a>
+								</td>
+							</tr>
+						</table>
+					</form>
+				</div>
+			</div>
+			<?php echo $this->render('cbadmin/page_footer.php'); ?>
+		</div>
+		<script>
+			Event.observe($("cancelSave"), "click", function() {
+				$("form").action = $("form").action.replace(/\/freeitemssave$/, "/back");
+				$("form").submit();
+				return false;
+			});
+		</script>
+	</body>
+</html>

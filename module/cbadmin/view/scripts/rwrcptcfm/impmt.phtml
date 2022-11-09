@@ -1,0 +1,69 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">MTデータインポート</h3>
+    <h4><?php echo $this->message; ?></h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>払込金額</th>
+            <th>請求金額（残高）</th>
+            <th>差額</th>
+            <th>取扱年月日</th>
+            <th>備考</th>
+            </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <tr>
+            <td class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+            <td class="r_data"><?php echo f_nf($row['PayAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimedBalance'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['Sagaku'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['Ymd']; ?></td>
+            <td class="c_data"><?php echo $row['Note']; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+
+      <p>入金処理対象外データ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID（加入者データ）</th>
+            <th>払込金額</th>
+            <th>取扱年月日</th>
+            <th>エラー情報</th>
+          </tr>
+          <?php foreach ($this->listNa as $row) { ?>
+          <tr>
+            <td class="l_data">
+            <?php if ($row['OrderSeq'] == '') { ?>
+            <?php     echo $row['OrderId']; ?>
+            <?php } else { ?>
+                <a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a>
+            <?php } ?>
+            </td>
+            <td class="r_data"><?php echo f_nf($row['PayAmount'], '#,##0'); ?></td>
+            <td class="c_data"><?php echo $row['Ymd']; ?></td>
+            <td class="l_data"><?php echo $row['Error']; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

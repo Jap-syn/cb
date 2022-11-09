@@ -1,0 +1,166 @@
+<?php
+
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+<style type="text/css">
+#info_area {
+	width: 80%;
+	min-width: 720px;
+	margin: 10px auto;
+}
+#toggle_scope {
+	margin-left: 20px;
+}
+form#download_form {
+  display: inline;
+  float: right;
+  margin-right: 10px;
+}
+</style>
+<script type="text/javascript">
+Event.observe(window, "load", function() {
+	var counts = (function() {
+		var sb_count = document.getElementsByClassName('sb_row').length;
+		return {
+			sb : sb_count,
+			all : sb_count + document.getElementsByClassName('nsb_row').length
+		};
+	})();
+	var include_all = <?php echo $this->include_all ? 'true' : 'false'; ?>;
+	var update_count = function() {
+		$('count_info').innerHTML = '{0} 件中 {1} 件表示'.format(
+			include_all ? counts.all : counts.sb,
+			counts.all );
+	};
+	var update_ui = function() {
+		$('download_include_all').value = include_all ? 1 : 0;
+		document.getElementsByClassName('nsb_row').each(function(ele) {
+			Element[include_all ? 'show' : 'hide'](ele);
+		});
+		$('toggle_scope').innerHTML = include_all ? '自社印刷分のみ表示' : 'すべて表示';
+		if(!include_all) {
+			$('exec_download').disabled = !counts.sb;
+		} else {
+			$('exec_download').disabled = !counts.all;
+		}
+	};
+	Event.observe($('toggle_scope'), 'click', function(evt) {
+		include_all = !include_all;
+		update_ui();
+		update_count();
+	}.bindAsEventListener($('toggle_scope')));
+	update_ui();
+	update_count();
+
+	if(counts.sb == counts.all) {
+		Element.hide('toggle_scope');
+	}
+});
+function doDownload() {
+	if(($('exec_download') || { disabled : true }).disabled) return;
+	($('download_form') || { submit : function() { alert('cannot execute download !'); } }).submit();
+}
+</script>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+
+$commandBar = new CoralViewCommandBar(
+	// title
+	sprintf('%sに転送された注文の詳細', f_df($this->target_date, 'Y年m月d日')),
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'backTo',
+				CoralViewCommandBarButton::OPTION_HREF => 'shipping/changeCsv',
+				CoralViewCommandBarButton::OPTION_TEXT => '伝票番号更新画面へ戻る',
+				CoralViewCommandBarButton::OPTION_TITLE => '更新画面トップへ戻ります'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+
+<div class="main_contents">
+	<div id="info_area">
+		<span id="count_info"></span>
+		<form id="download_form" method="post" action="shipping/downloadDateCsv" target="_blank">
+			<input id="download_date" name="form[date]" type="hidden" value="<?php echo f_e($this->target_date); ?>" />
+			<input id="download_include_all" name="form[include_all]" type="hidden" value="<?php echo $this->include_all ? 1 : 0; ?>" />
+			<button id="exec_download" type="submit">テンプレートCSVをダウンロード</button>
+		</form>
+		<a id="toggle_scope" href="javascript:void(0)" onclick="return false">
+			<?php if($this->include_all) { ?>
+			自社印刷分のみ表示
+			<?php } else { ?>
+			すべて表示
+			<?php } ?>
+		</a>
+		<div style="float: none; clear: both; height: 0; line-height: 0; font-size: 0"></div>
+	</div>
+	<table id="detail_list_table" class="regist_table detail_table" border="1" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th>注文ID</th>
+				<th>任意注文番号</th>
+				<th>配送会社</th>
+				<th>現在の登録伝票番号</th>
+				<th>注文日</th>
+				<th>購入者</th>
+				<th>電話番号</th>
+				<th>購入金額</th>
+				<th>配送先住所</th>
+				<th>自社印刷</th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach($this->list as $item) { ?>
+			<tr class="<?php echo $item['IsSelfBilling'] ? 'sb_row' : 'nsb_row'; ?>"<?php if(!$this->include_all && !$item['IsSelfBilling']) { ?> style="display: none"<?php } ?>>
+				<td>
+					<a href="search/detail/id/<?php echo f_e($item['OrderId']); ?>" target="_blank">
+						<?php echo f_e($item['OrderId']); ?>
+					</a>
+				</td>
+				<td><?php echo f_e($item['Ent_OrderId']); ?></td>
+				<td><?php echo f_e($item['Deli_DeliveryMethod']); ?></td>
+				<td><?php echo f_e($item['Deli_JournalNumber']); ?></td>
+				<td><?php echo f_df($item['ReceiptOrderDate'], 'Y/m/d'); ?></td>
+				<td><?php echo f_e($item['NameKj']); ?></td>
+				<td><?php echo f_e($item['Phone']); ?></td>
+				<td><?php echo f_nf($item['UseAmount'], '#,##0'); ?></td>
+				<td><?php echo f_e($item['UnitingAddress']); ?></td>
+				<td><?php if($item['IsSelfBilling']) echo '○'; ?></td>
+			</tr>
+		<?php } ?>
+		</tbody>
+	</table>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>

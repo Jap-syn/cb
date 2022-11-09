@@ -1,0 +1,93 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/priceplan/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>加盟店料金プラン登録</h3>
+<form name="form" method="post" action="priceplan/confirm">
+<?php if(isset($this->fd['PricePlanId'])) { ?><input name="data[PricePlanId]" type="hidden" value="<?php echo f_e($this->fd['PricePlanId']); ?>" /><?php } ?>
+<?php // var_dump($this->fd); ?>
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <td class="label">料金プラン名<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[PricePlanName]" type="text" id="PricePlanName" value="<?php echo f_e($this->fd["PricePlanName"]); ?>" />
+        <?php echo $this->error["PricePlanName"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">月額固定費(税抜)<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[MonthlyFee]" type="text" id="MonthlyFee" value="<?php echo f_e($this->fd["MonthlyFee"]); ?>" />円
+        <?php echo $this->error["MonthlyFee"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">決済上限額<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[SettlementAmountLimit]" type="text" id="SettlementAmountLimit" value="<?php echo f_e($this->fd["SettlementAmountLimit"]); ?>" />円
+        <?php echo $this->error["SettlementAmountLimit"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">決済手数料率<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[SettlementFeeRate]" type="text" id="SettlementFeeRate" value="<?php echo doubleval($this->fd["SettlementFeeRate"]); ?>" />％（小数点以下有効桁数:5桁）
+        <?php echo $this->error["SettlementFeeRate"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">請求手数料（別送）(税抜)<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[ClaimFeeBS]" type="text" id="ClaimFeeBS" value="<?php echo f_e($this->fd["ClaimFeeBS"]); ?>" />円
+        <?php echo $this->error["ClaimFeeBS"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">請求手数料（同梱）(税抜)<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[ClaimFeeDK]" type="text" id="ClaimFeeDK" value="<?php echo f_e($this->fd["ClaimFeeDK"]); ?>" />円
+        <?php echo $this->error["ClaimFeeDK"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">再請求手数料(税抜)<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[ReClaimFee]" type="text" id="ReClaimFee" value="<?php echo f_e($this->fd["ReClaimFee"]); ?>" />円
+        <?php echo $this->error["ReClaimFee"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">有効設定</td>
+      <td class="data">
+        <label>
+          <input type="hidden"   name="data[ValidFlg]"  value="0"' />
+          <input type="checkbox" name="data[ValidFlg]" <?php echo ($this->fd['ValidFlg'] == 1 or $this->fd['ValidFlg'] == 'on' ) ? ' value="1" checked="checked"' : ''; ?> />有効
+        </label>
+        <?php echo $this->error["ValidFlg"]; ?>
+      </td>
+    </tr>
+    <tr align="center">
+      <td class="data" colspan="2">　</td>
+    </tr>
+    <tr align="center">
+      <td colspan="2">
+        <input type="submit" value="　確　定　" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

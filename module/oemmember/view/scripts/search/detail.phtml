@@ -1,0 +1,686 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Zend\Json\Json;
+use oemmember\classes\OrderEditor;
+use oemmember\Application;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// ローカルパラメータの整備
+$cancel_info = array(
+	'label' => '不可',
+	'can_cancel' => false
+);
+
+// ステータス取得のためのOrderEditor
+$editor = new OrderEditor(Application::getInstance()->dbAdapter);
+
+// 修正可能かを判断
+$is_modifiable = false;
+foreach($editor->judgeOrderModifiability($this->detailData['OrderSeq']) as $key => $value) {
+	if($value) $is_modifiable = true;
+}
+
+if( $this->detailData['Cnl_CantCancelFlg'] || $this->detailData['IncreStatus'] == -1 ) {
+	// nop
+} else {
+	switch( $this->detailData['Cnl_Status'] ) {
+		case 1:
+		    if( !empty( $this->detailData['CancelDate'] ) ) {
+		        $cancelDate = ' (' . date( 'Y/m/d H:i:s', strtotime( $this->detailData['CancelDate'] ) ) . ')';
+		    }
+		    else {
+		        $cancelDate = '';
+		    }
+			$cancel_info['label'] =
+				'申請中' . $cancelDate;
+			break;
+		case 2:
+		    if( !empty( $this->detailData['ApprovalDate'] ) ) {
+		        $approvalDate = ' (' . date( 'Y/m/d H:i:s', strtotime( $this->detailData['ApprovalDate'] ) ) . ')';
+		    }
+		    else {
+		        $approvalDate = '';
+		    }
+			$cancel_info['label'] =
+				"理由「{$this->detailData['CancelReason']}」によりキャンセル済み" . $approvalDate;
+			break;
+		default:
+	        // 口座振替0円請求に対するキャンセル不可
+	        // 事業者マスタ：請求金額0円時 & 注文情報：口座振替利用する & 注文ステータス：入金クローズ
+	        if($this->detailData ['AppFormIssueCond'] == 2
+	        	&& $this->detailData ['CreditTransferRequestFlg'] != 0
+	        	&& $this->detailData ['DataStatus'] == 91
+	        	&& $this->detailData ['CloseReason'] == 1
+                && $this->detailData['UseAmount'] == 0) {
+	        		$cancel_info ['label'] = '不可（口座振込用紙発行済みの為、キャンセルできません）';
+	        } else {
+				$cancel_info = array(
+					'label' => '可能',
+					'can_cancel' => true
+				);
+			}
+			break;
+	}
+}
+
+// コマンドバー使用
+$hasList = !empty($this->order_list) ? true : false;
+$commandBar = new CoralViewCommandBar(
+	// title
+	sprintf('注文ID：%s の詳細情報  [注文状況：%s]', $this->detailData['OrderId'], $editor->getStatusLabel($this->detailData['OrderSeq'])),
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 're_order',
+				CoralViewCommandBarButton::OPTION_HREF => 'order/order/id/' . $this->detailData['OrderId'],
+				CoralViewCommandBarButton::OPTION_TEXT => '再登録',
+				CoralViewCommandBarButton::OPTION_TITLE => 'この注文を再登録する場合はここをクリックします'
+			)
+		)
+	)
+);
+
+$commandBar->addButton(
+	new CoralViewCommandBarButton(
+		array(
+			CoralViewCommandBarButton::OPTION_ID => 'search_new',
+			CoralViewCommandBarButton::OPTION_HREF => 'search/search',
+			CoralViewCommandBarButton::OPTION_TEXT => '新規検索',
+			CoralViewCommandBarButton::OPTION_TITLE => '検索条件入力画面へ移動します'
+		)
+	)
+);
+
+if( $this->isPost ) {
+	// 検索条件を持ちまわっている場合は結果へ戻れる
+	$commandBar->addButton(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'backTo',
+				CoralViewCommandBarButton::OPTION_HREF => '#',
+				CoralViewCommandBarButton::OPTION_TEXT => '検索結果一覧へ戻る',
+				CoralViewCommandBarButton::OPTION_TITLE => '検索結果一覧へ戻ります'
+			)
+		)
+	);
+}
+
+// キャンセル可能な場合のみ「キャンセル」ボタンを追加
+if( $cancel_info['can_cancel'] ) {
+	$commandBar->addButton(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'requestCancel',
+				CoralViewCommandBarButton::OPTION_HREF => '#',
+				CoralViewCommandBarButton::OPTION_TEXT => '注文をキャンセル',
+				CoralViewCommandBarButton::OPTION_TITLE => 'この注文をキャンセルする場合はここをクリックします'
+			)
+		)
+	);
+}
+
+// 編集ボタン追加
+if( $is_modifiable ) {
+	$commandBar->addButton(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'beginEdit',
+				CoralViewCommandBarButton::OPTION_HREF => sprintf('order/edit/id/%s', f_e($this->detailData['OrderId'])),
+				CoralViewCommandBarButton::OPTION_TEXT => '注文登録内容の修正',
+				CoralViewCommandBarButton::OPTION_TITLE => '注文の登録内容を修正するにはここをクリックします'
+			)
+		)
+	);
+}
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+setReplaceEmpty(true);
+?>
+<?php
+?>
+<?php /* 基本取引情報 */ ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">取引情報</th>
+	</tr>
+	<tr>
+<!--    create element containing todoitekara to check-->
+        <input type="hidden" value="<?php  echo $this->todoitekara; ?>" id="flagTodoitekara" name="flagTodoitekara"/>
+		<td class="item_name" style="width:141px">注文ID</td>
+		<td colspan="3"><?php echo $this->detailData['OrderId']; ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">注文日</td>
+		<td style="width:241px"><?php echo valueFormat( $this->detailData['ReceiptOrderDate'], 'date' ); ?></td>
+		<td class="item_name" style="width:141px">受付サイト</td>
+		<td><?php
+			echo valueFormat( isset($this->masters['SiteId']) ?
+				$this->masters['SiteId'][ $this->detailData['SiteId'] ] :
+				$this->detailData['SiteId'] );
+		?></td>
+	</tr>
+	<tr <?php if (is_null($this->detailData['ServiceExpectedDate'])) { echo ' style="display:none"';} ?>>
+		<td class="item_name">役務提供予定日</td>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['ServiceExpectedDate'], 'date' ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">与信結果</td>
+		<td><?php
+			$val = isset($this->masters['IncreStatus']) ?
+				$this->masters['IncreStatus'][$this->detailData['IncreStatus']] :
+				$this->detailData['IncreStatus'];
+			if(!in_array($val, array('OK', 'NG')) && in_array($this->detailData['Cnl_Status'], array(1, 2))) {
+				// 与信中キャンセル
+				echo f_e(sprintf('与信中キャンセル%s', $this->detailData['Cnl_Status'] == 2 ? '済' : ''));
+			} else {
+				// それ以外
+				echo f_e($val);
+				if ($val == 'NG') { echo f_e($this->NgReason) ; }
+
+			}
+		?>
+		<?php if ($this->ChangeFlg == '1') { ?>
+		<a id="NoGuarantee" class="command do_cancel" href="#" onclick="return NoGuaranteeChange(<?php echo $this->detailData['OrderSeq'] ?>);" title="この注文を無保証に変更します">無保証に変更</a>
+		<?php } ?>
+		</td>
+		<td class="item_name">任意注文番号</td>
+		<td><?php echo valueFormat( $this->detailData['Ent_OrderId'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">請求金額</td>
+		<td>\ <?php echo valueFormat( $this->detailData['UseAmount'], 'number', '#,##0' ) ?></td>
+		<td class="item_name">支払日予定日</td>
+		<td><?php echo valueFormat( $this->detailData['ExecScheduleDate'], 'date' ); ?></td>
+	</tr>
+	<?php /* 入金情報は[入金ステータス検索条件区分=0(：入金ステータス検索不可)]時は表示しない */ ?>
+	<tr <?php if ($this->userInfo->ReceiptStatusSearchClass == '0') { echo ' style="display:none"';} ?>>
+		<td class="item_name">入金日</td>
+		<td><?php echo valueFormat( $this->detailData['ReceiptDate'], 'date' ); ?></td>
+		<td class="item_name">入金方法</td>
+		<td><?php echo $this->receiptMethod; ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">キャンセル状況</td>
+		<td colspan="3"><?php echo $cancel_info['label']; ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">保留理由</td>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['PendingReasonCode'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">与信返信日時</td>
+		<td colspan="3"><?php if( !empty( $this->detailData['CreditReplyDate'] ) ) { echo date( 'Y/m/d H:i:s', strtotime( $this->detailData['CreditReplyDate'] ) ); } else { echo '&nbsp;'; } ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">立替状態</td>
+		<td colspan="3"><?php echo $this->AdvState; ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">備考</td>
+		<td class="pre" colspan="3"><?php echo valueFormat( $this->detailData['Ent_Note'] ); ?></td>
+	</tr>
+	<tr <?php if ( $this->detailData['T_OrderClass'] != 1) { echo ' style="display:none"';} ?>>
+		<td class="item_name">テスト注文</td>
+		<td class="pre" colspan="3">テスト注文</td>
+	</tr>
+    <tr
+        <?php if ($this->detailData['PaymentAfterArrivalFlg'] == '1') { ?>>
+        <td class="item_name">トラッキングID</td>
+        <td colspan="3"><?php echo $this->detailData['ExtraPayKey'] ?></td>
+        <?php } ?>
+    </tr>
+</table>
+
+    <?php /* 口座振替情報 */ ?>
+    <?php if (($this->detailData['CreditTransferFlg'] == '1') || ($this->detailData['CreditTransferFlg'] == '2') || ($this->detailData['CreditTransferFlg'] == '3')) { ?>
+        <table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+            <tr>
+                <th class="category_name" colspan="4">口座振替情報</th>
+            </tr>
+            <tr>
+                <td class="item_name">口座振替申込区分</td>
+                <td colspan="3"><?php if( is_null( $this->detailData['CreditTransferRequestFlg'])) { echo ''; } else if( $this->detailData['CreditTransferRequestFlg'] == 0 ) { echo '利用しない'; } else if( $this->detailData['CreditTransferRequestFlg'] == 1 ) { echo '利用する（WEB申込み）'; } else if( $this->detailData['CreditTransferRequestFlg'] == 2 ) { echo '利用する（紙面申込み）'; } ?></td>
+            </tr>
+            <tr>
+                <td class="item_name">申込ステータス</td>
+                <td><?php if($this->detailData['RequestStatus'] == 2) { echo '完了'; } else if( $this->detailData['RequestStatus'] == 1 ) { echo '未完了（'.$this->requestSubStatus['KeyContent'].'）'; } else { echo '未完了'; } ?></td>
+            </tr>
+            <tr>
+                <td class="item_name">申込完了日</td>
+                <td colspan="3"><?php if($this->detailData['RequestStatus'] == 2) { echo $this->detailData['RequestCompDate']; } ?></td>
+            </tr>
+            <tr>
+                <td class="item_name">口座振替</td>
+                <td colspan="3"><?php if(is_null($this->detailData['CC_CreditTransferFlg'])) { echo ''; } elseif($this->detailData['CC_CreditTransferFlg'] == 0) { echo '対象外'; } else { echo '対象'; } ?></td>
+            </tr>
+        </table>
+    <?php } ?>
+
+<?php /* 購入者情報 */ ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">購入者情報</th>
+	</tr>
+	<tr>
+		<td class="item_name" style="width:141px">氏名</td>
+		<td style="width:241px"><?php echo valueFormat( $this->detailData['NameKj'] ); ?></td>
+		<td class="item_name" style="width:141px">氏名カナ</td>
+		<td><?php echo valueFormat( $this->detailData['NameKn'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name" rowspan="2">住所</td>
+		<td colspan="3" style="border-bottom-width: 0px"><?php echo valueFormat( $this->detailData['PostalCode'] ); ?></td>
+	</tr>
+	<tr>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['UnitingAddress'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">電話番号</td>
+		<td><?php echo valueFormat( $this->detailData['Phone'] ); ?></td>
+		<td class="item_name">メールアドレス</td>
+		<td><?php echo valueFormat( $this->detailData['MailAddress'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">加盟店顧客番号</td>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['EntCustId'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">職業</td>
+		<td><?php echo valueFormat( $this->detailData['Occupation'] ); ?></td>
+		<td class="item_name">法人名</td>
+		<td><?php echo valueFormat( $this->detailData['CorporateName'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">部署名</td>
+		<td><?php echo valueFormat( $this->detailData['DivisionName'] ); ?></td>
+		<td class="item_name">担当者名</td>
+		<td><?php echo valueFormat( $this->detailData['CpNameKj'] ); ?></td>
+	</tr>
+</table>
+
+<?php /* 配送伝票情報 */ ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">配送伝票</th>
+	</tr>
+	<tr>
+		<td class="item_name" style="width:141px">伝票登録日</td>
+		<td style="width:241px"><?php if( !empty( $this->detailData['Deli_JournalIncDate'] ) ) { echo date( 'Y/m/d H:i:s', strtotime( $this->detailData['Deli_JournalIncDate'] ) ); } else { echo '&nbsp;'; } ?></td>
+		<td class="item_name" style="width:141px">配送方法</td>
+		<td><?php echo valueFormat( $this->detailData['Deli_DeliveryMethodName'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">伝票番号</td>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['Deli_JournalNumber'] ); ?></td>
+	</tr>
+</table>
+
+<?php /* 配送先情報 */ ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">配送先情報</th>
+	</tr>
+<?php if( $this->detailData['AnotherDeliFlg'] ) { ?>
+	<tr>
+		<td class="item_name" style="width:141px">氏名</td>
+		<td style="width:241px"><?php echo valueFormat( $this->detailData['DestNameKj'] ); ?></td>
+		<td class="item_name" style="width:141px">氏名カナ</td>
+		<td><?php echo valueFormat( $this->detailData['DestNameKn'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name" rowspan="2">住所</td>
+		<td colspan="3" style="border-bottom-width: 0px"><?php echo valueFormat( $this->detailData['DestPostalCode'] ); ?></td>
+	</tr>
+	<tr>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['DestUnitingAddress'] ); ?></td>
+	</tr>
+	<tr>
+		<td class="item_name">電話番号</td>
+		<td colspan="3"><?php echo valueFormat( $this->detailData['DestPhone'] ); ?></td>
+	</tr>
+<?php } else { ?>
+	<tr>
+		<td class="no_display" rowspan="5" colspan="4">（購入者に同じ）</td>
+	</tr>
+<?php } ?>
+</table>
+
+<?php /* 商品明細 */ ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="6">商品明細・送料等</th>
+	</tr>
+<?php
+foreach( $this->itemList as $i => $item ) {
+	$sum = valueFormat( $item['SumMoney'], 'number', '#,##0' );
+	$up = valueFormat( $item['UnitPrice'], 'number', '#,##0' );
+?>
+	<tr>
+<?php
+	if( $item['DataClass'] == 1 ) {
+        $itemListCount = 0;
+        if (!empty($this->itemList)) {
+            $itemListCount = count($this->itemList);
+        }
+		$itemNumber = $itemListCount > 3 ?
+			( '品名 (' . ( $i + 1 ) . ')' ) : '品名';
+
+?>
+		<td class="item_name" style="width:141px"><?php echo $itemNumber; ?></td>
+		<td style="width:141px"><?php echo valueFormat( $item['ItemNameKj'] ); ?></td>
+		<td class="item_name" style="width:70px">金額</td>
+ 		<td style="width: 141px"><?php
+            $itemNum = number_format($item['ItemNum'], $this->detailData['DispDecimalPoint']);
+            echo "\ $sum ( \ $up × {$itemNum} )";
+            ?>
+ 		</td>
+
+ 		        <?php
+        if ($item ['TaxrateNotsetFlg'] == 1 && $item ['TaxRate'] == NULL) {
+            $taxRate = $this->taxRate;
+        } else if ( $item['SumMoney'] < 0 ){
+            $taxRate = 0;
+        } else {
+            $taxRate = $item ['TaxRate'];
+        }
+        ?>
+ 		</td>
+				<td class="item_name">消費税率</td>
+				<td style="width: 141px"><?php echo $taxRate ."%" ?></td>
+<?php
+	} else {
+?>
+		<td class="item_name" colspan="3"><?php if( $item['DataClass'] == 2 ) { echo '送料'; } else if( $item['DataClass'] == 3 ) { echo '手数料'; } else { echo '外税額'; } ?></td>
+		<td colspan="3"><?php echo "\ $sum"; ?></td>
+<?php
+	}
+?>
+	</tr>
+<?php
+}
+?>
+	<tr class="total_row">
+		<td class="item_name" colspan="3">請求金額合計</td>
+		<td colspan="3">\ <?php echo valueFormat( $this->detailData['UseAmount'], 'number', '#,##0' ); ?></td>
+	</tr>
+</table>
+
+<?php /* 請求取りまとめ先 */ ?>
+<?php if($this->detailData['P_OrderSeq'] != $this->detailData['OrderSeq'] && $this->detailData['CombinedClaimParentFlg'] != 1) { ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">請求取りまとめ</th>
+	</tr>
+	<tr>
+		<td class="item_name" colspan="3">請求取りまとめ先</td>
+		<td><a target="_blank" href="search/detail/id/<?php echo f_e($this->parentOrderId); ?>"><?php echo f_e($this->parentOrderId); ?></a></td>
+	</tr>
+	<tr class="total_row">
+		<td class="item_name" colspan="3">総請求金額</td>
+		<td>\ <?php echo f_nf($this->claimAmount, '#,##0'); ?></td>
+	</tr>
+</table>
+<?php }?>
+
+<?php /* 請求取りまとめ元 */ ?>
+<?php if($this->detailData['CombinedClaimParentFlg'] ) { ?>
+<table class="order_detail" border="1" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="category_name" colspan="4">請求取りまとめ</th>
+	</tr>
+	<tr>
+		<td class="item_name">請求取りまとめ元</td>
+		<td colspan="3">
+			<?php $childOrderIdsCount = 0; if (!empty($this->childOrderIds)) { $childOrderIdsCount = count($this->childOrderIds); }
+			for($i =0; $i < $childOrderIdsCount; $i++) { ?>
+				<a target="_blank" href="search/detail/id/<?php echo f_e($this->childOrderIds[$i]); ?>" /><?php echo f_e($this->childOrderIds[$i]); ?></a>
+				<?php if($i < $childOrderIdsCount - 1) { ?>
+				,
+				<?php } ?>
+			<?php } ?>
+		</td>
+	</tr>
+	<tr class="total_row">
+		<td class="item_name">総請求金額</td>
+		<td colspan="3">\ <?php echo f_nf($this->claimAmount, '#,##0'); ?></td>
+	</tr>
+</table>
+<?php }?>
+
+<?php if($is_modifiable) { ?>
+<center style="width: 800px">
+	<button type="button" style="font-size: 14pt" onclick="window.location.href=$('beginEdit').href">登録内容の修正</button>
+</center>
+<?php } ?>
+
+<form id="search_detail" action="search/detail" method="post">
+<input type="hidden" name="id" value="<?php echo f_e( $this->detailData['OrderId'] ); ?>" />
+</form>
+
+</div>
+<div id="cancel_dialog" style="display:none">
+    <div>
+        <div id="cancel_reason_title" align="left" style="height: 40px; vertical-align:top;">
+        </div>
+        <div align="left" style="margin: 20px 0px 10px 0px;">
+        <select id="cancel_reason_list">
+        </select>
+        </div>
+        <div align="left" style="height: 110px; vertical-align:top;">
+        <!-- <input id="cancel_reason" type="text" value="" />  -->
+        <textarea rows="2" cols="1" id="cancel_reason"></textarea>
+        </div>
+        <div id="combined_order_cancel" align="left" style="color: red;">
+        </div>
+        <div class="dlg_buttons" align="center">
+            <button id="dialog_ok">OK</button>
+            <button id="dialog_cancel">キャンセル</button>
+        </div>
+    </div>
+</div>
+
+<?php
+// 再検索用フォームをレンダリング
+echo $this->render('oemmember/search/search_back_form.php');
+
+if( $cancel_info['can_cancel'] ) { ?>
+<script>
+$("requestCancel").onclick = function() { return false; };
+Event.observe( $("requestCancel"), "click", function(evt) {
+	//SBPS-29: get value of todoitekara
+    var element = document.getElementById( "flagTodoitekara");
+    todoitekara =  element.value;
+    var seq = <?php echo $this->detailData['OrderSeq']; ?>;
+
+//	var reason = prompt( "注文ID：<?php /* echo $this->detailData['OrderId']; */ ?> のキャンセル理由を入力してください（空文字可）", "" );
+    var dlg = getCancelDialog(todoitekara);
+    // ダイアログイベントのクリア
+    dlg.options.preClose = Prototype.emptyFunction;
+
+    //SBPS-29: change title by todoitekara
+    var title = document.getElementById( "cancel_reason_title");
+    if (todoitekara == 1){
+        title.innerHTML = "注文ID：<?php echo $this->detailData['OrderId']; ?> のキャンセル理由を入力してください（空文字可）<br> <span style='color: red'> ※届いてから払いの注文の為、キャンセル取消が行えません。<br>ご注意ください。</span>\n";
+    }
+    else {
+        title.innerHTML = "注文ID：<?php echo $this->detailData['OrderId']; ?> のキャンセル理由を入力してください（空文字可）";
+    }
+
+    // キャンセル理由リスト
+    var list = $( "cancel_reason_list" );
+
+    // キャンセル理由リストの構築
+    <?php foreach( $this->cancelList as $key => $value ) {
+        if( $key == -99 ) continue;
+        echo 'var opt = document.createElement( "option" );' . "\r\n";
+        echo 'opt.value="' . $key . "\";\r\n";
+        echo 'opt.innerHTML="' . $value . "\";\r\n";
+        echo "list.appendChild( opt );\r\n";
+    }?>
+
+    // 請求取りまとめキャンセルメッセージ
+    var combinedFlg = <?php echo nvl($this->detailData['CombinedClaimTargetStatus'], 0); ?>;
+    var combined = document.getElementById( "combined_order_cancel");
+    if (combinedFlg == "91" || combinedFlg == "92") {
+        combined.innerHTML = "とりまとめのすべての商品がキャンセルされます";
+    }
+    else {
+        combined.innerHTML = "";
+    }
+
+    // ダイアログイベント（preClose）の設定
+    dlg.options.preClose = function() {
+        $("cancel_reason_list").selectedIndex = 0;
+        $("cancel_reason").value = "";
+        return true;
+    }
+
+    dlg.center().open();
+});
+Event.observe( $("dialog_ok"), "click", function() {
+	var seq = <?php echo $this->detailData['OrderSeq']; ?>;
+    var list = $( "cancel_reason_list" );
+    var reason = $( "cancel_reason" );
+    var cancel_reason_list_value = list.value;
+    var cancel_reason = reason.value;
+	var element = document.getElementById( "flagTodoitekara");
+    var todoitekara =  element.value;
+    if( cancel_reason_list_value != null && cancel_reason != null ) {
+		var ajax = new Ajax.Request(
+			"{0}ajax/requestCancel".format(
+				( document.getElementsByTagName("base")[0] || { href : "./" } ).href
+			),
+			{
+                method : "post",
+                asynchronous : false,
+                postBody : $H( {
+                    orderSeq : seq,
+                    reason : cancel_reason,
+                    reason_code : cancel_reason_list_value,
+                    userid : <?php echo $this->userId; ?>,
+					cancel_mail_flag: "1" // 2.6 mail
+				} ).toQueryString()
+			}
+		);
+		var result = ajax.transport.responseText.parseJSON();
+
+		if( result === false ) {
+			//alert( "キャンセル申請でエラーが発生しました：\r\n{0}".format( ajax.transport.responseText ) );
+			alert( "この注文は、他の端末からキャンセル申請されているか、または、キャンセル不可の注文です。" );
+		} else {
+			if( ! result.result ) {
+//				alert( "キャンセル申請でエラーが発生しました：\r\n{0}".format( result.reasonCode ) );
+                if (result.isToDo == 1) {
+                    if (result.Exc == 0) {
+                        alert( "SBPS側でエラーが発生しました。{0}({1}) ".format( result.reasonCode, result.errCodeSbps ));
+                    } else {
+                        alert( "この注文は、既にキャンセル処理されている注文です。");
+                    }
+                } else {
+                    alert( "この注文は、他の端末からキャンセル申請されているか、または、キャンセル不可の注文です。" );
+                }
+			} else {
+				Object.extend( $("search_detail"), {
+					action : "search/detail"
+				} ).submit();
+			}
+		}
+	}
+}.bindAsEventListener( $("requestCancel") ) );
+
+Event.observe( $("dialog_cancel"), "click", function() {
+    //SBPS-29: clear options in select cancel reason list
+    var list = $( "cancel_reason_list" );
+    list.innerHTML = "";
+    var element = document.getElementById( "flagTodoitekara");
+    todoitekara =  element.value;
+    getCancelDialog(todoitekara).close();
+}, false );
+
+function getCancelDialog(todoitekara) {
+	//SBPS-29: change title by todoitekara
+    let title = "";
+    if( window.cancelDlg == null ) {
+		if (todoitekara == 1) {
+            title = 'キャンセル確定'
+        } else  {
+            title = 'キャンセル申請'
+        }
+        window.cancelDlg = new base.UI.ModalDialog(
+            "cancel_dialog",
+            {
+                width: 500,
+                height: 280,
+                title: title,
+                draggable : false
+            }
+        );
+    }
+    Element.show( $("cancel_dialog") );
+    return window.cancelDlg;
+};
+Event.observe( window, "load", function() {
+	// モーダルダイアログの初期化
+	var element = document.getElementById( "flagTodoitekara");
+    todoitekara =  element.value;
+	getCancelDialog(todoitekara).close();
+});
+</script>
+<?php } ?>
+<script>
+function NoGuaranteeChange(seq)
+{
+	var flag = confirm("この注文を無保証(お客様の入金をもって、お立替)に変更してもよろしいですか？\n\n伝票番号登録処理までをAPIで連携されている場合、店舗様にて無保証変更や与信保留での注文修正を行われた際、連携が途切れる場合がございます。\n\n請求書取りまとめサービスご利用の場合、無保証のご注文は取りまとまらず個別での発行となります。");
+	if (flag == true ) {
+		var url = "<?php echo $this->baseUrl; ?>/search/noguarantee/OrderSeq/" + seq;
+		var ajax = new Ajax.Request(
+				url,
+				{
+					method: 'get',
+					asynchronous: false
+				});
+	} else {
+		return false;
+	}
+	Object.extend( $("search_detail"), {
+		action : "search/detail"
+	} ).submit();
+	return false;
+}
+</script>
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+
+</html>
+

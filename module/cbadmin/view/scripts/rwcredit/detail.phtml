@@ -1,0 +1,249 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<script type="text/javascript">
+<!--
+	function getRcPoint()
+	{
+		var selected = $('RealCallResult').selectedIndex;
+		var realCodeResult = $('RealCallResult').options[selected].value;
+		var url = '<?php echo $this->urlCprc; ?>'
+			+ '/oseq/' + $('oseq').value + '/rcrc/' + realCodeResult;
+		
+		var ajax = new Ajax.Request(
+	    	url,
+	    	{
+	    		method: 'GET',
+	    		onComplete: setRcPoint
+	    	}
+	    );
+	}
+	
+	function setRcPoint(orgReq)
+	{
+	    var jsonObj = eval('(' + orgReq.responseText + ')');
+	
+		$('realcallpoint').innerHTML = jsonObj["RealCallScore"];
+	    $('credittotalpoint').innerHTML = jsonObj["ScoreTotal"];
+	}
+
+
+	function getRsPoint()
+	{
+		var selected = $('RealSendMailResult').selectedIndex;
+		var realCodeResult = $('RealSendMailResult').options[selected].value;
+		var url = '<?php echo $this->urlCprsm; ?>'
+			+ '/oseq/' + $('oseq').value + '/rsmrc/' + realCodeResult;
+		
+	    var ajax = new Ajax.Request(
+	    	url,
+	    	{
+	    		method: 'GET',
+	    		onComplete: setRsPoint
+	    	}
+	    );
+	}
+	
+	function setRsPoint(orgReq)
+	{
+	    var jsonObj = eval('(' + orgReq.responseText + ')');
+	
+		$('realsendmailpoint').innerHTML = jsonObj["RealSendMailScore"];
+	    $('credittotalpoint').innerHTML = jsonObj["ScoreTotal"];
+	}
+
+	function sok()
+	{
+		$('Incre_Status').value = 1;
+	}
+	
+	function sng()
+	{
+		$('Incre_Status').value = -1;
+	}
+
+//-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">個別社内与信</h3>
+    <div id="credittotalcaption">与信点数</div><div id="credittotalpoint"><?php echo $this->orderCustomer->Incre_ScoreTotal; ?></div>
+    <?php echo $this->telnotice; ?>
+    <form name="form" method="post" action="rwcredit/detail">
+      <input type="hidden" name="oseq" id="oseq" value="<?php echo $this->orderCustomer->OrderSeq; ?>" /> 
+      <input type="hidden" name="Incre_Status" id="Incre_Status" value="0" /> 
+      <table style="clear: both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="l_label2"><b>基本情報</b></td>
+            <td class="c_label2">点数</td>
+            <td class="c_label2">備考</td>
+          </tr>
+          <tr>
+            <td width="100" class="r_label">購入事業者名</td>
+            <td width="550" class="l_data"><?php echo $this->orderCustomer->EnterpriseNameKj; ?></td>
+            <td width="40"class="c_data"><?php echo $this->orderCustomer->Incre_AtnEnterpriseScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_AtnEnterpriseNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">購入サイト</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->SiteNameKj; ?></td>
+          </tr> 
+          <tr>
+            <td class="r_label">担当者名</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->CpNameKj; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">連絡先TEL</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->ContactPhoneNumber; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">メール</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->EntMailAddress; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">注文日</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->ReceiptOrderDate; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">注文ID</td>
+            <td colspan="3" class="l_data"><?php echo $this->orderCustomer->OrderId; ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="l_label2"><b>請求先情報</b></td>
+            <td class="c_label2">点数</td>
+            <td class="c_label2">備考</td>
+          </tr>
+          <tr>
+            <td width="100" class="r_label">氏名</td>
+            <td width="550" class="l_data"><?php echo $this->orderCustomer->NameKj; ?></td>
+            <td width="40" class="c_data"><?php echo $this->orderCustomer->Incre_NameScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_NameNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">郵便番号</td>
+            <td class="l_data"><?php echo $this->orderCustomer->PostalCode; ?></td>
+            <td class="c_data"><?php echo $this->orderCustomer->Incre_PostalCodeScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_PostalCodeNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">住所</td>
+            <td class="l_data"><?php echo $this->orderCustomer->UnitingAddress; ?></td>
+            <td class="c_data"><?php echo $this->orderCustomer->Incre_AddressScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_AddressNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">電話番号</td>
+            <td class="l_data"><?php echo $this->orderCustomer->Phone; ?></td>
+            <td class="c_data"><div id="realcallpoint"><?php echo $this->orderCustomer->RealCallScore; ?></div></td>
+            <td class="l_data"><?php echo $this->realCallResultTag; ?></td>
+          </tr>
+          <tr>
+            <td rowspan="2" class="r_label">メール</td>
+            <td class="l_data"><?php echo $this->orderCustomer->MailAddress; ?></td>
+            <td class="c_data"><?php echo $this->orderCustomer->Incre_MailDomainScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_MailDomainNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">リアル送信チェック　　<input type="button" value="送信" /></td>
+            <td class="c_data"><div id="realsendmailpoint"><?php echo $this->orderCustomer->RealSendMailScore; ?></div></td>
+            <td class="l_data"><?php echo $this->realSendMailResultTag; ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="l_label2"><b>配送先情報　<font color="#FFCCCC"><?php if ($this->orderCustomer->AnotherDeliFlg == 1) { echo '[別配送先]'; } else { echo '[請求先と同一]';} ?></font></b></td>
+            <td class="c_label2">点数</td>
+            <td class="c_label2">備考</td>
+          </tr>
+          <tr>
+            <td width="100" class="r_label">氏名</td>
+            <td width="550" class="l_data"><?php echo $this->delis->DestNameKj; ?></td>
+            <td width="40" class="c_data"><?php echo $this->delis->Incre_NameScore; ?></td>
+            <td class="l_data"><?php echo$this->delis->Incre_NameNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">郵便番号</td>
+            <td class="l_data"><?php echo $this->delis->PostalCode; ?></td>
+            <td class="c_data"><?php echo $this->delis->Incre_PostalCodeScore; ?></td>
+            <td class="l_data"><?php echo $this->delis->Incre_PostalCodeNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">住所</td>
+            <td class="l_data"><?php echo $this->delis->UnitingAddress; ?></td>
+            <td class="c_data"><?php echo $this->delis->Incre_AddressScore; ?></td>
+            <td class="l_data"><?php echo $this->delis->Incre_AddressNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">住所相違</td>
+            <td class="l_data"></td>
+            <td class="c_data"><?php echo $this->delis->Incre_SameCnAndAddrScore; ?></td>
+            <td class="l_data"><?php echo $this->delis->Incre_SameCnAndAddrNote; ?></td>
+          </tr>
+          <tr>
+            <td class="r_label">電話番号</td>
+            <td colspan="3" class="l_data"><?php echo $this->delis->Phone; ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2" class="l_label2"><b>商品情報</b></td>
+            <td class="c_label2">点数</td>
+            <td class="c_label2">備考</td>
+          </tr>
+          <?php foreach ($this->items as $item) { ?>
+          <tr>
+            <td width="550" class="l_data"><?php echo $item->ItemNameKj; ?></td>
+            <td width="100" class="r_data"><?php echo $item->SumMoney; ?></td>
+            <td width="40" class="c_data"><?php echo $item->Incre_ItemScore; ?></td>
+            <td class="l_data"><?php echo $item->Incre_ItemNote; ?></td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td width="550" rowspan="2" class="l_data">合計</td>
+            <td width="100" rowspan="2" class="r_data"><?php echo $this->orderCustomer->UseAmount; ?></td>
+            <td width="40" class="c_data"><?php echo $this->orderCustomer->Incre_BorderScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_BorderNote; ?></td>
+          </tr>
+          <tr>
+            <td width="40" class="c_data"><?php echo $this->orderCustomer->Incre_LimitCheckScore; ?></td>
+            <td class="l_data"><?php echo $this->orderCustomer->Incre_LimitCheckNote; ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_label2"><b>備考</b></td>
+          </tr>
+          <tr>
+            <td class="c_data"><textarea name="Incre_Note" id="Incre_Note" cols="80"><?php echo $this->orderCustomer->Incre_Note; ?></textarea></td>
+          </tr>
+        </tbody>
+      </table>
+      <div align="center">
+        <p><input type="submit" value="　　　O　K　　　" onClick="javascript:sok();" />　　　　　　　　<input type="submit" value="　　　N　G　　　" onClick="javascript:sng();" /></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

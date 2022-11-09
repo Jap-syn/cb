@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      CSVエラークリア
+    <?php if(!$this->noOem) { ?>
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    <?php } ?>
+    </h3>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <tr>
+          <td class="l_data">
+            <?php echo f_nf($this->preCount, '#,##0'); ?> 件中
+            <?php echo f_nf($this->preCount - $this->postCount, '#,##0'); ?> 件のCSVエラーをクリアしました。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="submit-area">
+      <a href="jnbgrp/continue/oid/<?php echo f_e($this->oid); ?>/tid/<?php echo f_e($this->tranId); ?>">　インポート確認画面へ戻る　</a>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

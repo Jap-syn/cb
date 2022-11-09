@@ -1,0 +1,206 @@
+<?php
+require_once 'Coral/View/CommandBar.php';
+
+// HTMLヘッダ
+echo $this->render( 'document_header.php' );
+
+?>
+<script type="text/javascript">
+function doSubmit() {
+	($('confirmed_form') || { submit : function() { alert('cannot post !!'); }}).submit();
+}
+Event.observe(window, 'load', function() {
+	if($('result_table')) new NetB.UI.TableEx($('result_table'), { height : 300 });
+	if($('error_table')) new NetB.UI.TableEx($('error_table'), { height : 300 });
+});
+</script>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'system_message.php' );
+
+// ページタイトル
+echo $this->render( 'page_title.php' );
+?>
+<div class="main_contents">
+
+<?php if(!$this->hasData) { /* 更新可能行がない場合 */ ?>
+<?php
+$commandBar = new Coral_View_CommandBar(
+	// title
+	f_nf($this->errorCount, '更新可能なデータがありません (#,##0 件のエラー)'),
+	// buttons
+	array(
+		new Coral_View_CommandBar_Button(
+			array(
+				Coral_View_CommandBar_Button::OPTION_ID => 'backTo',
+				Coral_View_CommandBar_Button::OPTION_HREF => 'shippingsp/index',
+				Coral_View_CommandBar_Button::OPTION_TEXT => '伝票番号更新画面へ戻る',
+				Coral_View_CommandBar_Button::OPTION_TITLE => '前の画面に戻ってファイルを訂正してください'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+	<h3>エラー内容</h3>
+	<ul>
+	<?php foreach($this->errorRows as $errRow) { ?>
+		<li><?php echo f_nf($errRow->getLineNumber() + 1, '#,##0'); ?> 行目：</li>
+			<ul>
+			<?php
+			foreach($errRow->getData() as $key => $data) {
+				if(!is_int($key)) continue;
+				$colName = key($data);
+				$label = $this->colMap[$colName];
+				echo sprintf('<li>%s ： %s</li>', f_e($label), f_e($data[$colName]));
+			} ?>
+			</ul>
+		</li>
+	<?php } ?>
+	</ul>
+<?php } else {
+$commandBar = new Coral_View_CommandBar(
+	// title
+	$this->validCount ?
+		sprintf('%s 件のデータが更新可能です (%s 件のエラー)', f_nf($this->validCount, '#,##0'), f_nf($this->errorCount, '#,##0')) :
+		f_nf($this->errorCount, '更新可能なデータがありません (#,##0 件のエラー)')
+);
+
+// buttons
+if($this->validCount) {
+	$commandBar
+		->addButton(
+			new Coral_View_CommandBar_Button(
+				array(
+					Coral_View_CommandBar_Button::OPTION_ID => 'confirmed',
+					Coral_View_CommandBar_Button::OPTION_HREF => 'javascript:doSubmit()',
+					Coral_View_CommandBar_Button::OPTION_TEXT => 'この内容で更新',
+					Coral_View_CommandBar_Button::OPTION_TITLE => '内容に問題がなければ、ここをクリックして更新を実行します'
+				)
+			)
+		);
+}
+	$commandBar
+		->addButton(
+			new Coral_View_CommandBar_Button(
+				array(
+					Coral_View_CommandBar_Button::OPTION_ID => 'backTo',
+					Coral_View_CommandBar_Button::OPTION_HREF => 'shippingsp/index',
+					Coral_View_CommandBar_Button::OPTION_TEXT => '伝票番号更新画面へ戻る',
+					Coral_View_CommandBar_Button::OPTION_TITLE => '前の画面に戻ってファイルを訂正してください'
+				)
+			)
+		);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+	<div style="padding-left: 40px">
+<?php if(isset($this->validRows) && $this->validCount) { ?>
+	<h4 class="csv_result_title">更新可能なデータ：<?php echo f_nf($this->validCount, '#,##0 件'); ?></h4>
+	<table id="result_table" class="csv_result" border="1" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th>行</th>
+			<?php foreach($this->colMap as $col_name => $title) { ?>
+				<th><?php echo f_e($title); ?></th>
+			<?php } ?>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach($this->validRows as $index => $validRow) { ?>
+			<?php $row = $validRow->getData(); ?>
+		<tr>
+			<td style="text-align: right"><?php echo f_nf($validRow->getLineNumber() + 1, '#,##0'); ?></td>
+			<?php foreach($this->colMap as $col_name => $title) { ?>
+			<td<?php if($col_name == 'Deli_JournalNumber') echo ' class="main_col"'; ?>>
+			<?php if($col_name == 'OrderId') { ?>
+				<a href="search/detail/id/<?php echo f_e($row[$col_name]); ?>" target="_blank">
+					<?php echo f_e($row[$col_name]); ?>
+				</a>
+			<?php } else { ?>
+				<?php echo f_e($row[$col_name]); ?>
+			<?php } ?>
+			</td>
+			<?php } ?></tr>
+		<?php } ?>
+		</tbody>
+	</table>
+	<form id="confirmed_form" method="post" action="shippingsp/saveCsv">
+		<input name="form[dump]" id="dump_data" type="hidden" value="<?php echo f_e($this->dump); ?>" />
+		<center>
+			<button type="submit">この内容で更新</button>
+		</center>
+	</form>
+<?php } ?>
+	
+<?php if(isset($this->errorRows) && $this->errorCount) { ?>
+	<h4 class="csv_result_title">エラーデータ：<?php echo f_nf($this->errorCount, '#,##0 件'); ?></h4>
+	<table id="error_table" class="csv_result" border="1" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th>行</th>
+				<th style="width:150px">エラー内容</th>
+			<?php foreach($this->colMap as $col_name => $title) { ?>
+				<th><?php echo f_e($title); ?></th>
+			<?php } ?>
+			</tr>
+		</thead>
+		<tbody>
+		<?php
+		foreach($this->errorRows as $index => $errorRow) {
+			$topRow = $errorRow->getData();
+			$row = $topRow['_raw_data'];
+			$errInfo = array();
+			foreach($topRow as $i => $info) {
+				if(!is_int($i)) continue;
+				foreach($info as $key => $value) {
+					if(!is_array($errInfo[$key])) $errInfo[$key] = array();
+					$errInfo[$key][] = $value;
+				}
+			}
+		?>
+		<tr>
+			<td style="text-align: right"><?php echo f_nf($errorRow->getLineNumber() + 1, '#,##0'); ?></td>
+			<td class="error_info" style="white-space:normal;width:150px">
+				<ul><?php foreach($errInfo as $key => $info) { ?>
+					<?php foreach($info as $i => $value) { echo sprintf('<li>%s</li>', f_e($value)); } ?>
+				<?php } ?></ul>
+			</td>
+			<?php foreach($this->colMap as $col_name => $title) { ?>
+			<td<?php if($errInfo[$col_name]) { ?> style="background-color: pink"<?php }?>>
+			<?php if($col_name == 'OrderId' && !$errInfo[$col_name]) { ?>
+				<a href="search/detail/id/<?php echo f_e($row[$col_name]); ?>" target="_blank">
+					<?php echo f_e($row[$col_name]); ?>
+				</a>
+			<?php } else { ?>
+				<?php echo f_e($row[$col_name]); ?>
+			<?php } ?>
+			</td>
+			<?php } ?>
+		</tr>
+		<?php } ?>
+		</tbody>
+	</table>
+<?php } ?>
+
+	</div>
+<?php } ?>
+</div>
+<?php
+// フッタメニュー
+echo $this->render( 'footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'page_footer.php' );
+?>
+</body>
+</html>

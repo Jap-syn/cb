@@ -1,0 +1,454 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages, $id = null)
+{
+  if (empty($messages)) return;
+  if (!is_array($messages)) $messages = array($messages);
+  $list = array();
+  foreach ($messages as $msg) $list[] = f_e($msg);
+  $temp = join('<br />', $list);
+  if ($id != null) {
+      echo "<div class='input_error_message' id='$id' data-value='$temp'>";
+  } else {
+      echo "<div class='input_error_message' data-value=''>";
+  }
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+
+<script type="text/javascript">
+</script>
+
+<style>
+  .sbps-cell {
+    white-space: normal;
+    vertical-align: top;
+  }
+  .disabled {
+    color: -internal-light-dark(graytext, rgb(170, 170, 170));
+    opacity: 0.7;
+    border-color: rgba(118, 118, 118, 0.3);
+  }
+  select[readonly]
+  {
+      pointer-events: none;
+  }
+</style>
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <!-- start #wrapper -->
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>【届いてから払い登録】</h3>
+      <div id="message"></div>
+      <form name="form" id="frmSettingTodo" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="EnterpriseId" value="<?php echo f_e($data['EnterpriseId']); ?>">
+        <input type="hidden" name="SiteId" value="<?php echo f_e($data['SiteId']); ?>">
+        <input type="hidden" name="NewLogoSeq" value="<?php echo f_e($data['NewLogoSeq']); ?>">
+
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_label">事業者ID</td>
+              <td class="l_label"><?php echo f_e($data['EnterpriseId']) ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">加盟店名称</td>
+              <td class="l_label"><?php echo f_e($data['EnterpriseNameKj']) ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">サイトID</td>
+              <td class="l_label"><?php echo f_e($data['SiteId']) ?></td>
+            </tr>
+            <tr>
+              <td class="r_label">サイト名称</td>
+              <td class="l_label"><?php echo f_e($data['SiteNameKj']) ?></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="csv-container">
+          <select id="sltSiteCopy" onchange="document.getElementById('btnSiteCopy').disabled = this.value == 0">
+            <option value="0">---</option>
+            <?php foreach ($this->sites as $s) {
+              if ($s['SiteId'] == $data['SiteId'] || !in_array($s['SiteId'], $this->sitesSbps)) continue;
+            ?>
+              <option value="<?php echo $s['SiteId']; ?>"><?php echo $s['SiteId'] . ': ' . $s['SiteNameKj']; ?></option>
+            <?php } ?>
+          </select>
+          <input type="button" value="コピー" id="btnSiteCopy" style="margin: 0 23px 0 10px;" disabled />
+        </div>
+
+        <table class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_label">有効設定</td>
+              <td class="l_label">
+                <input type="checkbox" id="PaymentAfterArrivalFlg" name="PaymentAfterArrivalFlg" value="1" <?php if($data['PaymentAfterArrivalFlg'] == 1){echo 'checked';} ?> />
+                  <?php show_error_message($this->error['PaymentAfterArrivalFlg']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">ロゴ(小)</td>
+              <td class="l_label">
+                <input id="SmallLogo" name="SmallLogo" type="file" value="<?php echo f_e($data['SmallLogo']); ?>" />
+                <br>
+                <?php if (isset($data['SmallLogo'])) { ?>
+                  <img src="data:image/jpeg;base64,<?php echo f_e($data['SmallLogo']); ?>" style="width: 80px; height: 50px; margin-left: 5px; border-radius: 0px;" /> ※注文マイページ(クレジット支払い)画面上に表示されるロゴ
+                <?php } ?>
+                <?php show_error_message($this->error['SmallLogo']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label">特定商取引に関するリンク先</td>
+              <td class="l_label">
+                <input type="text" size="70" id="SpecificTransUrl" name="SpecificTransUrl" value="<?php echo f_e($data['SpecificTransUrl']); ?>">
+                <?php show_error_message($this->error['SpecificTransUrl']); ?>
+              </td>
+            </tr>
+            <tr>
+                <td class="r_label">領収書発行</td>
+                <td class="l_label">
+                  <input type="radio" name="ReceiptUsedFlg" value="0" <?php if ( $data['ReceiptUsedFlg'] == 0 ) { echo 'checked'; } ?> /> 利用しない
+                  <input type="radio" name="ReceiptUsedFlg" value="1" <?php if ( $data['ReceiptUsedFlg'] == 1 ) { echo 'checked'; } ?> /> 利用する
+                  <?php show_error_message($this->error['ReceiptUsedFlg']); ?>
+                </td>
+            </tr>
+            <tr>
+              <td class="r_label">領収書但し書き</td>
+              <td class="l_label">
+                <input type="text" size="70" id="ReceiptIssueProviso" name="ReceiptIssueProviso" value="<?php echo f_e($data['ReceiptIssueProviso']); ?>">
+                <?php show_error_message($this->error['ReceiptIssueProviso']); ?>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="datatable bd-col" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_label th bd-b-none" colspan="3">
+                  <span>【支払可能種類】</span><br>
+                <span class="margin_r_50"> ※ 参考値 ※ 　後払い手数料</span>
+                <span class="margin_r_50">  決済手数料  <?php echo f_e($data['SettlementFeeRate']); ?>%</span>
+                <span class="margin_r_50">請求手数料(別送)　　<?php echo f_e($data['ClaimFeeBS']); ?>円／（同梱）　　<?php echo f_e($data['ClaimFeeDK']); ?>円</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="l_label_2 pd-0" colspan="3">
+                <table class="bd-col" style="width: 100%; margin: 0; padding: 0;">
+                    <tr>
+                        <th class="th c_label" rowspan="2">支払方法</th>
+                        <th class="th c_label" rowspan="2" style="width: 130px;">契約先</th>
+                        <th class="th c_label" rowspan="2" style="width: 90px;">決済手数料率</th>
+                        <th class="th c_label" colspan="2">請求手数料（税抜）</th>
+                        <th class="th c_label" rowspan="2" style="width: 60px;">利用期間</th>
+                        <th class="th c_label" rowspan="2" style="width: 160px;">利用開始日時</th>
+                    </tr>
+                    <tr>
+                        <th class="th c_label" style="width: 110px;">(別送)</th>
+                        <th class="th c_label" style="width: 110px;">(同梱)</th>
+                    </tr>
+                  <?php for($i=0; $i<sizeof($this->payments); $i++) {
+                    $paymentId = $this->payments[$i]['PaymentId'];
+                  ?>
+                  <tr id="row_sbps_<?php echo $paymentId; ?>">
+                    <td class="th">
+                      <input type="checkbox" class="input-ValidFlg"  onchange="changeLableInput(this.id)" data-id="Payment_<?php echo $paymentId; ?>" data-flag="<?php echo $this->flagAction; ?>" id="Payment_<?php echo $paymentId; ?>_ValidFlg" name="Payment[<?php echo $paymentId; ?>][ValidFlg]" <?php if($data['Payment'][$paymentId]['ValidFlg'] == 1){echo 'checked';} ?> value="1" />
+                      <?php echo $this->payments[$i]['PaymentName'];?>
+                    </td>
+                    <td class="th pr-2 sbps-cell">
+                      <select <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'readonly';?>  class="w_47 <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'disabled';?>" style="width: 130px;" name="Payment[<?php echo $paymentId; ?>][ContractorId]" id="Payment_<?php echo $paymentId; ?>_ContractorId">
+                        <option value="0">---</option>
+                        <?php foreach ($this->contractors as $contractor) { ?>
+                          <option <?php if ($data['Payment'][$paymentId]['ContractorId'] == $contractor['ContractorId']) { echo 'selected'; } ?> value="<?php echo $contractor['ContractorId']; ?>"><?php echo $contractor['ContractorName']; ?></option>
+                        <?php } ?>
+                      </select>
+                      <?php show_error_message($this->error['Payment'][$paymentId]['ContractorId']); ?>
+                    </td>
+                    <td class="th pr-2 sbps-cell">
+                      <input class="<?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'disabled';?>" <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'readonly';?> name="Payment[<?php echo $paymentId; ?>][SettlementFeeRate]"  id="Payment_<?php echo $paymentId; ?>_SettlementFeeRate" size="5" value="<?php echo $data['Payment'][$paymentId]['SettlementFeeRate']; ?>" /> %
+                      <?php show_error_message($this->error['Payment'][$paymentId]['SettlementFeeRate']); ?>
+                    </td>
+                    <td class="th sbps-cell"> 
+                      <input class="<?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'disabled';?>" <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'readonly';?> name="Payment[<?php echo $paymentId; ?>][ClaimFeeBS]" id="Payment_<?php echo $paymentId; ?>_ClaimFeeBS" size="8" value="<?php echo $data['Payment'][$paymentId]['ClaimFeeBS']; ?>" class="pr-2"/> 円
+                      <?php show_error_message($this->error['Payment'][$paymentId]['ClaimFeeBS']); ?>
+                    </td>
+                    <td class="th sbps-cell">
+                      <input class="<?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'disabled';?>" <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'readonly';?> name="Payment[<?php echo $paymentId; ?>][ClaimFeeDK]" id="Payment_<?php echo $paymentId; ?>_ClaimFeeDK" size="8" value="<?php echo $data['Payment'][$paymentId]['ClaimFeeDK']; ?>" /> 円
+                      <?php show_error_message($this->error['Payment'][$paymentId]['ClaimFeeDK']); ?>
+                    </td>
+                    <td class="th sbps-cell">
+                      <input class="<?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'disabled';?>" <?php if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) echo 'readonly';?> name="Payment[<?php echo $paymentId; ?>][NumUseDay]" id="Payment_<?php echo $paymentId; ?>_NumUseDay" size="2" value="<?php echo $data['Payment'][$paymentId]['NumUseDay']; ?>" />日
+                      <?php show_error_message($this->error['Payment'][$paymentId]['NumUseDay']); ?>
+                    </td>
+                    <td class="th sbps-cell">
+                      <?php if (!$this->sitePaymentsData[$paymentId]['UseStartDate'] || strtotime($this->sitePaymentsData[$paymentId]['UseStartDate']) > time()) {
+                          $dataValue = 1;
+                          $disabled = '';
+                          $class = '';
+                          if ($this->flagAction == 1 && $data['Payment'][$paymentId]['ValidFlg'] == 0) {
+                              $disabled = 'readonly';
+                              $class = 'disabled';
+                          }
+                      } else {
+                          $dataValue = 0;
+                          $disabled = '';
+                          $class = '';
+                          if ($this->flagAction == 1) {
+                              $disabled = 'readonly';
+                              $class = 'disabled';
+                          }
+                      } ?>
+                        <input class="input-UseStartDate <?php echo $class;?>" <?php echo $disabled;?> data-value ="<?php echo $dataValue;?>" data-flag ="<?php echo $this->sitePaymentsData[$paymentId]['ValidFlg'];?>" name="Payment[<?php echo $paymentId; ?>][UseStartDate]"  id="Payment_<?php echo $paymentId; ?>_UseStartDate" size="14" value="<?php echo $data['Payment'][$paymentId]['UseStartDate'] ; ?>"/>
+                      <?php
+                        $id_useStartDate = "Payment_".$paymentId."_UseStartDate_Error";
+                        show_error_message($this->error['Payment'][$paymentId]['UseStartDate'], $id_useStartDate);
+                      ?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </table>
+              </td>
+            </tr>
+            <tr>
+                <td class="l_label th bd-t-none" colspan="3">【連携情報】</td>
+            </tr>
+            <tr>
+                <td class="r_label th" rowspan="7"> SBPS連携 </td>
+                    <tr>
+                        <td class="l_label right-label w-20 th">ﾏｰﾁｬﾝﾄID </td>
+                        <td class="th l_label">
+                          <input name="MerchantId" value="<?php echo $data['MerchantId'] ?>"id="MerchantId" />
+                          <?php show_error_message($this->error['MerchantId']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="l_label right-label w-20 th">ｻｰﾋﾞｽID </td>
+                        <td class="th l_label">
+                          <input name="ServiceId" value="<?php echo $data['ServiceId'] ?>"id="ServiceId" />
+                          <?php show_error_message($this->error['ServiceId']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="l_label right-label w-20 th">ハッシュキー　</td>
+                        <td class="th l_label">
+                          <input size="70" name="HashKey" value="<?php echo $data['HashKey'] ?>"id="HashKey" />
+                          <?php show_error_message($this->error['HashKey']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="l_label right-label w-20 th">Basic認証ID </td>
+                        <td class="th l_label">
+                          <input name="BasicId" value="<?php echo $data['BasicId'] ?>"id="BasicId" />
+                          <?php show_error_message($this->error['BasicId']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="l_label right-label w-20 th">Basic認証PW　</td>
+                        <td class="th l_label">
+                          <input size="70" name="BasicPw" value="<?php echo $data['BasicPw'] ?>"id="BasicPw" />
+                          <?php show_error_message($this->error['BasicPw']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="r_label right-label w-20 th">商品名称</td>
+                        <td class="th l_label">
+                          <input size="70" name="PaymentAfterArrivalName" value="<?php echo f_e($data['PaymentAfterArrivalName']); ?>"id="PaymentAfterArrivalName">
+                          <?php show_error_message($this->error['PaymentAfterArrivalName']); ?>
+                        </td>
+                    </tr>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="datatable bd-none" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td class="c_data" colspan=6>
+              <input type="submit" id="btnConfirm" name="btnConfirm" value="確 定" class="width_100 margin_r_100"/>
+              <input type="button" id="btnCancel" name="btnCancel" value="キャンセル" onClick="location.href='<?php echo $backUrl; ?>';" class="width_100"/>
+              <div id="submit_massage" style="display: none;color: red;">コンビニ収納代行情報の加入者固有コードを入力した後は、必ず検索ボタンを押してください</div>
+              <input type="hidden" id="allowOutOfAmendsName" name="form[allowOutOfAmendsName]" value="<?php echo f_e($this->AllowOutOfAmendsName); ?>" class="width_100"/>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div><!-- end #contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+  
+<script>
+
+function changeLableInput(id){
+    let arrayBaseID = id.split("_");
+    let useStartDate = arrayBaseID[0] + "_" + arrayBaseID[1] + "_UseStartDate";
+    let contractorId = arrayBaseID[0] + "_" + arrayBaseID[1] + "_ContractorId";
+    let settlementFeeRate = arrayBaseID[0] + "_" + arrayBaseID[1] + "_SettlementFeeRate";
+    let claimFeeBS = arrayBaseID[0] + "_" + arrayBaseID[1] + "_ClaimFeeBS";
+    let claimFeeDK = arrayBaseID[0] + "_" + arrayBaseID[1] + "_ClaimFeeDK";
+    let numUseDay = arrayBaseID[0] + "_" + arrayBaseID[1] + "_NumUseDay";
+    let el_checkbox = document.getElementById(id);
+    let data_flag = el_checkbox.dataset.flag;
+    let el_useStartDate = document.getElementById(useStartDate);
+    let el_contractorId = document.getElementById(contractorId);
+    let el_settlementFeeRate = document.getElementById(settlementFeeRate);
+    let el_claimFeeBS = document.getElementById(claimFeeBS);
+    let el_claimFeeDK = document.getElementById(claimFeeDK);
+    let el_numUseDay = document.getElementById(numUseDay);
+    let data_id = el_useStartDate.dataset.value;
+    let data_flag_check = el_useStartDate.dataset.flag;
+    if (data_flag == 1) {
+        if (document.getElementById(id).checked) {
+            document.getElementById(contractorId).removeAttribute('readonly');
+            document.getElementById(contractorId).classList.remove('disabled');
+            document.getElementById(settlementFeeRate).removeAttribute('readonly');
+            document.getElementById(settlementFeeRate).classList.remove('disabled');
+            document.getElementById(claimFeeBS).removeAttribute('readonly');
+            document.getElementById(claimFeeBS).classList.remove('disabled');
+            document.getElementById(claimFeeDK).removeAttribute('readonly');
+            document.getElementById(claimFeeDK).classList.remove('disabled');
+            document.getElementById(numUseDay).removeAttribute('readonly');
+            document.getElementById(numUseDay).classList.remove('disabled');
+            if (data_id == '1') {
+                document.getElementById(useStartDate).removeAttribute('readonly');
+                document.getElementById(useStartDate).classList.remove('disabled');
+            } else {
+                if (data_flag_check == 0) {
+                    document.getElementById(useStartDate).removeAttribute('readonly');
+                    document.getElementById(useStartDate).classList.remove('disabled');
+                }
+            }
+        } else {
+            document.getElementById(useStartDate).setAttribute('readonly', true);
+            document.getElementById(useStartDate).classList.add('disabled');
+            document.getElementById(contractorId).setAttribute('readonly', true);
+            document.getElementById(contractorId).classList.add('disabled');
+            document.getElementById(settlementFeeRate).setAttribute('readonly', true);
+            document.getElementById(settlementFeeRate).classList.add('disabled');
+            document.getElementById(claimFeeBS).setAttribute('readonly', true);
+            document.getElementById(claimFeeBS).classList.add('disabled');
+            document.getElementById(claimFeeDK).setAttribute('readonly', true);
+            document.getElementById(claimFeeDK).classList.add('disabled');
+            document.getElementById(numUseDay).setAttribute('readonly', true);
+            document.getElementById(numUseDay).classList.add('disabled');
+        }
+    }
+}
+
+Event.observe(window, 'load', function() {
+	Event.observe($('frmSettingTodo'), 'submit', function(evt) {
+		Event.stop(evt);
+    // show confirm if starDate is past
+    var startDateIsPast = false;
+    var formData = Object.fromEntries(new FormData(evt.target).entries());
+    for (const [key, value] of Object.entries(formData)) {
+      if (key.indexOf('UseStartDate') !== -1 && value) {
+        if (Date.parse(value) - Date.parse(new Date()) < 0) {
+          startDateIsPast = true;
+        }
+      }
+    }
+    // validate form using ajax
+    var ajax = new Ajax.Request(
+        "site/validatetodo/eid/<?php echo $data['EnterpriseId']; ?>/sid/<?php echo $data['SiteId']; ?>",
+        {
+            method : "post",
+            asynchronous : true,
+            postBody : $H(formData).toQueryString(),
+            onException : function(xhr, err) {
+                throw err;
+            },
+            onComplete : function(xhr) {
+                var res = xhr.responseText.parseJSON();
+                if (res.length == 0) { // no error
+                  if (startDateIsPast) { // starDate is past
+                    if (confirm('利用開始日時が過去日です') && confirm('更新してもいいですか。')) {
+                      $('frmSettingTodo').submit();
+                    }
+                  } else if (confirm('更新してもいいですか。')) { // all startDate is future
+                    $('frmSettingTodo').submit();
+                  }
+                } else { // has error
+                  $('frmSettingTodo').submit();
+                }
+            }
+        }
+    );
+	}.bindAsEventListener($('frmSettingTodo')));
+});
+
+Event.observe(document.getElementById("btnSiteCopy"), "click", function(evt) {  
+  var sid = document.getElementById("sltSiteCopy").value;
+  console.log(document.querySelectorAll('[class^="input-UseStartDate"]').length);
+  console.log(document.querySelectorAll('[id^="row_sbps_"]').length);
+  if (document.querySelectorAll('[class^="input-UseStartDate"]').length == document.querySelectorAll('[id^="row_sbps_"]').length) {
+    fillDataFromSiteCopy(sid);
+  } else { // useStartDate is past
+    //alert('利用開始日時が過去日の場合、警告');
+  }
+});
+
+function fillDataFromSiteCopy(siteId) {
+  var ajax = new Ajax.Request(
+        "site/getsbpsbysiteid",
+        {
+            method : "post",
+            asynchronous : true,
+            postBody : $H( {
+                sid : siteId,
+            } ).toQueryString(),
+            onException : function(xhr, err) {
+                throw err;
+            },
+            onComplete : function(xhr) {
+                var res = xhr.responseText.parseJSON();
+                if (res.length == 0) { // no sbps data
+                  alert('設定されていません');
+                } else if (confirm('すでに設定済ですがコピーしてよろしいでしょうか？')) { // ok then fill data
+                  var elRows = document.querySelectorAll('[id^="row_sbps_"]');
+                  for (var i = 0; i < elRows.length; i++) {
+                    var paymentId = elRows[i].id.split('_')[2];
+                    if (res.SitePayment[paymentId]) { // fill copied data
+                      document.getElementById('Payment_' + paymentId + '_ValidFlg').checked = true;
+                      document.getElementById('Payment_' + paymentId + '_ContractorId').value = res.SitePayment[paymentId].ContractorId;
+                      document.getElementById('Payment_' + paymentId + '_SettlementFeeRate').value = res.SitePayment[paymentId].SettlementFeeRate;
+                      document.getElementById('Payment_' + paymentId + '_ClaimFeeBS').value = res.SitePayment[paymentId].ClaimFeeBS;
+                      document.getElementById('Payment_' + paymentId + '_ClaimFeeDK').value = res.SitePayment[paymentId].ClaimFeeDK;
+                      document.getElementById('Payment_' + paymentId + '_NumUseDay').value = res.SitePayment[paymentId].NumUseDay;
+                      document.getElementById('Payment_' + paymentId + '_UseStartDate').value = res.SitePayment[paymentId].UseStartDate;
+                      document.getElementById('MerchantId').value = res.Site.MerchantId;
+                      document.getElementById('ServiceId').value = res.Site.ServiceId;
+                      document.getElementById('HashKey').value = res.Site.HashKey;
+                      document.getElementById('BasicId').value = res.Site.BasicId;
+                      document.getElementById('BasicPw').value = res.Site.BasicPw;
+                      document.getElementById('PaymentAfterArrivalName').value = res.Site.PaymentAfterArrivalName;
+                    } else { // remove old data
+                      document.getElementById('Payment_' + paymentId + '_ValidFlg').checked = false;
+                      document.getElementById('Payment_' + paymentId + '_ContractorId').value = 0;
+                      document.getElementById('Payment_' + paymentId + '_SettlementFeeRate').value = '';
+                      document.getElementById('Payment_' + paymentId + '_ClaimFeeBS').value = '';
+                      document.getElementById('Payment_' + paymentId + '_ClaimFeeDK').value = '';
+                      document.getElementById('Payment_' + paymentId + '_NumUseDay').value = '';
+                      document.getElementById('Payment_' + paymentId + '_UseStartDate').value = '';
+                    }
+                  }
+                }
+            }
+        }
+    );
+}
+
+</script>
+
+
+</body>
+
+</html>

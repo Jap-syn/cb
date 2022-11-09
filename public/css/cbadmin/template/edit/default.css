@@ -1,0 +1,74 @@
+@CHARSET "UTF-8";
+
+#contents .action-area {
+    margin: -5px 25px 20px 25px;
+    border: solid 1px silver;
+    border-top: none 0px;
+    padding: 2px 25px;
+}
+#contents .action-area a {
+    margin: 0 12px;
+}
+
+#contents .content-box,
+#contents form#form {
+    margin: 5px 25px;
+    margin-bottom: 25px;
+}
+#contents form#form {
+    margin-top: 40px;
+    text-align: center;
+}
+form#form button {
+    width: 180px;
+    padding: 4px 12px;
+    font-size: 18px;
+    margin: 0 10px;
+}
+
+#contents .content-box .list-box {
+}
+#contents .content-box .list-box h4 {
+    margin: 5px 0;
+    padding: 0;
+}
+#contents .content-box .left-list-box {
+    float: left;
+    margin-left: 20px;
+}
+#contents .content-box .right-list-box {
+    float: right;
+    margin-right: 20px;
+}
+#contents .content-box .list-box .control-area {
+    text-align: center;
+}
+#contents .content-box .list-box .control-area button {
+    padding: 2px 8px;
+    margin: 5px;
+}
+
+#contents .content-box select.template-list {
+    width: 380px;
+    height: 200px;
+}
+
+select.template-list option {
+    height: 18px;
+    font-size: 14px;
+    padding: 3px 0 0 4px;
+}
+
+select.template-list option.required {
+	font-weight: bold;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    line-height: 0;
+    font-size: 0;
+    visibility: hidden;
+    clear: both;
+}

@@ -1,0 +1,326 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+echo $this->render('cbadmin/reclaim/common_scripts.php');
+?>
+</head>
+<script type="text/javascript">
+<!--
+	function controlSpan()
+	{
+		if ($('spanprop').value == 0)
+		{
+			$('sld').disabled = true;
+			$('eld').disabled = true;
+		}
+		else if ($('spanprop').value == 3)
+		{
+			$('sld').disabled = false;
+			$('eld').disabled = false;
+		}
+		else
+		{
+			$('sld').disabled = false;
+			$('eld').disabled = true;
+		}
+	}
+
+	function changeCp()
+	{
+		if ($('claimpattern').value == 0)
+		{
+			$('isdone').disabled = true;
+		}
+		else
+		{
+			$('isdone').disabled = false;
+		}
+	}
+
+	function recalc(n)
+	{
+		var useAmount = parseInt($('ClaimedBalance' + n).value);
+		var damageInterest = parseInt($('damageInterest' + n).innerHTML);
+		var claimFee = parseInt($('ReClaimFee' + n).value);
+
+		if(!Element.visible($('damageInterest' + n))) damageInterest = 0;
+
+		var total;
+
+		total = useAmount + damageInterest + claimFee;
+
+		$('tClaimAmount' + n).innerHTML = total;
+	}
+
+//チェックボックス全件選択
+    function allChecked(check, targetForm, colnm){
+        for (var j=0, k=targetForm.length; j<k; j++){
+            var str = targetForm.elements[j].name;
+            if (str.indexOf(colnm) == 0){
+                // オブジェクトがイネーブル時に限り処理を行う
+                if (!targetForm.elements[j].disabled) {
+                    targetForm.elements[j].checked = check;
+                }
+            }
+        }
+    }
+//-->
+</script>
+<body onLoad="javascript:controlSpan(); changeCp();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/reclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求書発行待ちリスト</h3>
+    <h4>
+    <form id="sform" name="sform" method="get" action="reclaim/list">
+      <?php echo $this->tdaysSelectTag; ?>
+      <input style="text-align: right;" type="text" size="8" name="sld" id="sld" value="<?php echo $this->sld; ?>" />
+      <?php echo $this->spanSelectTag; ?>
+      <input style="text-align: right; margin-right: 50px;" type="text" size="8" name="eld" id="eld" value="<?php echo f_e($this->eld); ?>" />
+      <?php echo $this->claimPatternSearchTag; ?>
+      <?php echo $this->isDoneTag; ?>
+      <input style="margin-left: 50px;" id="search" type="submit" value="　検　索　" />
+
+      </p>
+      OEM<?php echo $this->oemTag; ?>
+      </p>
+      加盟店ID(後方一致)<input style="text-align: left;" type="text" size="10" name="entid" id="endid" value="<?php echo f_e($this->entid); ?>" />
+      注文ID(後方一致)<input style="text-align: left;" type="text" size="10" name="odrid" id="odrid" value="<?php echo f_e($this->odrid); ?>" />
+    </form>
+    </h4>
+    <h4><span class="cnt"><?php echo $this->cnt; ?></span>　件の再請求候補があります。</h4>
+    <?php if ($this->combinedCnlFlg) { ?>
+    <h4><font color="red">キャンセル承認されていない取りまとめデータが存在します。<br />請求書印刷前にキャンセル確認をしてください。</font></h4>
+    <?php } ?>
+    <form id="form" name="form" method="post" action="reclaim/done">
+      <table style="clear:both;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td align="right">
+            <input type="button" onclick="allChecked(true, this.form,'chkCsv'         );" value="印刷指示全選択　" />
+            <input type="button" onclick="allChecked(true, this.form,'chkPrint'       );" value="　印刷全選択　" />
+            <input type="button" onclick="allChecked(true, this.form,'chkWaitDecision');" style="display: none;" value="　確定全選択　" />
+            <input type="button" onclick="allChecked(true, this.form,'chkStopClaim'   );" value="紙STOP全選択" /></p>
+            <input type="button" onclick="allChecked(false,this.form,'chkCsv'         );" value="印刷指示全解除　" />
+            <input type="button" onclick="allChecked(false,this.form,'chkPrint'       );" value="　印刷全解除　" />
+            <input type="button" onclick="allChecked(false,this.form,'chkWaitDecision');" style="display: none;" value="　確定全解除　" />
+            <input type="button" onclick="allChecked(false,this.form,'chkStopClaim'   );" value="紙STOP全解除" />
+          </td>
+        </tr>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th rowspan="2">注文<br />SEQ</th>
+          	<th rowspan="2">注文ID</th>
+          	<th rowspan="2">属性</th>
+          	<th>請求先氏名</th>
+          	<th>TELチェック</th>
+          	<th>初回請求額</th>
+          	<th>前回期限</th>
+          	<th>遅延損害金</th>
+          	<th>再請求手数料</th>
+          	<th rowspan="2">印刷<br />指示</th>
+          	<th rowspan="2">印刷</th>
+          	<th rowspan="2"  style="display: none;">確定<br />待ち</th>
+          	<th rowspan="2">紙<br />STOP</th>
+          </tr>
+          <tr>
+          	<th>住所</th>
+          	<th>与信点数</th>
+          	<th>遅延日数</th>
+          	<th>経過日数</th>
+          	<th>再請求回数</th>
+          	<th>今回請求額</th>
+          </tr>
+          <?php 
+            // count関数対策
+            $listCount = 0;
+			      if (!empty($this->list)) {
+			      $listCount = count($this->list);
+			      }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td rowspan="2" class="r_data" <?php if($this->list[$i]["MypageReissueClass"] == 1 || $this->list[$i]["MypageReissueClass"] == 2) { ?> style="background-color:#bde9ba; " <?php } ?>>
+              <?php echo $this->list[$i]["OrderSeq"]; ?>
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>"/>
+              <input type="hidden" name="UseAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]["UseAmount"]; ?>"/>
+              <input type="hidden" id="UseAmountTotal<?php echo $i; ?>" name="UseAmountTotal<?php echo $i; ?>" value="<?php echo $this->list[$i]["UseAmountTotal"]; ?>"/>
+              <input type="hidden" name="MypageReissueClass<?php echo $i; ?>" value="<?php echo $this->list[$i]["MypageReissueClass"]; ?>"/>
+              <input type="hidden" name="LimitDate<?php echo $i; ?>" value="<?php echo $this->list[$i]["Clm_L_LimitDate"]; ?>"/>
+              <input type="hidden" name="OemId<?php echo $i; ?>" value="<?php echo $this->list[$i]["OemId"]; ?>"/>
+              <input type="hidden" id="ClaimedBalance<?php echo $i; ?>" name="ClaimedBalance<?php echo $i; ?>" value="<?php echo $this->list[$i]["ClaimedBalance"]; ?>"/>
+              <input type="hidden" name="RemindStopClass<?php echo $i; ?>" id="RemindStopClass<?php echo $i; ?>" value="<?php echo $this->list[$i]["RemindStopClass"]; ?>"/>
+              <input type="hidden" name="ReClaimIssueCtlPattern<?php echo $i; ?>" id="ReClaimIssueCtlPattern<?php echo $i; ?>" value="<?php echo $this->list[$i]["ReClaimIssueCtlPattern"]; ?>"/>
+            </td>
+            <td rowspan="2" class="l_data">
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["OrderId"]; ?></a>
+            </td>
+            <td rowspan="2" class="c_data"><?php echo $this->list[$i]["IncreArCaption"]; ?></td>
+            <td class="l_data">
+              <a target="_blank" href="customerinquiry/detail/custid/<?php echo $this->list[$i]["CustomerId"]; ?>"><?php echo $this->list[$i]["NameKj"]; ?></a>
+            </td>
+            <td class="l_data"><?php echo $this->list[$i]["RealCallResult"]; ?></td>
+            <td class="r_data"><span id="useAmount<?php echo $i; ?>"><?php echo $this->list[$i]["UseAmount"]; ?></span></td>
+            <td class="r_data"><?php echo $this->list[$i]["Clm_L_LimitDate"]; ?></td>
+            <td class="r_data">
+				<span id="damageInterest<?php echo $i; ?>" class="damage_interest_amount"><?php echo $this->list[$i]["damageInterest"]; ?></span>
+				<span class="dummy_damage_interest_amount" style="display: none">0</span>
+			</td>
+            <td class="r_data"><input style="text-align: right; " size="8" type="text" name="ReClaimFee<?php echo $i; ?>" id="ReClaimFee<?php echo $i; ?>" value="<?php echo isset($this->list[$i]["InputReClaimFee"]) ? $this->list[$i]["InputReClaimFee"] : $this->list[$i]["ReClaimFee"]; ?>" <?php echo isset($this->list[$i]["InputReClaimFee"]) ? "disabled" : ""; ?> onChange="javascript:recalc(<?php echo $i; ?>)" /></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="chkCsv<?php echo $i; ?>" id="chkCsv<?php echo $i; ?>" <?php echo isset($this->list[$i]["InputReClaimFee"]) ? "disabled" : ""; ?>/></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="chkPrint<?php echo $i; ?>" id="chkPrint<?php echo $i; ?>" /></td>
+            <td rowspan="2" class="c_data"  style="display: none;"><input type="checkbox" name="chkWaitDecision<?php echo $i; ?>" id="chkWaitDecision<?php echo $i; ?>" <?php if( $this->list[$i]['ConfirmWaitingFlg'] == '0') { echo 'disabled="disabled" '; } ?> /></td>
+            <td rowspan="2" class="c_data"><input type="checkbox" name="chkStopClaim<?php echo $i; ?>" id="chkStopClaim<?php echo $i; ?>" /></td>
+          </tr>
+          <tr>
+            <td class="l_data"><?php echo $this->list[$i]["UnitingAddress"]; ?>...</td>
+            <td class="r_data"><?php echo $this->list[$i]["Incre_ScoreTotal"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["damageDays"]; ?>　日</td>
+            <td class="r_data"><?php echo $this->list[$i]["passageDays"]; ?>　日</td>
+            <td class="r_data"><?php echo $this->list[$i]["reclaimCount"]; ?></td>
+            <td class="r_data"><span id="tClaimAmount<?php echo $i; ?>"><?php echo $this->list[$i]["tClaimAmount"]; ?></span></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <table>
+                <tr>
+                    <td width="200"><button id="submit-button" type="button" style="display: none;">　　印刷済に更新　　</button></td>
+                    <td>請求パターン　<?php echo $this->claimPatternPrintTag; ?>&nbsp;で&nbsp;</td>
+                    <td><button id="submit2" type="button">　　印刷指示　　</button></td>
+                    <!-- td><button id="submit3" type="button">　　　　印刷　　　　</button></td -->
+                    <td width="220" align="right"><button id="submit4" type="button">　紙STOPに更新　</button></td>
+                </tr>
+              </table>
+              <!-- <div id="claim_pattern_msg" style="display: none">※：再請求１は遅延損害金が計上されません</div>  -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+	Event.observe($('submit-button'), 'click', function() {
+		$('submit-button').disabled = true;
+		setTimeout(function() {
+			document.getElementById('form').submit();
+		}, 0);
+	});
+});
+
+Event.observe($("submit2"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    // チェックボックスにチェックが入っている対象のみリスト化する。
+    var cnt = 0;
+    var odrlist = "";
+    var cnt2 = 0;
+    var odrlist2 = "";
+    <?php
+      // count関数対策
+      $listCount = 0;
+      if (!empty($this->list)) {
+          $listCount = count($this->list);
+      }
+      for ($i = 0 ; $i < $listCount ; $i++) { ?>
+     if(chkCsv<?php echo $i ?>.checked && RemindStopClass<?php echo $i ?>.value == 1 ) {
+         cnt += 1;
+         odrlist += "<?php echo $this->list[$i]["OrderId"]; ?>\n";
+     }
+    if(chkCsv<?php echo $i ?>.checked && (ReClaimIssueCtlPattern<?php echo $i ?>.value != 0) && (ReClaimIssueCtlPattern<?php echo $i ?>.value != ClaimPattern.value)) {
+        cnt2 += 1;
+        odrlist2 += "<?php echo $this->list[$i]["OrderId"]; ?>\n";
+    }
+     <?php } ?>
+
+    if (ClaimPattern.value > 2 && cnt > 0){
+    	var msg  = "督促停止区分が設定されているため、下記注文は再請求３以降の印刷指示を行えません。\n";
+    	    msg += odrlist;
+    	    msg += "\n対象をリストから除外して実行してください。";
+    	alert(msg);
+    } else if (cnt2 > 0) {
+        var msg  = "強制解約通知が設定されているため、下記注文は指定パターンでの印刷指示は行えません。\n";
+        msg += odrlist2;
+        msg += "\n強制解約通知の請求パターンを選択してください。";
+        alert(msg);
+    } else {
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/jobparamset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // 印刷指示処理
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/csvoutput";
+    var ajax = new Ajax.Request( url, {method: 'post',  parameters: str, asynchronous: false });
+
+    location.reload(true);
+    }
+});
+
+//Event.observe($("submit3"), "click", function() {
+//
+//    // OEMID混在のチェック
+//    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+//    var url = "<?php echo $this->baseUrl; ?>/reclaim/ismixoemid";
+//    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+//	var res = eval('(' + ajax.transport.responseText + ')');
+//	if  (res['status'] != 1) {
+//		alert(res['status']);
+//		return
+//	}
+//
+//	// AJAX通信でフォーム情報をセッションに設定
+//    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+//    var url = "<?php echo $this->baseUrl; ?>/reclaim/jobparamset";
+//    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+//
+//    // PDF出力処理
+//    var url = "<?php echo $this->baseUrl; ?>/reclaim/print";
+//    var ref = window.open( url );
+//
+//    // PDF出力が終わったら随時リロードする
+//    // 最大10秒待機させる
+//    var wait = 0;
+//    var intvl = setInterval(function() {
+//    	wait++;
+//        if (ref.closed == true || wait == 50){
+//            clearInterval(intvl);
+//            location.reload(true);
+//        }
+//    }, 200);
+//
+//});
+
+Event.observe($("submit4"), "click", function() {
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/upstopclaim";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] == 1) {
+        // 成功⇒検索ボタン押下処理
+        alert("紙STOP処理完了");
+        document.getElementById('search').click();
+    }
+    else {
+        // 失敗⇒メッセージ創出
+        alert(res['status']);
+    }
+});
+</script>
+</html>

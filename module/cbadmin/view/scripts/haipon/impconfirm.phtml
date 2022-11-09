@@ -1,0 +1,233 @@
+<?php
+use models\Logic\Haipon\Exporter\LogicHaiponExporterFormatter;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<?php echo $this->render('cbadmin/haipon/styles.php'); ?>
+<style type="text/css">
+#contents table.list-table {
+    font-size: 12px;
+    border: solid 1px #666;
+    border-width: 1px 0 0 1px;
+    width: 820px;
+    margin: 0;
+}
+#contents table.list-table tr:hover {
+    background-color: lightcyan;
+}
+#contents table.list-table th,
+#contents table.list-table td {
+    border: solid 1px #666;
+    border-width: 0 1px 1px 0;
+    padding: 0 3px;
+    line-height: 1.4;
+}
+#contents table.list-table td.r-col {
+    text-align: right;
+}
+#contents table.list-table td.l-col {
+    text-align: left;
+}
+#contents table.list-table td.c-col {
+    text-align: center;
+}
+#imp-submit-area {
+    margin: -20px 25px 20px 25px;
+    border: solid 1px #aaa;
+    border-top: none 0;
+    text-align: center;
+    padding: 4px;
+}
+#contents table.list-table td a.invalid-order-id {
+    font-size: 11px;
+}
+#contents table.list-table {
+    table-layout: fixed;
+}
+#contents table.list-table .linenum-col {
+    width: 47px;
+}
+#contents table.list-table .journal-col {
+    width: 86px;
+}
+#contents table.list-table .order-col {
+    width: 86px;
+}
+#contents table.list-table .name-col {
+    width: 190px;
+}
+#contents table.list-table .method-col {
+}
+#contents table.list-table .result-col {
+    width: 68px;
+}
+#contents table.list-table .status-col {
+    width: 200px;
+}
+#contents table.list-table td.delived {
+    color: green;
+    font-weight: bold;
+}
+#contents table.list-table td.undelived {
+    color: #888;
+}
+</style>
+<script type="text/javascript">
+Event.observe(window, 'load', initPage);
+function initPage() {
+<?php 
+    // count関数対策
+    if(!empty($this->valid_data)) { ?>
+    Event.observe($('imp-submit'), 'click', function() {
+        $('imp-submit').disabled = true;
+        setTimeout(function() {
+            $('imp-form').submit();
+        }, 0);
+    });
+<?php } ?>
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/haipon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+        着荷確認 対象
+        (<?php 
+        // count関数対策
+        $validDataCount = 0;
+        if (!empty($this->valid_data)) {
+            $validDataCount = count($this->valid_data);
+        }
+        echo f_nf($validDataCount), '#,##0'); ?> 件)
+    </h3>
+    <form class="application-form import-form" id="imp-form" action="haipon/import" method="post">
+        <table class="list-table" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="linenum-col">CSV No.</th>
+                    <th class="journal-col">伝票番号</th>
+                    <th class="order-col">注文ID</th>
+                    <th class="name-col">配送先氏名</th>
+                    <th class="method-col">配送方法</th>
+                    <th class="result-col">照合結果</th>
+                    <th class="status-col">状況</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach($this->valid_data as $i => $row) { ?>
+            <?php $order = $row['orders'][0]; ?>
+                <tr>
+                    <td class="r-col"><?php echo f_e($row['line_number']); ?></td>
+                    <td><?php echo f_e($row['journal_number']); ?></td>
+                    <td>
+                        <a href="rworder/detail/oseq/<?php echo f_e($order['OrderSeq']); ?>" target="_blank" title="注文詳細を表示">
+                        <?php echo f_e($order['OrderId']); ?>
+                        </a>
+                    </td>
+                    <td><?php echo f_e($order['DestNameKj']); ?></td>
+                    <td><?php echo f_e($order['Deli_DeliveryMethodName']); ?></td>
+                    <td class="c-col delived">確認済</td>
+                    <td><?php echo f_e($row['status']); ?></td>
+            <?php } ?>
+            </tbody>
+        </table>
+        <input type="hidden" name="imp" value="<?php echo f_e($this->imp_data); ?>" />
+    </form>
+<?php 
+    // count関数対策
+        if(!empty($this->valid_data)) { ?>
+    <div class="ui-parts" id="imp-submit-area">
+        <button type="button" id="imp-submit">確定</button>
+    </div>
+<?php } ?>
+    <h3 class="contents_title">
+        着荷確認 対象外
+    (<?php
+    // count関数対策
+        $invalidDataCount = 0;
+        if (!empty($this->invalid_data)) {
+        $invalidDataCount = count($this->invalid_data);
+        }
+        echo f_nf($invalidDataCount), '#,##0'); ?> 件)
+    </h3>
+    <form class="application-form">
+        <table class="list-table" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <th class="linenum-col">CSV No.</th>
+                    <th class="journal-col">伝票番号</th>
+                    <th class="order-col">注文ID</th>
+                    <th class="name-col">配送先氏名</th>
+                    <th class="method-col">配送方法</th>
+                    <th class="result-col">照合結果</th>
+                    <th class="status-col">状況</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php foreach($this->invalid_data as $row) { ?>
+            <?php 
+                // count関数対策
+                $order_count = 0;
+                if (!empty($row['orders'])){
+                    $order_count = count($row['orders']);
+                } ?>
+                <tr>
+                    <td class="r-col"><?php echo f_e($row['line_number']); ?></td>
+                    <td><?php echo f_e($row['journal_number']); ?></td>
+                    <td>
+                    <?php if($order_count == 1) { ?>
+                        <a href="rwarvlcfm/simplelist/oseq/<?php echo f_e($row['orders'][0]['OrderSeq']); ?>" target="_blank" title="個別着荷確認を表示">
+                        <?php echo f_e($row['orders'][0]['OrderId']); ?>
+                        </a>
+                    <?php } else { ?>
+                        <?php echo f_e($row['invalid_reason']); ?>
+                    <?php } ?>
+                    </td>
+                    <td>
+                    <?php if($order_count == 1) { ?>
+                        <?php echo f_e($row['orders'][0]['DestNameKj']); ?>
+                    <?php } else if(!$order_count) { ?>
+                        -
+                    <?php } else { ?>
+                        <?php foreach($row['orders'] as $order) { ?>
+                            <a href="rworder/detail/oseq/<?php echo f_e($order['OrderSeq']); ?>" target="_blank" title="注文詳細へ" class="invalid-order-id">
+                            <?php echo f_e(sprintf('%s：%s', $order['OrderId'], $order['NameKj'])); ?>
+                            </a><br />
+                        <?php } ?>
+                    <?php } ?>
+                    </td>
+                    <td>
+                    <?php if($order_count == 1) { ?>
+                        <?php echo f_e($row['orders'][0]['Deli_DeliveryMethodName']); ?>
+                    <?php } else { ?>
+                        -
+                    <?php } ?>
+                    </td>
+                <?php if($row['delived']) { ?>
+                    <td class="c-col delived">確認済</td>
+                <?php } else { ?>
+                    <td class="c-col undelived">未確認</td>
+                <?php } ?>
+                    <td><?php echo f_e($row['status']); ?></td>
+            <?php } ?>
+            </tbody>
+        </table>
+    </form>
+<?php if(false) { ?>
+    <form action="haipon/import" method="post">
+        <input type="hidden" name="imp" value="<?php echo f_e(base64_encode(serialize($this->invalid_data))); ?>" />
+        <button>submit</button>
+    </form>
+<?php } ?>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

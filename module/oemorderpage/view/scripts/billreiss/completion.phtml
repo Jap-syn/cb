@@ -1,0 +1,46 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+<script>
+function quitBox( cmd )
+{
+	if( cmd == 'quit' )
+	{
+		open( location, '_self' ).close();
+	}
+	return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">再発行申請完了</div>
+        <div id="d_01">
+            請求書再発行申請を致しました。<br />
+            再発行された請求書の到着をお待ちください。
+        </div>
+        <div id="d_close"><input id="green_btn" type="button" value="画面を閉じる" onclick="return quitBox( 'quit' );" /></div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

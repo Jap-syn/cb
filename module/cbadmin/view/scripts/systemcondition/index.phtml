@@ -1,0 +1,102 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message( $messages ) {
+    if( empty( $messages ) ) return;
+    if( ! is_array( $messages ) ) $messages = array( $messages );
+    $list = array();
+    foreach( $messages as $msg ) $list[] = f_e( $msg );
+    echo '<div class="input_error_message">';
+    echo join( '<br />', $list );
+    echo '</div>';
+}
+?>
+<style>
+.input_error_message {
+    padding-left: 20px;
+    color: red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/systemcondition/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">システム条件登録・修正</h3>
+    <?php if( !empty( $this->error ) ) { ?>
+    <div style="border: double 3px firebrick; background-color: lemonchiffon; margin: 5px 25px; padding: 5px 10px; color: crimson">
+        ※：入力に不備があります。登録内容を見直してください。
+    </div>
+    <?php } ?>
+    <form name="form" method="post" action="systemcondition/up">
+    <table style="table-layout: auto;" width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th>プロパティ<br />ID</th>
+          <th>有効</th>
+          <th>モジュール</th>
+          <th>カテゴリー</th>
+          <th>プロパティ名</th>
+          <th>値</th>
+          <th>説明</th>
+      </tr>
+      </thead>
+      <tbody>
+        <?php $i = 0; foreach( $this->systemproperties as $systemproperty ) { ?>
+        <tr class="data">
+          <td class="c_label"><?php echo f_e( $systemproperty['PropId'] ); ?><input type="hidden" name="propid_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['PropId'] ); ?>" /></td>
+          <td class="c_data"><input type="checkbox" name="valid_<?php echo $i; ?>" value="1" <?php if( $systemproperty['ValidFlg'] == 1 ) { echo ' checked="checked"'; } ?> /></td>
+          <td class="c_data"><input type="text" size="10" name="module_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['Module'] ); ?>" />
+          <?php show_error_message( $this->error[$i]['Module_' . $i] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="10" name="category_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['Category'] ); ?>" />
+          <?php show_error_message( $this->error[$i]['Category_' . $i] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="15" name="name_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['Name'] ); ?>" />
+          <?php show_error_message( $this->error[$i]['Name_' . $i] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="20" name="propvalue_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['PropValue'] ); ?>" />
+          </td>
+          <td class="c_data"><input type="text" size="20" name="description_<?php echo $i; ?>" value="<?php echo f_e( $systemproperty['Description'] ); ?>" />
+          </td>
+        </tr>
+        <?php $i++; } ?>
+        <tr class="data">
+          <td class="c_label">　</td>
+          <td class="c_data"><input type="submit" value="新規" onclick="document.forms.form.action='systemcondition/new'" /></td>
+          <td class="c_data"><input type="text" size="10" name="module_new" value="<?php echo f_e( $this->new['Module_New'] ); ?>" />
+          <?php show_error_message( $this->error['module_new'] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="10" name="category_new" value="<?php echo f_e( $this->new['Category_New'] ); ?>" />
+          <?php show_error_message( $this->error['category_new'] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="15" name="name_new" value="<?php echo f_e( $this->new['Name_New'] ); ?>" />
+          <?php show_error_message( $this->error['name_new'] ); ?>
+          </td>
+          <td class="c_data"><input type="text" size="20" name="propvalue_new" value="<?php echo f_e( $this->new['PropValue_New'] ); ?>" />
+          </td>
+          <td class="c_data"><input type="text" size="20" name="description_new" value="<?php echo f_e( $this->new['Description_New'] ); ?>" />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="7" class="c_data">
+            <input type="submit" value="　更　新　" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+<?php
+// 共通ページフッタ
+echo $this->render( 'cbadmin/page_footer.php' );
+?>
+</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<?php
+use models\Logic\Haipon\Exporter\LogicHaiponExporterFormatter;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$first_kind = null;
+foreach($this->deliMethods as $kind => $conf) {
+    $first_kind = $kind;
+    break;
+}
+$formats = LogicHaiponExporterFormatter::getAvailableFormats();
+$first_format = null;
+foreach($formats as $key => $label) {
+    $first_format = $key;
+    break;
+}
+?>
+<?php echo $this->render('cbadmin/haipon/styles.php'); ?>
+<script type="text/javascript">
+Event.observe(window, 'load', init_page);
+function init_page() {
+    var first_form = document.getElementsByClassName('export-form').first();
+    showExportForm(first_form.id.replace(/^exp-/, ''));
+    document.getElementsByClassName('exp-journal-date').each(function(field) {
+        var
+            id = field.id,
+            key = id.replace(/^exp-journal-date-/, '');
+        new base.UI.DatePicker(
+            'date-picker-{0}'.format(key),
+            'exp-journal-date-{0}'.format(key),
+            'sel-journal-date-{0}'.format(key)
+        ).addEvent('onChange', function(selected) {
+            document.getElementsByClassName('exp-journal-date').findAll(function(f) {
+                return f.id != id;
+            }).each(function(f) {
+                f.value = selected.format('yyyy-MM-dd');
+            });
+        }).format = 'yyyy-MM-dd';
+    });
+}
+function showExportForm(kind) {
+    document.getElementsByClassName('export-form').each(function(form) {
+        var form_kind = (Form.getInputs(form, 'hidden', 'exp[kind]').first() || { value : null }).value;
+        if(form_kind == kind) {
+            new Element.ClassNames(form).add('current');
+            new Element.ClassNames($('sub-tab-{0}'.format(form_kind))).add('current');
+        } else {
+            new Element.ClassNames(form).remove('current');
+            new Element.ClassNames($('sub-tab-{0}'.format(form_kind))).remove('current');
+        }
+    });
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/haipon/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">配ポンインポートファイルの出力</h3>
+    <ul class="sub-tab">
+    <?php foreach($this->deliMethods as $kind => $conf) { ?>
+        <li>
+            <a id="sub-tab-<?php echo f_e($kind); ?>" href="javascript:void(0)" onclick="showExportForm('<?php echo f_e($kind); ?>');return false"><?php echo f_e($conf['label']); ?></a>
+        </li>
+    <?php } ?>
+        <li class="clear"></li>
+    </ul>
+<?php foreach($this->deliMethods as $kind => $conf) { ?>
+    <form class="application-form export-form<?php if($kind == $first_kind) echo ' current'; ?>" id="exp-<?php echo f_e($kind); ?>" method="post" action="haipon/export">
+        <input type="hidden" name="exp[kind]" value="<?php echo f_e($kind); ?>" />
+        <dl class="ui-parts">
+            <dt>対象配送方法</dt>
+            <dd>
+                <ul>
+                <?php foreach($conf['methods'] as $deli_id => $deli_info) { ?>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="exp[deli_id][]" value="<?php echo f_e($deli_id); ?>" checked="checked" />
+                            <?php echo f_e(sprintf('%s：%s', $deli_id, $deli_info['DeliMethodName'])); ?>
+                        </label>
+                    </li>
+                <?php } ?>
+                    <li class="clear"></li>
+                </ul>
+            </dd>
+        </dl>
+        <dl class="ui-parts">
+            <dt>伝票登録日</dt>
+            <dd>
+                <input type="text" name="exp[journal_date]" id="exp-journal-date-<?php echo f_e($kind); ?>" class="exp-journal-date" size="15" value="<?php echo f_e(date('Y-m-d')); ?>" />
+                以前
+                <button id="sel-journal-date-<?php echo f_e($kind); ?>">カレンダー</button>
+                <div id="date-picker-<?php echo f_e($kind); ?>" style="position: absolute;"></div>
+                (yyyy-MM-dd 形式)
+            </dd>
+        </dl>
+        <dl class="ui-parts">
+            <dt>出力形式</dt>
+            <dd>
+                <ul>
+                <?php foreach($formats as $key => $label) { ?>
+                    <li>
+                        <label>
+                            <input type="radio" name="exp[format]" value="<?php echo f_e($key); ?>"<?php if($key == $first_format) echo ' checked="checked"'; ?> />
+                            <?php echo f_e($label); ?>
+                        </label>
+                    </li>
+                <?php } ?>
+                    <li class="clear"></li>
+                </ul>
+            </dd>
+        </dl>
+        <div class="ui-parts" style="text-align: center">
+            <button type="submit">ダウンロード実行</button>
+        </div>
+    </form>
+<?php } ?>
+    <h3 class="contents_title">配ポン出力ファイルの取り込み<?php echo $this->cnt; ?></h3>
+    <form class="application-form import-form" id="imp-upload" method="post" action="haipon/impconfirm" enctype="multipart/form-data">
+        <div class="ui-parts">
+            <label>
+                <input id="imp-file" name="<?php echo $this->impFileField; ?>" type="file" />
+            </label>
+            <button type="submit">登録実行</button>
+        </div>
+    </form>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+<style>
+.timetable {
+    font-size: 12pt;
+}
+
+.timetable th {
+    background-color: white;
+    color: navy;
+    font-size: 14pt;
+}
+
+.timetable td {
+    text-align: center;
+    background-color: lightskyblue;
+}
+
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<center>
+    <p>
+        注文キャンセル申請を受け付けました。
+    </p>
+    <p/>
+    <p>
+        <a href="index/index">＞＞＞ トップへ戻る</a>
+    </p>
+</center>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>
+

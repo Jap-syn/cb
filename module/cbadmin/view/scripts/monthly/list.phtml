@@ -1,0 +1,141 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<script type="text/javascript">
+<!--
+	function recalc(n)
+	{
+		var paymentAmount = parseInt($('pao' + n).value);
+		var adjustAmount = parseInt($('AdjustmentAmount' + n).value);
+
+		var total = paymentAmount + adjustAmount;
+
+		$('PaymentAmountDisp' + n).innerHTML = total;
+		$('PaymentAmount' + n).value = total;
+	}
+//-->
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/monthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">月次明細データ作成</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        <?php echo $this->FixedMonthKanji; ?>の月次明細データを作成します。<br />
+        <span style="color: red;">※前月分のすべての立替確定処理を行ってから月次明細データを作成してください。</span>
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    <form name="form" method="post" action="monthly/fix">
+      <input type="hidden" name="FixedMonth" id="FixedMonth" value="<?php echo $this->FixedMonth; ?>" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>事業者LID</th>
+            <th>事業者名</th>
+            <th>注文<br />件数</th>
+            <th>注文総額</th>
+            <th>決済<br />手数料</th>
+            <th>請求<br />手数料</th>
+            <th>印紙代</th>
+            <th>月額<br />固定費</th>
+            <th>前月<br />不足</th>
+            <th>CNL<br />返金</th>
+            <th>振込<br />手数料</th>
+            <th>立替時<br />調整額</th>
+            <th>月次<br />調整額</th>
+            <th>請求金額</th>
+            <th>支払総額</th>
+          </tr>
+
+          <?php 
+          //  count関数対策 
+              $unlinkListCount = 0;
+              if (!empty($this->list)) {
+                  $unlinkListCount = count($this->list);
+              }
+              for ($i = 0 ; $i < $unlinkListCount ; $i++) { ?>
+          <tr>
+            <td class="c_data">
+              <input type="hidden" name="EnterpriseId<?php echo $i; ?>" id="EnterpriseId<?php echo $i; ?>" value="<?php echo $this->list[$i]['EnterpriseId']; ?>" />
+              <?php echo $this->list[$i]['LoginId']; ?>
+            </td>
+            <td class="l_data">
+              <?php echo $this->list[$i]['EnterpriseNameKj']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="OrderCount<?php echo $i; ?>" id="OrderCount<?php echo $i; ?>" value="<?php echo $this->list[$i]['ChargeCount']; ?>" />
+              <?php echo $this->list[$i]['ChargeCount']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="OrderAmount<?php echo $i; ?>" id="OrderAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]['UseAmount']; ?>" />
+              <?php echo $this->list[$i]['UseAmount']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="SettlementFee<?php echo $i; ?>" id="SettlementFee<?php echo $i; ?>" value="<?php echo $this->list[$i]['SettlementFee']; ?>" />
+              <?php echo $this->list[$i]['SettlementFee']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="ClaimFee<?php echo $i; ?>" id="ClaimFee<?php echo $i; ?>" value="<?php echo $this->list[$i]['ClaimFee']; ?>" />
+              <?php echo $this->list[$i]['ClaimFee']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="StampFee<?php echo $i; ?>" id="StampFee<?php echo $i; ?>" value="<?php echo $this->list[$i]['StampFeeTotal']; ?>" />
+              <?php echo $this->list[$i]['StampFeeTotal']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="MonthlyFee<?php echo $i; ?>" id="MonthlyFee<?php echo $i; ?>" value="<?php echo $this->list[$i]['MonthlyFee']; ?>" />
+              <?php echo $this->list[$i]['MonthlyFee']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="CarryOverMonthlyFee<?php echo $i; ?>" id="CarryOverMonthlyFee<?php echo $i; ?>" value="<?php echo $this->list[$i]['CarryOverFromLastMonth']; ?>" />
+              <?php echo $this->list[$i]['CarryOverFromLastMonth']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="CancelRepaymentAmount<?php echo $i; ?>" id="CancelRepaymentAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]['CalcelAmount']; ?>" />
+              <?php echo $this->list[$i]['CalcelAmount']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="TransferCommission<?php echo $i; ?>" id="TransferCommission<?php echo $i; ?>" value="<?php echo $this->list[$i]['TransferCommission']; ?>" />
+              <?php echo $this->list[$i]['TransferCommission']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="AdjustmentAmountOnCharge<?php echo $i; ?>" id="AdjustmentAmountOnCharge<?php echo $i; ?>" value="<?php echo $this->list[$i]['AdjustmentAmountOnCharge']; ?>" />
+              <?php echo $this->list[$i]['AdjustmentAmountOnCharge']; ?>
+            </td>
+            <td class="r_data">
+              <input style="text-align: right; font-size: 11px;" size="8" type="text" name="AdjustmentAmount<?php echo $i; ?>" id="AdjustmentAmount<?php echo $i; ?>" value="0" onChange="javascript:recalc(<?php echo $i; ?>);" />
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="ClaimAmount<?php echo $i; ?>" id="ClaimAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]['ClaimTotal']; ?>" />
+              <?php echo $this->list[$i]['ClaimTotal']; ?>
+            </td>
+            <td class="r_data">
+              <input type="hidden" name="PaymentAmount<?php echo $i; ?>" id="PaymentAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]['DecisionPaymentOrg']; ?>" />
+              <input type="hidden" name="pao<?php echo $i; ?>" id="pao<?php echo $i; ?>" value="<?php echo $this->list[$i]['DecisionPaymentOrg']; ?>" />
+              <span id="PaymentAmountDisp<?php echo $i; ?>"><?php echo $this->list[$i]['DecisionPaymentOrg']; ?></span>
+            </td>
+            <input type="hidden" name="OemId<?php echo $i; ?>" id="OemId<?php echo $i; ?>" value="<?php echo $this->list[$i]['OemId']; ?>" />
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="15" class="c_label">
+              <input style="margin: 10px;" type="submit" value="　月次明細データ作成　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

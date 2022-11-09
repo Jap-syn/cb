@@ -1,0 +1,83 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body onLoad="changeHeader()">
+<div>
+  <!-- start contents -->
+  <div id="contents"  style="width: 400px;">
+  <h3 style="width: 300px;">
+    <span style="clear: both; float: none;">定型コメント選択</span>
+  </h3>
+  <form name="form">
+    <table width="346" class="datatable" cellpadding="1" cellspacing="1" border="0" style="margin-top: 10px;">
+      <tr class="data">
+        <td class="l_label" width="60px">名称</td>
+        <td class="l_data">
+          <select name="selectName1" id="selectName1" style="width: 258px; margin-top: 3px; margin-bottom: 3px;" onChange="changeHeader()">
+            <?php $i = 0; ?>
+            <?php foreach( $this->hdata as $item ) { ?>
+            <option value="<?php echo $item['Seq']; ?>"<?php if ($i == 0) { echo ' selected="selected"'; } ?>>
+              <?php echo $item['Note']; ?>
+            </option>
+            <?php     $i++; ?>
+            <?php } ?>
+          </select>
+        </td>
+      </tr>
+      <tr class="data">
+        <td class="l_label" width="60px">コメント</td>
+        <td class="l_data">
+          <select name="selectName2" id="selectName2" style="width: 258px; margin-top: 3px; margin-bottom: 3px;">
+          </select>
+        </td>
+      </tr>
+    </table>
+    <table width="346" cellpadding="1" cellspacing="1" border="0" style="margin-top: 10px;">
+      <tr>
+        <td class="c_data"><input type="button" value="　　入　力　　" onClick="onOk();">　　<input type="button" value="　　閉じる　　" onClick="window.close();"></td>
+      </tr>
+    </table>
+  </form>
+  </div>
+  <!-- end contents -->
+</div>
+</body>
+<script type="text/javascript">
+// 名称(ヘッダー)が切り替わった時
+function changeHeader() {
+    var select1 = document.forms.form.selectName1;
+    var select2 = document.forms.form.selectName2;
+
+    select2.options.length = 0;// 初期化
+
+    var i = 0;
+    <?php foreach( $this->ddata as $item ) { ?>
+    if (select1.options[select1.selectedIndex].value == <?php echo $item['HeaderSeq']; ?>) {
+        select2.options[i] = new Option("<?php echo $item['Note']; ?>");
+        i++;
+    }
+    <?php } ?>
+}
+
+// 入力ボタンが押された時
+function onOk() {
+    // 書式化した戻り値を生成
+    var now = new Date();
+    var fmtnow =
+        now.getFullYear() + "-" +
+        ('0' + (now.getMonth() + 1)).slice(-2) + "-" +
+        ('0' + now.getDate()).slice(-2) + " " +
+        ('0' + now.getHours()).slice(-2) + ":" +
+        ('0' + now.getMinutes()).slice(-2);
+    var val = fmtnow + " " + "<?php echo f_e($this->userInfo->NameKj); ?>" + " " + window.document.getElementById("selectName2").value + "\n----";
+
+    <?php if ($this->usetype == 1) { ?>
+    setNoteUseType1(val);
+    <?php } else if ($this->usetype == 2) { ?>
+    setNoteUseType2(val, <?php echo $this->noteno; ?>);
+    <?php } ?>
+}
+</script>
+</html>

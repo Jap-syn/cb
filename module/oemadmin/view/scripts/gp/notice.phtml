@@ -1,0 +1,85 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+textarea {
+	font-size: 12px;
+	height: 150px;
+	width: 100%;
+}
+td.c_data {
+    padding: 2px 4px 2px 2px;
+}
+td.l_data {
+    width: 900px;
+}
+#confirmtable {
+    display: none;
+}
+#updated {
+    margin-top: 10px;
+    border: 1px crimson solid;
+    border-radius: 3px;
+    padding: 10px;
+    background-color: lightyellow;
+}
+-->
+</style>
+<script language="javascript">
+<!--
+function confirm()
+{
+	document.getElementById('confirm').innerHTML = document.getElementById('notice').value;
+	document.getElementById('confirmcap').innerHTML = '<b>●　表示確認</b>';
+	document.getElementById('confirmtable').style.display = 'block';
+        document.getElementById('updated').style.display = 'none';
+}
+-->
+</script>
+
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/gp/page_menu.php'); ?>
+    <div class="title"><span>お知らせ設定</span></div>
+<div id="updated"<?php if($this->updated == '') echo ' class="hidden"'; ?> align="center"><?php echo $this->updated; ?></div>
+<form name="form" method="post" action="gp/up">
+<div align="center">
+  <table id="confirmtable" class="datatable" width="900">
+    <tbody>
+      <tr>
+        <td class="l_data"><div id="confirmcap"></div></td>
+      </tr>
+      <tr>
+        <td class="l_data"><div id="confirm"></div></td>
+      </tr>
+    </tbody>
+  </table>
+  <table class="datatable" width="900" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <td class="l_data" style="width: 900px;">
+        <b>●　HTMLで記述してください。</b>　　
+      </td>
+    </tr>
+    <tr>
+      <td class="c_data"><textarea name="notice" id="notice"><?php echo f_e($this->notice); ?></textarea></td>
+    </tr>
+    <tr>
+      <td class="c_data">
+        <input class="default_btn" type="submit" value="　設　定　" />　　　
+        <input class="default_btn" type="button" value="　表示確認　" onClick="javascript:confirm();" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</div>
+</form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

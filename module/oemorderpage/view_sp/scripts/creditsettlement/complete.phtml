@@ -1,0 +1,58 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemorderpage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '注文マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemorderpage/creditsettlement/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemorderpage/system_message_sp.php' );
+?>
+<!-- start contents -->
+<div id="contents">
+  <div id="Tcreditsettlement_area">
+    <img src="../../images/navi03.png" alt="navi03" width="270px" height="38px" style="margin-left: 14px" />
+    <h5 style="line-height:30px;">カード支払い<br>（手続き完了）</h5>
+    <table width="300px">
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご注文番号 : <?php echo f_e($this->orderId); ?></td>
+      </tr>
+      <tr>
+        <td class="l_area" style="font-size: 14px; font-weight: bold">ご請求金額 : <?php echo f_nf($this->claimedBalance, '#,##0'); ?> 円</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="creditsettlement_area">
+    <form name="creditsettlement_form" method="post" action="index/index">
+      <table width="300px">
+        <tr>
+          <td class="l_area" style = "font-size: 16px; font-weight: normal;">お支払い手続きが完了しました。</td>
+          <td ></td>
+        </tr>
+      </table>
+
+      <table width="300px">
+        <tr>
+          <td align="left"><input id="cancel_button" type="submit" value="TOPページに戻る" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemorderpage/creditsettlement/page_footer_sp.php' );
+?>
+</div>
+</body>
+</html>
+

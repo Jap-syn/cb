@@ -1,0 +1,211 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  dl.error-message {
+    margin: 8px 0px;
+    border: double 3px gray;
+    background-color: mistyrose;
+  }
+  dl.error-message dt {
+    margin: 4px;
+    margin-bottom: 10px;
+    color: gray;
+  }
+  dl.error-message dd {
+    margin-left: 40px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: firebrick;
+  }
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/customeradrslist/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">顧客統合指示</h3>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <?php if(isset($this->errors)) { ?>
+    <dl class="error-message">
+      <dt>以下のエラーで<?php echo $this->process; ?>を実行できませんでした</dt>
+      <?php foreach ($this->errors as $error) { ?>
+      <dd><?php echo f_e($error); ?></dd>
+      <?php } ?>
+    </dl>
+    <?php } ?>
+    <form name="formSave" method="post" action="unifiinstr/save">
+      <input type="hidden"  name="CombinedListIdSave" id="CombinedListIdSave" value="<?php echo f_e($this->combinedlistid); ?>" />
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="9" class="l_label">管理統合指示</td>
+          </tr>
+          <tr>
+            <th>管理顧客番号</th>
+            <th>氏名</th>
+            <th>氏名カナ</th>
+            <th>住所</th>
+            <th>電話番号</th>
+            <th>メールアドレス</th>
+            <th>名寄せレベル</th>
+            <th>類似（名寄せ元）</th>
+            <th>統合指示</th>
+          </tr>
+          <?php $i = 0; foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td class="l_data">
+              <input type="hidden"  name="ManCustId<?php echo $i; ?>" id="ManCustId<?php echo $i; ?>" value="<?php echo f_e($row['ManCustId']); ?>" />
+              <?php echo f_e($row['ManCustId']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="NameKj<?php echo $i; ?>" id="NameKj<?php echo $i; ?>" value="<?php echo f_e($row['NameKj']); ?>" />
+              <a target="_blank" href="customerinquiry/detail/mcid/<?php echo f_e($row['ManCustId']); ?>">
+              <?php echo f_e($row['NameKj']); ?>
+              </a>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="NameKn<?php echo $i; ?>" id="NameKn<?php echo $i; ?>" value="<?php echo f_e($row['NameKn']); ?>" />
+              <?php echo f_e($row['NameKn']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="Address<?php echo $i; ?>" id="Address<?php echo $i; ?>" value="<?php echo f_e($row['UnitingAddress']); ?>" />
+              <?php echo f_e($row['UnitingAddress']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="Phone<?php echo $i; ?>" id="Phone<?php echo $i; ?>" value="<?php echo f_e($row['Phone']); ?>" />
+              <?php echo f_e($row['Phone']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="MailAddress<?php echo $i; ?>" id="MailAddress<?php echo $i; ?>" value="<?php echo f_e($row['MailAddress']); ?>" />
+              <?php echo f_e($row['MailAddress']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="AggregationLevel<?php echo $i; ?>" id="AggregationLevel<?php echo $i; ?>" value="<?php echo $row['AggregationLevel']; ?>" />
+              <?php if ($row['AggregationLevel'] === '0') { echo '同一'; } elseif ($row['AggregationLevel'] === '1') { echo '類似'; } else { echo ''; } ?>
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="LikenessFlg<?php echo $i; ?>" id="LikenessFlg<?php echo $i; ?>"
+                <?php if($row['LikenessFlg'] == 1) echo 'checked'; ?> />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="CombinedDictateFlg<?php echo $i; ?>" id="CombinedDictateFlg<?php echo $i; ?>"
+                <?php if($row['CombinedDictateFlg'] == 1) echo 'checked'; ?> />
+            </td>
+          </tr>
+          <?php $i++; } ?>
+          <tr class="border">
+            <td colspan="9">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr class="data">
+            <td colspan="9">&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="9" class="l_label">類似顧客検索結果</td>
+          </tr>
+          <tr>
+            <th>管理顧客番号</th>
+            <th>氏名</th>
+            <th>氏名カナ</th>
+            <th>住所</th>
+            <th>電話番号</th>
+            <th>メールアドレス</th>
+            <th>名寄せレベル</th>
+            <th>類似（名寄せ元）</th>
+            <th>統合指示</th>
+          </tr>
+          <?php $i = 0; foreach ($this->slist as $row) { ?>
+          <tr class="data">
+            <td class="l_data">
+              <input type="hidden"  name="SearchManCustId<?php echo $i; ?>" id="SearchManCustId<?php echo $i; ?>" value="<?php echo f_e($row['ManCustId']); ?>" />
+              <?php echo f_e($row['ManCustId']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="SearchNameKj<?php echo $i; ?>" id="SearchNameKj<?php echo $i; ?>" value="<?php echo f_e($row['NameKj']); ?>" />
+              <a target="_blank" href="customerinquiry/detail/mcid/<?php echo f_e($row['ManCustId']); ?>">
+              <?php echo f_e($row['NameKj']); ?>
+              </a>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="SearchNameKn<?php echo $i; ?>" id="SearchNameKn<?php echo $i; ?>" value="<?php echo f_e($row['NameKn']); ?>" />
+              <?php echo f_e($row['NameKn']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="SearchAddress<?php echo $i; ?>" id="SearchAddress<?php echo $i; ?>" value="<?php echo f_e($row['UnitingAddress']); ?>" />
+              <?php echo f_e($row['UnitingAddress']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="SearchPhone<?php echo $i; ?>" id="SearchPhone<?php echo $i; ?>" value="<?php echo f_e($row['Phone']); ?>" />
+              <?php echo f_e($row['Phone']); ?>
+            </td>
+            <td class="l_data">
+              <input type="hidden"  name="SearchMailAddress<?php echo $i; ?>" id="SearchMailAddress<?php echo $i; ?>" value="<?php echo f_e($row['MailAddress']); ?>" />
+              <?php echo f_e($row['MailAddress']); ?>
+            </td>
+            <td class="l_data">
+              &nbsp;
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="SearchLikenessFlg<?php echo $i; ?>" id="SearchLikenessFlg<?php echo $i; ?>"
+                <?php if($row['LikenessFlg'] == 1) echo 'checked'; ?> />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="SearchCombinedDictateFlg<?php echo $i; ?>" id="SearchCombinedDictateFlg<?php echo $i; ?>"
+                <?php if($row['CombinedDictateFlg'] == 1) echo 'checked'; ?> />
+            </td>
+          </tr>
+          <?php $i++; } ?>
+          <tr class="border">
+            <td colspan="9">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <!-- 元の画面の検索条件 -->
+            <input type="hidden" name="key[NameKj]" id="NameKj" value="<?php echo f_e($this->key["NameKj"]); ?>" />
+            <input type="hidden" name="key[NameKn]" id="NameKn" value="<?php echo f_e($this->key["NameKn"]); ?>" />
+            <input type="hidden" name="key[PostalCode]" id="PostalCode" value="<?php echo f_e($this->key["PostalCode"]); ?>" />
+            <input type="hidden" name="key[Address]" id="Address" value="<?php echo f_e($this->key["Address"]); ?>" />
+            <input type="hidden" name="key[Phone]" id="Phone" value="<?php echo f_e($this->key["Phone"]); ?>" />
+            <input type="hidden" name="key[MailAddress]" id="MailAddress" value="<?php echo f_e($this->key["MailAddress"]); ?>" />
+          </tr>
+          <tr class="data" align="center">
+            <td colspan="9">
+              <input type="submit" name="submit_button" id="submit_button" value="　統合指示　" />
+              &nbsp;
+              <input type="submit" name="research_button" id="research_button" value="　再 検 索　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+    function disable_buttons() {
+        ["submit_button", "research_button"].each(function(id) {
+            $(id).disabled = true;
+        });
+    }
+
+    Event.observe($("submit_button"), "click", function() {
+        setTimeout(disable_buttons, 0);
+    });
+
+    Event.observe($("research_button"), "click", function() {
+        setTimeout(disable_buttons, 0);
+    });
+});
+</script>
+</html>

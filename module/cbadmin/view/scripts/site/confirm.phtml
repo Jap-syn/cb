@@ -1,0 +1,725 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style type="text/css">
+    #contents table.datatable {
+      width: 862px;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #contents td {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    td.l_label {
+        text-align: left;
+        padding: 0px 0px 0px 5px;
+        background-color: #ffffff;
+        width: 180px;
+        white-space: nowrap;
+    }
+
+    td.r_label {
+        text-align:right;
+        padding: 0px 5px 0px 0px;
+        background-color: #eeeeee;
+        width: 180px;
+        white-space: nowrap;
+    }
+
+    td.c_label {
+        text-align: center;
+        /*padding: 2px 10px 2px 0px;*/
+        background-color: #eeeeee;
+    }
+
+    td.l_data {
+        text-align: left;
+        padding: 0px 0px 0px 5px;
+        background-color: #ffffff;
+    }
+
+    td.l_data span.wrap_container {
+        width: 398px;
+        overflow: hidden;
+        float: left;
+    }
+
+    td.r_data {
+        text-align: right;
+        padding: 0px 5px 0px 0px;
+        background-color: #ffffff;
+    }
+
+    td.c_data {
+        text-align: center;
+        padding: 2px 0px 2px 0px;
+        background-color: #ffffff;
+    }
+
+    div {
+        margin: 0px;
+        padding: 0px;
+        font-size: 12px;
+        font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+    }
+
+    .detail-tools {
+      margin: 5px 25px;
+      font-size: 16px;
+      text-align: right;
+    }
+
+    .detail-tools a,
+    .detail-tools span.dummy-link {
+        margin: 0 0 0 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- start #wrapper -->
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>【サイト登録内容確認】</h3>
+      <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td class="l_label" colspan=6>【基本情報】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >サイトID</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SiteId']);?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >サイト名<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SiteNameKj']);?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >サイト名カナ<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SiteNameKn']);?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >URL<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['Url']);?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >メールアドレス<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php if($this->list['ReqMailAddrFlg'] == 1){ echo '必須'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >形態<font color="red">*</font></td>
+          <td class="l_label" colspan=5>
+        <?php
+              foreach ($this->pulldownlist['SiteForms'] as $key => $row) {
+                if( $this->list['SiteForm'] == $key){
+                  echo $row;
+                }
+              }
+        ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >初回請求用紙モード</td>
+          <td class="l_label" colspan=5><?php if($this->list['FirstClaimLayoutMode'] == 1){echo '封書用紙を使用する';}?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求書マイページ印字</td>
+          <td class="l_label" colspan=5><?php echo ($this->list['ClaimMypagePrint'] == '1') ? 'する' : 'しない' ; ?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >全案件補償外</td>
+          <td class="l_label" colspan=5><?php if($this->list['OutOfAmendsFlg'] == 1){echo '全案件補償外である';}?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >初回請求支払期限算出方法・支払期限算出基準日</td>
+          <td class="l_label" colspan=5><?php $key = 'LimitDatePattern'; echo f_e($this->master_map[$key][$this->list[$key]]); ?>　
+          <?php
+          if($this->list['LimitDatePattern'] == 1 || $this->list['LimitDatePattern'] == 2) {
+            $key = 'LimitDay';
+            $template = $this->list['LimitDatePattern'] == 1 ? '翌月%s日' : '当月%s日';
+            echo f_e(sprintf($template, $this->master_map[$key][$this->list[$key]]));
+          }
+          ?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >バーコード使用期限</td>
+          <td class="l_label" colspan=5>
+            <?php if(!isset($this->list['BarcodeLimitDays']) || $this->list['BarcodeLimitDays']== 0) { $barcodeLimitDays = 999; } else { $barcodeLimitDays = $this->list['BarcodeLimitDays']; } ?>
+            <?php echo $barcodeLimitDays; ?>日
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >コンビニ収納代行情報</td>
+          <td class="l_label" colspan=5>
+        <?php
+              foreach ($this->pulldownlist['ReceiptAgentForms'] as $key => $row) {
+                if( $this->list['ReceiptAgentId'] == $key){
+                  echo $row;
+                }
+              }
+
+        ?>　<?php echo $this->list['SubscriberCode'] ;?>
+          </td>
+        </tr>
+          <?php for($i=0; $i<sizeof($payments); $i++){ ?>
+              <tr>
+                  <?php if ($i == 0) { ?>
+                      <td class="r_label" rowspan="<?php echo sizeof($payments) ?>">支払可能種類の設定</td>
+                      <td class="r_label" rowspan="<?php echo sizeof($payments) ?>"><?php echo $payments[$i]['PaymentGroupName'];?></td>
+                  <?php } ?>
+                  <?php
+                  $paymentId = $payments[$i]['PaymentId'];
+                  ?>
+                  <td class="l_label" colspan="2">
+                      <?php echo $payments[$i]['PaymentName'];?>：<?php echo $this->list['Payment'][$paymentId]['UseFlg'] == 1 ? '利用する' : '利用しない'; ?>
+                  </td>
+                  <td class="l_label">
+                      申込日：<?php echo $this->list['Payment'][$paymentId]['ApplyDate'];?>
+                  </td>
+                  <td class="l_label">
+                      利用開始日：<?php echo $this->list['Payment'][$paymentId]['UseStartDate'];?>　
+                      <?php echo (isset($this->list['Payment'][$paymentId]['UseStartFixFlg']) && ($this->list['Payment'][$paymentId]['UseStartFixFlg'] == 1)) ? '<font color="blue">確定</font>' : ''; ?>
+                  </td>
+              </tr>
+          <?php } ?>
+        <tr>
+          <td class="r_label" >三菱UFJ</td>
+          <td class="l_label" colspan=5><?php if(isset($this->list['MufjBarcodeUsedFlg']) && $this->list['MufjBarcodeUsedFlg'] == 1 ) { echo '利用する'; } else { echo '利用しない'; };?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >コンビニ収納代行情報</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['MufjBarcodeSubscriberCode']);?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >有効設定</td>
+          <td class="l_label" colspan=5><?php if(isset($this->list['ValidFlg']) && $this->list['ValidFlg'] == 1 ) { echo '有効'; } else { echo '無効'; };?></td>
+        </tr>
+        <tr>
+          <td class="l_label" colspan=6>【サービス内容】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >申込日</td>
+          <td class="l_label" colspan=5><?php echo $this->list['ApplicationDate'] ;?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >利用プラン</td>
+          <td class="l_label" colspan=5><?php echo ($this->list['PlanName']);?></td>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >決済上限額（税抜）<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SettlementAmountLimit']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >決済手数料率<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SettlementFeeRate']) ;?>%</td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求手数料（別送）（税抜）<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ClaimFeeBS']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求手数料（同梱）（税抜）<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ClaimFeeDK']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >口振紙初回登録手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['FirstCreditTransferClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >口振WEB初回登録手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['FirstCreditTransferClaimFeeWeb']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >口振引落手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['CreditTransferClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM決済手数料率（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['OemSettlementFeeRate']) ;?>%　　(税込 <?php echo sprintf("%.5f", $this->list['OemSettlementFeeRateZeikomi']); ?>%)</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM請求手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['OemClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM同梱請求手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SelfBillingOemClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM口振紙初回登録手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['OemFirstCreditTransferClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM口振WEB初回登録手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['OemFirstCreditTransferClaimFeeWeb']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >OEM口振引落手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['OemCreditTransferClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >システム手数料（税抜）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SystemFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="l_label" colspan=6>【再請求設定】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >再請求回数</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ReissueCount']) ;?>回</td>
+        </tr>
+        <tr>
+          <td class="l_label" colspan=6>【再請求手数料設定】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >再請求手数料設定種別<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php if($this->list['ReClaimFeeSetting']==1) { echo '個別設定'; } else { echo '均一設定'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >再請求手数料（税抜）<font color="red">*</font></td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ReClaimFee']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >再請求１<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee1']);?>円</td>
+          <td class="r_label" >再請求３<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee3']);?>円</td>
+          <td class="r_label" >再請求４<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee4']);?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >再請求５<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee5']);?>円</td>
+          <td class="r_label" >再請求６<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee6']);?>円</td>
+          <td class="r_label" >再請求７<font color="red">*</font></td>
+          <td class="l_label"><?php echo f_e($this->list['ReClaimFee7']);?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >適用開始注文登録日</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ReClaimFeeStartRegistDate']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >適用開始注文日</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ReClaimFeeStartDate']); ?></td>
+        </tr>
+        <tr>
+          <td class="l_label" colspan=6>【オプション機能】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >役務設定</td>
+          <td class="l_label" colspan=5><?php if($this->list['ServiceTargetClass']==1) { echo 'あり'; } else { echo 'なし'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >テスト注文可能</td>
+          <td class="l_label" colspan=5><?php if($this->list['T_OrderClass']==1) { echo 'あり'; } else { echo 'なし'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信判定基準</td>
+          <td class="l_label" colspan=5>
+        <?php
+              foreach ($this->pulldownlist['CreditCriterionNames'] as $key => $row) {
+                if( $this->list['CreditCriterionNum'] == $row['CreditCriterionId']){
+                  echo $row["CreditCriterionName"];
+                }
+              }
+        ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信判定方法</td>
+          <td class="l_label" colspan=5>
+        <?php
+              foreach ($this->pulldownlist['Creditdecision'] as $key => $row) {
+                if( $this->list['CreditJudgeMethod'] == $key){
+                  echo $row;
+                }
+              }
+        ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信時注文利用額</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['CreditOrderUseAmount']) ;?>円
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信時平均単価倍率</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['AverageUnitPriceRate']) ;?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >自動与信限度額</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['AutoCreditLimitAmount']) ;?>円
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信自動化有効期間</td>
+          <td class="l_label" colspan=5>
+            <?php echo $this->list['AutoCreditDateFrom'] ;?>～<?php echo $this->list['AutoCreditDateTo'] ;?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >連続注文回数</td>
+          <td class="l_label" colspan=5>
+            <?php echo $this->list['MultiOrderCount'] ;?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >連続注文スコア</td>
+          <td class="l_label" colspan=5>
+            <?php echo $this->list['MultiOrderScore'] ;?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >連続注文除外</td>
+          <td class="l_label" colspan=5><?php if($this->list['ChatBotFlg']==1) { echo 'する'; } else { echo 'しない'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >NG無保証変更</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['NgChangeFlg']==1) { echo '無保証変更可'; }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >NG理由表示</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['ShowNgReason']==1) { echo 'する'; } else { echo 'しない'; }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >無保証変更可能期間</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['MuhoshoChangeDays']) ;?>日
+          </td>
+        </tr>
+        <tr style="display: none;">
+          <td class="r_label" >ジンテック手動与信強制</td>
+          <td class="l_label" colspan=5><?php if($this->list['JintecManualReqFlg']==1) { echo '強制する'; } else { echo '強制しない'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >伝票番号自動仮登録</td>
+          <td class="l_label" colspan=5>
+        <?php if($this->list['AutoJournalIncMode']==1) { echo 'する'; } else { echo 'しない'; }?>
+            <br>自動仮登録時の配送方法：
+        <?php
+              foreach ($this->pulldownlist['DeliMethodName'] as $key => $row) {
+                if( $this->list['AutoJournalDeliMethodId'] == $key){
+                  echo $row;
+                }
+              }
+        ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求時伝票番号自動仮登録</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['ClaimAutoJournalIncMode']==1) { echo 'する'; } else { echo 'しない'; }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求自動ストップ</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['AutoClaimStopFlg']==1) { echo '初回請求発行時に自動ストップ'; } else { echo '自動ストップしない'; }?>
+          </td>
+        </tr>
+        <tr <?php if (nvl($this->SelfBillingMode,0) == 0) { echo ' style="display:none"'; } ?>>
+          <td class="r_label" >請求書同梱</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['SelfBillingFlg']==1) { echo 'する'; } else { echo 'しない'; }?>
+          </td>
+        </tr>
+        <tr <?php if (nvl($this->SelfBillingMode,0) == 0) { echo ' style="display:none"'; } ?>>
+          <td class="r_label" >注文強制同梱化</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['SelfBillingFixFlg']==1) { echo 'する'; } else { echo 'しない'; }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >サイト区分</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['SitClass']==1){echo '法人';}else{echo '一般';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求書用紙種類（同梱）</td>
+          <td class="l_label" colspan=5>
+        <?php foreach ($this->pulldownlist['InvoiceDK'] as $key => $row) { ?>
+          <?php if( $this->list['PrintFormDK'] == $key){ ?>
+            <?php echo $row;?>
+          <?php }?>
+        <?php }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求書用紙種類（別送）</td>
+          <td class="l_label" colspan=5><?php echo $this->list['bessou'] ;?>
+        <?php foreach ($this->pulldownlist['Invoice'] as $key => $row) { ?>
+          <?php if( $this->list['PrintFormBS'] == $key){ ?>
+            <?php echo $row;?>
+          <?php }?>
+        <?php }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >延滞起算猶予（初回請求）</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['FirstClaimKisanbiDelayDays']) ;?>日
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >延滞起算猶予（督促）</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['KisanbiDelayDays']) ;?>日
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >督促停止区分</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['RemindStopClass']==1){echo 'する';}else{echo 'しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >立替精算戻し</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['PayingBackFlg']==1){echo 'する';}else{echo 'しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >立替精算戻し判定日数</td>
+          <td class="l_label" colspan=5>
+            <?php echo f_e($this->list['PayingBackDays']) ;?>日
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >掲載確認日</td>
+          <td class="l_label" colspan=5>
+            <?php echo $this->list['SiteConfDate'] ;?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >「その他」着荷を自動で取る</td>
+          <td class="l_label" colspan=5>
+            <?php
+                if($this->list['EtcAutoArrivalFlg']==1) {
+                    echo '行う';
+                }
+                elseif($this->list['EtcAutoArrivalFlg']==2) {
+                    echo '文字指定 : ' . $this->list['EtcAutoArrivalNumber'];
+                }
+                else /*if($this->list['EtcAutoArrivalFlg']==0)*/ {
+                    echo '行わない';
+                }
+            ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信開始メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['CreaditStartMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信完了メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['CreaditCompMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >注文修正メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['AddressMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求書発行メール</td>
+          <td class="l_label" colspan=5>
+            <?php
+                if ($this->list['ClaimMail'] == 1) {
+                    echo '送信する';
+                } elseif($this->list['ClaimMail'] == 2) {
+                    echo '初回のみ送信';
+                } elseif($this->list['ClaimMail'] == 3) {
+                    echo '督促のみ送信';
+                } else {
+                    echo '送信しない';
+                }
+            ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >請求書破棄メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['ClaimDisposeMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >入金確認メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['ReceiptMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >キャンセル確認メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['CancelMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >もうすぐお支払いメール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['SoonPaymentMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >お支払未確認メール</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['NotPaymentConfMail']==1){echo '送信する';}else{echo '送信しない';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >与信結果メール</td>
+          <td class="l_label" colspan=5>
+            <?php $key = 'CjMailMode'; echo f_e($this->master_map[$key][$this->list['CreditResultMail']]); ?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >期間外注文チェック</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['OutOfTermcheck']==1){echo 'あり';}else{echo 'なし';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >電話番号不備チェック</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['Telcheck']==1){echo 'あり';}else{echo 'なし';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >住所不備チェック</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['Addresscheck']==1){echo 'あり';}else{echo 'なし';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >郵便番号不備チェック</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['PostalCodecheck']==1){echo 'あり';}else{echo 'なし';}?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >任意注文番号チェック</td>
+          <td class="l_label" colspan=5>
+            <?php if($this->list['Ent_OrderIdcheck']==1){echo 'あり';}else{echo 'なし';}?>
+          </td>
+        </tr>
+        <!--<tr>
+          <td class="l_label" colspan=6>【オプションサービス情報】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >届いてから払い利用</td>
+          <td class="l_label" colspan=5><?php if($this->list['PaymentAfterArrivalFlg']==1) { echo '利用する'; } else { echo '利用しない'; }?></td>
+        </tr>
+        <tr>
+          <td class="r_label">マーチャントID (SB Payment)</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['MerchantId']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">サービスID (SB Payment)</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ServiceId']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">ハッシュキー (SB Payment)</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['HashKey']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">Basic認証ID (SB Payment)</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['BasicId']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">Basic認証PW (SB Payment)</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['BasicPw']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >領収書発行</td>
+          <td class="l_label" colspan=5><?php echo ($this->list['ReceiptUsedFlg'] == '1') ? '利用する' : '利用しない' ; ?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >領収書但し書き</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['ReceiptIssueProviso']) ;?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >ロゴ(小)</td>
+          <td class="l_label" colspan=5>
+            <?php if(!is_null($this->list['SmallLogo']['image'])){
+                echo '<img src="data:image/jpeg;base64,' . $this->list['SmallLogo']['image'] . '"' .  ' style="width: 80px; height: 50px; margin-left: 5px; border-radius: 0px;" />';
+            }?>
+          </td>
+        </tr>
+        <tr>
+          <td class="r_label" >特定商取引に関するリンク先</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['SpecificTransUrl']) ;?></td>
+        </tr>
+        <tr>
+          <td class="r_label" >クレジット支払い決済手数料率</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['CSSettlementFeeRate']) ;?>%</td>
+        </tr>
+        <tr>
+          <td class="r_label" >クレジット支払い請求手数料（別送）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['CSClaimFeeBS']) ;?>円</td>
+        </tr>
+        <tr>
+          <td class="r_label" >クレジット支払い請求手数料（同梱）</td>
+          <td class="l_label" colspan=5><?php echo f_e($this->list['CSClaimFeeDK']) ;?>円</td>
+        </tr>-->
+        <tr>
+          <td class="l_label" colspan=6>【請求代行サービス設定】</td>
+        </tr>
+        <tr>
+          <td class="r_label" >他サイトの与信対象外</td>
+          <td class="l_label" colspan=5><?php echo ($this->list['OtherSitesAuthCheckFlg'] == '1') ? 'する' : 'しない' ; ?></td>
+        </tr>
+        <tr>
+            <td class="r_label" >自由項目</td>
+            <td class="l_label" colspan=5><?php echo f_e($this->list['FreeItemsL']);?></td>
+        </tr>
+        <tr>
+          <td class="c_data" colspan=6>
+            <form id="saveForm" action="site/save" method="post">
+              <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+              <input name="image_uploaded" value="<?php echo $this->imageUploaded ? 1 : 0; ?>"  type="hidden" />
+              <a id="doSave" href="javascript:void(0)">確　認</a>　　　　　<a id="cancelSave" href="javascript:void(0)">戻　る</a>
+            </form>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <!-- end #contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+  <!-- end #wrapper -->
+  <script>
+    Event.observe(window, "load", function() {
+      Event.observe($("doSave"), "click", function() {
+        $("saveForm").submit();
+        return false;
+      });
+    });
+    Event.observe($("cancelSave"), "click", function() {
+        $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+        $("saveForm").submit();
+        return false;
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu_rcpt.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金確認</h3>
+
+    <!-- 入金結果表示　ここから -->
+    <!-- count関数対策 -->
+    <?php if (!empty($this->list)) { ?>
+    <h4><span style="color: blue;">以下の注文の入金確認を確定しました。</span></h4>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th>注文ID</th>
+          	<th>請求先氏名</th>
+          	<th>入金形態</th>
+          	<th>実入金額</th>
+          	<th>差額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = count($this->list);
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="l_data"><?php echo $this->list[$i]["OrderId"]; ?></td>
+            <td class="l_data"><?php echo f_trim($this->list[$i]["NameKj"]); ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["Rct_ReceiptMethod"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["Rct_ReceiptAmount"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["sagaku"]; ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    <?php } ?>
+    <!-- 入金結果表示　ここまで -->
+
+    <!-- 実入金額エラーの表示　ここから -->
+    <?php if (!empty($this->error)) { ?>
+    <h4><span style="color: red;">以下のデータは入金日または実入金額が不正なため処理されませんでした。</span></h4>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th>注文SEQ</th>
+          	<th>注文ID</th>
+          	<th>請求先氏名</th>
+          	<th>入金形態</th>
+          	<th>実入金額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $errorCount = 0;
+            if (!empty($this->error)) {
+            $errorCount = count($this->error);
+            }
+            for ($i = 0 ; $i < $errorCount ; $i++) { ?>
+          <tr>
+            <td class="r_data">
+              <?php echo $this->error[$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data"><?php echo $this->error[$i]["OrderId"]; ?></td>
+            <td class="l_data"><?php echo f_trim($this->error[$i]["NameKj"]); ?></td>
+            <td class="c_data"><?php echo $this->error[$i]["Rct_ReceiptMethod"]; ?></td>
+            <td class="r_data"><?php echo $this->error[$i]["Rct_ReceiptAmount"]; ?></td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="5" class="c_data">
+              <a href="rwrcptcfm/list">入金確認待ちリストへ</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <?php } ?>
+    <!-- 実入金額エラーの表示　ここまで -->
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+.main_contents {
+}
+
+#nav_bar,
+.search_result_container {
+	margin: 0px 8px;
+}
+
+/* 結果テーブル */
+table.search_items {
+	margin-top: 0px;
+}
+
+/* デフォルトのtd */
+table.search_items th.column_header,
+table.search_items td.search_item {
+	white-space: nowrap;
+	font-size: 9pt;
+	padding: 2px 0px !important;
+}
+table.search_items th.column_header *,
+table.search_items td.search_item * {
+	margin: 0px 8px;
+}
+
+/* 備考 */
+table.search_items td.note {
+	white-space: pre;
+}
+
+
+/* 行番号 */
+table.search_items td.caption {
+	text-align: right;
+}
+
+/* キャンセル申請 */
+table.search_items td.cancel_cmd {
+	text-align: center;
+}
+
+/* hover */
+table.search_items tr.hover td {
+	background-color: powderblue;
+}
+
+table.search_items tr.hover td.caption {
+	background-color: lightskyblue;
+}
+
+/* 検索条件 */
+.expression_list {
+	margin: 8px 20px;
+	padding: 0px;
+	border: solid 1px gray;
+	background-color: lemonchiffon;
+	color: dimgray;
+	font-size: 10pt;
+}
+
+.expression_list ul {
+	margin: 8px;
+	margin-left: 16px;
+	padding-left: 8px;
+}
+
+.expression_list .title {
+/*	margin: -8px;*/
+	border: solid 0px silver;
+	color: #333333;
+	font-weight: bold;
+	padding: 2px 4px;
+	overflow: hidden;
+}
+
+/* コマンドバー */
+a#toggleList {
+	float: right;
+	font-weight: normal;
+	font-size: 8pt;
+	color: #333;
+}
+
+#expressionSummary {
+	font-weight: normal;
+	color: dimgray;
+}
+
+a.do_cancel:link,
+a.do_cancel:hover,
+a.do_cancel:active,
+a.do_cancel:visited {
+	background-color: lightgrey;
+	color: black;
+	border: solid 1px dimgray;
+	font-size: 8pt;
+}
+
+a.do_cancel:hover {
+	color: blue;
+	background-color: aliceblue;
+}
+
+a.do_cancel_cancel:link,
+a.do_cancel_cancel:hover,
+a.do_cancel_cancel:active,
+a.do_cancel_cancel:visited {
+	background-color: lightgrey;
+	color: black;
+	border: solid 1px dimgray;
+	font-size: 8pt;
+}
+
+a.do_cancel_cancel:hover {
+	color: blue;
+	background-color: aliceblue;
+}
+
+td.progress {
+	color: green;
+}
+
+td.canceled {
+	color: blue;
+}
+
+td.unavailable {
+	color: gray;
+}
+
+a.show_detail:link,
+a.show_detail:hover,
+a.show_detail:visited,
+a.show_detail:active {
+	text-decoration: none;
+	color: black;
+}
+
+a.show_detail:hover {
+	color: royalblue;
+	text-decoration: underline;
+}
+
+td.caption a.show_detail:link,
+td.caption a.show_detail:hover,
+td.caption a.show_detail:visited,
+td.caption a.show_detail:active {
+	font-weight: normal;
+}
+
+/* 与信結果 */
+table.search_items td.incre,
+table.search_items td.incre_ok,
+table.search_items td.incre_ng,
+table.search_items td.incre_cancel {
+	text-align: center;
+}
+
+/* 与信OK */
+table.search_items td.incre_ok,
+table.search_items td.incre_ok a {
+	color: blue;
+}
+/* 与信NG */
+table.search_items td.incre_ng,
+table.search_items td.incre_ng a {
+	color: red;
+	text-decoration: itaric;
+}
+/* 与信中 */
+table.search_items td.incre,
+table.search_items td.incre a {
+	color: green;
+}
+/* キャンセル */
+table.search_items td.incre_cancel,
+table.search_items td.incre_cancel a {
+	color: #808080;
+}
+/* 請求金額 */
+table.search_items td.amount,
+table.search_items td.amount a {
+	text-align: right;
+}
+
+td.caption a.show_detail:hover {
+	text-decoration: normal;
+}
+
+/* 行のホバー強調 */
+table.search_items tr.item_row:hover {
+	background-color: lightcyan;
+}
+
+/* モーダルダイアログ */
+.base_ui_modaldialog {
+	background-color: aliceblue;
+}
+
+/* 住所選択ダイアログのコンテンツ */
+#cancel_dialog {
+	text-align: center;
+	padding: 8px;
+}
+
+#address_list {
+	width: 95%;
+}
+
+#cancel_dialog .dlg_buttons {
+	padding: 4px;
+	padding-bottom: 1px;
+	margin-top: 4px;
+	border-top: groove 2px;
+}
+
+.dlg_buttons button {
+	width: 90px;
+	height: 23px;
+}
+

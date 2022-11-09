@@ -1,0 +1,173 @@
+<?php
+
+use member\Application;
+use Coral\Coral\View\CoralViewCommandBar;
+//use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use models\Table\TableOrderItems;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+
+?>
+<div class="main_contents">
+
+<?php
+// 入力合計行数
+$totalCount = $this->totalCount;
+$isToDo = $this->isToDo;
+
+// エラーリスト
+$errors = $this->errorRows;
+// エラーの有無
+$hasError = !empty($errors) ? true : false;
+$cntValidRows = 0;
+if (!empty($this->validRows)) {
+    $cntValidRows =  count( $this->validRows );
+}
+// コマンドバー使用
+// タイトルのみ設定
+$commandBar = new CoralViewCommandBar(
+    (
+        $hasError ?
+            '入力データにエラーがあるため登録できません ( ' . count($errors) . ' / ' . $totalCount . ' 件 )' :
+            ( $cntValidRows . ' 件の注文キャンセルが申請登録可能です' )
+    )
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+setReplaceEmpty( true );
+?>
+<div class="error_cancel_container" style="display: none">
+<h4>伝票番号</h4>
+<ul class="error_cancel_table"></ul>
+</div>
+<?php if( $hasError ) {
+    // エラーあり
+?>
+    <h3>エラー内容</h3>
+    <center>
+    <table class="csv_result" border="1" cellpadding="0" cellspacing="0">
+        <?php
+        if ($isToDo == 1) {?>
+            <thead><tr><th>行</th><th>注文ID</th><th>氏名</th><th>任意注文番号</th><th>エラーコード </th><th>エラー理由</th></tr></thead>
+            <tbody>
+            <?php foreach( $errors as $error ) {
+                ?>
+                <tr>
+                    <td><?php echo ($error->getLineNumber() + 1); ?></td>
+                    <td><?php echo escape( $error->getData()['OrderId'] ); ?></td>
+                    <td><?php echo escape( $error->getData()['NameKj'] ); ?></td>
+                    <td><?php echo escape( $error->getData()['Ent_OrderId'] ); ?></td>
+                    <td><?php echo escape( $error->getData()['errCode'] ); ?></td>
+                    <td><?php echo escape( $error->getData()['errMessage'] ); ?></td>
+                </tr>
+                <?php
+            }
+            ?>
+            </tbody>
+        <?php } else {?>
+            <thead><tr><th>行</th><th>注文ID</th><th>任意注文番号</th><th>エラー内容</th></tr></thead>
+            <tbody>
+            <?php foreach( $errors as $error ) { ?>
+                <tr>
+                    <td><?php echo ($error->getLineNumber() + 1); ?></td>
+                    <td><?php echo escape( $error->getData()['_raw_data']['OrderId'] ); ?></td>
+                    <td><?php echo escape( $error->getData()['_raw_data']['Ent_OrderId'] ); ?></td>
+                    <td>
+                        <?php
+                        foreach( $error->getData() as $key => $data ) {
+                            if( ! preg_match( '/^\d+$/', $key ) ) continue;
+                            $colName = key( $data );
+                            $colLabel = $colName;
+                            foreach( $this->templateField as $template ) {
+                                if( $template['PhysicalName'] == $colName ) {
+                                    $colLabel = $template['LogicalName'];
+                                }
+                            }
+                            echo "$colLabel : {$data[$colName]}" . '<br/>';
+                        }
+                        ?>
+                    </td></tr>
+                <?php
+            }
+            ?>
+            </tbody>
+        <?php } ?>
+    </table>
+    </center>
+    <div class="submit_area" style="text-align:center; margin-top: 20px;">
+        <button type="button" id="cancel_button" onclick="location.href='<?php echo $this->baseUrl; ?>/ordercancel/registCsv'">戻る</button></br>
+    </div>
+</div>
+<?php
+} else {
+    // エラーなし
+    $rows = $this->validRows;
+?>
+</br>
+    <center>
+    <table id="result_table" class="csv_result" border="1" cellpadding="0" cellspacing="0">
+        <thead><tr><th>行</th><th>注文ID</th><th>氏名</th><th>任意注文番号</th><th>キャンセル理由</th><th>キャンセル備考</th></tr></thead>
+        <tbody>
+<?php
+    $cntRows = 0;
+    if (!empty($rows)) {
+        $cntRows =count($rows);
+    }
+    for($i = 0; $i < $cntRows; $i++) {
+        $row = $rows[ $i ]->getData();
+    ?>
+            <tr><td><?php echo ($i + 1); ?></td>
+<?php
+
+        foreach( $this->templateField as $template ) {
+            $col = $row[ $template['PhysicalName'] ];
+
+            if( $col == null || strlen($col) == 0 ) $col = '　';
+                echo "<td>$col</td>";
+            }
+
+?>
+            </tr>
+<?php
+    }
+?>
+        </tbody>
+    </table>
+    </center>
+    <div class="submit_area" style="text-align:center; margin-top: 20px;">
+        <button type="button" id="regist_button" onclick="location.href='<?php echo $this->baseUrl; ?>/ordercancel/saveCsv'">登録</button>
+        <button type="button" id="cancel_button" onclick="location.href='<?php echo $this->baseUrl; ?>/ordercancel/registCsv'">戻る</button></br>
+    </div>
+</div>
+<?php
+setReplaceEmpty();
+}
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$isSelectMode = isset($this->apiUsers) && $this->apiUsers != null;
+$oemId = isset($this->oemId)?$this->oemId:0;
+?>
+	<style>
+	dl.subcontents {
+		padding: 8px !important;
+		margin: 20px 25px !important;
+	}
+	dl.subcontents dt {
+		font-size: 16px;
+		font-weight: bold;
+		margin: 8px 2px !important;
+	}
+	dl.subcontents dd {
+		margin: 20px;
+		margin-left: 40px;
+	}
+	select {
+		width: 296px;
+	}
+	select.entBox {
+		width: 100%;
+	}
+	button {
+		padding: 2px 6px;
+	}
+	option.valid {
+	}
+	option.invalid {
+		color: gray;
+		text-decoration: line-through;
+	}
+	.nav-tools {
+		font-size: 12px;
+		font-weight: normal;
+		padding: 2px 40px;
+	}
+	.nav-tools a,
+	.nav-tools span.dummy-link {
+		margin-left: 8px;
+		margin-right: 8px;
+	}
+	.msg {
+		font-size: 12px;
+		font-weight: bold;
+		padding: 2px 40px;
+	}
+	#app-msg {
+		color: forestgreen;
+	}
+	</style>
+</head>
+<body>
+<div id="wrapper">
+	<?php echo $this->render('cbadmin/page_header.php'); ?>
+	<?php echo $this->render('cbadmin/apirel/page_menu.php'); ?>
+
+	<!-- start contents -->
+	<div id="contents">
+		<h3 class="contents_title">
+			APIユーザー → サイト 関連設定 (
+			OEM先：<?php echo f_e($this->oemName); ?>
+			<?php if(!$isSelectMode) { echo f_e(sprintf('／ APIユーザー：%s', $this->apiUser['ApiUserNameKj'])); } ?>
+			)
+		</h3>
+
+		<dl class="subcontents">
+		<?php if($isSelectMode) { ?>
+			<dt>「<?php echo f_e($this->oemName);?>」のAPIユーザーを指定してください
+				<div class="nav-tools">
+					<a href="apirel/apioemselect">OEM先選択へ戻る</a>
+				</div>
+			</dt>
+			<dd>
+				<select id="apiUserId" name="apiUserId">
+					<option value="-1">--- APIユーザーを選択してください ---</option>
+					<?php foreach($this->apiUsers as $apiUser) { ?>
+					<option value="<?php echo f_e($apiUser['ApiUserId']); ?>">
+						<?php echo f_e($apiUser['ApiUserId']); ?>
+						<?php echo f_e($apiUser['ApiUserNameKj']); ?>
+					</option>
+					<?php }?>
+				</select>
+			</dd>
+		<?php } else { ?>
+			<dt>
+				[<?php echo f_e($this->apiUser['ApiUserId']); ?>]
+				<?php echo htmlspecialchars($this->apiUser['ApiUserNameKj']); ?>　のサイト関連設定
+
+				<div class="nav-tools">
+					<a href="apirel/api2ent/oemId/<?php echo f_e($this->oemId); ?>">APIユーザー選択へ戻る</a>
+
+					<a href="apirel/apioemselect">OEM先選択へ戻る</a>
+
+					<span class="dummy-link">｜</span>
+
+					<a href="apiuser/detail/id/<?php echo f_e($this->apiUser['ApiUserId']); ?>">APIユーザー詳細情報</a>
+
+					<a href="apiuser/list">APIユーザー一覧</a>
+				</div>
+				<div id="app-msg" class="msg"><?php echo f_e($this->message); ?></div>
+			</dt>
+			<dd>
+				<div style="float: left; width: 300px">
+					<div>登録済みサイト</div>
+					<div>
+						<select class="entBox" id="relatedEnterprises" size="8" style="height:202px;">
+							<?php foreach($this->relations as $site) { ?>
+							<option value="<?php echo f_e($site['SiteId']); ?>" class="<?php echo $site['ValidFlg'] ? 'valid' : 'invalid'; ?>">
+								[<?php echo f_e($site['SiteId']); ?>]
+								<?php echo f_e($site['SiteNameKj']); ?>
+							</option>
+							<?php } ?>
+						</select>
+					</div>
+				</div>
+
+				<div style="float: left; width: 120px; padding: 40px 0px 0px 0px; margin: 0px 4px; text-align: center;">
+					<div style="margin: 12px 0px;">
+						<button id="addTo" disabled="disabled">← 登録</button>
+					</div>
+					<div style="margin: 12px 0px;">
+						<button id="removeFrom" disabled="disabled">解除 →</button>
+					</div>
+				</div>
+				<div style="float: left; width: 300px">
+                    <div>OEM選択
+                    <?php echo $this->oemListTag; ?>
+                    </div>
+					<div>　</div>
+					<div>
+						<select class="entBox" id="availableEnterprises" size="8" style="height:162px;">
+							<?php foreach($this->sites as $site) { ?>
+							<option value="<?php echo f_e($site['SiteId']); ?>" class="<?php echo $site['ValidFlg'] ? 'valid' : 'invalid'; ?>">
+								[<?php echo f_e($site['SiteId']); ?>]
+								<?php echo f_e($site['SiteNameKj']); ?>
+							</option>
+							<?php } ?>
+						</select>
+					</div>
+				</div>
+				<div style="float: none; clear: both; height: 20px;">&nbsp;</div>
+
+				<div>
+					<form id="mainForm" action="apirel/api2ent/id/<?php echo f_e($this->apiUser['ApiUserId']); ?>" method="post">
+						<input type="hidden" name="is_edited" value="true" />
+						<input type="hidden" name="oemId" value="<?php echo f_e($this->oemId);?>" />
+						<div id="itemPlace" style="display: none;"></div>
+						<div style="padding-left: 300px;">
+							<button id="doSubmit" type="submit" style="width: 120px;">確定</button>
+						</div>
+					</form>
+				</div>
+			</dd>
+		<?php } ?>
+		</dl>
+
+        <form id="chgoemForm" id="chgoemForm" method="post">
+            <input type="hidden" id="seloemId"  name="seloemId"  value="" />
+            <input type="hidden" id="selsiteid" name="selsiteid" value="" />
+        </form>
+	</div>
+	<!-- end contents -->
+	<?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	<?php if($isSelectMode) { /* --- for APIユーザ選択モード --- */ ?>
+	Event.observe( $("apiUserId"), "change", function(evt) {
+		if( this.value == -1 ) return;
+		var url = "<?php echo f_e(f_path($this->baseUrl, sprintf('apirel/api2ent/oemId/%s/id/', $oemId))); ?>{0}".format(this.value);
+		window.location.href = url;
+	}.bindAsEventListener($("apiUserId")) );
+
+	<?php } else {            /* --- for サイト編集モード --- */ ?>
+	function refreshButtons() {
+		refreshAddTo();
+		refreshRemoveFrom();
+	}
+	function refreshAddTo() {
+		$("addTo").disabled = $("availableEnterprises").selectedIndex < 0;
+	}
+	function refreshRemoveFrom() {
+		$("removeFrom").disabled = $("relatedEnterprises").selectedIndex < 0;
+	}
+	Event.observe( $("relatedEnterprises"), "change", refreshRemoveFrom );
+	Event.observe( $("availableEnterprises"), "change", refreshAddTo );
+	Event.observe( $("addTo"), "click", function() {
+		var sel = $A($("availableEnterprises").options).find(function(opt) { return opt.selected; });
+		if( sel ) {
+			$("relatedEnterprises").appendChild( sel );
+		}
+		setTimeout( refreshButtons, 0 );
+	} );
+	Event.observe( $("removeFrom"), "click", function() {
+		var sel = $A($("relatedEnterprises").options).find(function(opt) { return opt.selected; });
+		if( sel ) {
+			$("availableEnterprises").appendChild( sel );
+		}
+		setTimeout( refreshButtons, 0 );
+	} );
+	Event.observe( $("mainForm"), "submit", function(evt) {
+		var container = $("itemPlace");
+		container.innerHTML = null;
+		$A($("relatedEnterprises").options).each( function(opt) {
+			var field = Object.extend( document.createElement("input"), {
+				type : "hidden",
+				name : "data[][SiteId]",
+				value : opt.value
+			} );
+			container.appendChild(field);
+		} );
+	}.bindAsEventListener($("mainForm")) );
+	<?php } ?>
+	if($('app-msg') && $('app-msg').innerHTML.length) {
+		setTimeout(function() {
+			bytefx.fade($('app-msg'), 100, 0, 1, function() {
+				$('app-msg').innerHTML = '';
+			});
+		}, 3000);
+	}
+});
+
+// OEM選択イベント
+function changeOem() {
+    // OEM選択
+    $("seloemId").value = $("oemList").options[$("oemList").selectedIndex].value;
+
+    // 登録済みサイト
+    $("selsiteid").value = "";  // 初期化
+    var obj = $("relatedEnterprises");
+    if (obj.length > 0) {
+        var arySid = [];
+        for (var i=0; i<obj.length; i++) {
+            arySid[i] = obj.options[i].value;
+        }
+        $("selsiteid").value = arySid.join(',');
+    }
+
+    // 選択可能サイトリストの取得
+    var str = Form.serialize('chgoemForm');
+    var url = "<?php echo $this->baseUrl; ?>/apirel/chgoem";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] != 1) {
+        alert(res['status']);
+        return
+    }
+    else {
+        // 選択可能サイトリストのクリア
+        obj = $("availableEnterprises");
+        while(obj.lastChild) {
+            obj.removeChild(obj.lastChild);
+        }
+        // 選択可能サイトリストの再設定
+        for (var i=0; i<res['info']['siteList'].length; i++) {
+            var row = res['info']['siteList'][i];
+            var option = document.createElement('option');
+            option.setAttribute('value', row['SiteId']);
+            option.setAttribute('class', ((row['ValidFlg'] == 0) ? 'invalid' : 'valid'));
+            option.innerHTML = ('[' + row['SiteId'] + ']' + '\n' + row['SiteNameKj']);
+            $("availableEnterprises").appendChild(option)
+        }
+
+        return
+    }
+}
+</script>
+</html>

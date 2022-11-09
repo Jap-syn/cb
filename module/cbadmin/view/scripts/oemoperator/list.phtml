@@ -1,0 +1,53 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OMEオペレーター一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>ID</th>
+            <th>OEMID</th>
+            <th>ログインID</th>
+            <th>氏名</th>
+            <th>氏名カナ</th>
+            <th>所属</th>
+            <th>権限</th>
+            <!-- <th>有効</th> -->
+            <th>&nbsp;</th>
+          </tr>
+          <?php foreach ($this->list as $row) { //$row = $this->list[$i]; ?> 
+          <tr class="data">
+            <td class="r_data"><?php echo $row->OemOpId; ?></td>
+            <td class="l_data"><?php echo $this->oemidlist[$row->OemId]; ?></td>
+            <td class="l_data"><?php echo $row->LoginId; ?></td>
+            <td class="l_data"><?php echo $row->NameKj; ?></td>
+            <td class="l_data"><?php echo $row->NameKn; ?></td>
+            <td class="l_data"><?php echo $row->Division; ?></td>
+            <!--<td class="l_data"><?php //echo $this->codeMaster->getRoleCodeCaption($row->RoleCode); ?></td>-->
+            <!-- <td class="c_data"><?php if ($row->ValidFlg == 1) echo '有効'; else echo '無効'; ?></td> -->
+            <td class="c_data"><a href="oemoperator/edit/opid/<?php echo $row->OemOpId; ?>">編集</a></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+  
+    <?php echo $this->render('page_footer.php'); ?>
+  </div>
+</body>
+</html>

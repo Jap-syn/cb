@@ -1,0 +1,141 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.rowNotVisible tr:not(.titlerow) {
+    display: none;
+}
+.rowVisible tr[errrow] {
+    display: table-row;
+}
+td.update {
+    background-color : yellow;
+}
+td.error {
+    background-color : pink;
+    /* color: white; */
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwordercsv/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">備考コメント一括登録</h3>
+
+    <form id="saveForm" action="rwordercsv/save2" method="post">
+    <input type="hidden" name="fileName" id="fileName" value="<?php echo f_e($this->fileName); ?>" />
+    <input type="hidden" name="nrmCount" id="nrmCount" value="<?php echo $this->nrmCount; ?>" />
+    <div style="margin: 5px 25px;">
+    <?php if (strlen($this->message) > 0 ) { /* エラーメッセージあり */ ?>
+        <h4><?php echo $this->message; ?></span></h4>
+    <?php }elseif ($this->errCount > 0 ) {  /* エラーデータあり */ ?>
+        <span style="font-size: 11px;">
+            対象ファイル「<?php echo f_e($this->fileName); ?>」でエラーがあります。<BR>
+            エラー内容を確認し、ファイルを修正後、再度取込してください。<BR>
+            (対象件数：<?php echo $this->sumCount; ?>件&nbsp;取込OK件数：<?php echo $this->nrmCount; ?>件&nbsp;エラー件数：<?php echo $this->errCount; ?>件)
+        </span>
+    <?php }else{ ?>
+        <span style="font-size: 11px;">
+            インポートしようとしている内容は、以下の内容になります。<BR>
+            間違いなければ、CSVダウンロードを行った後、確定ボタンを押してください。キャンセルする場合、キャンセルボタンを押してください。<BR>
+            (対象件数：<?php echo $this->sumCount; ?>件&nbsp;取込OK件数：<?php echo $this->nrmCount; ?>件&nbsp;エラー件数：<?php echo $this->errCount; ?>件)
+        </span>
+    <?php } ?>
+        &nbsp;<input type="checkbox" id="chkFilter">エラーのみ表示<BR>
+        <div style="margin: 0px; height: 500px; border: 1px solid gray; overflow-y: scroll; ">
+          <table style="margin: 0px; clear:both; font-size: 11px; table-layout:auto; white-space: nowrap;" width="100%" class="datatable" cellpadding="1" cellspacing="1" border="0" id="resultTable">
+            <tbody>
+              <tr class="titlerow">
+                <th>行No</th>
+                <th>ファイル区分</th>
+                <th>注文ＩＤ</th>
+                <th style="white-space: nowrap;">備考</th>
+                <th>エラー情報</th>
+              </tr>
+              <?php $i = 0; ?>
+              <?php foreach ($this->listData as $row) { ?>
+              <tr style="background-color: red;" <?php if (strlen($row['Error']) > 0){ echo 'errrow'; } else { ; } ?>>
+                <!-- 登録用項目 -->
+                <input type="hidden" id="OrderSeq<?php echo $i; ?>" name="OrderSeq<?php echo $i; ?>" value="<?php echo $row['OrderSeq']; ?>" />
+                <input type="hidden" id="Incre_Note<?php echo $i; ?>" name="Incre_Note<?php echo $i; ?>" value="<?php echo $row['Incre_Note']; ?>" />
+                <!-- 表示項目 -->
+                <td class="r_data <?php if (strlen($row['Error']) > 0){ echo 'error'; } else { ; } ?>"><?php echo $row['RowNo']; ?></td>
+                <td class="l_data <?php if (strlen($row['Error']) > 0){ echo 'error'; } else { ; } ?>"><?php echo $row['FileKbn']; ?></td>
+                <td class="l_data <?php if (strlen($row['Error']) > 0){ echo 'error'; } else { ; } ?>"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+                <td class="l_data <?php if (strlen($row['Error']) > 0){ echo 'error'; } elseif (strlen($row['Incre_Note']) > 0){ echo 'update'; } ?>"><?php echo $row['CaptionIncre_Note']; ?></td>
+                <td class="l_data <?php if (strlen($row['Error']) > 0){ echo 'error'; } else { ; } ?>"><?php echo $row['Error']; ?></td>
+              </tr>
+              <?php $i++; ?>
+              <?php } ?>
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+    <table width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+            <tr align="center">
+                <td style="padding: 2px 0px">
+                    <input type="button" id="download_button" value="　CSVﾀﾞｳﾝﾛｰﾄﾞ　" <?php echo ($this->errCount > 0 || strlen($this->message) > 0) ? 'disabled="disabled"' : ''; ?> />&nbsp;
+                    <input type="submit" id="submit_button" value="　確　定　" disabled="disabled"; />&nbsp;
+                    <input type="button" id="cancel_edit" value="キャンセル" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+<br/>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("download_button"), "click", function() {
+	    // AJAX通信でフォーム情報をセッションに設定
+	    var str = Form.serialize('saveForm');   // フォーム内容をシリアライズ
+	    var url = "<?php echo $this->baseUrl; ?>/rwordercsv/jobparamset";
+	    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+	    // CSV出力処理
+	    var url = "<?php echo $this->baseUrl; ?>/rwordercsv/csvoutput2";
+	    var ref = window.open( url );
+
+	    // CSV出力が終わったら確定ボタンを有効にする
+	    // 最大10秒待機させる
+	    var wait = 0;
+	    var intvl = setInterval(function() {
+	    	wait++;
+	        if (ref.closed == true || wait == 50){
+	            clearInterval(intvl);
+	            $("submit_button").disabled = "";
+	        }
+	    }, 200);
+
+	    return false;
+  });
+  Event.observe($("cancel_edit"), "click", function() {
+	location.href = "rwordercsv/form";
+    return false;
+  });
+  $("chkFilter").onchange = function() {
+		var table = $("resultTable");
+		var className = "datatable";
+
+	    if ($("chkFilter").checked) {
+	    	className += " rowNotVisible rowVisible";
+		}
+
+		table.className = className;
+
+	    return false;
+  };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+@CHARSET "UTF-8";
+
+label.chk_label {
+    padding: 1px 0px;
+    margin: 0px;
+    margin-right: 9px;
+    line-height: 1.3;
+    white-space: nowrap;
+    font-size: 11px;
+    float: left;
+}
+* html label.chk_label {
+    padding: 2px 0px;
+    font-size: 9px;
+    margin-right: 8px;
+}
+*+html label.chk_label {
+    line-height: 1.7;
+    font-size: 9px;
+    padding: 2px 0px;
+    margin-right: 8px;
+}
+
+input.chk {
+    border: none 0px;
+    margin: 0px;
+    padding: 0px;
+}
+
+
+table#credit_condition_list,
+table#credit_condition_list th,
+table#credit_condition_list td,
+table#credit_condition_list input,
+table#credit_condition_list select {
+    font-size: 12px;
+}
+
+table#credit_condition_list td {
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+table#credit_condition_list input.large_item {
+    width: 180px;
+}
+
+table#credit_condition_list input.medium_item {
+    width: 120px;
+}
+
+table#credit_condition_list input.small_item {
+    width: 30px;
+    text-align: right;
+}
+
+table#credit_condition_list select {
+    width: 80px;
+}
+
+table#credit_condition_list label.selected {
+    color: #00F;
+    font-weight: bold;
+}
+
+a.action_icon,
+a.action_icon:link,
+a.action_icon:hover,
+a.action_icon:active,
+a.action_icon:visited {
+	margin: 0px;
+	padding: 0px;
+	line-height: 0;
+	border-width: 0px !important;
+}
+a.action_icon img {
+	vertical-align: baseline;
+	border-width: 0px !important;
+}

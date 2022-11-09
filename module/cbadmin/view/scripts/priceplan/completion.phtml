@@ -1,0 +1,53 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/priceplan/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>加盟店料金プラン登録完了</h3>
+<?php // var_dump($this->data); ?>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">料金プラン名</td>
+    <td class="data"><?php echo f_e($this->data["PricePlanName"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">月額固定費(税抜)</td>
+    <td class="data"><?php echo valueFormat($this->data["MonthlyFee"], 'number', '#,##0'); ?>円</td>
+  </tr>
+  <tr>
+    <td class="label">決済上限額</td>
+    <td class="data"><?php echo valueFormat($this->data["SettlementAmountLimit"], 'number', '#,##0'); ?>円</td>
+  </tr>
+  <tr>
+    <td class="label">決済手数料率</td>
+    <td class="data"><?php echo doubleval($this->data["SettlementFeeRate"]); ?>％</td>
+  </tr>
+  <tr>
+    <td class="label">請求手数料（別送）(税抜)</td>
+    <td class="data"><?php echo valueFormat($this->data["ClaimFeeBS"], 'number', '#,##0'); ?>円</td>
+  </tr>
+  <tr>
+    <td class="label">請求手数料（同梱）(税抜)</td>
+    <td class="data"><?php echo valueFormat($this->data["ClaimFeeDK"], 'number', '#,##0'); ?>円</td>
+  </tr>
+  <tr>
+    <td class="label">再請求手数料(税抜)</td>
+    <td class="data"><?php echo valueFormat($this->data["ReClaimFee"], 'number', '#,##0'); ?>円</td>
+  </tr>
+  <tr>
+    <td class="label">有効設定</td>
+    <td class="data"><?php  if ($this->data['ValidFlg'] == 1 or $this->data['ValidFlg'] == 'on') echo '有効'; else echo '無効'; ?></td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+textarea {
+	font-size: 12px;
+	height: 150px;
+	width: 600px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+-->
+</style>
+<script language="javascript">
+<!--
+function changenote(obj){
+ 	var val = obj.options[obj.selectedIndex].value;
+ 	if (val == 0){
+ 		document.getElementById('note0').style.display = '';
+ 		document.getElementById('note1').style.display = 'none';
+ 		document.getElementById('note2').style.display = 'none';
+ 		document.getElementById('note0').disabled = false;
+ 		document.getElementById('note1').disabled = true;
+ 		document.getElementById('note2').disabled = true;
+ 	}
+ 	if (val == 1){
+ 		document.getElementById('note0').style.display = 'none';
+ 		document.getElementById('note1').style.display = '';
+ 		document.getElementById('note2').style.display = 'none';
+ 		document.getElementById('note0').disabled = true;
+ 	 	document.getElementById('note1').disabled = false;
+ 	 	document.getElementById('note2').disabled = true;
+ 	}
+ 	if (val == 2){
+ 		document.getElementById('note0').style.display = 'none';
+ 		document.getElementById('note1').style.display = 'none';
+ 		document.getElementById('note2').style.display = '';
+ 		document.getElementById('note0').disabled = true;
+ 	 	document.getElementById('note1').disabled = true;
+ 	 	document.getElementById('note2').disabled = false;
+ 	 }
+
+}
+-->
+</script>
+
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/gp/page_menu_note.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>備考マスタ設定</h3>
+<div id="updated" align="center"><?php echo $this->updated; ?></div>
+<form name="form" method="post" action="gp/noteup">
+<div align="center">
+  <table id="confirmtable" style="visibility: hidden;" class="datatable" width="650" cellpadding="1" cellspacing="1" border="0">
+    <tbody>
+      <tr>
+        <td class="l_data"><div id="confirmcap"></div></td>
+      </tr>
+      <tr>
+        <td class="l_data"><div id="confirm"></div></td>
+      </tr>
+    </tbody>
+  </table>
+  <table class="datatable" width="650" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+  <tr>
+      <td class="l_data">
+        コメント種類
+        <select id = "code" name = "code" onChange = "changenote(this)" >
+            <option value="0">全体備考</option>
+            <option value="1">OEM備考</option>
+            <option value="2">事業者備考</option>
+        </select>
+        <?php echo $this->code; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="l_data">
+      </td>
+    </tr>
+    <tr>
+      <td class="c_data">
+
+        <textarea name="note0" id="note0" ><?php echo f_e($this->note[0]); ?></textarea>
+        <textarea name="note1" id="note1"  style="display:none"><?php echo f_e($this->note[1]); ?></textarea>
+        <textarea name="note2" id="note2"  style="display:none"><?php echo f_e($this->note[2]); ?></textarea>
+      </td>
+
+    </tr>
+    <tr align="center">
+      <td>
+        <input type="submit" value="　設　定　" />　　　
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</div>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

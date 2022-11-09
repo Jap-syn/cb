@@ -1,0 +1,108 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/delimethod/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">配送方法設定</h3>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <form name="form" method="post" action="delimethod/up">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th rowspan="2">ID</th>
+            <th>名称</th>
+            <th>名称Ｂ（略称等）</th>
+            <th>表示順</th>
+            <th>修正依頼<br />メール</th>
+            <th>伝票番号<br />登録</th>
+            <th>キャンセル<br />可否</th>
+            <th>有効</th>
+          </tr>
+          <tr>
+            <th colspan="3">着荷確認URL</th>
+            <th colspan="4">伝票番号入力規則</th>
+          </tr>
+          <?php $i = 0; foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td rowspan="2" class="r_data">
+              <input type="hidden" name="DeliMethodId<?php echo $i; ?>" id="DeliMethodId<?php echo $i; ?>" value="<?php echo $row['DeliMethodId']; ?>" />
+              <?php echo $row['DeliMethodId']; ?>
+            </td>
+            <td class="l_data">
+              <input type="text" size="30" name="DeliMethodName<?php echo $i; ?>" id="DeliMethodName<?php echo $i; ?>" value="<?php echo f_e($row['DeliMethodName']); ?>" />
+            </td>
+            <td class="l_data">
+              <input type="text" size="30" name="DeliMethodNameB<?php echo $i; ?>" id="DeliMethodNameB<?php echo $i; ?>" value="<?php echo f_e($row['DeliMethodNameB']); ?>" />
+            </td>
+            <td class="l_data">
+              <input type="text" size="6" name="ListNumber<?php echo $i; ?>" id="ListNumber<?php echo $i; ?>" value="<?php echo $row['ListNumber']; ?>" />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="SendMailRequestModifyJournalFlg<?php echo $i; ?>" id="SendMailRequestModifyJournalFlg<?php echo $i; ?>" <?php if($row['SendMailRequestModifyJournalFlg'] == 1) echo 'checked'; ?> />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="JournalRegistClass<?php echo $i; ?>" id="JournalRegistClass<?php echo $i; ?>" <?php if($row['JournalRegistClass'] == 1) echo 'checked'; ?> />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="EnableCancelFlg<?php echo $i; ?>" id="EnableCancelFlg<?php echo $i; ?>" <?php if($row['EnableCancelFlg'] == 1) echo 'checked'; ?> />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="ValidFlg<?php echo $i; ?>" id="ValidFlg<?php echo $i; ?>" <?php if($row['ValidFlg'] == 1) echo 'checked'; ?> />
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" class="l_data">
+              <input type="text" size="80" name="ArrivalConfirmUrl<?php echo $i; ?>" id="ArrivalConfirmUrl<?php echo $i; ?>" value="<?php echo f_e($row['ArrivalConfirmUrl']); ?>" />
+            </td>
+            <td colspan="4" class="l_data">
+              <input type="text" size="28" name="ValidateRegex<?php echo $i; ?>" id="ValidateRegex<?php echo $i; ?>" value="<?php echo f_e($row['ValidateRegex']); ?>" />
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="7">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php $i++; } ?>
+          <tr class="data">
+            <td rowspan="2" class="c_data">新規</td>
+            <td class="l_data"><input type="text" size="30" name="DeliMethodName" id="DeliMethodName" /></td>
+            <td class="l_data"><input type="text" size="30" name="DeliMethodNameB" id="DeliMethodNameB" /></td>
+            <td class="l_data"><input type="text" size="6" name="ListNumber" id="ListNumber" /></td>
+            <td class="c_data"><input type="checkbox" name="SendMailRequestModifyJournalFlg" id="SendMailRequestModifyJournalFlg" checked /></td>
+            <td class="c_data"><input type="checkbox" name="JournalRegistClass" id="JournalRegistClass" checked /></td>
+            <td class="c_data"><input type="checkbox" name="EnableCancelFlg" id="EnableCancelFlg" checked /></td>
+            <td class="c_data"><input type="checkbox" name="ValidFlg" id="ValidFlg" checked /></td>
+          </tr>
+          <tr>
+            <td colspan="3" class="l_data"><input type="text" size="80" name="ArrivalConfirmUrl" id="ArrivalConfirmUrl" /></td>
+            <td colspan="4" class="l_data"><input type="text" size="28" name="ValidateRegex" id="ValidateRegex" /></td>
+          </tr>
+          <tr class="border">
+            <td colspan="7">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7" class="c_data">
+              <input type="submit" value="　この内容で更新　">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

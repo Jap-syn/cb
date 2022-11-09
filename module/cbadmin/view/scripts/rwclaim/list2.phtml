@@ -1,0 +1,58 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求書発行（印刷完了）待ちリスト</h3>
+    <h4><span class="cnt"><?php echo $this->cnt; ?></span>　件の伝票番号登録が完了しています。</h4>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th>注文<br />SEQ</th>
+          	<th>注文ID</th>
+          	<th>注文登録日時</th>
+          	<th>属性</th>
+          	<th>事業者名</th>
+          	<th>請求先氏名</th>
+          	<th>住所</th>
+          	<th>利用額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="r_data">
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>"/>
+              <?php echo $this->list[$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data"><?php echo $this->list[$i]["OrderId"]; ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["RegistDate"]; ?></td>
+            <td class="c_data"><?php echo $this->list[$i]["IncreArCaption"]; ?></td>
+            <td class="l_data"><?php echo $this->list[$i]["EnterpriseNameKj"]; ?></td>
+            <td class="l_data">
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["NameKj"]; ?></a>
+            </td>
+            <td class="l_data"><?php echo $this->list[$i]["UnitingAddress"]; ?>...</td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]["UseAmount"], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

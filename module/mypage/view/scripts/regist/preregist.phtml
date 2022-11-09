@@ -1,0 +1,88 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+
+function show_error_message( $messages ) {
+    if( empty( $messages ) ) return;
+    if( ! is_array( $messages ) ) $messages = array( $messages );
+    $list = array();
+    foreach( $messages as $msg ) $list[] = f_e( $msg );
+    echo '<div class="input_error_message">';
+    echo join( '<br />', $list );
+    echo '</div>';
+}
+?>
+<style>
+.input_error_message {
+    padding-left: 20px;
+    color: red;
+}
+</style>
+<script>
+function quitBox( cmd )
+{
+	if( cmd == 'quit' )
+	{
+		open( location, '_self' ).close();
+	}
+	return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/regist/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+    <div style="clear: both;" id="my_title">新規会員登録</div>
+    <div class="mt_100">
+       <?php
+       echo $this->render( 'mypage/regist/list.php' );
+       ?>
+    </div>
+    <br />
+    <?php if( !empty( $this->error ) ) { ?>
+    <br />
+    <div id="pre_errmsg">
+        ※：入力に不備があります。登録内容を見直してください。
+        <?php show_error_message( $this->error ); ?>
+    </div>
+    <?php } ?>
+    <form name="form" method="post" action="regist/preregist" onsubmit="return check();">
+        <?php if( $this->current == 'mail' || empty( $this->current) ) { ?>
+        <div id="msg">ご入力いただいたメールアドレス宛に仮登録の案内メールをお送ります。</div>
+        <div id="inputarea">メールアドレス　<input type="text" size="50" style="height: 25px" name="mailaddress" /></div>
+        <input type="hidden" size="50" name="oemid" value="<?php echo $this->oemid; ?>" />
+        <?php if( !empty( $this->orderseq ) ) {?>
+        <input type="hidden" size="50" name="orderseq" value="<?php echo f_e($this->orderseq); ?>" />
+        <?php } ?>
+        <?php } if( $this->current == 'precomp' ) { ?>
+        <div id="msg" class="f_bold">ご入力いただいたメールアドレス宛に仮登録の案内メールをお送りいたしました。</div>
+        <?php } ?>
+        <div id="preregist">
+        <?php if( $this->current == 'mail' || empty( $this->current) ) { ?>
+            <input style="width: 600px;" id="red_btn" type="submit" value="仮登録" /><br /><br />
+        <?php } ?>
+        <input style="width: 600px;" id="green_btn"  type="button" value="画面を閉じる" onclick="return quitBox( 'quit' );" /><br />&nbsp;
+    </div>
+    </form>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

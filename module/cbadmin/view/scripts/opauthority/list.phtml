@@ -1,0 +1,79 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+<!--
+function check()
+{
+	for( i = 0; ; i++ ) {
+		name = "AuthorityName" + i;
+		if( !document.getElementsByName(name)[0] ) {
+			break;
+		}
+		if( document.getElementsByName(name)[0].value == "" ) {
+			alert( "権限は必須です。" );
+			return false;
+		}
+	}
+	return true;
+}
+-->
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/opauthority/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">権限マスタ</h3>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <form name="form" method="post" action="opauthority/save" onSubmit="return check()">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>コード</th>
+            <th>権限</th>
+            <th>権限クラス</th>
+            <th>有効</th>
+          </tr>
+          <?php $i = 0; foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td  class="r_data">
+              <input type="hidden" name="AuthorityId<?php echo $i; ?>" id="AuthorityId<?php echo $i; ?>" value="<?php echo $row['AuthorityId']; ?>" />
+              <?php echo $row['AuthorityId']; ?>
+            </td>
+            <td class="l_data">
+              <input type="text" size="40" maxlength = "100" name="AuthorityName<?php echo $i; ?>" id="AuthorityName<?php echo $i; ?>" value="<?php echo f_e($row['AuthorityName']); ?>" />
+            </td>
+            <td class="c_data">
+              <?php $array = array("0"=>"CB","1"=>"OEM","2"=>"加盟店"); echo BaseHtmlUtils::SelectTag('AuthorityClass'.$i, $array, $row['AuthorityClass']);?></td>
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="ValidFlg<?php echo $i; ?>" id="ValidFlg<?php echo $i; ?>" <?php if($row['ValidFlg'] == 1) echo 'checked'; ?> />
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="1">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php $i++; } ?>
+          <tr>
+            <td colspan="6" class="c_data">
+              <input type="submit" value="　この内容で更新　">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

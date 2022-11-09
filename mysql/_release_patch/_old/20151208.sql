@@ -1,0 +1,1 @@
+UPDATE M_TemplateField SET PhysicalName = 'Deli_DeliveryMethodName' WHERE TemplateSeq = (select TemplateSeq from M_TemplateHeader where TemplateId = 'CKI01033_1') AND PhysicalName = 'DeliMethodName';

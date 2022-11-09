@@ -1,0 +1,140 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+
+<style>
+    table {
+        width: 900px;
+        border: 1px gray solid;
+    }
+    table.top {
+        background-color: #fff;
+        border-radius: 3px;
+    }
+    .layout_container table.datatable {
+        border: 1px lightgray solid;
+    }
+    table.datatable td.under {
+        border-bottom: 3px solid lightgray;
+    }
+    .l_height {
+        line-height: 17px;
+    }
+    table.margin0 {
+        margin-bottom: 0px;
+    }
+    .scroll {
+        height: 300px;
+        overflow-y: scroll;
+        border: 1px lightgray solid;
+        margin-bottom: 10px;
+    }
+    .scroll table {
+        width: 880px;
+        margin: 0px;
+    }
+    .scrollbar {
+        width: 11px;
+        background-color: lightgray;
+    }
+    .width_140 {
+        width: 140px;
+    }
+    .width_400 {
+        width: 400px;
+    }
+    .width_401 {
+        width: 401px;
+    }
+</style>
+
+</head>
+
+<body>
+  <!-- start contents -->
+  <div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/monthly/page_menu.php'); ?>
+  <div class="title"><span>キャンセル返金明細一覧</span></div>
+
+  <!-- サブヘッダー -->
+  <form name="form" method="post" action="monthly/cancel">
+    <table class="datatable top">
+      <tbody>
+        <tr>
+          <td class="l_data">
+            <?php echo $this->fixedMonthTag; ?>
+            <input class="default_btn" type="submit" style="margin-top: 1px;" value="　表　示　" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+
+  <!-- 明細 -->
+  <div class="layout_container">
+    <table class="datatable width_400">
+      <tbody>
+        <tr>
+            <td class="r_label width_150">ご利用総額</td>
+            <td class="r_data">売上：<?php echo  f_nf(nvl($this->claimed_data['UseAmount'],0),'#,##0'); ?>　円</td>
+        </tr>
+        <tr>
+            <td class="r_label">立替総額</td>
+            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+        </tr>
+        <tr>
+            <td class="r_label">精算総額</td>
+            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['FixedTransferAmount'],0),'#,##0'); ?>　円</td>
+        </tr>
+        <tr>
+            <td class="r_label">精算予定日</td>
+            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['SettlePlanDate'],0),'#,##0'); ?></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 一覧 -->
+    <table class="datatable margin0">
+      <tbody>
+        <tr>
+            <td class="c_label width_401">対象店舗名</td>
+            <td class="c_label">キャンセル返金</td>
+            <td class="scrollbar"> </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="scroll">
+      <?php foreach($this->cancel as $value){?>
+        <table class="datatable">
+            <tbody>
+              <tr>
+                <td class="c_data width_400"><a href="monthly/canceldetail/eid/<?php echo $value['EnterpriseId'];?>/fd/<?php echo f_e($this->from);?>_<?php echo f_e($this->to);?>"><?php echo $value['EnterpriseName']; ?></a></td>
+                <td class="r_data"><?php echo f_nf(nvl($value['RepayTotal'],0),'#,##0');?> 円</td>
+              </tr>
+            </tbody>
+        </table>
+      <?php } ?>
+    </div>
+
+    <!-- end contents -->
+    <div style="font-size: 9pt; margin: 0px 8px; float: none; clear: both; width: 870px">
+        ※「印紙代合計」とは、購入者様のコンビニ決済によるお支払金額が税込で\54,000以上の場合に発生する印紙代金の合計金額です。
+    </div>
+
+    <div class="note">
+      <ul>
+          <li>
+              表示金額はすべて税込金額となっております。
+          </li>
+          <li>
+              決済手数料の1円未満の端数は切捨てとなっております。
+          </li>
+      </ul>
+    </div>
+
+    <?php echo $this->render('oemadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

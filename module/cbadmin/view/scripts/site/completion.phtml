@@ -1,0 +1,60 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+    #contents .warning {
+        margin: 5px 25px;
+        font-size: 1em;
+        font-weight: bold;
+        color: red;
+        border: solid 1px firebrick;
+        background-color: mistyrose;
+        padding: 8px 12px;
+    }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/site/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>サイト登録完了</h3>
+<?php if ($this->SubscriberFlg) { ?>
+<div id="message"><div class="warning">選択した加入者固有コードのLINEPayが既に「仮登録中」に更新されてい>ます。再度確認をお願いします。</div></div>
+<?php } ?>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+   <td class="label">サイトID</td>
+    <td class="data" ><?php echo f_e($this->sid); ?></td>
+  </tr>
+  <tr>
+    <td class="label">サイト名</td>
+    <td class="data" ><?php echo f_e($this->list["SiteNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">サイト名カナ</td>
+    <td class="data"><?php echo escape($this->list["SiteNameKn"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">URL</td>
+    <td class="data"><?php echo escape($this->list["Url"]); ?></td>
+  </tr>
+
+  <tr>
+    <td colspan="2" class="c_data">
+      <a href="site/list/eid/<?php echo $this->EnterpriseId; ?>">サイト一覧画面へ</a>
+      ｜
+      <a href="site/edit/eid/<?php echo f_e($this->EnterpriseId); ?>/sid/<?php echo f_e($this->sid); ?>">編集画面へ</a>
+      ｜
+      <a href="enterprise/detail/eid/<?php echo f_e($this->EnterpriseId); ?>">事業者詳細画面へ</a>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

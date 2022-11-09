@@ -1,0 +1,114 @@
+/* メイン領域 */
+.main_contents {
+	height: auto;
+}
+
+/* 情報テーブル */
+.tab_page table {
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+	width: 750px;
+	font-size: 11pt;
+}
+
+.tab_page table th,
+.tab_page table td {
+	padding: 2px 6px;
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+}
+
+.tab_page table th {
+	background-color: #0066CC;
+	color: white;
+	font-weight: bold;
+}
+
+.tab_page table td.row_header {
+	background-color: #E8F0FF;
+	width: 140px;
+	padding-left: 16px;
+}
+
+.tab_page table td.container {
+	padding: 1px;
+}
+
+.tab_page table td.editable {
+	background-image: url('../../images/icon_editable_item_s.gif');
+	background-position: left center;
+	background-repeat: no-repeat;
+}
+
+.tab_page table td.no_empty {
+	background-image : url('../../images/order_item_must.png');
+	background-position: left top;
+	background-repeat: no-repeat;
+	padding-top: 10px;
+	padding-bottom: 8px;
+}
+
+.tab_page table td.submit_area {
+	text-align: center;
+	padding: 8px;
+	border-top: double 3px silver;
+}
+
+table.site_table {
+	width: auto;
+	font-size: 11pt;
+	color: #333;
+}
+
+.site_table th,
+.site_table td {
+	padding: 1px 3px;
+	border-color: silver;
+}
+.site_table th {
+	background-color: #E8F0FF;
+	font-weight: normal;
+	color: #333;
+}
+.site_table tr {
+}
+.site_table tr.not_valid {
+	background-color: #E8E8E8;
+	color: crimson;
+}
+
+/* 検証エラー情報のコンテナ領域 */
+.error_info_container {
+	margin: 4px;
+	border: solid 1px gray;
+}
+
+.error_info_container h4,
+ul.error_info_list {
+	border: none 0px;
+	margin: 0px;
+	padding: 2px 8px;
+	background-color: pink;
+}
+
+.error_info_container h4 {
+	border-bottom: solid 1px gray;
+	font-size: 14pt;
+	font-weight: bold;
+	color: brown;
+}
+
+ul.error_info_list {
+	font-size: 12pt;
+	padding: 2px 0px 2px 20px;
+	background-color: lavenderblush;
+}
+
+ul.error_info_list li {
+	color: brown;
+}
+
+ul.error_info_list li.hover {
+	color: red;
+	text-decoration: underline;
+}

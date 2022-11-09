@@ -1,0 +1,43 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">銀行・郵便局入金CSVインポート</h3>
+	<h4><?php echo $this->message; ?></h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文ID</th>
+            <th>入金日</th>
+            <th>入金額</th>
+            <th>請求金額</th>
+            <th>差額</th>
+            <th>エラー</th>
+          </tr>
+          <?php for ($i = 0 ; $i < count($this->data) ; $i++) { ?>
+          <tr>
+            <td class="r_data"><?php echo $this->data[$i][0]; ?></td>
+            <td class="l_data"><?php echo $this->data[$i][1]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][2]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][4]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][5]; ?></td>
+            <td class="r_data"><?php echo $this->data[$i][3]; ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信条件CSV登録・修正確認</h3>
+      <form name="form" method="post" action="credit/execimport">
+      <input type="hidden" name="EnterpriseId" value='' />
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信条件CSV登録・修正確認</h3>
+      <form name="form" method="post" action="credit/execimport/eid/<?php echo f_e($this->EnterpriseId); ?>">
+      <input type="hidden" name="EnterpriseId" value="<?php echo f_e($this->EnterpriseId); ?>" />
+    <?php } ?>
+    <input type="hidden" name="hash" value="<?php echo f_e($this->hash); ?>" />
+    下記の内容で登録・更新致します。
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <th>CSVNO.</th>
+        <th>Seq</th>
+        <th>項目種別</th>
+        <th>検索方法</th>
+        <th>条件文字列</th>
+        <th>コメント</th>
+        <th>ポイント</th>
+        <th>有効/無効</th>
+      </tr>
+      <?php if (isset($this->datas)) { ?>
+      <?php $i = 1; foreach($this->datas as $data) { ?>
+      <tr>
+        <td class="l_data">
+          <?php echo $i; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['Seq'] == "" ? "（新規）" : $data['Seq']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['CategoryName']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['SearchPatternName']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['Cstring']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['Comment']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['Point']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['ValidFlg'] == 1 ? "有効" : "無効"; ?>
+        </td>
+      </tr>
+      <?php $i++; } ?>
+      <?php } ?>
+      <tr>
+        <td>
+        </td>
+      </tr>
+    </table>
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="c_label">
+          <button id="save_button" name="save_button" type="submit">この内容で登録</button>
+          <button id="return_button" name="back_button" type="submit"><<　入力へ戻る</button>
+        </td>
+      </tr>
+    </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

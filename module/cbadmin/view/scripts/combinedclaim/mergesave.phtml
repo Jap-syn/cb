@@ -1,0 +1,89 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+	<style>
+	hr {
+	   border-width: 1px 0px 0px 0px; /* 太さ */
+	   border-style: dotted; /* 線種 */
+	   border-color: silver; /* 線色 */
+	   height: 3px; /* 高さ */
+	}
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3>請求取りまとめ注文一覧設定確認</h3>
+<h4>以下注文情報の請求を取りまとめます。</h4>
+    <table width="860" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th width="80px">注文ID</th>
+          <th width="80px">注文日</th>
+          <th width="100px">氏名</th>
+          <th width="350px">住所</th>
+          <th width="100px">電話番号</th>
+        </tr>
+      </thead>
+      <tbody>
+<?php
+        // count関数対策
+        $orderCustomersCount = 0;
+        if (!empty($this->ordercustomers)) {
+            $orderCustomersCount = count($this->ordercustomers);
+        }
+        for ($i = 0 ; $i < $orderCustomersCount ; $i++) {
+?>
+
+        <tr>
+          <td nowrap class="l_data"><?php echo f_e($this->ordercustomers[$i]["OrderId"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->ordercustomers[$i]["ReceiptOrderDate"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->ordercustomers[$i]["NameKj"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->ordercustomers[$i]["UnitingAddress"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->ordercustomers[$i]["Phone"]); ?></td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+	      <form id="saveForm" action="combinedclaim/mergesave" method="post">
+	       <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+	        <a id="doSave" href="javascript:void(0)">確　認</a>　　　　　<a id="cancelSave" href="javascript:void(0)">戻　る</a>
+	      </form>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("doSave"), "click", function() {
+    $("saveForm").submit();
+    return false;
+  });
+  Event.observe($("cancelSave"), "click", function() {
+    $("saveForm").action = $("saveForm").action.replace(/\/mergesave$/, "/back");
+    $("saveForm").submit();
+    return false;
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.l_data.oem{
+    background-color: lightcyan;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者別請求残高検索</h3>
+    <form name="form" method="post" action="enterpriseclaim/list">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th>項目</th>
+          <th>指定値</th>
+          <th>項目補足</th>
+        </tr>
+        <tr>
+          <td class="r_label">OEM先</td>
+          <td class="l_data"><?php echo $this->oemTag; ?></td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店ID</td>
+          <td class="l_data"><input type="text" name="LoginId" id="LoginId" /></td>
+          <td class="l_data">後方一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店名</td>
+          <td class="l_data"><input type="text" size="50" name="EnterpriseNameKj" id="EnterpriseNameKj" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">加盟店名カナ</td>
+          <td class="l_data"><input type="text" size="50" name="EnterpriseNameKn" id="EnterpriseNameKn" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求日</td>
+          <td class="l_data"><input type="text" name="ClaimDateF" id="ClaimDateF" />～<input type="text" name="ClaimDateT" id="ClaimDateT" /></td>
+          <td class="l_data">YYYY-MM-DD形式で入力<br>(範囲、またはFromのみの場合日付一致)</td>
+        </tr>
+        <tr>
+          <td class="r_label">請求残高</td>
+          <td class="l_data"><input type="radio" name="ClaimedBalanceType" id="ClaimedBalanceType" value="0" checked/>すべて　　　
+                             <input type="radio" name="ClaimedBalanceType" id="ClaimedBalanceType" value="1" />残高ありのみ　　　
+                             <input type="radio" name="ClaimedBalanceType" id="ClaimedBalanceType" value="2"/>長期繰り越し</td>
+          <td class="l_data"></td>
+        </tr>
+        <tr>
+          <td class="r_label">所在地</td>
+          <td class="l_data"><input type="text" size="50" name="UnitingAddress" id="UnitingAddress" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">代表者氏名</td>
+          <td class="l_data"><input type="text" size="50" name="RepNameKj" id="RepNameKj" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">代表者氏名カナ</td>
+          <td class="l_data"><input type="text" size="50" name="RepNameKn" id="RepNameKn" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">電話番号</td>
+          <td class="l_data"><input type="text" size="50" name="ContactPhoneNumber" id="ContactPhoneNumber" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td class="r_label">メールアドレス</td>
+          <td class="l_data"><input type="text" size="50" name="MailAddress" id="MailAddress" /></td>
+          <td class="l_data">部分一致検索</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="l_data">&nbsp;</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="c_label"><input type="submit" value="　検　索　" /></td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<?php
+use Coral\Coral\CoralOrderUtility;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$action = $this->currentAction;
+$page_title_prefix = '注文データ検索';
+if($action == 'qsearch')
+{
+  $page_title_prefix = '簡易注文検索';
+}
+else if($action == 'ssearch')
+{
+  $page_title_prefix = '定型検索';
+}
+?>
+<style tyle="text/css">
+table.datatable td .clip-box {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+table.datatable td .oem-info { max-width: 120px; }
+table.datatable td .shop-info { max-width: 140px; }
+table.datatable td .order-link { max-width: 200px; }
+table.datatable td .address-info { max-width: 300px; }
+table.datatable td .clip-box .clip-content {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searcho/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title"><?php echo f_e($page_title_prefix); ?><?php if($this->page_title) echo f_e(sprintf(' - %s', $this->page_title)); ?></h3>
+    <?php echo $this->render('cbadmin/page_navigation.php'); ?>
+    <div style="margin: 5px 25px;">
+    <?php if(f_e($this->postalcode) != null || f_e($this->phonelink) != null) { ;?>
+    <form name="form" method="post" action="searcho/qsearch">
+    <table style="margin: 0px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="l_data">
+            請求先：<?php echo valueFormat( $this->claimcount, 'number', '#,##0' ); ?> 件　
+            配送先：<?php echo valueFormat( $this->delicount, 'number', '#,##0' ); ?> 件　
+            <input type="radio" name="registdate" value="30" <?php if($this->days == 30) { echo "checked" ;} ?> />過去30日　
+            <input type="radio" name="registdate" value="90" <?php if($this->days == 90) { echo "checked" ;} ?> />過去90日　　　　
+            <?php if(f_e($this->postalcode) != null) { ;?>
+            <input type="hidden" name="postalcode" value="<?php echo f_e($this->postalcode); ?>" />
+            <?php } else { ?>
+            <input type="hidden" name="phonelink" value="<?php echo f_e($this->phonelink); ?>" />
+            <?php } ?>
+            <input type="submit" value="　検　索　" />
+        </td>
+      </tr>
+    </table>
+    </form>
+    <?php }; ?>
+    <table style="margin: 0px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="l_data">
+            該当件数　<?php echo valueFormat( $this->item_count, 'number', '#,##0' ); ?> 件 /
+            合計利用額　\ <?php echo number_format( $this->total_amount ); ?> /
+            入金額合計　\ <?php echo number_format( $this->calc_amount ); ?> /
+            未入金額合計　\ <?php echo number_format( $this->calc_noamount ); ?> /
+            現在請求額合計　\ <?php echo number_format( $this->now_totalamount ); ?>
+        </td>
+        <form name="dlform" id="dlform" method="post" action="<?php echo f_e($this->dlaction); ?>">
+            <input name="srchparams" type="hidden" value="<?php echo f_e($this->srchparams); ?>" />
+            <td class="r_data"><a href="" onClick="document.dlform.submit();return false;">↓CSVダウンロード</a></td>
+        </form>
+      </tr>
+    </table>
+    <div style="margin: 0px; height: 500px; border: 1px solid gray; overflow-y: scroll; ">
+    <table style="margin: 0px; clear:both;" width="862" id="search_result" class="datatable sortable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <?php if(f_e($this->postalcode) != null || f_e($this->phonelink) != null) { ;?>
+          <th></th>
+          <?php }; ?>
+          <th>注文ID</th>
+          <th>取纏</th>
+          <th>OEM先名</th>
+          <th>事業者名</th>
+          <th>サイト名</th>
+          <th>注文日</th>
+          <th>法人名</th>
+          <th>氏名</th>
+          <th>住所</th>
+          <th>電話番号</th>
+          <th>メール</th>
+
+          <th>入金額</th>
+          <th>入金日</th>
+          <th>入金方法</th>
+          <th>利用額</th>
+          <th>配送方法</th>
+          <th>顧客ID（事業者別）</th>
+          <th>口座振替サービス</th>
+          <th>口座振替利用</th>
+          <th>申込ステータス</th>
+          <th>申込サブステータス</th>
+          <th>申込完了日</th>
+          <th>口座振替</th>
+          <th>初回申込用紙発行</th>
+        </tr>
+      </thead>
+      <tbody>
+
+<?php
+$captionMap = CoralOrderUtility::getStatusCaptions();
+  // count関数対策
+  $listCount = 0;
+  if (!empty($this->list)) {
+  $listCount = count($this->list);
+  }
+  for ($i = 0 ; $i < $listCount ; $i++) {
+	$rowClass = CoralOrderUtility::getOrderRowClass( $this->list[$i] );
+	$className = "orderstatus_$rowClass";
+	$caption = $captionMap[ $rowClass ];
+?>
+
+        <tr class="<?php echo f_e($className); ?>" title="<?php echo f_e(sprintf('[%s]%s', $this->list[$i]['DataStatus'], $caption)); ?>">
+          <?php if(f_e($this->postalcode) != null) { ;?>
+          <td nowrap class= "I_data"><?php if(f_e($this->postalcode) == f_e($this->list[$i]['PostalCode'])) { echo '請'; } else { echo '配'; } ; ?></td>
+          <?php } elseif(f_e($this->phonelink) != null) { ?>
+          <td nowrap class= "I_data"><?php if(f_e($this->phonelink) == f_e($this->list[$i]['Phone'])) { echo '請'; } else { echo '配'; } ; ?></td>
+          <?php } ?>
+          <td nowrap class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e($this->list[$i]['OrderSeq']); ?>"><?php echo f_e($this->list[$i]["OrderId"]); ?></a></td>
+          <td nowrap class="l_data"><a target="_blank" href="searcho/search?p_orderseq=<?php echo f_e($this->list[$i]['P_OrderSeq']); ?>"><?php if(f_e($this->list[$i]["CombinedClaim"]) != null) { echo f_e($this->list[$i]["CombinedClaim"]) . f_e($this->list[$i]["CombinedCnt"]); } ?></a></td>
+          <td nowrap class="l_data">
+            <div class="clip-box oem-info">
+              <span class="clip-content" title="OEM先名：<?php echo f_e($this->list[$i]['OemNameKj']); ?>">
+                <?php echo f_e($this->list[$i]["OemNameKj"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box shop-info">
+              <span class="clip-content" title="事業者名：<?php echo f_e($this->list[$i]['EnterpriseNameKj']); ?>">
+                <?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box shop-info">
+              <span class="clip-content" title="サイト名：<?php echo f_e($this->list[$i]['SiteNameKj']); ?>">
+                <?php echo f_e($this->list[$i]["SiteNameKj"]); ?>
+                </span>
+            </div>
+          </td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptOrderDate"]); ?></td>
+          <td nowrap class="l_data">
+            <div class="clip-box shop-info">
+              <span class="clip-content" title="法人名：<?php echo f_e($this->list[$i]['CorporateName']); ?>">
+                <?php echo f_e($this->list[$i]["CorporateName"]); ?>
+              </span>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box order-link">
+              <a class="clip-content" target="_blank" href="customerinquiry/detail/custid/<?php echo f_e($this->list[$i]["CustomerId"]); ?>" title="<?php echo f_e(sprintf('%s：%s', $this->list[$i]['OrderId'], $this->list[$i]['NameKj'])); ?>">
+                <?php echo f_e($this->list[$i]["NameKj"]); ?>
+              </a>
+            </div>
+          </td>
+          <td nowrap class="l_data">
+            <div class="clip-box address-info">
+              <span class="clip-content" title="住所：<?php echo f_e($this->list[$i]['UnitingAddress']); ?>">
+                <?php echo f_e($this->list[$i]["UnitingAddress"]); ?>
+                </span>
+            </div>
+          </td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["Phone"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["MailAddress"]); ?></td>
+
+          <td nowrap class="r_data"><?php echo f_nf($this->list[$i]["ReceiptAmount"], '#,##0'); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptDate"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["ReceiptMethodLabel"]); ?></td>
+          <td nowrap class="r_data"><?php echo f_nf($this->list[$i]["UseAmount"], '#,##0'); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["DeliMethodName"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["EntCustSeq"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["CreditTransferFlg"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["CreditTransferRequestFlg"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["RequestStatus"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["RequestSubStatus"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["RequestCompDate"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["CreditTransferMethod1"]); ?></td>
+          <td nowrap class="l_data"><?php echo f_e($this->list[$i]["CreditTransferMethod2"]); ?></td>
+        </tr>
+        <?php } ?>
+      </tbody>
+    </table>
+    </div>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+//new base.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+</script>
+</html>

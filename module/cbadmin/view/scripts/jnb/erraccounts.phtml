@@ -1,0 +1,101 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function getOrderStatusString($ds, $cnl, $cr) {
+  if($cnl) return $ds == 91 ? 'キャンセル済み' : 'キャンセル申請中';
+  if($ds == 91 && in_array($cr, array(3, 4))) {
+    return $cr == 3 ? '与信NGクローズ' : '損害確定クローズ';
+  }
+  switch($ds) {
+    case '31':
+      return '伝票登録待ち';
+    case '41':
+      return '請求書印刷待ち';
+    case '51':
+      return '入金待ち';
+    case '61':
+      return '一部入金';
+    case '91':
+      return '入金済みクローズ';
+  }
+  return '与信中';
+}
+?>
+<style type="text/css">
+#contents table.datatable {
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+#contents .page_info_message,
+#contents .page_error_message {
+  margin-top :20px;
+  margin-bottom :30px;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnb/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">JNB口座重複割り当て一覧</h3>
+  <!-- count関数対策 -->
+<?php if(empty($this->invalid_jnb_accounts)) { ?>
+    <div class="page_info_message">複数の注文に割り当てられているJNB口座はありません</div>
+<?php } else { ?>
+  <?php foreach($this->invalid_jnb_accounts as $accSeq => $info) { ?>
+    <h4 class="category-title">
+      <a href="jnb/history/account/<?php echo f_e($info['account_number']); ?>" target="_blank">
+        <?php echo f_e(sprintf('[%s] %s', $accSeq, $info['account_number'])); ?>
+      </a>
+      <span style="font-weight: normal">
+      <?php if($info['count'] <= 1) { ?>
+        (<?php echo f_nf($info['count'], '#,##0'); ?> 件、<b>この口座の問題は解決されている可能性があります</b>)
+      <?php } else { ?>
+        (<?php echo f_nf($info['count'], '#,##0'); ?> 件)
+      <?php } ?>
+      </span>
+    </h4>
+    <table class="datatable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <th>最新</th>
+        <th>同梱</th>
+        <th>割り当て日時</th>
+        <th>対象注文</th>
+        <th>注文状態</th>
+        <th>請求中銀行口座</th>
+      </thead>
+      <tbody>
+      <?php foreach($info['list'] as $row) { ?>
+      <tr>
+        <td class="c_data"><?php echo $row['MostRecent'] ? '★' : '&nbsp;'; ?></td>
+        <td class="c_data"><?php echo $row['IsSelfBilling'] ? '同梱' : '&nbsp;'; ?></td>
+        <td class="c_data"><?php echo f_df($row['UsedDate'], 'Y-m-d H:i:s'); ?></td>
+        <td class="l_data">
+          <a href="rworder/detail/oseq/<?php echo f_e($row['OrderSeq']); ?>" target="_blank">
+            <?php echo f_e(sprintf('%s：%s', $row['OrderId'], $row['NameKj'])); ?>
+          </a>
+        </td>
+        <td class="l_data">
+          <?php echo f_e(sprintf('[%s] %s', $row['DataStatus'], getOrderStatusString($row['DataStatus'], $row['Cnl_Status'], $row['CloseReason']))); ?>
+        </td>
+        <td class="l_data">
+          <?php echo f_e(sprintf('%s%s %s', $row['ClaimedBankName'], $row['ClaimedBranchName'], $row['ClaimedBankAccount'])); ?>
+        </td>
+      </tr>
+      <?php } ?>
+      </tbody>
+    </table>
+  <?php } ?>
+<?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

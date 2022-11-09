@@ -1,0 +1,75 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">立替予測</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        今日は　<?php echo $this->genzai; ?>　です。<br />
+      </div>
+    </div>
+    <form name="form" method="post" action="paying/execcharge">
+      <input type="hidden" name="DecisionDate" id="DecisionDate" />
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>立替予定日
+            <th>締めＰ</th>
+            <th>立替締め日</th>
+            <th>事業者数</th>
+            <th>立替予測額</th>
+            <th>事業者計</th>
+            <th>立替予測総額</th>
+          </tr>
+          <?php 
+            // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+                $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td rowspan="3" class="c_data"><?php echo $this->list[$i]["ExecScheduleDate"]; ?></td>
+            <td class="c_data">毎週</td>
+            <td class="c_data"><?php echo $this->list[$i]["P1FD"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["P1CNT"]; ?></td>
+            <td class="r_data"><?php echo $this->valueFormat($this->list[$i]["P1PAY"], 'number', '#,##0'); ?></td>
+            <td rowspan="3" style="font-size: 18px;" class="r_data"><?php echo $this->list[$i]["CTOTAL"]; ?></td>
+            <td rowspan="3" style="font-size: 18px;" class="r_data"><?php echo $this->valueFormat($this->list[$i]["PTOTAL"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr>
+            <td class="c_data">月２回</td>
+            <td class="c_data"><?php echo $this->list[$i]["P2FD"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["P2CNT"]; ?></td>
+            <td class="r_data"><?php echo $this->valueFormat($this->list[$i]["P2PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr>
+            <td class="c_data">月末</td>
+            <td class="c_data"><?php echo $this->list[$i]["P3FD"]; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]["P3CNT"]; ?></td>
+            <td class="r_data"><?php echo $this->valueFormat($this->list[$i]["P3PAY"], 'number', '#,##0'); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

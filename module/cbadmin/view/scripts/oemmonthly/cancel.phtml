@@ -1,0 +1,80 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style>
+	.width_400 {
+		width: 400px;
+	}
+	.width_401 {
+		width: 401px;
+	}
+</style>
+</head>
+<body>
+    <div id="wrapper">
+        <?php echo $this->render('page_header.php'); ?>
+        <?php echo $this->render('page_menu.php'); ?>
+        <!-- start contents -->
+        <div id="contents">
+            <h3 class="contents_title">OEMキャンセル返金明細一覧</h3>
+            <form name="form" method="post" action="oemmonthly/cancel">
+                <input type="hidden" name="OemId" value="<?php echo f_e($this->oemInfo['OemId']);?>" />
+                <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+	                <tbody>
+                        <tr>
+                            <td class="l_data">
+                                <?php echo $this->fixedMonthTag; ?>              
+                                <input class="default_btn" type="submit" style="margin-top: 1px;" value="　表　示　" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">	  
+                    <tbody>
+                        <tr>
+                            <td class="r_label width_150">ご利用総額</td>
+                            <td class="r_data">売上：<?php echo  f_nf(nvl($this->claimed_data['UseAmount'],0),'#,##0'); ?>　円</td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">立替総額</td>
+                            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['PC_DecisionPayment'],0),'#,##0'); ?>　円</td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">精算総額</td>
+                            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['FixedTransferAmount'],0),'#,##0'); ?>　円</td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">精算予定日</td>
+                            <td class="r_data"><?php echo  f_nf(nvl($this->claimed_data['SettlePlanDate'],0),'#,##0'); ?></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="c_label width_401">対象店舗名</td>
+                            <td class="c_label">キャンセル返金</td>
+                            <td class="scrollbar"> </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="scroll">
+                    <?php foreach($this->cancel as $value){?>
+                        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                                <tbody>
+                                    <tr>
+                                        <td class="c_data width_400"><a href="oemmonthly/canceldetail/eid/<?php echo $value['EnterpriseId'];?>/fd/<?php echo $this->from;?>_<?php echo $this->to;?>"><?php echo $value['EnterpriseName']; ?></a></td>
+                                        <td class="r_data"><?php echo f_nf(nvl($value['RepayTotal'],0),'#,##0');?> 円</td>
+                                    </tr>
+                            </tbody>
+                        </table>
+                    <?php } ?>
+                </div>
+            </form>
+        <!-- end contents -->
+        </div>
+        <?php echo $this->render('page_footer.php'); ?>
+    </div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title><?php echo $this->title; ?></title>
+<link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdf.css" />
+<script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+</head>
+<body>
+<div id="header">
+<div id="header1">
+ご請求先　<?php echo f_e( $this->oemData['OemNameKj'] ); ?>　様<br />
+　　　　　　　<span style="font-size: 10px"><?php echo f_e( $this->oemData['PostalCode'] ); ?></span><br />
+　　　　　　　<?php echo f_e( $this->oemData['PrefectureName'] . $this->oemData['City'] . $this->oemData['Town'] . $this->oemData['Building'] ); ?>
+</div>
+<div id="header2">
+<span style="font-size: 12px;">発行日：　<?php echo f_df( $this->data_list['ProcessDate'], 'Y.m.d' ); ?></span><br /><br />
+<span align="right"><img src="<?php echo $this->documentRoot; ?>/images/<?php echo $this->cb['logo']; ?>" alt="後払いドットコム" width="138" height="25" /></span><br />
+<?php echo $this->cb['company']; ?><br />
+<?php echo $this->cb['postAddr']; ?>　<?php echo $this->cb['addr']; ?><br />
+<?php echo $this->cb['subAddr']; ?>
+</div>
+</div>
+<div style="margin-right: auto; margin-left: auto; width: 100%;">
+<div id="greet" style="display: inline-block;">
+平素は後払い決済をご利用いただき、誠にありがとうございます。<br />
+<?php echo date( 'Y年m月d日', strtotime( $this->data_list['SpanFrom'] ) ) . '～' . date( 'Y年m月d日', strtotime( $this->data_list['SpanTo'] ) ); ?>のご利用額は以下の通りです</div>
+<div style="display: inline-block; width: 43%;" align="right"><img src="<?php echo $this->documentRoot; ?>/images/member/cb_stamp" width="64" height="66" /></div>
+</div>
+</div>
+<div id="title">【取引明細】</div>
+<table width="1000px" cellpadding="1" cellspacing=0" id="datatable">
+<tr><td class="r_data" width="50%" colspan="2">対象期間</td>
+<td class="c_data" width="50%"><?php echo f_e($this->data_list['SpanFrom']."～".$this->data_list['SpanTo']); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">利用総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['UseAmount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">立替総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['PC_DecisionPayment'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">精算総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['FixedTransferAmount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">OEM利益総額</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_TotalProfit'], 0 ), '#,##0' ); ?></td></tr>
+<?php if( $this->data_list['DspTaxFlg'] ) { ?>
+<tr><td class="r_data" width="50%" colspan="2">OEM利益総額消費税</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['TotalProfitTax'],0),'#,##0'); ?></td></tr>
+<?php } ?>
+<tr><td class="r_data" width="50%" colspan="2">精算予定日</td>
+<td class="r_data" width="50%"><?php echo f_e($this->data_list['SettlePlanDate']); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">OEM月額固定費</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_MonthlyFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">登録店舗数</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_ShopTotal'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">対象店舗数</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_SettleShopTotal'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data"  style="border-right: none;" width="25%" rowspan="3" valign="top">店舗月額固定費</td>
+<td class="r_data" style="border-left: none;" width="25%">合計：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_EntMonthlyFee'] + $this->data_list['OM_EntMonthlyFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">CB請求額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_EntMonthlyFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">精算額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_EntMonthlyFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">取引件数</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OrderCount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data"  style="border-right: none;" width="25%" rowspan="3" valign="top">決済手数料</td>
+<td class="r_data" style="border-left: none;" width="25%">合計：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_SettlementFee'] + $this->data_list['OM_SettlementFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">CB請求額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_SettlementFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">精算額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_SettlementFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data"  style="border-right: none;" width="25%" rowspan="3" valign="top">請求手数料(別送)</td>
+<td class="r_data" style="border-left: none;" width="25%">合計：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_ClaimFeeBS'] + $this->data_list['OM_ClaimFeeBS'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">CB請求額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_ClaimFeeBS'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">精算額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_ClaimFeeBS'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data"  style="border-right: none;" width="25%" rowspan="3" valign="top">請求手数料(同梱)</td>
+<td class="r_data" style="border-left: none;" width="25%">合計：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_ClaimFeeDK'] + $this->data_list['OM_ClaimFeeDK'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">CB請求額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CB_ClaimFeeDK'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">精算額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_ClaimFeeDK'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data"  style="border-right: none;" width="25%" rowspan="3" valign="top">キャンセルによる返金(手数料)</td>
+<td class="r_data" style="border-left: none;" width="25%">合計返金額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CR_TotalAmount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">CBからの返金額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CR_OemAmount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="25%">OEMからの返金額：</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['CR_EntAmount'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">代理店手数料</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['AgencyFee'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">印紙代</td>
+<td class="r_data" width="50%"><?php echo f_nf( -1 * (int)nvl( $this->data_list['PC_StampFeeTotal'], 0 ), '#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">店舗振込手数料精算</td>
+<td class="r_data" width="50%"> <?php echo f_nf( nvl( abs( $this->data_list['PC_TransferCommission'] ),0 ),'#,##0' ); ?></td></tr>
+<tr><td class="r_data" width="50%" colspan="2">その他</td>
+<td class="r_data" width="50%"><?php echo f_nf( nvl( $this->data_list['OM_AdjustmentAmount'], 0 ), '#,##0' ); ?></td></tr>
+</table>
+<div id="title" style="page-break-before: always; padding-top: 30px;">【調整額一覧】</div>
+<table width="1000px" cellpadding="1" cellspacing=0" id="datatable">
+<tr><th>科目</th><th>調整額</th><th>登録日時</th><th>登録者</th></tr>
+<?php $amountsum = 0; foreach( $this->adjustment_list as $adjustment ) { ?>
+<tr>
+<td class="l_data"><?php echo f_e( $adjustment['ItemCodeName'] );?></td>
+<td class="r_data"><?php echo f_nf( nvl( $adjustment['AdjustmentAmount'], 0 ), '#,##0' ); ?></td>
+<td class="l_data"><?php echo f_e( $adjustment['RegistDate'] ); ?></td>
+<td class="l_data"><?php echo f_e( $adjustment['RegistName'] ); ?></td>
+</tr>
+<?php $amountsum += (int)$adjustment['AdjustmentAmount']; } ?>
+<tr><td class="r_data" colspan="3" style="background-color: #0099FF;">調整額計</td><td class="r_data"><?php echo f_nf( nvl( $amountsum, 0 ), '#,##0' );?></td></tr>
+</table>
+<div id="footer" style="width: 1200px;">
+※　表示金額はすべて税込金額となっております。<br />
+※　決済手数料の1円未満の端数は切捨てとなっております。
+</div>
+</body>
+</html>

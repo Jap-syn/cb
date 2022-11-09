@@ -1,0 +1,247 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+.datatable thead th {
+  line-height: 1.4;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+.nav-left {
+  float: left;
+  display: inline-block;
+}
+.nav-right {
+  float: right;
+  display: inline-block;
+}
+.clear-float {
+  float: none;
+  clear: both;
+  font-size: 0;
+  display: block;
+  line-height: 0;
+  height: 0;
+}
+.submit-area > div {
+  margin: 0 -20px;
+}
+.submit-area > div.filter-box {
+  text-align: left;
+  line-height: 1.8;
+  margin-left: 0;
+  margin-top: 4px;
+}
+.submit-area > div.filter-box label {
+  margin: 0 8px;
+}
+th.order-info,
+td.order-info {
+  width: 250px;
+}
+.order-info a {
+  display: inline-block;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+}
+.order-info .notify-info {
+  display: block;
+  font-size: 11px;
+  line-height: 13px;
+}
+#scroll-to-top a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  line-height: 18px;
+}
+</style>
+<script type="text/javascript">
+var
+  getFilters = function() {
+    return ['blank', 'claimed', 'closed'].map(function(key) {
+      var id = ['filter', key].join('-');
+      return $(id).checked ? $(id).value : null;
+    }).compact();
+  },
+  updateLink = function() {
+    var params = getFilters();
+    document.getElementsByClassName('nav-link').each(function(a) {
+      var base = a.href.replace(/(\/filter\/.*)?$/, '');
+      a.href = params.length ? base + '/filter/' + params.join(',') : base;
+    });
+  },
+  reload = function() {
+    var
+      params = getFilters(),
+      base = location.href.replace(/(\/filter\/.*)?$/, ''),
+      url = params.length ? base + '/filter/' + params.join(',') : base;
+    if(url != location.href) location.href = url;
+  },
+  initialized = false,
+  showScrollToTop = function() {
+  if (!base) { return; }
+  if (!base.UI) { return; }
+  var
+      b = base.UI.currentBrowser(),
+      base = (b == base.UI.browserTypes.opera ? document.body : document.documentElement),
+      scrollable = base.clientHeight < base.scrollHeight,
+      target = $('scroll-to-top'),
+      func = scrollable ? (function() {
+        if(!initialized) return Element.show;
+        return function(ele) {
+          if(!Element.visible(ele)) {
+            bytefx.fade(ele, 0, 100, 3, function() { console.log('test'); Element.show(ele); });
+          }
+        };
+      })() : (function() {
+        if(!initialized) return Element.hide;
+        return function(ele) {
+          if(Element.visible(ele)) {
+            bytefx.fade(ele, 100, 0, 3, function() { console.log('test'); Element.hide(ele); });
+          }
+        };
+      })();
+    func(target);
+  };
+Event.observe(window, 'load', function() {
+  document.getElementsByClassName('filter-item')
+    .map(function(ele) { return ele.id; })
+    .each(function(id) {
+      Event.observe($(id), 'click', updateLink);
+    });
+  Event.observe(window, 'resize', showScrollToTop);
+  updateLink();
+  showScrollToTop();
+  initialized = true;
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnb/page_menu.php'); ?>
+  <?php
+  $group = $this->group;
+  $filters = $this->filters;
+  $usageMap = array(
+    '0' => '空き',
+    '1' => '請求中',
+    '-1' => '開放待ち'
+  );
+  ?>
+  <!-- start contents -->
+  <div id="contents">
+  <?php if(!$group) { ?>
+    <h3 class="contents_title">
+      口座一覧 - データなし
+    </h3>
+    <p>指定の口座グループはありません。</p>
+  <?php } else { ?>
+    <h3 class="contents_title">
+      口座一覧 - <?php echo sprintf('%s / %s', $group['ManageKey'], $group['ManageKeyLabel']); ?>
+      (<?php echo sprintf('%s 件中', f_nf($this->total, '#,##0')); ?>
+      <?php echo f_nf($this->ipp * ($this->page - 1) + 1, '#,##0'); ?>
+      ～
+      <?php 
+      // count関数対策
+      $listCount = 0;
+			if (!empty($this->list)){
+				$listCount = count($this->list);
+			}
+      echo f_nf($this->ipp * ($this->page - 1) + $listCount, '#,##0'); ?>
+      件目を表示、<?php echo f_nf($this->page, '#,##0'); ?> / <?php echo f_nf($this->maxPage, '#,##0'); ?> ページ)
+    </h3>
+    <?php if($group['ReturnedFlg']) { ?>
+    <div class="page_info_message">
+      この管理グループは返却済みです
+    </div>
+    <?php } ?>
+    <div class="submit-area">
+      <div>
+        <a href="jnb/detail/oid/<?php echo f_e($group['OemId']); ?>">JNB登録内容詳細へ戻る</a>
+        <div class="nav-left">
+        <?php if($this->page > 1) { ?>
+          <a class="nav-link" href="jnb/acclist/gid/<?php echo f_e($group['AccountGroupId']); ?>/page/<?php echo f_e($this->page - 1); ?>">&laquo; 前のページ</a>
+        <?php } else { ?>
+          <span>&laquo; 前のページ</span>
+        <?php } ?>
+        </div>
+        <div class="nav-right">
+        <?php if($this->page < $this->maxPage) { ?>
+          <a class="nav-link" href="jnb/acclist/gid/<?php echo f_e($group['AccountGroupId']); ?>/page/<?php echo f_e($this->page + 1); ?>">次のページ &raquo;</a>
+        <?php } else { ?>
+          <span>次のページ &raquo;</span>
+        <?php } ?>
+        </div>
+        <div class="clear-float">&nbsp; </div>
+      </div>
+      <div class="filter-box">
+        <span style="margin-right: 8px">状態指定</span>
+        <label for="filter-blank"><input id="filter-blank" class="filter-item" type="checkbox" value="0"<?php if(in_array('0', $filters)) echo ' checked="checked"'; ?> />空き</label>
+        <label for="filter-claimed"><input id="filter-claimed" class="filter-item" type="checkbox" value="1"<?php if(in_array('1', $filters)) echo ' checked="checked"'; ?> />請求中</label>
+        <label for="filter-closed"><input id="filter-closed" class="filter-item" type="checkbox" value="-1"<?php if(in_array('-1', $filters)) echo ' checked="checked"'; ?> />開放待ち</label>
+        <a href="javascript:void(0)" onclick="reload()">この設定で更新</a>
+      </div>
+    </div>
+    <table class="datatable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th>SEQ</th>
+          <th>店番号</th>
+          <th>口座番号</th>
+          <th>ワンタイム口座名</th>
+          <th>状態</th>
+          <th>最終更新</th>
+          <th class="order-info">注文</th>
+        </tr>
+      </thead>
+      <tbody>
+    <?php foreach($this->list as $data) { ?>
+        <?php $errInfo = split(',', $data['CsvError']); $lineNum = array_shift($errInfo); $errMsg = join(',', $errInfo); ?>
+        <tr>
+          <td class="r_data"><?php echo f_e($data['AccountSeq']); ?></td>
+          <td class="l_data"><?php echo f_e($data['BranchCode']); ?></td>
+          <td class="l_data"><?php echo f_e($data['AccountNumber']); ?></td>
+          <td class="l_data"><?php echo f_e($data['AccountHolder']); ?></td>
+          <td class="c_data"><?php echo f_e($usageMap[$data['Status']]); ?></td>
+          <td class="l_data"><?php echo f_df($data['LastStatusChanged'], 'Y-m-d H:i:s'); ?></td>
+          <td class="l_data order-info">
+          <?php if(isset($data['OrderSeq'])) { ?>
+            <?php $txt = sprintf('%s：%s', $data['OrderId'], $data['NameKj']); ?>
+            <a href="rworder/detail/oseq/<?php echo f_e($data['OrderSeq']); ?>" target="_blank" title="<?php echo f_e($txt); ?>">
+              <?php echo f_e($txt); ?>
+            </a>
+          <?php } else { ?>
+            &nbsp;
+          <?php } ?>
+          <?php if($data['WaitManualReceiptCount'] + $data['WaitReceiptCount'] > 0) { ?>
+            <div class="notify-info">
+            <?php if($data['WaitManualReceiptCount'] > 0) { ?>
+              入金確定待ち
+            <?php } else if($data['WaitReceiptCount'] > 0) { ?>
+              入金処理待ち
+            <?php } ?>
+            </div>
+          <?php } ?>
+          </td>
+        </tr>
+    <?php } ?>
+      </tbody>
+    </table>
+    <div id="scroll-to-top" class="submit-area">
+      <a href="javascript:void(0)" onclick="bytefx.scroll($('navigation'), 15)">ページの先頭へ</a>
+    </div>
+  <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,76 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style type="text/css">
+tr.invalid, tr.invalid td {
+  color: #999;
+}
+tr.invalid td .invalid-mark {
+  font-weight: bold;
+  color: #000;
+}
+.invalid-barcode-class {
+  font-weight: bold;
+  color: crimson;
+}
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/cvsagent/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">コンビニ収納代行会社一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th style="width: 110px" rowspan="2">収納代行会社ID</th>
+            <th style="width: 316px">収納代行会社名</th>
+            <th style="width: 90px">固有コード</th>
+            <th style="width: 180px">バーコードロジック</th>
+            <th style="width: 80px">無効</th>
+            <th style="width: 80px" rowspan="2">&nbsp;</th>
+          </tr>
+          <tr>
+            <th colspan="4">備考</th>
+          </tr>
+        <?php foreach ($this->agents as $row) { ?>
+          <?php
+          $is_invalid = ($row['ValidFlg']) ? false : true;
+          ?>
+          <tr class="data<?php if($is_invalid) echo ' invalid'; ?>">
+            <td class="r_data" rowspan="2"><?php echo f_e($row['ReceiptAgentId']); ?></td>
+            <td class="l_data"><?php echo f_e($row['ReceiptAgentName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['ReceiptAgentCode']); ?></td>
+            <td class="l_data">
+              <?php echo f_e($row['BarcodeLogicName']); ?>
+            <?php if(!isset($this->barcodeClasses[$row['BarcodeLogicName']])) { ?>
+              <span class="invalid-barcode-class">（※：無効な指定）</span>
+            <?php } ?>
+            </td>
+            <td class="c_data"><span class="invalid-mark"><?php echo $is_invalid ? '無効' : ''; ?></span></td>
+            <td class="c_data" rowspan="2">
+              <a href="cvsagent/edit/aid/<?php echo f_e($row['ReceiptAgentId']); ?>">設定</a>
+            </td>
+          </tr>
+          <tr class="data<?php if($is_invalid) echo ' invalid'; ?>">
+            <td colspan="4"><?php echo f_br($row['Note']); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

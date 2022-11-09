@@ -1,0 +1,58 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+<style>
+.timetable {
+    font-size: 12pt;
+}
+
+.timetable th {
+    background-color: white;
+    color: navy;
+    font-size: 14pt;
+}
+
+.timetable td {
+    text-align: center;
+    background-color: lightskyblue;
+}
+
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<center>
+    <p>
+        伝票入力を受け付けました。
+    </p>
+    <p/>
+    <p>
+        <a href="index/index">＞＞＞ トップへ戻る</a>
+    </p>
+</center>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>
+

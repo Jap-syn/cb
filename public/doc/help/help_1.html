@@ -1,0 +1,389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Style-Type" content="text/css" />
+	<meta http-equiv="Content-Script-Type" content="text/javascript" />
+	<base href="https://www.atobarai.jp/member/" />
+	<title>【後払い.com】後払い決済管理システム : サンプルファイルのダウンロード</title>
+	<link rel="styleSheet" href="./css/members.css" />
+	<link rel="styleSheet" href="./css/index.css" />
+	<script>
+	// acceleration for IE ( via: http://d.hatena.ne.jp/amachang/20071010/1192012056 )
+	// fixed for ie9 by eda in 2012-10-12.
+	/*@cc_on
+	if(!( ('performance' in window)||('msPerformance' in window) )) {
+		eval( ( function(props) {
+			var code = [];
+			for ( var i = 0, l = props.length; i<l; i++ ){
+				var prop = props[i];
+				window['_'+prop]=window[prop];
+				code.push(prop+'=_'+prop)
+			}
+			return 'var '+code.join(',');
+		})('document self top parent alert setInterval clearInterval setTimeout clearTimeout'.split(' ')));
+	}
+	@*/
+	</script>
+	<script src="../js/prototype.js"></script>
+	<script src="../js/bytefx.js"></script>
+	<script src="../js/json+.js"></script>
+	<script src="../js/corelib.js"></script>
+	<script src="../js/base.ui.js"></script>
+	<script>
+	function field_focus() {
+		if( ! this.disabled && ! this.readonly ) {
+			var classNames = new Element.ClassNames( this );
+			classNames.add( "focused" );
+			classNames.remove( "unfocused" );
+			field_focus.currentElement = this;
+		}
+	}
+	function field_blur() {
+		if( ! this.disabled && ! this.readonly ) {
+			var classNames = new Element.ClassNames( this );
+			classNames.add( "unfocused" );
+			classNames.remove( "focused" );
+
+			if( field_focus.currentElement == this ) field_focus.currentElement = null;
+		}
+	}
+	Event.observe( window, "load", function() {
+		// 入力項目の初期フォーカス制御
+		var inputs = $A( document.getElementsByTagName("input") ).findAll( function(input) {
+			return ! "checkbox;radio;file;hidden".split(";").include( input.type || "text" );
+		} )
+		.concat( $A( document.getElementsByTagName("textarea") ) );
+		//.concat( $A( document.getElementsByTagName("select") ) );	// 10.5.27 disabled for IE7/8's bug.
+
+		if( inputs.length < 3 && $("quick_search_key") ) {
+			$("quick_search_key").disabled = false;
+			$("quick_search_submit").disabled = false;
+		}
+
+		inputs.each( function(input) {
+			var classNames = new Element.ClassNames( input );
+
+			if( classNames.include( "debug_parts" ) ) throw $continue;
+
+			Event.observe( input, "focus", field_focus.bind( input ) );
+			Event.observe( input, "blur", field_blur.bind( input ) );
+
+			classNames.add( "unfocused" );
+			if( input.disabled ) classNames.add( "disabled" );
+		} );
+
+		setTimeout( function() {
+			inputs.each( function(input) {
+				if( new Element.ClassNames( input ).include( "debug_parts" ) ) throw $continue;
+				if( ! input.disabled && ! input.readonly && Element.visible( input ) ) {
+					try {
+						input.focus();
+					} catch(e) {}
+					throw $break;
+				}
+			} );
+
+			if( $("quick_search_key") ) {
+				$("quick_search_key").disabled = false;
+				$("quick_search_submit").disabled = false;
+				new Element.ClassNames($("quick_search_key")).remove("disabled");
+			}
+		}, 0 );
+
+		// サブミットボタンの有効化
+		$A( document.getElementsByTagName("button") ).each( function(button) {
+			if( button.type == "submit" ) button.disabled = false;
+		} );
+		$A( document.getElementsByTagName("input") ).each( function(input) {
+			if( input.type == "submit" ) input.disabled = false;
+		} );
+	} );
+	</script>
+<style type="text/css">
+<!--
+.styleBl {
+	color: #0000FF;
+	font-weight: bold;
+	font-size: large;
+}
+-->
+</style>
+</head>
+<body>
+
+<h1 class="application_header">
+	<span>
+		<a href="index/index">
+			<img id="app_logo" src="../images/Atobarai_logo_2.gif" title="トップページへ"/>
+		</a>
+	</span>
+	<img id="support_info" src="../images/support_info_2.gif" />
+	<a id="mailto" href="mailto:customer@ato-barai.com" title="お問い合わせはこちらまで">customer@ato-barai.com</a>
+	<img id="secure_seal" src="../images/rapidssl_ssl_certificate.gif" />
+		後払い決済管理システム	</h1>
+<noscript>
+<div class="no_script_message">
+本サイトをご利用するには、JavaScriptが ON になっている必要があります。
+</div>
+</noscript>
+<div id="header_menu" class="header_menu" style="line-height:100%">
+    <h3>
+        <a id="logout_menu" href="login/logout" style="line-height:100%">⇒ログアウト</a>
+<div class="quick_serach_bar">
+<form id="quick_search_form" method="post" action="search/quick">
+	注文ID：<input type="text" name="SearchKey" id="quick_search_key" disabled="disabled" value="" />
+	<button id="quick_search_submit" disabled="disabled" type="submit">検索</button>
+</form>
+</div>
+<script>
+Event.observe( $("quick_search_form"), "submit", function(evt) {
+	var ret = true;
+	$("quick_search_key").value = $("quick_search_key").value.replace( /[^\da-zA-Z]/g, "" );
+	if( $("quick_search_key").value.trim().length == 0 ){ $("quick_search_key").value = '0'; }
+	try {
+		if( $("quick_search_key").value.trim().length == 0 ) ret = false;
+	} catch(e) {
+		Event.stop( evt );
+		ret = false;
+		Debug.write( e );
+	}
+	return ret;
+}.bindAsEventListener( $("quick_search_form") ) );
+</script>
+        ↓下記のメニューよりご利用になりたい機能を選択してください。
+    </h3>
+    <span style="clear:both;font-size:0px;height: 0px;"></span>
+    <ul>
+        <li id="header_menu_1" class="menu_title_container has_submenu">
+            <div class="menu_title">
+                <a class="header_menu_item" href="order/order">
+                    注文登録                </a>
+            </div>
+            <div class="menu_description">後払い決済発生時に</div>
+        </li>
+        <div id="_header_menu_1" class="submenu_container" style="display: none">
+            <a href="order/order" title="ブラウザから注文登録">
+                注文登録（個別登録）            </a>
+            <a href="order/orderCsv" title="CSVファイルから一括注文登録">
+                一括注文登録（CSV使用）            </a>
+            <a href="rwclaim/list" title="請求書発行待ちリスト（同梱）を一覧表示">
+                請求書発行待ちリスト（同梱）            </a>
+            <a href="ordercancel/registCsv" title="CSVファイルから一括注文キャンセル登録">
+                一括注文キャンセル（CSV使用）            </a>
+            <a href="order/editCsv" title="CSVファイルから一括注文修正">
+                一括注文修正（CSV使用）            </a>
+        </div>
+        <li id="header_menu_2" class="menu_title_container has_submenu">
+            <div class="menu_title">
+                <a class="header_menu_item" href="shipping/regist">
+                    配送伝票入力                </a>
+            </div>
+            <div class="menu_description">商品発送直後に</div>
+        </li>
+        <div id="_header_menu_2" class="submenu_container" style="display: none">
+            <a href="shipping/regist" title="ブラウザから配送伝票入力">
+                配送伝票入力（個別入力）            </a>
+            <a href="shipping/registCsv" title="CSVファイルから一括入力伝票入力">
+                一括配送伝票入力（CSV使用）            </a>
+            <a href="shipping/changeCsv" title="CSVファイルから一括入力伝票修正">
+                一括配送伝票修正（CSV使用）            </a>
+        </div>
+        <li id="header_menu_3" class="menu_title_container">
+            <div class="menu_title">
+                <a class="header_menu_item" href="search/search">
+                    履歴検索                </a>
+            </div>
+            <div class="menu_description">過去取引を一覧表示</div>
+        </li>
+        <li id="header_menu_4" class="menu_title_container has_submenu">
+            <div class="menu_title">
+                <a class="header_menu_item" href="claim/index">
+                    ご利用明細                </a>
+            </div>
+            <div class="menu_description">過去のご利用料金表示</div>
+        </li>
+        <div id="_header_menu_4" class="submenu_container" style="display: none">
+            <a href="claim/index" title="締め日別のご利用料金を表示">
+                ご利用明細（締め日別）            </a>
+            <a href="monthly/index" title="過去のご利用料金を月次単位で表示">
+                ご利用明細（月次）            </a>
+            <a href="claim/confirmNews" title="立替速報確認を表示">
+                立替速報確認            </a>
+        </div>
+        <li id="header_menu_5" class="menu_title_container">
+            <div class="menu_title">
+                <a class="header_menu_item" href="account/index">
+                    登録情報管理                </a>
+            </div>
+            <div class="menu_description">お店の情報を表示</div>
+        </li>
+        <li id="header_menu_7" class="menu_title_container">
+            <div class="menu_title">
+                <a class="header_menu_item" href="index/download">
+                    ダウンロード                </a>
+            </div>
+            <div class="menu_description">サンプルCSVはこちら</div>
+        </li>
+        <li id="header_menu_6" class="menu_title_container">
+            <div class="menu_title">
+                <a class="header_menu_item" href="https://www.atobarai.jp/doc/help/help.html">
+                    ヘルプ                </a>
+            </div>
+            <div class="menu_description">お困りの際に…</div>
+        </li>
+    </ul>
+</div>
+<script src="./js/menu.js"></script>
+<script src="./js/cover.js"></script>
+<script>
+Event.observe( window, "load", function() {
+    window.WindowCover = createCover();
+    document.body.appendChild( window.WindowCover );
+
+    // ページ遷移時にWindowCoverで操作を不能にする
+    var evName = base.UI.currentBrowser() == base.UI.browserTypes.opera ?
+        "unload" : "beforeunload";
+    Event.observe( window, evName, function(evt) {
+        WindowCover.show();
+    }.bindAsEventListener( window ) );
+
+    // ダウンロードクリックによるunload発生時はWindowCoverを出さないようにする
+    Event.observe( document.body, "click", function(evt) {
+        WindowCover.suspend = ( Event.element(evt) == $("download") );
+    }.bindAsEventListener( document.body ) );
+} );
+
+window.onerror = function(msg, url, line) {
+    Debug.write( "error: {0} on {1} ( line : {2:0} )".format( msg, url, line ) );
+    Debug.show();
+    return false;
+}
+var Debug = {
+    messages : [],
+    show : function() { return this; },
+    hide : function() { return this; },
+    shrink : function() { return this; },
+    write : function(msg) {
+        return this;
+    },
+    clear : function() {
+        return this;
+    }
+
+}
+
+
+$H( Debug ).keys().each( function(key) {
+    if( typeof Debug[key] == "function" ) {
+        Debug[key] = Debug[key].bind( Debug );
+    }
+} );
+
+Debug.hide();
+
+</script>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+});
+</script>
+<div class="page_title">
+後払い決済管理システム ヘルプ 情報</div>
+<div class="main_contents">
+<div class="command_bar"><div class="button_container"></div><div class="title"  align="center">後払いドットコムをご利用いただくにあたり、役に立つコンテンツをご紹介します。</div></div>
+<P></P>
+<center>
+<table border="0" cellpadding="0" cellspacing="0" width="600">
+  <tbody><tr>
+    <td><br>
+    </td>
+  </tr>
+  <tr>
+    <td><p><span class="styleBl"><B>１．一括注文登録用CSV変換ツール</B><br></span><br>
+        下記の自動変換プログラムを使用することができます。ご所望の方はまことにお手数ですが、<br>
+        当社サポートセンター( 0120-667-690 )までご連絡下さい。<br>
+          <br>
+        　●「Yahoo!Shopping⇒後払い.com形式」CSV変換Excelマクロ<br>
+        　●「受注でポン！⇒後払い.com形式」CSV変換Excelマクロ <br>
+        　●「速販！⇒後払い.com形式」CSV変換Excelマクロ <br>
+        　●「お手軽通販⇒後払い.com形式」CSV変換Excelマクロ <br>
+    </p>
+      <p><span class="styleBl"><B>２．マニュアルダウンロード</B></span><br>
+        <br>
+
+        ⇒当システムの操作方法マニュアルは<a href="https://www.atobarai.jp/doc/help/Atobarai.com_Manual.pdf" target="_blank">こちら</a>からダウンロードしてください。<br>
+
+        ※ごらんいただくには<a href="http://www.adobe.com/jp/products/acrobat/readstep2.html" target="_blank">Adobe Reader</a>が必要になります 。 <br>
+      </p>
+      <p><span class="styleBl"><B>３．後払い決済サイト掲載文</B></span><br>
+        <br>
+
+        ⇒御サイトの「特定商取引法」および「決済方法選択画面」に掲載していただく文面は<a href="http://www.ato-barai.com/for_shops/tokuteishou.html" target="_blank">こちら</a>です。<br>
+    </p>
+      <p><span class="styleBl">４．商品同梱用後払い説明文</span><br />
+        <br />
+
+        ⇒御社より、商品を発送する際に商品に同梱して頂くための後払いの説明を記載した「お支払についてのご案内」は、<a href="https://www.atobarai.jp/doc/help/doukon_setumei.pdf" target="_blank">こちら</a>にてダウンロードできます。 ご活用頂ければ幸いです。<br />
+    </p>
+
+      <p><span class="styleBl"><B>５．消費者様向け後払い.com動画＆販促バナーダウンロード</B></span><br>
+        <br>
+
+        ⇒消費者様向け動画は、初めて当決済をご利用になる消費者様にとって分かり易くなり、<br>
+        お問合せを減らせる効果が期待できます。<br>
+        さらに販促バナーは、後払い決済が出来るお店としてアピールできるため、販促の効果に<br>
+        もつながりますので、こちらも併せてご活用ください。<br>
+        ダウンロードページは<a href="http://www.ato-barai.com/download/" target="_blank">こちら</a>です。<br><br><br>
+
+
+        </p>
+	<div align="center"><p>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_a1.jpg" alt="販促バナー１"><br><br>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_a2.jpg" alt="販促バナー２"><br><br>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_a3.jpg" alt="販促バナー３"><br><br>
+      	</p>
+        上記のイメージファイルは、以下からまとめて ダウンロードしていただけます。<br>
+        <a href="https://www.atobarai.jp/doc/help/images/atobarai_a.zip">
+	<img src="https://www.atobarai.jp/doc/help/images/button.jpg" alt="一式ダウンロード" height="50" width="200"></a>
+	<p></p><br><br>
+	</div>
+
+        <div align="center"><p>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_b1.jpg" alt="販促バナー４"><br><br>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_b2.jpg" alt="販促バナー５"><br><br>
+	<img src="https://www.atobarai.jp/doc/help/images/atobarai_b3.jpg" alt="販促バナー６"><br><br>
+	</p>
+        上記のイメージファイルは、以下からまとめて ダウンロードしていただけます。<br>
+        <a href="https://www.atobarai.jp/doc/help/images/atobarai_b.zip">
+	<img src="https://www.atobarai.jp/doc/help/images/button.jpg" alt="一式ダウンロード" height="50" width="200"></a>
+	<p></p><br>
+      <p></p></div>
+
+
+</td>
+  </tr>
+</tbody></table>
+
+</center>
+
+
+
+
+<div class="footer_menu">
+<a href="https://www.atobarai.jp/member/index/index" title="トップページへ">トップページ</a>|<a href="https://www.atobarai.jp/member/order/order" title="ブラウザから注文登録">個別注文登録</a>|<a href="https://www.atobarai.jp/member/order/orderCsv" title="CSVファイルから一括注文登録">一括注文登録</a>|<a href="https://www.atobarai.jp/member/rwclaim/list" title="請求書発行待ちリスト（同梱）を一覧表示">請求書発行待ちリスト（同梱）</a>|<a href="https://www.atobarai.jp/member/ordercancel/registCsv" title="CSVファイルから一括注文キャンセル登録">一括注文キャンセル</a>|<a href="https://www.atobarai.jp/member/order/editCsv" title="CSVファイルから一括注文修正">一括注文修正</a>|<a href="https://www.atobarai.jp/member/shipping/regist" title="ブラウザから配送伝票入力">個別配送伝票入力</a>|<a href="https://www.atobarai.jp/member/shipping/registCsv" title="CSVファイルから一括入力伝票入力">一括配送伝票入力</a>|<a href="https://www.atobarai.jp/member/shipping/changeCsv" title="CSVファイルから一括入力伝票修正">一括配送伝票修正</a>|<a href="https://www.atobarai.jp/member/claim/index" title="締め日別のご利用料金を表示">ご利用明細(締め日別)</a>|<a href="https://www.atobarai.jp/member/monthly/index" title="過去のご利用料金を月次単位で表示">ご利用明細(月次)</a>|<a href="https://www.atobarai.jp/member/claim/confirmNews" title="立替速報確認を表示">立替速報確認</a></div>
+<div id="application_footer">
+	Copyright © 2007
+	By CatchBall, Inc.
+	画像を含むサイト上のデータの無断転載を禁じます
+</div>
+
+<script>
+Event.observe( window, "load", function(evt) {
+    // ID:ダウンロードのクリックによるunload関係時はWindowCoverを出さないようにする
+    Event.observe( document.body, "click", function(evt) {
+        WindowCover.suspend = document.getElementsByClassName("common_download").include( Event.element(evt) );
+    }.bindAsEventListener( document.body ) );
+}.bindAsEventListener( window ) );
+</script>
+
+<div style="width: 1333px; height: 601px; left: 0px; top: 0px; z-index: 999; color: black; background-color: gray; font-size: 16pt; font-weight: bold; position: absolute; display: none; opacity: 0.6;"><div style="padding: 16px 40px; color: white; background-color: black; opacity: 0.9; position: absolute; z-index: 1000;"><img src="images/loading_01.gif"> please wait...</div></div></body></html>

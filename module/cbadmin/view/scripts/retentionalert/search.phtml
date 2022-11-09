@@ -1,0 +1,106 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/retentionalert/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+  <form id="form" action="retentionalert/search" method="post">
+    <h3 class="contents_title">滞留アラート</h3>
+    <div style="height: 30px;" border="0">
+    <table style="width: 862px;">
+      <tr>
+       <td>
+        　OEM先　
+        <select name="oemid">
+                <option value="0" <?php if(0 == $this->selectoem){ echo "selected";}?>>-----</option>
+    <?php foreach ($this->oem as $row){?>
+                <option value="<?php echo $row['OemId']; ?>" <?php if($row['OemId'] == $this->selectoem){ echo "selected";}?>><?php echo $row['OemNameKj']; ?></option>
+    <?php } ?>
+        </select>　<input type="submit" value=" 検　索 ">
+       </td>
+       <td style="text-align: right;">
+        <a class="download_link" href="retentionalert/dcsv/oemid/<?php echo f_e($this->selectoem); ?>">一覧をCSVダウンロード</a>
+       </td>
+      </tr>
+    </table>
+    </div>
+    <!-- ページング -->
+    <?php echo $this->render('cbadmin/page_navigation.php'); ?>
+<!--     <div style="margin-left: 25px; width:862px; height:345px; overflow:auto; overflow-y:hidden;"> -->
+    <div style="margin-left: 25px; width:858px; height:500px; overflow:auto; border: 1px solid gray;">
+      <table style="margin: 0px;" width="2000" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th width="150">OEM先名</th>
+          <th>事業者名</th>
+          <th>サイト名</th>
+          <th width="80">アラート</th>
+          <th width="50">停滞<br>期間</th>
+          <th >注文ID</th>
+          <th width="70">注文日</th>
+          <th>氏名</th>
+          <th>住所</th>
+          <th>電話番号</th>
+          <th>メール</th>
+          <th>利用額</th>
+        </tr>
+      <?php if(!empty($this->list)){ ?>
+        <?php foreach ($this->list as $row) {?>
+        <tr <?php if($row['AlertClass'] == 0 ) { echo "bgcolor='#ADFF2F'"; }
+                  else if ($row['AlertClass'] == 1) { echo "bgcolor='#D8BFD8'"; }
+                  else if ($row['AlertClass'] == 2) { echo "bgcolor='#E0FFFF'"; }
+                  else if ($row['AlertClass'] == 3) { echo "bgcolor='#FFFF00'"; } ?>>
+          <td align="left"><?php echo f_e($row['OemNameKj']); ?></td>
+          <td align="left"><a href="enterprise/detail/eid/<?php echo $row['EnterpriseId'];?>"><?php echo f_e($row['EnterpriseNameKj']); ?></a></td>
+          <td align="left"><?php echo f_e($row['SiteNameKj']); ?></td>
+          <td align="left"><font color="red"><?php echo f_e($row['AlertClasses']); ?></font></td>
+          <td align="left"><?php echo f_e($row['StagnationDays']); ?></td>
+          <td align="left"><a href="rworder/detail/oseq/<?php echo $row['OrderSeq']?>"><?php echo f_e($row['OrderId']); ?></a></td>
+          <td align="left"><?php echo f_e($row['ReceiptOrderDate']); ?></td>
+          <td align="left"><a href="customerinquiry/detail/custid/<?php echo $row['CustomerId']?>"><?php echo f_e($row['NameKj']); ?></a></td>
+          <td align="left"><?php echo f_e($row['UnitingAddress']); ?></td>
+          <td align="left"><?php echo f_e($row['Phone']); ?></td>
+          <td align="left"><?php echo f_e($row['MailAddress']); ?></td>
+          <td align="left"><?php echo f_e($row['UseAmount']); ?></td>
+        </tr>
+        <?php } ?>
+      <?php } ?>
+      </table>
+    </div>
+  </form>
+  </div>
+  <!-- end contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

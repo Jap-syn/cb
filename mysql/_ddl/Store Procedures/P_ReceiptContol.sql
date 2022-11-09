@@ -1,0 +1,2083 @@
+delimiter $$
+
+CREATE DEFINER=`skip-grants user`@`skip-grants host` PROCEDURE `P_ReceiptControl`(  IN  pi_receipt_amount   BIGINT(20)
+                                ,   IN  pi_order_seq        BIGINT(20)
+                                ,   IN  pi_receipt_date     DATE
+                                ,   IN  pi_receipt_class    INT
+                                ,   IN  pi_branch_bank_id   BIGINT
+                                ,   IN  pi_receipt_agent_id BIGINT
+                                ,   IN  pi_deposit_date     DATE
+                                ,   IN  pi_user_id          VARCHAR(20)
+                                , 	IN pi_receipt_note 	TEXT
+                                ,   OUT po_ret_sts          INT
+                                ,   OUT po_ret_errcd        VARCHAR(100)
+                                ,   OUT po_ret_sqlcd        INT
+                                ,   OUT po_ret_msg          VARCHAR(255)
+                                 )
+proc:
+/******************************************************************************
+ *
+ * ÌßÛ¼°¼Ş¬–¼   F  P_ReceiptControl
+ *
+ * ŠT—v         F  “ü‹àŠÖ˜Aˆ—
+ *
+ * ˆø”         F  [I/ ]pi_receipt_amount                      “ü‹àŠz
+ *              F  [I/ ]pi_order_seq                           e’•¶Seq
+ *              F  [I/ ]pi_receipt_date                        “ü‹à“ú
+ *              F  [I/ ]pi_receipt_class                       “ü‹àŒ`‘Ô
+ *              F  [I/ ]pi_branch_bank_id                      ‹âsx“XID
+ *              F  [I/ ]pi_receipt_agent_id                    û”[‘ãsID
+ *              F  [I/ ]pi_deposit_date                        ŒûÀ“ü‹à“ú
+ *              F  [I/ ]pi_user_id                             Õ°»Ş°ID
+ *              F  [I/ ]pi_receipt_note                       ”õl
+ *              F  [ /O]po_ret_sts                             ØÀ°İ½Ã°À½
+ *              F  [ /O]po_ret_errcd                           ØÀ°İº°ÄŞ
+ *              F  [ /O]po_ret_sqlcd                           ØÀ°İSQLº°ÄŞ
+ *              F  [ /O]po_ret_msg                             ØÀ°İÒ¯¾°¼Ş
+ *
+ * —š—ğ         F  2015/05/13  NDC V‹Kì¬
+ *                  2016/02/04  NDC ­Šz“ü‹à‚Ìê‡‚ÉÛ¼Ş¯¸‚ª•ö‚ê‚é‚½‚ßA¡‰ñ“ü‹àŠz‚Ìl—¶‚ğ’Ç‰ÁB
+ *                  2022/06/07  OMINEXT Ú×“ü‹à‰æ–Ê‚Ì‰üC‚Å”õl‚ğ’Ç‰ÁB
+
+ *
+ *****************************************************************************/
+BEGIN
+    -- ---------------------
+    -- •Ï”éŒ¾
+    -- ---------------------
+    -- ’•¶ÃŞ°Àæ“¾—p
+    DECLARE v_OrderId                           VARCHAR(50) DEFAULT '';
+    DECLARE v_DataStatus                        INT DEFAULT 0;
+    DECLARE v_Cnt                               INT;
+    DECLARE v_P_OrderSeq                        BIGINT(20) DEFAULT 0;
+
+    -- c‚î•ñXV—p
+    DECLARE v_BalanceClaimAmount                BIGINT(20) DEFAULT 0;
+    DECLARE v_BalanceUseAmount                  BIGINT(20) DEFAULT 0;
+    DECLARE v_BalanceDamageInterestAmount       BIGINT(20) DEFAULT 0;
+    DECLARE v_BalanceClaimFee                   BIGINT(20) DEFAULT 0;
+    DECLARE v_BalanceAdditionalClaimFee         BIGINT(20) DEFAULT 0;
+    -- Áî•ñXV—p
+    DECLARE v_CheckingClaimAmount               BIGINT(20) DEFAULT 0;
+    DECLARE v_CheckingUseAmount                 BIGINT(20) DEFAULT 0;
+    DECLARE v_CheckingClaimFee                  BIGINT(20) DEFAULT 0;
+    DECLARE v_CheckingDamageInterestAmount      BIGINT(20) DEFAULT 0;
+    DECLARE v_CheckingAdditionalClaimFee        BIGINT(20) DEFAULT 0;
+    -- Gû“üEG‘¹¸XV—p
+    DECLARE v_SundryAmount                      BIGINT(20) DEFAULT 0;
+    DECLARE v_SundryUseAmount                   BIGINT(20) DEFAULT 0;
+    DECLARE v_SundryClaimFee                    BIGINT(20) DEFAULT 0;
+    DECLARE v_SundryDamageInterestAmount        BIGINT(20) DEFAULT 0;
+    DECLARE v_SundryAdditionalClaimFee          BIGINT(20) DEFAULT 0;
+    -- c‹àæ“¾—p
+    DECLARE v_CalculationAmount                 BIGINT(20) DEFAULT 0;
+    -- ·Šzæ“¾—p
+    DECLARE v_diffClaimFee                      BIGINT(20) DEFAULT 0;
+    DECLARE v_diffDamageInterestAmount          BIGINT(20) DEFAULT 0;
+    DECLARE v_diffAdditionalClaimFee            BIGINT(20) DEFAULT 0;
+    -- “ü‹à¸Û°½ŞŒã“ü‹àÃŞ°Àì¬—p
+    DECLARE v_InsReceiptAmount                  BIGINT(20) DEFAULT 0;
+    DECLARE v_InsReceiptUseAmount               BIGINT(20) DEFAULT 0;
+    DECLARE v_InsReceiptClaimFee                BIGINT(20) DEFAULT 0;
+    DECLARE v_InsReceiptDamageInterestAmount    BIGINT(20) DEFAULT 0;
+    DECLARE v_InsReceiptAdditionalClaimFee      BIGINT(20) DEFAULT 0;
+
+    -- ¿‹ÃŞ°Àæ“¾—p
+    DECLARE v_ClaimId                           BIGINT(20) DEFAULT 0;
+    DECLARE v_ClaimPattern                      INT;
+    DECLARE v_UseAmountTotal                    BIGINT(20) DEFAULT 0;
+    DECLARE v_ClaimFee                          BIGINT(20) DEFAULT 0;
+    DECLARE v_DamageInterestAmount              BIGINT(20) DEFAULT 0;
+    DECLARE v_AdditionalClaimFee                BIGINT(20) DEFAULT 0;
+    DECLARE v_ClaimAmount                       BIGINT(20) DEFAULT 0;
+    DECLARE v_ClaimedBalance                    BIGINT(20) DEFAULT 0;
+    DECLARE v_MinClaimAmount                    BIGINT(20) DEFAULT 0;
+    DECLARE v_MinUseAmount                      BIGINT(20) DEFAULT 0;
+    DECLARE v_MinClaimFee                       BIGINT(20) DEFAULT 0;
+    DECLARE v_MinDamageInterestAmount           BIGINT(20) DEFAULT 0;
+    DECLARE v_MinAdditionalClaimFee             BIGINT(20) DEFAULT 0;
+
+    -- “ü‹àÃŞ°Àæ“¾—p
+    DECLARE v_ReceiptAmount                     BIGINT(20) DEFAULT 0;
+    DECLARE v_ReceiptUseAmount                  BIGINT(20) DEFAULT 0;
+    DECLARE v_ReceiptClaimFee                   BIGINT(20) DEFAULT 0;
+    DECLARE v_ReceiptDamageInterestAmount       BIGINT(20) DEFAULT 0;
+    DECLARE v_ReceiptAdditionalClaimFee         BIGINT(20) DEFAULT 0;
+    DECLARE v_ReceiptSeq                        BIGINT(20) DEFAULT 0;
+    DECLARE v_OrderSeq                          BIGINT(20) DEFAULT 0;
+
+    -- ‚»‚Ì‘¼
+    DECLARE no_data_found INT DEFAULT 1;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET no_data_found = 0;
+
+    /* ********************* *
+     * ˆ—ŠJn
+     * ********************* */
+    -- ------------------------------
+    -- 1.–ß‚è’l‰Šú‰»
+    -- ------------------------------
+    SET po_ret_sts      =   0;
+    SET po_ret_errcd    =   '';
+    SET po_ret_sqlcd    =   0;
+    SET po_ret_msg      =   '³íI—¹';
+
+    -- ------------------------------
+    -- 2.’•¶ÃŞ°Àæ“¾
+    -- ------------------------------
+    -- æ‚è‚Ü‚Æ‚ß‚ç‚ê‚Ä‚¢‚éê‡‚Ìl—¶
+    -- 1Œ‚Å‚à—LŒø‚È’•¶ÃŞ°À‚ª‘¶İ‚·‚ê‚ÎA“ü‹à‰Â”\
+    SELECT  COUNT(*)
+    INTO    v_Cnt
+    FROM    T_Order
+    -- –¢ƒLƒƒƒ“ƒZƒ‹ ‚©‚Â “ü‹àŠm”F‘Ò‚¿‚Ü‚½‚Íˆê•”“ü‹à
+    -- –¢ƒLƒƒƒ“ƒZƒ‹ ‚©‚Â “ü‹àÏ‚İ³íƒNƒ[ƒY
+    -- ƒLƒƒƒ“ƒZƒ‹ƒNƒ[ƒY‚©‚Âƒ}ƒCƒiƒX“ü‹ài•Ô‹àj
+    WHERE   ((Cnl_Status = 0 AND DataStatus IN (51, 61))
+          OR (Cnl_Status = 0 AND DataStatus = 91 AND CloseReason = 1)
+          OR (Cnl_Status > 0 AND DataStatus = 91 AND CloseReason = 2 AND pi_receipt_amount < 0)
+            )
+    AND     P_OrderSeq  =   pi_order_seq
+    ;
+
+    IF  v_Cnt = 0  THEN
+        SET po_ret_sts  =   -1;
+        SET po_ret_msg  =   '“ü‹à‘ÎÛ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+        LEAVE proc;
+    END IF;
+
+    -- e‚Ì’•¶ID‚ğæ“¾
+    -- e’•¶‚ª·¬İ¾Ù‚³‚ê‚Ä‚¢‚éê‡‚ğl—¶‚µ‚ÄDataStatus“™‚ÌğŒ‚ÍŠÜ‚Ü‚È‚¢
+    SELECT  OrderId
+    INTO    v_OrderId
+    FROM    T_Order
+    WHERE   OrderSeq    =   P_OrderSeq
+    AND     P_OrderSeq  =   pi_order_seq
+    ;
+
+    -- Å¬‚ÌÃŞ°À½Ã°À½‚ğæ“¾
+    -- æ‚è‚Ü‚Æ‚ß‚ç‚ê‚Ä‚¢‚éê‡‚ğl—¶‚µ‚ÄP_OrderSeq‚Å¸ŞÙ°Ìß‰»‚µ‚½Å¬‚ÌÃŞ°À½Ã°À½‚ğæ“¾‚·‚é
+    SELECT  P_OrderSeq
+        ,   MIN(DataStatus)
+    INTO    v_P_OrderSeq
+        ,   v_DataStatus
+    FROM    T_Order
+    WHERE   (DataStatus IN (51, 61) OR (DataStatus = 91 AND CloseReason = 1))
+    AND     P_OrderSeq  =   pi_order_seq
+    GROUP BY
+            P_OrderSeq
+    ;
+
+    -- ------------------------------
+    -- 3.“ü‹àŠm”F‘Ò‚¿‚Ìê‡
+    -- ------------------------------
+    IF  v_DataStatus = 51   THEN
+        -- ------------------------------
+        -- 3-1.¿‹ÃŞ°Àæ“¾
+        -- ------------------------------
+        SELECT  ClaimId                     -- ¿‹ID
+            ,   ClaimPattern                -- ¿‹ÊßÀ°İ
+            ,   ClaimAmount                 -- ¿‹Šz
+            ,   UseAmountTotal              -- —˜—pŠz‡Œv
+            ,   ClaimFee                    -- ¿‹è”—¿
+            ,   DamageInterestAmount        -- ’x‰„‘¹ŠQ‹à
+            ,   AdditionalClaimFee          -- ¿‹’Ç‰Áè”—¿
+            ,   ClaimedBalance              -- ¿‹c‚
+            ,   MinClaimAmount              -- Å’á¿‹î•ñ|¿‹‹àŠz
+            ,   MinUseAmount                -- Å’á¿‹î•ñ|—˜—pŠz
+            ,   MinClaimFee                 -- Å’á¿‹î•ñ|¿‹è”—¿
+            ,   MinDamageInterestAmount     -- Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à
+            ,   MinAdditionalClaimFee       -- Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿
+        INTO    v_ClaimId
+            ,   v_ClaimPattern
+            ,   v_ClaimAmount
+            ,   v_UseAmountTotal
+            ,   v_ClaimFee
+            ,   v_DamageInterestAmount
+            ,   v_AdditionalClaimFee
+            ,   v_ClaimedBalance
+            ,   v_MinClaimAmount
+            ,   v_MinUseAmount
+            ,   v_MinClaimFee
+            ,   v_MinDamageInterestAmount
+            ,   v_MinAdditionalClaimFee
+        FROM    T_ClaimControl
+        WHERE   OrderSeq    =   pi_order_seq
+        ;
+
+        IF  no_data_found = 0   THEN
+            SET po_ret_sts  =   -1;
+            SET po_ret_msg  =   '¿‹‘ÎÛ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+            LEAVE proc;
+        END IF;
+
+        -- ------------------------------
+        -- 3-2.Áî•ñ‚ğŒvZ
+        -- ------------------------------
+        /* -------------------------------------------------------------------------------------------
+        -- 2015/08/03_ƒƒ‚
+        -- ‹àŠz‚ÌÁ•û–@
+        -- Œã‚¢‚­‚ç“ü‹à‚µ‚½‚ç¸Û°½Ş‚·‚é‚© ‚ª¿‹c‚‚Æ‚È‚é‚½‚ßAFROMiÅ’á¿‹î•ñj‚©‚çÁ‚µ‚Ş
+        --  ‚Â‚Ü‚èEEE
+        --   Å’á¿‹Šziè”—¿“™jÁ‚µ‚İ ¨ —˜—pŠzÁ‚µ‚İ ¨ ÅI¿‹Šziè”—¿“™jÁ‚µ‚İ
+        --  1.Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿iMinAdditionalClaimFeejÁ‚µ‚İ
+        --  2.Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹àiMinDamageInterestAmountjÁ‚µ‚İ
+        --  3.Å’á¿‹î•ñ|¿‹è”—¿iMinClaimFeejÁ‚µ‚İ
+        --  4.—˜—pŠziUseAmountTotaljÁ‚µ‚İ
+        --  5.¿‹’Ç‰Áè”—¿iAdditionalClaimFeej‚Ì·Šz•ªÁ‚µ‚İ
+        --  6.’x‰„‘¹ŠQ‹àiDamageInterestAmountj‚Ì·Šz•ªÁ‚µ‚İ
+        --  7.¿‹è”—¿iClaimFeej‚Ì·Šz•ªÁ‚µ‚İ
+        -- ------------------------------------------------------------------------------------------- */
+        -- ÅI¿‹Šz‚ÆÅ’á¿‹Šz‚Ì·Šz‚ğæ“¾
+        -- ¿‹è”—¿
+        SET v_diffClaimFee = v_ClaimFee - v_MinClaimFee;
+        -- ’x‰„‘¹ŠQ‹à
+        SET v_diffDamageInterestAmount = v_DamageInterestAmount - v_MinDamageInterestAmount;
+        -- ¿‹’Ç‰Áè”—¿
+        SET v_diffAdditionalClaimFee = v_AdditionalClaimFee - v_MinAdditionalClaimFee;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++
+        -- 1. Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ Á‚µ‚İ
+        -- +++++++++++++++++++++++++++++++++++++++++++++
+        -- “ü‹àŠz ‚ª Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ ˆÈã‚Ìê‡
+        IF  pi_receipt_amount >= v_MinAdditionalClaimFee    THEN
+            -- Áî•ñ|¿‹’Ç‰Áè”—¿ = Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿
+            SET v_CheckingAdditionalClaimFee = v_MinAdditionalClaimFee;
+            -- “ü‹àŠz‚©‚çÁî•ñ|¿‹’Ç‰Áè”—¿‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+            SET v_CalculationAmount = pi_receipt_amount - v_CheckingAdditionalClaimFee;
+        ELSE
+            -- Áî•ñ|¿‹’Ç‰Áè”—¿ = “ü‹àŠz
+            SET v_CheckingAdditionalClaimFee = pi_receipt_amount;
+            -- “ü‹àŠz‚ª‘S‚Ä Áî•ñ|¿‹’Ç‰Áè”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+            SET v_CalculationAmount = 0;
+        END IF;
+
+        -- 1.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 2. Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 1.‚Ìc‹à ‚ª Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_MinDamageInterestAmount    THEN
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à = Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à
+                SET v_CheckingDamageInterestAmount = v_MinDamageInterestAmount;
+                -- 1.‚Ìc‹à‚©‚çÁî•ñ|’x‰„‘¹ŠQ‹à‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingDamageInterestAmount;
+            ELSE
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à = c‹à
+                SET v_CheckingDamageInterestAmount = v_CalculationAmount;
+                -- 1.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|’x‰„‘¹ŠQ‹à ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 2.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 3. Å’á¿‹î•ñ|¿‹è”—¿ Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 2.‚Ìc‹à ‚ª Å’á¿‹î•ñ|¿‹è”—¿ ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_MinClaimFee    THEN
+                -- Áî•ñ|¿‹è”—¿ = Å’á¿‹î•ñ|¿‹è”—¿
+                SET v_CheckingClaimFee = v_MinClaimFee;
+                -- 2.‚Ìc‹à‚©‚çÁî•ñ|¿‹è”—¿‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingClaimFee;
+            ELSE
+                -- Áî•ñ|¿‹è”—¿ = c‹à
+                SET v_CheckingClaimFee = v_CalculationAmount;
+                -- 2.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|¿‹è”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 3.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 4. —˜—pŠz Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 3.‚Ìc‹à ‚ª —˜—p‡ŒvŠz ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_UseAmountTotal THEN
+                -- Áî•ñ|—˜—pŠz = —˜—p‡ŒvŠz
+                SET v_CheckingUseAmount = v_UseAmountTotal;
+                -- 3.‚Ìc‹à‚©‚çÁî•ñ|—˜—pŠz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingUseAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|—˜—pŠz = c‹à
+                SET v_CheckingUseAmount = v_CalculationAmount;
+                -- 3.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|—˜—pŠz ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 4.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 5. ¿‹’Ç‰Áè”—¿‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 4.‚Ìc‹à ‚ª ¿‹’Ç‰Áè”—¿‚Ì·Šz•ª ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffAdditionalClaimFee THEN
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚É ¿‹’Ç‰Áè”—¿‚Ì·Šz ‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingAdditionalClaimFee = v_CheckingAdditionalClaimFee + v_diffAdditionalClaimFee;
+                -- 4.‚Ìc‹à‚©‚ç¿‹’Ç‰Áè”—¿‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffAdditionalClaimFee;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚É 4.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingAdditionalClaimFee = v_CheckingAdditionalClaimFee + v_CalculationAmount;
+                -- 4.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|¿‹’Ç‰Áè”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 5.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 6. ’x‰„‘¹ŠQ‹à‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 5.‚Ìc‹à ‚ª ’x‰„‘¹ŠQ‹à‚Ì·Šz•ª ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffDamageInterestAmount   THEN
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚É ’x‰„‘¹ŠQ‹à‚Ì·Šz ‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingDamageInterestAmount = v_CheckingDamageInterestAmount + v_diffDamageInterestAmount;
+                -- 5.‚Ìc‹à‚©‚ç’x‰„‘¹ŠQ‹à‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffDamageInterestAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚É 5.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingDamageInterestAmount = v_CheckingDamageInterestAmount + v_CalculationAmount;
+                -- 5.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|’x‰„‘¹ŠQ‹à ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 6.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 7. ¿‹è”—¿‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 6.‚Ìc‹à ‚ª ¿‹è”—¿‚Ì·Šz ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffClaimFee   THEN
+                -- Áî•ñ|¿‹è”—¿ ‚É 6.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingClaimFee = v_CheckingClaimFee + v_diffClaimFee;
+                -- 6.‚Ìc‹à‚©‚ç¿‹è”—¿‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffClaimFee;
+            ELSE
+                -- Áî•ñ|¿‹è”—¿ ‚É 6.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingClaimFee = v_CheckingClaimFee + v_CalculationAmount;
+                -- 6.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|¿‹è”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 7.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- ‰ßè‹à‚Æ‚µ‚Ä Áî•ñ|—˜—pŠz ‚É 7.‚Ìc‹à ‚ğ‘«‚µ‚±‚Ş
+            SET v_CheckingUseAmount = v_CheckingUseAmount + v_CalculationAmount;
+        END IF;
+
+        -- ++++++++++++++++++++++++++++++++++++++++
+        -- 8. Áî•ñ|Á‹àŠz‡Œv ‚ğ‹‚ß‚é
+        -- ++++++++++++++++++++++++++++++++++++++++
+        SET v_CheckingClaimAmount = v_CheckingUseAmount + v_CheckingClaimFee + v_CheckingDamageInterestAmount + v_CheckingAdditionalClaimFee;
+
+        -- ------------------------------
+        -- 3-3.c‚î•ñ‚ğŒvZ
+        -- ------------------------------
+        -- c‚î•ñ‚Í¿‹Šz‚©‚çÁŠz‚ğŒ¸Z‚µ‚Äæ“¾‚·‚é
+        -- 1) c‚î•ñ|c‚‡Œv
+        SET v_BalanceClaimAmount = v_ClaimAmount - v_CheckingClaimAmount;
+
+        -- 2) c‚î•ñ|—˜—pŠz
+        SET v_BalanceUseAmount = v_UseAmountTotal - v_CheckingUseAmount;
+
+        -- 3) c‚î•ñ|¿‹è”—¿
+        SET v_BalanceClaimFee = v_ClaimFee - v_CheckingClaimFee;
+
+        -- 4) c‚î•ñ|’x‰„‘¹ŠQ‹à
+        SET v_BalanceDamageInterestAmount = v_DamageInterestAmount - v_CheckingDamageInterestAmount;
+
+        -- 5) c‚î•ñ|¿‹’Ç‰Áè”—¿
+        SET v_BalanceAdditionalClaimFee = v_AdditionalClaimFee - v_CheckingAdditionalClaimFee;
+
+        -- ------------------------------
+        -- 3-4.“ü‹àÃŞ°À‚Ìì¬
+        -- ------------------------------
+        INSERT
+        INTO    T_ReceiptControl(   ReceiptProcessDate              -- “ü‹àˆ—“ú
+                                ,   ReceiptDate                     -- ŒÚ‹q“ü‹à“ú
+                                ,   ReceiptClass                    -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   ReceiptAmount                   -- ‹àŠz
+                                ,   ClaimId                         -- ¿‹ID
+                                ,   OrderSeq                        -- ’•¶SEQ
+                                ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                ,   BranchBankId                    -- ‹âsx“XID
+                                ,   DepositDate                     -- “ü‹à—\’è“ú
+                                ,   ReceiptAgentId                  -- û”[‘ãs‰ïĞID
+                                ,   Receipt_Note                     -- ”õl
+                                ,   RegistDate                      -- “o˜^“ú
+                                ,   RegistId                        -- “o˜^Ò
+                                ,   UpdateDate                      -- XV“ú
+                                ,   UpdateId                        -- XVÒ
+                                ,   ValidFlg                        -- —LŒøÌ×¸Ş
+                                )
+                                VALUES
+                                (   NOW()                           -- “ü‹àˆ—“ú
+                                ,   pi_receipt_date                 -- ŒÚ‹q“ü‹à“ú
+                                ,   pi_receipt_class                -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   pi_receipt_amount               -- ‹àŠz
+                                ,   v_ClaimId                       -- ¿‹ID
+                                ,   pi_order_seq                    -- ’•¶SEQ
+                                ,   v_CheckingUseAmount             -- Áî•ñ|—˜—pŠz
+                                ,   v_CheckingClaimFee              -- Áî•ñ|¿‹è”—¿
+                                ,   v_CheckingDamageInterestAmount  -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   v_CheckingAdditionalClaimFee    -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   0                               -- “úŸXVÌ×¸Ş
+                                ,   pi_branch_bank_id               -- ‹âsx“XID
+                                ,   pi_deposit_date                 -- “ü‹à—\’è“ú
+                                ,   pi_receipt_agent_id             -- û”[‘ãs‰ïĞID
+                                ,   pi_receipt_note                    -- ”õl
+                                ,   NOW()                           -- “o˜^“ú
+                                ,   pi_user_id                      -- “o˜^Ò
+                                ,   NOW()                           -- XV“ú
+                                ,   pi_user_id                      -- XVÒ
+                                ,   1                               -- —LŒøÌ×¸Ş
+                                );
+
+        -- ------------------------------
+        -- 3-4'.“ü‹àSeq‚ğæ“¾
+        -- ------------------------------
+        SELECT  OrderSeq
+            ,   MAX(ReceiptSeq)
+        INTO    v_OrderSeq
+            ,   v_ReceiptSeq
+        FROM    T_ReceiptControl
+        WHERE   OrderSeq = pi_order_seq
+        GROUP BY
+                OrderSeq
+        ;
+
+        -- ------------------------------
+        -- 3-5.Å’á¿‹Šz > “ü‹àŠz ‚Ìê‡
+        -- ------------------------------
+        IF  v_MinClaimAmount > pi_receipt_amount    THEN
+            -- ------------------------------
+            -- 3-5-1.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount        -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                     -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                    -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   v_CheckingClaimAmount                           -- Áî•ñ|Á‹àŠz‡Œv
+                ,   CheckingUseAmount               =   v_CheckingUseAmount                             -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   v_CheckingClaimFee                              -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   v_CheckingDamageInterestAmount                  -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   v_CheckingAdditionalClaimFee                    -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   v_BalanceClaimAmount                            -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   v_BalanceUseAmount                              -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   v_BalanceClaimFee                               -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   v_BalanceDamageInterestAmount                   -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   v_BalanceAdditionalClaimFee                     -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount          -- “ü‹àŠz‡Œv
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+            -- ------------------------------
+            -- 3-5-2.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   61              -- ÃŞ°À½Ã°À½iˆê•”“ü‹àj
+                ,   Rct_Status  =   1               -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+        -- ------------------------------
+        -- 3-6.Å’á¿‹Šz = “ü‹àŠz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_MinClaimAmount = pi_receipt_amount    THEN
+            -- ------------------------------
+            -- 3-6-1.Å’á¿‹Šz = ÅI¿‹Šz ‚Ìê‡
+            -- ------------------------------
+            IF  v_MinClaimAmount = v_ClaimAmount    THEN
+                -- ------------------------------
+                -- 3-6-1-1.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount        -- ¿‹c‚
+                    ,   LastProcessDate                 =   DATE(NOW())                                     -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq                  =   v_ReceiptSeq                                    -- ÅI“ü‹àSEQ
+                    ,   CheckingClaimAmount             =   v_CheckingClaimAmount                           -- Áî•ñ|Á‹àŠz‡Œv
+                    ,   CheckingUseAmount               =   v_CheckingUseAmount                             -- Áî•ñ|—˜—pŠz
+                    ,   CheckingClaimFee                =   v_CheckingClaimFee                              -- Áî•ñ|¿‹è”—¿
+                    ,   CheckingDamageInterestAmount    =   v_CheckingDamageInterestAmount                  -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                    ,   CheckingAdditionalClaimFee      =   v_CheckingAdditionalClaimFee                    -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                    ,   BalanceClaimAmount              =   v_BalanceClaimAmount                            -- c‚î•ñ|c‚‡Œv
+                    ,   BalanceUseAmount                =   v_BalanceUseAmount                              -- c‚î•ñ|—˜—pŠz
+                    ,   BalanceClaimFee                 =   v_BalanceClaimFee                               -- c‚î•ñ|¿‹è”—¿
+                    ,   BalanceDamageInterestAmount     =   v_BalanceDamageInterestAmount                   -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                    ,   BalanceAdditionalClaimFee       =   v_BalanceAdditionalClaimFee                     -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                    ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount          -- “ü‹àŠz‡Œv
+                    ,   UpdateDate                      =   NOW()
+                    ,   UpdateId                        =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+
+            -- ------------------------------
+            -- 3-6-2.ÅI¿‹Šz > Å’á¿‹Šz ‚Ìê‡
+            -- ------------------------------
+            ELSEIF  v_ClaimAmount > v_MinClaimAmount    THEN
+                -- ------------------------------
+                -- 3-6-2-1.G‘¹¸î•ñ‚Ìæ“¾
+                -- ------------------------------
+                -- ÅI¿‹Šz‚©‚çÁ‹àŠz‚ğŒ¸Z‚µ‚Ä·•ª‚ğZo‚·‚é
+                -- 1) —˜—pŠz
+                SET v_SundryUseAmount = v_UseAmountTotal - v_CheckingUseAmount;
+
+                -- 2) ¿‹è”—¿
+                SET v_SundryClaimFee = v_ClaimFee - v_CheckingClaimFee;
+
+                -- 3) ’x‰„‘¹ŠQ‹à
+                SET v_SundryDamageInterestAmount = v_DamageInterestAmount - v_CheckingDamageInterestAmount;
+
+                -- 4) ¿‹’Ç‰Áè”—¿
+                SET v_SundryAdditionalClaimFee = v_AdditionalClaimFee - v_CheckingAdditionalClaimFee;
+
+                -- 5) ‹àŠz
+                SET v_SundryAmount = v_SundryUseAmount + v_SundryClaimFee + v_SundryDamageInterestAmount + v_SundryAdditionalClaimFee;
+
+                -- ------------------------------
+                -- 3-6-2-2.G‘¹¸ÃŞ°À‚Ìì¬
+                -- ------------------------------
+                INSERT
+                INTO    T_SundryControl(    ProcessDate                     -- ”­¶“ú
+                                        ,   SundryType                      -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   SundryAmount                    -- ‹àŠz
+                                        ,   SundryClass                     -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   OrderSeq                        -- ’•¶SEQ
+                                        ,   OrderId                         -- ’•¶ID
+                                        ,   ClaimId                         -- ¿‹ID
+                                        ,   Note                            -- ”õl
+                                        ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                        ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                        ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                        ,   RegistDate                      -- “o˜^“ú
+                                        ,   RegistId                        -- “o˜^Ò
+                                        ,   UpdateDate                      -- XV“ú
+                                        ,   UpdateId                        -- XVÒ
+                                        ,   ValidFlg                        -- —LŒøÌ×¸Ş
+                                       )
+                                       VALUES
+                                       (    DATE(NOW())                     -- ”­¶“ú
+                                        ,   1                               -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   v_SundryAmount                  -- ‹àŠz
+                                        ,   99                              -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   pi_order_seq                    -- ’•¶SEQ
+                                        ,   v_OrderId                       -- ’•¶ID
+                                        ,   v_ClaimId                       -- ¿‹ID
+                                        ,   NULL                            -- ”õl
+                                        ,   v_SundryUseAmount               -- Áî•ñ|—˜—pŠz
+                                        ,   v_SundryClaimFee                -- Áî•ñ|¿‹è”—¿
+                                        ,   v_SundryDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   v_SundryAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   0                               -- “úŸXVÌ×¸Ş
+                                        ,   NOW()                           -- “o˜^“ú
+                                        ,   pi_user_id                      -- “o˜^Ò
+                                        ,   NOW()                           -- XV“ú
+                                        ,   pi_user_id                      -- XVÒ
+                                        ,   1                               -- —LŒøÌ×¸Ş
+                                       );
+
+                -- ------------------------------
+                -- 3-6-2-3.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount - v_SundryAmount           -- ¿‹c‚
+                    ,   LastProcessDate                 =   DATE(NOW())                                                         -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq                  =   v_ReceiptSeq                                                        -- ÅI“ü‹àSEQ
+                    ,   CheckingClaimAmount             =   v_CheckingClaimAmount + v_SundryAmount                              -- Áî•ñ|Á‹àŠz‡Œv
+                    ,   CheckingUseAmount               =   v_CheckingUseAmount + v_SundryUseAmount                             -- Áî•ñ|—˜—pŠz
+                    ,   CheckingClaimFee                =   v_CheckingClaimFee + v_SundryClaimFee                               -- Áî•ñ|¿‹è”—¿
+                    ,   CheckingDamageInterestAmount    =   v_CheckingDamageInterestAmount + v_SundryDamageInterestAmount       -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                    ,   CheckingAdditionalClaimFee      =   v_CheckingAdditionalClaimFee + v_SundryAdditionalClaimFee           -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                    ,   BalanceClaimAmount              =   v_BalanceClaimAmount - v_SundryAmount                               -- c‚î•ñ|c‚‡Œv
+                    ,   BalanceUseAmount                =   v_BalanceUseAmount - v_SundryUseAmount                              -- c‚î•ñ|—˜—pŠz
+                    ,   BalanceClaimFee                 =   v_BalanceClaimFee - v_SundryClaimFee                                -- c‚î•ñ|¿‹è”—¿
+                    ,   BalanceDamageInterestAmount     =   v_BalanceDamageInterestAmount - v_SundryDamageInterestAmount        -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                    ,   BalanceAdditionalClaimFee       =   v_BalanceAdditionalClaimFee - v_SundryAdditionalClaimFee            -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                    ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                              -- “ü‹àŠz‡Œv
+                    ,   SundryLossTotal                 =   SundryLossTotal + v_SundryAmount                                    -- G‘¹¸‡Œv
+                    ,   UpdateDate                      =   NOW()
+                    ,   UpdateId                        =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+            END IF;
+
+            -- ------------------------------
+            -- 3-6-3.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+        -- ------------------------------
+        -- 3-7.ÅI¿‹Šz > “ü‹àŠz > Å’á¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_ClaimAmount > pi_receipt_amount AND pi_receipt_amount > v_MinClaimAmount  THEN
+            -- ------------------------------
+            -- 3-7-1.G‘¹¸î•ñ‚Ìæ“¾
+            -- ------------------------------
+            -- ÅI¿‹‹àŠz‚©‚çÁ‹àŠz‚ğŒ¸Z‚µ‚Ä·•ª‚ğZo
+            -- 1) —˜—pŠz
+            SET v_SundryUseAmount = v_UseAmountTotal - v_CheckingUseAmount;
+
+            -- 2) ¿‹è”—¿
+            SET v_SundryClaimFee = v_ClaimFee - v_CheckingClaimFee;
+
+            -- 3) ’x‰„‘¹ŠQ‹à
+            SET v_SundryDamageInterestAmount = v_DamageInterestAmount - v_CheckingDamageInterestAmount;
+
+            -- 4) ¿‹’Ç‰Áè”—¿
+            SET v_SundryAdditionalClaimFee = v_AdditionalClaimFee - v_CheckingAdditionalClaimFee;
+
+            -- 5) ‹àŠz
+            SET v_SundryAmount = v_SundryUseAmount + v_SundryClaimFee + v_SundryDamageInterestAmount + v_SundryAdditionalClaimFee;
+
+            -- ------------------------------
+            -- 3-7-2.G‘¹¸ÃŞ°À‚Ìì¬
+            -- ------------------------------
+            INSERT
+            INTO    T_SundryControl(    ProcessDate                     -- ”­¶“ú
+                                    ,   SundryType                      -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   SundryAmount                    -- ‹àŠz
+                                    ,   SundryClass                     -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   OrderSeq                        -- ’•¶SEQ
+                                    ,   OrderId                         -- ’•¶ID
+                                    ,   ClaimId                         -- ¿‹ID
+                                    ,   Note                            -- ”õl
+                                    ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                    ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                    ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                    ,   RegistDate                      -- “o˜^“ú
+                                    ,   RegistId                        -- “o˜^Ò
+                                    ,   UpdateDate                      -- XV“ú
+                                    ,   UpdateId                        -- XVÒ
+                                    ,   ValidFlg                        -- —LŒøÌ×¸Ş
+                                   )
+                                   VALUES
+                                   (    DATE(NOW())                     -- ”­¶“ú
+                                    ,   1                               -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   v_SundryAmount                  -- ‹àŠz
+                                    ,   99                              -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   pi_order_seq                    -- ’•¶SEQ
+                                    ,   v_OrderId                       -- ’•¶ID
+                                    ,   v_ClaimId                       -- ¿‹ID
+                                    ,   NULL                            -- ”õl
+                                    ,   v_SundryUseAmount               -- Áî•ñ|—˜—pŠz
+                                    ,   v_SundryClaimFee                -- Áî•ñ|¿‹è”—¿
+                                    ,   v_SundryDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   v_SundryAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   0                               -- “úŸXVÌ×¸Ş
+                                    ,   NOW()                           -- “o˜^“ú
+                                    ,   pi_user_id                      -- “o˜^Ò
+                                    ,   NOW()                           -- XV“ú
+                                    ,   pi_user_id                      -- XVÒ
+                                    ,   1                               -- —LŒøÌ×¸Ş
+                                   );
+
+            -- ------------------------------
+            -- 3-7-3.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount - v_SundryAmount           -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                                         -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                                        -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   v_CheckingClaimAmount + v_SundryAmount                              -- Áî•ñ|Á‹àŠz‡Œv
+                ,   CheckingUseAmount               =   v_CheckingUseAmount + v_SundryUseAmount                             -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   v_CheckingClaimFee + v_SundryClaimFee                               -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   v_CheckingDamageInterestAmount + v_SundryDamageInterestAmount       -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   v_CheckingAdditionalClaimFee + v_SundryAdditionalClaimFee           -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   v_BalanceClaimAmount - v_SundryAmount                               -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   v_BalanceUseAmount - v_SundryUseAmount                              -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   v_BalanceClaimFee - v_SundryClaimFee                                -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   v_BalanceDamageInterestAmount - v_SundryDamageInterestAmount        -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   v_BalanceAdditionalClaimFee - v_SundryAdditionalClaimFee            -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                              -- “ü‹àŠz‡Œv
+                ,   SundryLossTotal                 =   SundryLossTotal + v_SundryAmount                                    -- G‘¹¸‡Œv
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+            -- ------------------------------
+            -- 3-7-4.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+
+        -- ------------------------------
+        -- 3-8.“ü‹àŠz >= ÅI¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  pi_receipt_amount >= v_ClaimAmount  THEN
+            -- ------------------------------
+            -- 3-8-1.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount    -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                 -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   v_CheckingClaimAmount                       -- Áî•ñ|ÁŠz‡Œv
+                ,   CheckingUseAmount               =   v_CheckingUseAmount                         -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   v_CheckingClaimFee                          -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   v_CheckingDamageInterestAmount              -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   v_CheckingAdditionalClaimFee                -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   v_BalanceClaimAmount                        -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   v_BalanceUseAmount                          -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   v_BalanceClaimFee                           -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   v_BalanceDamageInterestAmount               -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   v_BalanceAdditionalClaimFee                 -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount      -- “ü‹àÏŠz
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+            -- --------------------------
+            -- 3-8-2.’•¶ÃŞ°À‚ÌXV
+            -- --------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+        END IF;
+
+    -- ------------------------------
+    -- 4.ˆê•”“ü‹à‚Ìê‡
+    -- ------------------------------
+    ELSEIF  v_DataStatus = 61   THEN
+        -- ------------------------------
+        -- 4-1.“ü‹àÏ‚İ‚ÌÃŞ°À‚ğæ“¾
+        -- ------------------------------
+        SELECT  SUM(ReceiptAmount)                   -- ‹àŠz
+            ,   SUM(CheckingUseAmount)               -- Áî•ñ|—˜—pŠz
+            ,   SUM(CheckingClaimFee)                -- Áî•ñ|¿‹è”—¿
+            ,   SUM(CheckingDamageInterestAmount)    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+            ,   SUM(CheckingAdditionalClaimFee)      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+        INTO    v_ReceiptAmount
+            ,   v_ReceiptUseAmount
+            ,   v_ReceiptClaimFee
+            ,   v_ReceiptDamageInterestAmount
+            ,   v_ReceiptAdditionalClaimFee
+        FROM    T_ReceiptControl
+        WHERE   OrderSeq    =   pi_order_seq
+        ;
+
+        IF  no_data_found = 0   THEN
+            SET po_ret_sts  =   -1;
+            SET po_ret_msg  =   '“ü‹àÏ‚İ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+            LEAVE proc;
+        END IF;
+
+        -- ------------------------------
+        -- 4-2.¿‹ÃŞ°Àæ“¾
+        -- ------------------------------
+        SELECT  ClaimId                         -- ¿‹ID
+            ,   ClaimAmount                     -- ¿‹Šz
+            ,   UseAmountTotal                  -- —˜—pŠz‡Œv
+            ,   ClaimFee                        -- ¿‹è”—¿
+            ,   DamageInterestAmount            -- ’x‰„‘¹ŠQ‹à
+            ,   AdditionalClaimFee              -- ¿‹’Ç‰Áè”—¿
+            ,   ClaimedBalance                  -- ¿‹c‚
+            ,   MinClaimAmount                  -- Å’á¿‹î•ñ|¿‹‹àŠz
+            ,   MinUseAmount                    -- Å’á¿‹î•ñ|—˜—pŠz
+            ,   MinClaimFee                     -- Å’á¿‹î•ñ|¿‹è”—¿
+            ,   MinDamageInterestAmount         -- Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à
+            ,   MinAdditionalClaimFee           -- Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿
+        INTO    v_ClaimId
+            ,   v_ClaimAmount
+            ,   v_UseAmountTotal
+            ,   v_ClaimFee
+            ,   v_DamageInterestAmount
+            ,   v_AdditionalClaimFee
+            ,   v_ClaimedBalance
+            ,   v_MinClaimAmount
+            ,   v_MinUseAmount
+            ,   v_MinClaimFee
+            ,   v_MinDamageInterestAmount
+            ,   v_MinAdditionalClaimFee
+        FROM    T_ClaimControl
+        WHERE   OrderSeq    =   pi_order_seq
+        ;
+
+        IF  no_data_found = 0   THEN
+            SET po_ret_sts  =   -1;
+            SET po_ret_msg  =   '¿‹‘ÎÛ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+            LEAVE proc;
+        END IF;
+
+        -- ------------------------------
+        -- 4-3.Áî•ñ‚ğŒvZ
+        -- ------------------------------
+        /* -------------------------------------------------------------------------------------------
+        -- 2015/08/04_ƒƒ‚
+        -- ‹àŠz‚ÌÁ•û–@
+        --  ˆê•”“ü‹à‚Ìê‡A“ü‹àÏ‚İ‚Ì‹àŠz‚ª‘¶İ‚·‚é‚½‚ßAÁ•û–@‚É’ˆÓ‚ª•K—vB
+        --  Œã‚¢‚­‚ç“ü‹à‚µ‚½‚ç¸Û°½Ş‚·‚é‚© ‚ÌğŒ‚Í“ü‹àŠm”F‘Ò‚¿‚Ì‚Æ‚«‚Æ•ÏX‚Í‚È‚µB
+        --   ‚Â‚Ü‚èEEE“ü‹àÏ‚İŠz‚ğl—¶‚µ‚Â‚ÂAFROMiÅ’á¿‹î•ñj‚©‚çÁ‚µ‚ŞA‚ª³‚µ‚¢B
+        --    Å’á¿‹Šziè”—¿“™jÁ‚µ‚İ ¨ —˜—pŠzÁ‚µ‚İ ¨ ÅI¿‹Šziè”—¿“™jÁ‚µ‚İ
+        --  1.Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿iMinAdditionalClaimFeejÁ‚µ‚İ
+        --  2.Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹àiMinDamageInterestAmountjÁ‚µ‚İ
+        --  3.Å’á¿‹î•ñ|¿‹è”—¿iMinClaimFeejÁ‚µ‚İ
+        --  4.—˜—pŠziUseAmountTotaljÁ‚µ‚İ
+        --  5.¿‹’Ç‰Áè”—¿iAdditionalClaimFeej‚Ì·Šz•ªÁ‚µ‚İ
+        --  6.’x‰„‘¹ŠQ‹àiDamageInterestAmountj‚Ì·Šz•ªÁ‚µ‚İ
+        --  7.¿‹è”—¿iClaimFeej‚Ì·Šz•ªÁ‚µ‚İ
+        -- 2016/02/04_’Ç‹L
+        --  ­Šz“ü‹àiÅ’á¿‹î•ñˆÈ‰º‚Ì“ü‹àj‚Ìê‡A¡‚ÌÛ¼Ş¯¸‚Å‚Íc‚î•ñ‚ª‚¨‚©‚µ‚­‚È‚éB
+        --   ¨ “ü‹àÏ‚İ‚Ì‹àŠzˆÈŠO‚ÉA¡‰ñ“ü‹àŠz‚àÁ‹àŠz‚Ì”»’èğŒ‚Æ‚·‚é•K—v‚ ‚èB
+        -- ------------------------------------------------------------------------------------------- */
+        -- ÅI¿‹Šz‚ÆÅ’á¿‹Šz‚Ì·Šz‚ğæ“¾
+        -- ¿‹è”—¿
+        SET v_diffClaimFee = v_ClaimFee - v_MinClaimFee;
+        -- ’x‰„‘¹ŠQ‹à
+        SET v_diffDamageInterestAmount = v_DamageInterestAmount - v_MinDamageInterestAmount;
+        -- ¿‹’Ç‰Áè”—¿
+        SET v_diffAdditionalClaimFee = v_AdditionalClaimFee - v_MinAdditionalClaimFee;
+
+        -- +++++++++++++++++++++++++++++++++++++++++++++
+        -- 1. Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ Á‚µ‚İ
+        -- +++++++++++++++++++++++++++++++++++++++++++++
+        -- “ü‹àÏ‚İ‚Ì¿‹’Ç‰Áè”—¿ ‚ª Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ ˆÈã‚Ìê‡
+        IF  v_ReceiptAdditionalClaimFee >= v_MinAdditionalClaimFee  THEN
+            -- Áî•ñ|¿‹’Ç‰Áè”—¿‚É‘Î‚·‚é’Ç‰ÁÁ‚Í‚È‚µ
+            SET v_CheckingAdditionalClaimFee = 0;
+            -- c‹à‚Í“ü‹àŠz
+            SET v_CalculationAmount = pi_receipt_amount;
+        -- ‚»‚êˆÈŠO‚Ìê‡
+        ELSE
+            -- “ü‹àŠz ‚ª Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹’Ç‰Áè”—¿‚ğŒ¸Z‚µ‚½Œ‹‰Ê ˆÈã‚Ìê‡
+            IF  pi_receipt_amount >= v_MinAdditionalClaimFee - v_ReceiptAdditionalClaimFee  THEN
+                -- Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹’Ç‰Áè”—¿‚ğŒ¸Z‚µ‚ÄÁî•ñ|¿‹’Ç‰Áè”—¿ ‚ğZo
+                SET v_CheckingAdditionalClaimFee = v_MinAdditionalClaimFee - v_ReceiptAdditionalClaimFee;
+            ELSE
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚Í “ü‹àŠz
+                SET v_CheckingAdditionalClaimFee = pi_receipt_amount;
+            END IF;
+            -- “ü‹àŠz ‚©‚ç Áî•ñ|¿‹’Ç‰Áè”—¿‚ğŒ¸Z‚µ‚Äc‹à‚ğæ“¾
+            SET v_CalculationAmount = pi_receipt_amount - v_CheckingAdditionalClaimFee;
+        END IF;
+
+        -- 1.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 2. Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- “ü‹àÏ‚İ‚Ì’x‰„‘¹ŠQ‹à ‚ª Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à ˆÈã‚Ìê‡
+            IF  v_ReceiptDamageInterestAmount >= v_MinDamageInterestAmount  THEN
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à‚É‘Î‚·‚é’Ç‰ÁÁ‚Í‚È‚µ
+                SET v_CheckingDamageInterestAmount = 0;
+                -- c‹à‚Í1.‚Ìc‹à
+                SET v_CalculationAmount = v_CalculationAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- 1.‚Ìc‹à ‚ª Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à ‚©‚ç “ü‹àÏ‚İ‚Ì’x‰„‘¹ŠQ‹à‚ğŒ¸Z‚µ‚½Œ‹‰Ê ˆÈã‚Ìê‡
+                IF  v_CalculationAmount >= v_MinDamageInterestAmount - v_ReceiptDamageInterestAmount    THEN
+                    -- Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à ‚©‚ç “ü‹àÏ‚İ‚Ì’x‰„‘¹ŠQ‹à‚ğŒ¸Z‚µ‚Ä Áî•ñ|’x‰„‘¹ŠQ‹à ‚ğZo
+                    SET v_CheckingDamageInterestAmount = v_MinDamageInterestAmount - v_ReceiptDamageInterestAmount;
+                ELSE
+                    -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚Í 1.‚Ìc‹à
+                    SET v_CheckingDamageInterestAmount = v_CalculationAmount;
+                END IF;
+                -- 1.‚Ìc‹à‚©‚çÁî•ñ|’x‰„‘¹ŠQ‹à‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingDamageInterestAmount;
+            END IF;
+        END IF;
+
+        -- 2.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 3. Å’á¿‹î•ñ|¿‹è”—¿ Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- “ü‹àÏ‚İ‚Ì¿‹è”—¿ ‚ª Å’á¿‹î•ñ|¿‹è”—¿ ˆÈã‚Ìê‡
+            IF  v_ReceiptClaimFee >= v_MinClaimFee  THEN
+                -- Áî•ñ|¿‹è”—¿‚É‘Î‚·‚é’Ç‰ÁÁ‚Í‚È‚µ
+                SET v_CheckingClaimFee = 0;
+                -- c‹à‚Í2.‚Ìc‹à
+                SET v_CalculationAmount = v_CalculationAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- 2.‚Ìc‹à ‚ª Å’á¿‹î•ñ|¿‹è”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹è”—¿‚ğŒ¸Z‚µ‚½Œ‹‰Ê ˆÈã‚Ìê‡
+                IF  v_CalculationAmount >= v_MinClaimFee  - v_ReceiptClaimFee   THEN
+                    -- Å’á¿‹î•ñ|¿‹è”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹è”—¿‚ğŒ¸Z‚µ‚Ä Áî•ñ|¿‹è”—¿ ‚ğZo
+                    SET v_CheckingClaimFee = v_MinClaimFee - v_ReceiptClaimFee;
+                ELSE
+                    -- Áî•ñ|¿‹è”—¿ ‚Í 2.‚Ìc‹à
+                    SET v_CheckingClaimFee = v_CalculationAmount;
+                END IF;
+                -- 2.‚Ìc‹à ‚©‚çÁî•ñ|¿‹è”—¿‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingClaimFee;
+            END IF;
+        END IF;
+
+        -- 3.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 4. —˜—pŠz Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 3.‚Ìc‹à ‚ª —˜—pŠz‡Œv‚Æ“ü‹àÏ‚İ‚Ì—˜—pŠz‚Ì·•ª ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_UseAmountTotal - v_ReceiptUseAmount    THEN
+                -- Áî•ñ|—˜—pŠz ‚Í —˜—pŠz‡Œv‚Æ“ü‹àÏ‚İ‚Ì—˜—pŠz‚Ì·•ª
+                SET v_CheckingUseAmount = v_UseAmountTotal - v_ReceiptUseAmount;
+                -- 3.‚Ìc‹à ‚©‚çÁî•ñ|—˜—pŠz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_CheckingUseAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|—˜—pŠz ‚Í 3.‚Ìc‹à
+                SET v_CheckingUseAmount = v_CalculationAmount;
+                -- 3.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|—˜—pŠz ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 4.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 5. ¿‹’Ç‰Áè”—¿‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 4.‚Ìc‹à ‚ª ¿‹’Ç‰Áè”—¿‚Ì·Šz•ª ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffAdditionalClaimFee THEN
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚É ¿‹’Ç‰Áè”—¿‚Ì·Šz ‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingAdditionalClaimFee = v_CheckingAdditionalClaimFee + v_diffAdditionalClaimFee;
+                -- 4.‚Ìc‹à‚©‚ç¿‹’Ç‰Áè”—¿‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffAdditionalClaimFee;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚É 4.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingAdditionalClaimFee = v_CheckingAdditionalClaimFee + v_CalculationAmount;
+                -- 4.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|¿‹’Ç‰Áè”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 5.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 6. ’x‰„‘¹ŠQ‹à‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 5.‚Ìc‹à ‚ª ’x‰„‘¹ŠQ‹à‚Ì·Šz•ª ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffDamageInterestAmount   THEN
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚É ’x‰„‘¹ŠQ‹à‚Ì·Šz ‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingDamageInterestAmount = v_CheckingDamageInterestAmount + v_diffDamageInterestAmount;
+                -- 5.‚Ìc‹à‚©‚ç’x‰„‘¹ŠQ‹à‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffDamageInterestAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚É 5.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingDamageInterestAmount = v_CheckingDamageInterestAmount + v_CalculationAmount;
+                -- 5.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|’x‰„‘¹ŠQ‹à ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 6.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 7. ¿‹è”—¿‚Ì·Šz•ª Á‚µ‚İ
+            -- +++++++++++++++++++++++++++++++++++++++++++++
+            -- 6.‚Ìc‹à ‚ª ¿‹è”—¿‚Ì·Šz ˆÈã‚Ìê‡
+            IF  v_CalculationAmount >= v_diffClaimFee   THEN
+                -- Áî•ñ|¿‹è”—¿ ‚É 6.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingClaimFee = v_CheckingClaimFee + v_diffClaimFee;
+                -- 6.‚Ìc‹à‚©‚ç¿‹è”—¿‚Ì·Šz‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğæ“¾
+                SET v_CalculationAmount = v_CalculationAmount - v_diffClaimFee;
+            ELSE
+                -- Áî•ñ|¿‹è”—¿ ‚É 6.‚Ìc‹à‚ğ‘«‚µ‚±‚Ş
+                SET v_CheckingClaimFee = v_CheckingClaimFee + v_CalculationAmount;
+                -- 6.‚Ìc‹à‚ª‘S‚Ä Áî•ñ|¿‹è”—¿ ‚È‚Ì‚ÅAc‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            END IF;
+        END IF;
+
+        -- 7.‚Åc‹à‚ª‘¶İ‚·‚éê‡‚ÍˆÈ‰ºˆ—‚ğs‚¤B
+        IF  v_CalculationAmount > 0 THEN
+            -- ‰ßè‹à‚Æ‚µ‚Ä Áî•ñ|—˜—pŠz ‚É 7.‚Ìc‹à ‚ğ‘«‚µ‚±‚Ş
+            SET v_CheckingUseAmount = v_CheckingUseAmount + v_CalculationAmount;
+        END IF;
+
+        -- ++++++++++++++++++++++++++++++++++++++++
+        -- 8. Áî•ñ|Á‹àŠz‡Œv ‚ğ‹‚ß‚é
+        -- ++++++++++++++++++++++++++++++++++++++++
+        SET v_CheckingClaimAmount = v_CheckingUseAmount + v_CheckingClaimFee + v_CheckingDamageInterestAmount + v_CheckingAdditionalClaimFee;
+
+        -- ------------------------------
+        -- 4-4.“ü‹àÃŞ°À‚Ìì¬
+        -- ------------------------------
+        INSERT
+        INTO    T_ReceiptControl(   ReceiptProcessDate              -- “ü‹àˆ—“ú
+                                ,   ReceiptDate                     -- ŒÚ‹q“ü‹à“ú
+                                ,   ReceiptClass                    -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   ReceiptAmount                   -- ‹àŠz
+                                ,   ClaimId                         -- ¿‹ID
+                                ,   OrderSeq                        -- ’•¶SEQ
+                                ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                ,   BranchBankId                    -- ‹âsx“XID
+                                ,   DepositDate                     -- “ü‹à—\’è“ú
+                                ,   ReceiptAgentId                  -- û”[‘ãs‰ïĞID
+                                ,   Receipt_Note                     -- ”õl
+                                ,   RegistDate                      -- “o˜^“ú
+                                ,   RegistId                        -- “o˜^Ò
+                                ,   UpdateDate                      -- XV“ú
+                                ,   UpdateId                        -- XVÒ
+                                ,   ValidFlg                        -- —LŒøÌ×¸Ş
+                                )
+                                VALUES
+                                (   NOW()                           -- “ü‹àˆ—“ú
+                                ,   pi_receipt_date                 -- ŒÚ‹q“ü‹à“ú
+                                ,   pi_receipt_class                -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   pi_receipt_amount               -- ‹àŠz
+                                ,   v_ClaimId                       -- ¿‹ID
+                                ,   pi_order_seq                    -- ’•¶SEQ
+                                ,   v_CheckingUseAmount             -- Áî•ñ|—˜—pŠz
+                                ,   v_CheckingClaimFee              -- Áî•ñ|¿‹è”—¿
+                                ,   v_CheckingDamageInterestAmount  -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   v_CheckingAdditionalClaimFee    -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   0                               -- “úŸXVÌ×¸Ş
+                                ,   pi_branch_bank_id               -- ‹âsx“XID
+                                ,   pi_deposit_date                 -- “ü‹à—\’è“ú
+                                ,   pi_receipt_agent_id             -- û”[‘ãs‰ïĞID
+								, 	pi_receipt_note                  -- ”õl
+                                ,   NOW()                           -- “o˜^“ú
+                                ,   pi_user_id                      -- “o˜^Ò
+                                ,   NOW()                           -- XV“ú
+                                ,   pi_user_id                      -- XVÒ
+                                ,   1                               -- —LŒøÌ×¸Ş
+                                );
+
+        -- ------------------------------
+        -- 4-4'.“ü‹àSeq‚ğæ“¾
+        -- ------------------------------
+        SELECT  OrderSeq
+            ,   MAX(ReceiptSeq)
+        INTO    v_OrderSeq
+            ,   v_ReceiptSeq
+        FROM    T_ReceiptControl
+        WHERE   OrderSeq = pi_order_seq
+        GROUP BY
+                OrderSeq
+        ;
+
+        -- ------------------------------
+        -- 4-5.Å’á¿‹Šz > “ü‹àŠz ‚Ìê‡
+        -- ------------------------------
+        IF  v_MinClaimAmount > pi_receipt_amount + v_ReceiptAmount  THEN
+            -- ------------------------------
+            -- 4-5-1.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   ClaimedBalance - v_CheckingClaimAmount                              -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                                         -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                                        -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   CheckingClaimAmount + v_CheckingClaimAmount                         -- Áî•ñ|ÁŠz‡Œv
+                ,   CheckingUseAmount               =   CheckingUseAmount + v_CheckingUseAmount                             -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   CheckingClaimFee + v_CheckingClaimFee                               -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   CheckingDamageInterestAmount + v_CheckingDamageInterestAmount       -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   CheckingAdditionalClaimFee + v_CheckingAdditionalClaimFee           -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   BalanceClaimAmount - v_CheckingClaimAmount                          -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   BalanceUseAmount - v_CheckingUseAmount                              -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   BalanceClaimFee - v_CheckingClaimFee                                -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   BalanceDamageInterestAmount - v_CheckingDamageInterestAmount        -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   BalanceAdditionalClaimFee - v_CheckingAdditionalClaimFee            -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                              -- “ü‹àŠz‡Œv
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+        -- ------------------------------
+        -- 4-6.Å’á¿‹Šz = “ü‹àŠz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_MinClaimAmount = pi_receipt_amount + v_ReceiptAmount  THEN
+            -- ------------------------------
+            -- 4-6-1.Å’á¿‹Šz = ÅI¿‹Šz ‚Ìê‡
+            -- ------------------------------
+            IF  v_MinClaimAmount = v_ClaimAmount    THEN
+                -- ------------------------------
+                -- 4-6-1-1.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     ClaimedBalance                  =   ClaimedBalance - v_CheckingClaimAmount                              -- ¿‹c‚
+                    ,   LastProcessDate                 =   DATE(NOW())                                                         -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq                  =   v_ReceiptSeq                                                        -- ÅI“ü‹àSEQ
+                    ,   CheckingClaimAmount             =   CheckingClaimAmount + v_CheckingClaimAmount                         -- Áî•ñ|ÁŠz‡Œv
+                    ,   CheckingUseAmount               =   CheckingUseAmount + v_CheckingUseAmount                             -- Áî•ñ|—˜—pŠz
+                    ,   CheckingClaimFee                =   CheckingClaimFee + v_CheckingClaimFee                               -- Áî•ñ|¿‹è”—¿
+                    ,   CheckingDamageInterestAmount    =   CheckingDamageInterestAmount + v_CheckingDamageInterestAmount       -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                    ,   CheckingAdditionalClaimFee      =   CheckingAdditionalClaimFee + v_CheckingAdditionalClaimFee           -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                    ,   BalanceClaimAmount              =   BalanceClaimAmount - v_CheckingClaimAmount                          -- c‚î•ñ|c‚‡Œv
+                    ,   BalanceUseAmount                =   BalanceUseAmount - v_CheckingUseAmount                              -- c‚î•ñ|—˜—pŠz
+                    ,   BalanceClaimFee                 =   BalanceClaimFee - v_CheckingClaimFee                                -- c‚î•ñ|¿‹è”—¿
+                    ,   BalanceDamageInterestAmount     =   BalanceDamageInterestAmount - v_CheckingDamageInterestAmount        -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                    ,   BalanceAdditionalClaimFee       =   BalanceAdditionalClaimFee - v_CheckingAdditionalClaimFee            -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                    ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                              -- “ü‹àŠz‡Œv
+                    ,   UpdateDate                      =   NOW()
+                    ,   UpdateId                        =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+
+            -- ------------------------------
+            -- 4-6-2.ÅI¿‹Šz > Å’á¿‹Šz ‚Ìê‡
+            -- ------------------------------
+            ELSEIF  v_ClaimAmount > v_MinClaimAmount    THEN
+                -- ------------------------------
+                -- 4-6-2-1.G‘¹¸î•ñ‚Ìæ“¾
+                -- ------------------------------
+                -- ÅI¿‹Šz ‚Æ Å’á¿‹Šz ‚Ì·•ª‚ğZoiG‘¹¸Šz‚É‚È‚éj
+                -- 1) —˜—pŠziÅI¿‹Šz‚ÆÅ’á¿‹Šz‚Æ‚Ì·•ª ¨ —˜—pŠz‚Ì·•ª‚Í‘¶İ‚µ‚È‚¢‚Ì‚ÅA¾ŞÛj
+                SET v_SundryUseAmount = 0;
+
+                -- 2) ¿‹è”—¿
+                SET v_SundryClaimFee = v_ClaimFee - v_MinClaimFee;
+
+                -- 3) ’x‰„‘¹ŠQ‹à
+                SET v_SundryDamageInterestAmount = v_DamageInterestAmount - v_MinDamageInterestAmount;
+
+                -- 4) ¿‹’Ç‰Áè”—¿
+                SET v_SundryAdditionalClaimFee = v_AdditionalClaimFee - v_MinAdditionalClaimFee;
+
+                -- 5) ‹àŠz
+                SET v_SundryAmount = v_SundryUseAmount + v_SundryClaimFee + v_SundryDamageInterestAmount + v_SundryAdditionalClaimFee;
+
+                -- ------------------------------
+                -- 4-6-2-2.G‘¹¸ÃŞ°À‚Ìì¬
+                -- ------------------------------
+                INSERT
+                INTO    T_SundryControl(    ProcessDate                     -- ”­¶“ú
+                                        ,   SundryType                      -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   SundryAmount                    -- ‹àŠz
+                                        ,   SundryClass                     -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   OrderSeq                        -- ’•¶SEQ
+                                        ,   OrderId                         -- ’•¶ID
+                                        ,   ClaimId                         -- ¿‹ID
+                                        ,   Note                            -- ”õl
+                                        ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                        ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                        ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                        ,   RegistDate                      -- “o˜^“ú
+                                        ,   RegistId                        -- “o˜^Ò
+                                        ,   UpdateDate                      -- XV“ú
+                                        ,   UpdateId                        -- XVÒ
+                                        ,   ValidFlg                        -- —LŒøÌ×¸Ş@i0F–³Œø@1F—LŒøj
+                                       )
+                                       VALUES
+                                       (    DATE(NOW())                     -- ”­¶“ú
+                                        ,   1                               -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   v_SundryAmount                  -- ‹àŠz
+                                        ,   99                              -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   pi_order_seq                    -- ’•¶SEQ
+                                        ,   v_OrderId                       -- ’•¶ID
+                                        ,   v_ClaimId                       -- ¿‹ID
+                                        ,   NULL                            -- ”õl
+                                        ,   v_SundryUseAmount               -- Áî•ñ|—˜—pŠz
+                                        ,   v_SundryClaimFee                -- Áî•ñ|¿‹è”—¿
+                                        ,   v_SundryDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   v_SundryAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   0                               -- “úŸXVÌ×¸Ş
+                                        ,   NOW()                           -- “o˜^“ú
+                                        ,   pi_user_id                      -- “o˜^Ò
+                                        ,   NOW()                           -- XV“ú
+                                        ,   pi_user_id                      -- XVÒ
+                                        ,   1                               -- —LŒøÌ×¸Ş
+                                       );
+
+                -- ------------------------------
+                -- 4-6-2-3.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     ClaimedBalance                  =   ClaimedBalance - v_CheckingClaimAmount - v_SundryAmount                                             -- ¿‹c‚
+                    ,   LastProcessDate                 =   DATE(NOW())                                                                                         -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq                  =   v_ReceiptSeq                                                                                        -- ÅI“ü‹àSEQ
+                    ,   CheckingClaimAmount             =   CheckingClaimAmount + v_CheckingClaimAmount + v_SundryAmount                                        -- Áî•ñ|ÁŠz‡Œv
+                    ,   CheckingUseAmount               =   CheckingUseAmount + v_CheckingUseAmount + v_SundryUseAmount                                         -- Áî•ñ|—˜—pŠz
+                    ,   CheckingClaimFee                =   CheckingClaimFee + v_CheckingClaimFee + v_SundryClaimFee                                            -- Áî•ñ|¿‹è”—¿
+                    ,   CheckingDamageInterestAmount    =   CheckingDamageInterestAmount + v_CheckingDamageInterestAmount + v_SundryDamageInterestAmount        -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                    ,   CheckingAdditionalClaimFee      =   CheckingAdditionalClaimFee + v_CheckingAdditionalClaimFee + v_SundryAdditionalClaimFee              -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                    ,   BalanceClaimAmount              =   BalanceClaimAmount - v_CheckingClaimAmount - v_SundryAmount                                         -- c‚î•ñ|c‚‡Œv
+                    ,   BalanceUseAmount                =   BalanceUseAmount - v_CheckingUseAmount - v_SundryUseAmount                                          -- c‚î•ñ|—˜—pŠz
+                    ,   BalanceClaimFee                 =   BalanceClaimFee - v_CheckingClaimFee - v_SundryClaimFee                                             -- c‚î•ñ|¿‹è”—¿
+                    ,   BalanceDamageInterestAmount     =   BalanceDamageInterestAmount - v_CheckingDamageInterestAmount - v_SundryDamageInterestAmount         -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                    ,   BalanceAdditionalClaimFee       =   BalanceAdditionalClaimFee - v_CheckingAdditionalClaimFee - v_SundryAdditionalClaimFee               -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                    ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                                                              -- “ü‹àŠz‡Œv
+                    ,   SundryLossTotal                 =   SundryLossTotal + v_SundryAmount                                                                    -- G‘¹¸‡Œv
+                    ,   UpdateDate                      =   NOW()
+                    ,   UpdateId                        =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+            END IF;
+
+            -- ------------------------------
+            -- 4-6-3.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+
+        -- ------------------------------
+        -- 4-7.ÅI¿‹Šz > “ü‹àŠz > Å’á¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_ClaimAmount > pi_receipt_amount + v_ReceiptAmount AND pi_receipt_amount + v_ReceiptAmount > v_MinClaimAmount  THEN
+            -- ------------------------------
+            -- 4-7-1.G‘¹¸î•ñ‚Ìæ“¾
+            -- ------------------------------
+            -- ÅI‚Ì‹àŠz‚©‚çÁ‹àŠz‚Æ“ü‹àÏ‚İŠz‚ğŒ¸Z‚µ‚Ä·•ª‚ğZo
+            -- 1) —˜—pŠz
+            SET v_SundryUseAmount = v_UseAmountTotal - (v_CheckingUseAmount + v_ReceiptUseAmount);
+
+            -- 2) ¿‹è”—¿
+            SET v_SundryClaimFee = v_ClaimFee - (v_CheckingClaimFee + v_ReceiptClaimFee);
+
+            -- 3) ’x‰„‘¹ŠQ‹à
+            SET v_SundryDamageInterestAmount = v_DamageInterestAmount - (v_CheckingDamageInterestAmount + v_ReceiptDamageInterestAmount);
+
+            -- 4) ¿‹’Ç‰Áè”—¿
+            SET v_SundryAdditionalClaimFee = v_AdditionalClaimFee - (v_CheckingAdditionalClaimFee + v_ReceiptAdditionalClaimFee);
+
+            -- 5) ‹àŠz
+            SET v_SundryAmount = v_SundryUseAmount + v_SundryClaimFee + v_SundryDamageInterestAmount + v_SundryAdditionalClaimFee;
+
+            -- ------------------------------
+            -- 4-7-2.G‘¹¸ÃŞ°À‚Ìì¬
+            -- ------------------------------
+            INSERT
+            INTO    T_SundryControl(    ProcessDate                     -- ”­¶“ú
+                                    ,   SundryType                      -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   SundryAmount                    -- ‹àŠz
+                                    ,   SundryClass                     -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   OrderSeq                        -- ’•¶SEQ
+                                    ,   OrderId                         -- ’•¶ID
+                                    ,   ClaimId                         -- ¿‹ID
+                                    ,   Note                            -- ”õl
+                                    ,   CheckingUseAmount               -- Áî•ñ|—˜—pŠz
+                                    ,   CheckingClaimFee                -- Áî•ñ|¿‹è”—¿
+                                    ,   CheckingDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   CheckingAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   DailySummaryFlg                 -- “úŸXVÌ×¸Ş
+                                    ,   RegistDate                      -- “o˜^“ú
+                                    ,   RegistId                        -- “o˜^Ò
+                                    ,   UpdateDate                      -- XV“ú
+                                    ,   UpdateId                        -- XVÒ
+                                    ,   ValidFlg                        -- —LŒøÌ×¸Ş@i0F–³Œø@1F—LŒøj
+                                   )
+                                   VALUES
+                                   (    DATE(NOW())                     -- ”­¶“ú
+                                    ,   1                               -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   v_SundryAmount                  -- ‹àŠz
+                                    ,   99                              -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   pi_order_seq                    -- ’•¶SEQ
+                                    ,   v_OrderId                       -- ’•¶ID
+                                    ,   v_ClaimId                       -- ¿‹ID
+                                    ,   NULL                            -- ”õl
+                                    ,   v_SundryUseAmount               -- Áî•ñ|—˜—pŠz
+                                    ,   v_SundryClaimFee                -- Áî•ñ|¿‹è”—¿
+                                    ,   v_SundryDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   v_SundryAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   0                               -- “úŸXVÌ×¸Ş
+                                    ,   NOW()                           -- “o˜^“ú
+                                    ,   pi_user_id                      -- “o˜^Ò
+                                    ,   NOW()                           -- XV“ú
+                                    ,   pi_user_id                      -- XVÒ
+                                    ,   1                               -- —LŒøÌ×¸Ş
+                                   );
+
+            -- ------------------------------
+            -- 4-7-3.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   v_ClaimedBalance - v_CheckingClaimAmount - v_SundryAmount                                           -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                                                                         -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                                                                        -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   CheckingClaimAmount + v_CheckingClaimAmount + v_SundryAmount                                        -- Áî•ñ|ÁŠz‡Œv
+                ,   CheckingUseAmount               =   CheckingUseAmount + v_CheckingUseAmount + v_SundryUseAmount                                         -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   CheckingClaimFee + v_CheckingClaimFee + v_SundryClaimFee                                            -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   CheckingDamageInterestAmount + v_CheckingDamageInterestAmount + v_SundryDamageInterestAmount        -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   CheckingAdditionalClaimFee + v_CheckingAdditionalClaimFee + v_SundryAdditionalClaimFee              -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   BalanceClaimAmount - v_CheckingClaimAmount - v_SundryAmount                                         -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   BalanceUseAmount - v_CheckingUseAmount - v_SundryUseAmount                                          -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   BalanceClaimFee - v_CheckingClaimFee - v_SundryClaimFee                                             -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   BalanceDamageInterestAmount - v_CheckingDamageInterestAmount - v_SundryDamageInterestAmount         -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   BalanceAdditionalClaimFee - v_CheckingAdditionalClaimFee - v_SundryAdditionalClaimFee               -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                                                              -- “ü‹àŠz‡Œv
+                ,   SundryLossTotal                 =   SundryLossTotal + v_SundryAmount                                                                    -- G‘¹¸‡Œv
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+            -- ------------------------------
+            -- 4-7-4.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+
+        -- ------------------------------
+        -- 4-8.ÅI¿‹Šz <= “ü‹àŠz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_ClaimAmount <= pi_receipt_amount + v_ReceiptAmount    THEN
+            -- ------------------------------
+            -- 4-8-1.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance                  =   ClaimedBalance - v_CheckingClaimAmount                              -- ¿‹c‚
+                ,   LastProcessDate                 =   DATE(NOW())                                                         -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq                  =   v_ReceiptSeq                                                        -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount             =   CheckingClaimAmount + v_CheckingClaimAmount                         -- Áî•ñ|ÁŠz‡Œv
+                ,   CheckingUseAmount               =   CheckingUseAmount + v_CheckingUseAmount                             -- Áî•ñ|—˜—pŠz
+                ,   CheckingClaimFee                =   CheckingClaimFee + v_CheckingClaimFee                               -- Áî•ñ|¿‹è”—¿
+                ,   CheckingDamageInterestAmount    =   CheckingDamageInterestAmount + v_CheckingDamageInterestAmount       -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   CheckingAdditionalClaimFee      =   CheckingAdditionalClaimFee + v_CheckingAdditionalClaimFee           -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   BalanceClaimAmount              =   BalanceClaimAmount - v_CheckingClaimAmount                          -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount                =   BalanceUseAmount - v_CheckingUseAmount                              -- c‚î•ñ|—˜—pŠz
+                ,   BalanceClaimFee                 =   BalanceClaimFee - v_CheckingClaimFee                                -- c‚î•ñ|¿‹è”—¿
+                ,   BalanceDamageInterestAmount     =   BalanceDamageInterestAmount - v_CheckingDamageInterestAmount        -- c‚î•ñ|’x‰„‘¹ŠQ‹à
+                ,   BalanceAdditionalClaimFee       =   BalanceAdditionalClaimFee - v_CheckingAdditionalClaimFee            -- c‚î•ñ|¿‹’Ç‰Áè”—¿
+                ,   ReceiptAmountTotal              =   ReceiptAmountTotal + pi_receipt_amount                              -- “ü‹àŠz‡Œv
+                ,   UpdateDate                      =   NOW()
+                ,   UpdateId                        =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+            -- ------------------------------
+            -- 4-8-2.’•¶ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_Order
+            SET     DataStatus  =   91      -- ÃŞ°À½Ã°À½i¸Û°½Şj
+                ,   CloseReason =   1       -- ¸Û°½Ş——Ri“ü‹àÏ‚İ³í¸Û°½Şj
+                ,   Rct_Status  =   1       -- ŒÚ‹q“ü‹à½Ã°À½i“ü‹àÏ‚İj
+                ,   UpdateDate  =   NOW()
+                ,   UpdateId    =   pi_user_id
+            WHERE   P_OrderSeq  =   pi_order_seq
+            AND     Cnl_Status  =   0
+            ;
+        END IF;
+
+    -- ------------------------------
+    -- 5.“ü‹à¸Û°½ŞŒã‚Ì“ü‹à‚Ìê‡
+    -- ------------------------------
+    ELSE
+        -- ------------------------------
+        -- 5-1.“ü‹àÏ‚İ‚ÌÃŞ°À‚ğæ“¾
+        -- ------------------------------
+        SELECT  SUM(ReceiptAmount)                   -- ‹àŠz
+            ,   SUM(CheckingUseAmount)               -- Áî•ñ|—˜—pŠz
+            ,   SUM(CheckingClaimFee)                -- Áî•ñ|¿‹è”—¿
+            ,   SUM(CheckingDamageInterestAmount)    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+            ,   SUM(CheckingAdditionalClaimFee)      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+            ,   COUNT(*)
+        INTO    v_ReceiptAmount
+            ,   v_ReceiptUseAmount
+            ,   v_ReceiptClaimFee
+            ,   v_ReceiptDamageInterestAmount
+            ,   v_ReceiptAdditionalClaimFee
+            ,   v_Cnt
+        FROM    T_ReceiptControl
+        WHERE   OrderSeq    =   pi_order_seq
+        ;
+
+        IF  v_Cnt = 0   THEN
+            SET po_ret_sts  =   -1;
+            SET po_ret_msg  =   '“ü‹àÏ‚İ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+            LEAVE proc;
+        END IF;
+
+        -- ------------------------------
+        -- 5-2.¿‹ÃŞ°Àæ“¾
+        -- ------------------------------
+        SELECT  ClaimId                         -- ¿‹ID
+            ,   ClaimAmount                     -- ¿‹Šz
+            ,   UseAmountTotal                  -- —˜—pŠz‡Œv
+            ,   ClaimFee                        -- ¿‹è”—¿
+            ,   DamageInterestAmount            -- ’x‰„‘¹ŠQ‹à
+            ,   AdditionalClaimFee              -- ¿‹’Ç‰Áè”—¿
+            ,   ClaimedBalance                  -- ¿‹c‚
+            ,   MinClaimAmount                  -- Å’á¿‹î•ñ|¿‹‹àŠz
+            ,   MinUseAmount                    -- Å’á¿‹î•ñ|—˜—pŠz
+            ,   MinClaimFee                     -- Å’á¿‹î•ñ|¿‹è”—¿
+            ,   MinDamageInterestAmount         -- Å’á¿‹î•ñ|’x‰„‘¹ŠQ‹à
+            ,   MinAdditionalClaimFee           -- Å’á¿‹î•ñ|¿‹’Ç‰Áè”—¿
+        INTO    v_ClaimId
+            ,   v_ClaimAmount
+            ,   v_UseAmountTotal
+            ,   v_ClaimFee
+            ,   v_DamageInterestAmount
+            ,   v_AdditionalClaimFee
+            ,   v_ClaimedBalance
+            ,   v_MinClaimAmount
+            ,   v_MinUseAmount
+            ,   v_MinClaimFee
+            ,   v_MinDamageInterestAmount
+            ,   v_MinAdditionalClaimFee
+        FROM    T_ClaimControl
+        WHERE   OrderSeq    =   pi_order_seq
+        ;
+
+        IF  no_data_found = 0   THEN
+            SET po_ret_sts  =   -1;
+            SET po_ret_msg  =   '¿‹‘ÎÛ‚Ìƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+            LEAVE proc;
+        END IF;
+
+        -- ------------------------------
+        -- 5-3.“ü‹à—pÁî•ñ‚ÌŒvZ
+        -- ------------------------------
+        -- ++++++++++++++++++++++++++++++++++++++++
+        -- 1. Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ğ‹‚ß‚é
+        -- ++++++++++++++++++++++++++++++++++++++++
+        -- “ü‹àÏ‚İ‚Ì¿‹’Ç‰Áè”—¿ ‚ª ¿‹’Ç‰Áè”—¿ ˆÈã‚Ìê‡
+        IF  v_ReceiptAdditionalClaimFee >= v_AdditionalClaimFee THEN
+            -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚É‘Î‚·‚éÁ‚µ‚İ‚Í‚È‚µ
+            SET v_InsReceiptAdditionalClaimFee = 0;
+            -- c‹à‚Í“ü‹àŠz
+            SET v_CalculationAmount = pi_receipt_amount;
+        -- ‚»‚êˆÈŠO‚Ìê‡
+        ELSE
+            -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚Í ¿‹’Ç‰Áè”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹’Ç‰Áè”—¿ ‚ğŒ¸Z‚µ‚Äæ“¾
+            SET v_InsReceiptAdditionalClaimFee = v_AdditionalClaimFee - v_ReceiptAdditionalClaimFee;
+            -- “ü‹àŠz ‚©‚ç Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ğŒ¸Z‚µ‚Äc‹à‚ğZo
+            SET v_CalculationAmount = pi_receipt_amount - v_InsReceiptAdditionalClaimFee;
+        END IF;
+
+        -- 1.‚Ìc‹à‚ª‘¶İ‚·‚éê‡ˆÈ‰ºˆ—‚ğs‚¤
+        IF  v_CalculationAmount > 0 THEN
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 2. Áî•ñ|’x‰„‘¹ŠQ‹à ‚ğ‹‚ß‚é
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- “ü‹àÏ‚İ‚Ì’x‰„‘¹ŠQ‹à ‚ª ’x‰„‘¹ŠQ‹à ˆÈã‚Ìê‡
+            IF  v_ReceiptDamageInterestAmount >= v_DamageInterestAmount THEN
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚É‘Î‚·‚éÁ‚µ‚İ‚Í‚È‚µ
+                SET v_InsReceiptDamageInterestAmount = 0;
+                -- c‹à‚Í1.‚Ìc‹à
+                SET v_CalculationAmount = v_CalculationAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚Í ’x‰„‘¹ŠQ‹à ‚©‚ç “ü‹àÏ‚İ‚Ì’x‰„‘¹ŠQ‹à ‚ğŒ¸Z‚µ‚Äæ“¾
+                SET v_InsReceiptDamageInterestAmount = v_DamageInterestAmount - v_ReceiptDamageInterestAmount;
+                -- 1.‚Ìc‹à ‚©‚ç Áî•ñ|’x‰„‘¹ŠQ‹à ‚ğŒ¸Z‚µ‚Ä“ü‹àŠz‚Ìc‹à‚ğZo
+                SET v_CalculationAmount = v_CalculationAmount - v_InsReceiptDamageInterestAmount;
+            END IF;
+        END IF;
+
+        -- 2.‚Ìc‹à‚ª‘¶İ‚·‚éê‡ˆÈ‰ºˆ—‚ğs‚¤
+        IF  v_CalculationAmount > 0 THEN
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 3. Áî•ñ|¿‹è”—¿ ‚ğ‹‚ß‚é
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- “ü‹àÏ‚İ‚Ì¿‹è”—¿ ‚ª ¿‹è”—¿ ˆÈã‚Ìê‡
+            IF  v_ReceiptClaimFee >= v_ClaimFee THEN
+                -- Áî•ñ|¿‹è”—¿ ‚É‘Î‚·‚éÁ‚µ‚İ‚Í‚È‚µ
+                SET v_InsReceiptClaimFee = 0;
+                -- c‹à‚Í2.‚Ìc‹à
+                SET v_CalculationAmount = v_CalculationAmount;
+            -- ‚»‚êˆÈŠO‚Ìê‡
+            ELSE
+                -- Áî•ñ|¿‹è”—¿ ‚Í ¿‹è”—¿ ‚©‚ç “ü‹àÏ‚İ‚Ì¿‹è”—¿ ‚ğŒ¸Z‚µ‚Äæ“¾
+                SET v_InsReceiptClaimFee = v_ClaimFee - v_ReceiptClaimFee;
+                -- 2.‚Ìc‹à ‚©‚ç Áî•ñ|¿‹è”—¿ ‚ğŒ¸Z‚µ‚ÄZo
+                SET v_CalculationAmount = v_CalculationAmount - v_InsReceiptClaimFee;
+            END IF;
+        END IF;
+
+        -- 3.‚Ìc‹à‚ª‘¶İ‚·‚éê‡ˆÈ‰ºˆ—‚ğs‚¤
+        IF  v_CalculationAmount > 0 THEN
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 4. Áî•ñ|—˜—pŠz ‚ğ‹‚ß‚é
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- ‰ßè“ü‹à‚É“–‚½‚é‚Ì‚ÅAc‹à‚Í‘SŠz Áî•ñ|—˜—pŠz‚É‚È‚é
+            SET v_InsReceiptUseAmount = v_CalculationAmount;
+        END IF;
+
+        -- ++++++++++++++++++++++++++++++++++++++++
+        -- 5. Áî•ñ|Á‹àŠz‡Œv ‚ğ‹‚ß‚é
+        -- ++++++++++++++++++++++++++++++++++++++++
+        SET v_InsReceiptAmount = v_InsReceiptUseAmount + v_InsReceiptClaimFee + v_InsReceiptDamageInterestAmount + v_InsReceiptAdditionalClaimFee;
+
+        -- ------------------------------
+        -- 5-4.“ü‹àÃŞ°À‚Ìì¬
+        -- ------------------------------
+        INSERT
+        INTO    T_ReceiptControl(   ReceiptProcessDate                  -- “ü‹àˆ—“ú
+                                ,   ReceiptDate                         -- ŒÚ‹q“ü‹à“ú
+                                ,   ReceiptClass                        -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   ReceiptAmount                       -- ‹àŠz
+                                ,   ClaimId                             -- ¿‹ID
+                                ,   OrderSeq                            -- ’•¶SEQ
+                                ,   CheckingUseAmount                   -- Áî•ñ|—˜—pŠz
+                                ,   CheckingClaimFee                    -- Áî•ñ|¿‹è”—¿
+                                ,   CheckingDamageInterestAmount        -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   CheckingAdditionalClaimFee          -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   DailySummaryFlg                     -- “úŸXVÌ×¸Ş
+                                ,   BranchBankId                        -- ‹âsx“XID
+                                ,   DepositDate                         -- “ü‹à—\’è“ú
+                                ,   ReceiptAgentId                      -- û”[‘ãs‰ïĞID
+                                ,   Receipt_Note                         -- ”õl
+                                ,   RegistDate                          -- “o˜^“ú
+                                ,   RegistId                            -- “o˜^Ò
+                                ,   UpdateDate                          -- XV“ú
+                                ,   UpdateId                            -- XVÒ
+                                ,   ValidFlg                            -- —LŒøÌ×¸Ş
+                                )
+                                VALUES
+                                (   NOW()                               -- “ü‹àˆ—“ú
+                                ,   pi_receipt_date                     -- ŒÚ‹q“ü‹à“ú
+                                ,   pi_receipt_class                    -- “ü‹à‰È–Úi“ü‹à•û–@j
+                                ,   pi_receipt_amount                   -- ‹àŠz
+                                ,   v_ClaimId                           -- ¿‹ID
+                                ,   pi_order_seq                        -- ’•¶SEQ
+                                ,   v_InsReceiptUseAmount               -- Áî•ñ|—˜—pŠz
+                                ,   v_InsReceiptClaimFee                -- Áî•ñ|¿‹è”—¿
+                                ,   v_InsReceiptDamageInterestAmount    -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                ,   v_InsReceiptAdditionalClaimFee      -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                ,   0                                   -- “úŸXVÌ×¸Ş
+                                ,   pi_branch_bank_id                   -- ‹âsx“XID
+                                ,   pi_deposit_date                     -- “ü‹à—\’è“ú
+                                ,   pi_receipt_agent_id                 -- û”[‘ãs‰ïĞID
+                                ,   pi_receipt_note                     -- ”õl
+                                ,   NOW()                               -- “o˜^“ú
+                                ,   pi_user_id                          -- “o˜^Ò
+                                ,   NOW()                               -- XV“ú
+                                ,   pi_user_id                          -- XVÒ
+                                ,   1                                   -- —LŒøÌ×¸Ş
+                                );
+
+        -- ------------------------------
+        -- 5-4'.“ü‹àSeq‚ğæ“¾
+        -- ------------------------------
+        SELECT  OrderSeq
+            ,   MAX(ReceiptSeq)
+        INTO    v_OrderSeq
+            ,   v_ReceiptSeq
+        FROM    T_ReceiptControl
+        WHERE   OrderSeq = pi_order_seq
+        GROUP BY
+                OrderSeq
+        ;
+
+        -- ------------------------------
+        -- 5-5.“ü‹àÏŠz >= ÅI¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        IF  v_ReceiptAmount >= v_ClaimAmount    THEN
+            -- ------------------------------
+            -- 5-5-1.¿‹ÃŞ°À‚ÌXV
+            -- ------------------------------
+            UPDATE  T_ClaimControl
+            SET     ClaimedBalance      =   ClaimedBalance - pi_receipt_amount          -- ¿‹c‚
+                ,   LastProcessDate     =   DATE(NOW())                                 -- ÅI“ü‹àˆ—“ú
+                ,   LastReceiptSeq      =   v_ReceiptSeq                                -- ÅI“ü‹àSEQ
+                ,   CheckingClaimAmount =   CheckingClaimAmount + pi_receipt_amount     -- Áî•ñ|Á‹àŠz‡Œv
+                ,   CheckingUseAmount   =   CheckingUseAmount + pi_receipt_amount       -- Áî•ñ|—˜—pŠz
+                ,   BalanceClaimAmount  =   BalanceClaimAmount - pi_receipt_amount      -- c‚î•ñ|c‚‡Œv
+                ,   BalanceUseAmount    =   BalanceUseAmount - pi_receipt_amount        -- c‚î•ñ|—˜—pŠz
+                ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount      -- “ü‹àŠz‡Œv
+                ,   UpdateDate          =   NOW()
+                ,   UpdateId            =   pi_user_id
+            WHERE   ClaimId =   v_ClaimId
+            ;
+
+        -- ------------------------------
+        -- 5-6.“ü‹àÏŠz = Å’á¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_ReceiptAmount = v_MinClaimAmount  THEN
+            -- ------------------------------
+            -- 5-6-1.G‘¹¸‚ÌÃŞ°À‚ğæ“¾
+            -- ------------------------------
+            -- æ“¾Œ”‚ª1Œ‚Æ‚ÍŒÀ‚ç‚È‚¢‚½‚ßAOrderSeq ‚É•R‚Ã‚­G‘¹¸ÃŞ°À‚Ì»ÏØ‚ğæ“¾‚·‚éiºº‚Í»ÏØ‚µ‚È‚­‚Ä‚à‚¢‚¢‚Æ‚Ív‚¤‚¯‚Ç¥¥¥”O‚Ì‚½‚ß¥¥¥j
+            SELECT  SUM(SundryAmount)                   -- ‹àŠz
+                ,   SUM(CheckingUseAmount)              -- Áî•ñ|—˜—pŠz
+                ,   SUM(CheckingClaimFee)               -- Áî•ñ|¿‹è”—¿
+                ,   SUM(CheckingDamageInterestAmount)   -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   SUM(CheckingAdditionalClaimFee)     -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   COUNT(*)
+            INTO    v_SundryAmount
+                ,   v_SundryUseAmount
+                ,   v_SundryClaimFee
+                ,   v_SundryDamageInterestAmount
+                ,   v_SundryAdditionalClaimFee
+                ,   v_Cnt
+            FROM    T_SundryControl
+            WHERE   OrderSeq    =   pi_order_seq
+            ;
+
+            IF  v_Cnt = 0   THEN
+                SET po_ret_sts  =   -1;
+                SET po_ret_msg  =   'G‘¹¸ƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+                LEAVE proc;
+            END IF;
+
+            -- ------------------------------
+            -- 5-6-2.Ô“`—pÁî•ñ‚ğŒvZ
+            -- ------------------------------
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 1. Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ğ‹‚ß‚é
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 1) Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ª “ü‹àŠz ˆÈã‚Ìê‡
+            IF  v_SundryAdditionalClaimFee >= pi_receipt_amount THEN
+                -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚Í “ü‹àŠz
+                SET v_CheckingAdditionalClaimFee = pi_receipt_amount;
+                -- c‹à‚Í 0i¾ŞÛj
+                SET v_CalculationAmount = 0;
+            -- ‚»‚êˆÈŠO
+            ELSE
+                SET v_CheckingAdditionalClaimFee = v_SundryAdditionalClaimFee;
+                SET v_CalculationAmount = pi_receipt_amount - v_CheckingAdditionalClaimFee;
+            END IF;
+
+            -- 1.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+            IF  v_CalculationAmount > 0 THEN
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 2. Áî•ñ|’x‰„‘¹ŠQ‹à ‚ğ‹‚ß‚é
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 1) Áî•ñ|’x‰„‘¹ŠQ‹à ‚ª c‹à ˆÈã‚Ìê‡
+                IF  v_SundryDamageInterestAmount >= v_CalculationAmount THEN
+                    -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚Í c‹à
+                    SET v_CheckingDamageInterestAmount = v_CalculationAmount;
+                    -- c‹à‚Í 0i¾ŞÛj
+                    SET v_CalculationAmount = 0;
+                -- ‚»‚êˆÈŠO
+                ELSE
+                    SET v_CheckingDamageInterestAmount = v_SundryDamageInterestAmount;
+                    SET v_CalculationAmount = v_CalculationAmount - v_CheckingDamageInterestAmount;
+                END IF;
+            END IF;
+
+            -- 2.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+            IF  v_CalculationAmount > 0 THEN
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 3. Áî•ñ|¿‹è”—¿ ‚ğ‹‚ß‚é
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 1) Áî•ñ|¿‹è”—¿ ‚ª c‹à ˆÈã‚Ìê‡
+                IF  v_SundryClaimFee >= v_CalculationAmount THEN
+                    -- Áî•ñ|¿‹è”—¿ ‚Í c‹à
+                    SET v_CheckingClaimFee = v_CalculationAmount;
+                    -- c‹à‚Í 0i¾ŞÛj
+                    SET v_CalculationAmount = 0;
+                -- ‚»‚êˆÈŠO
+                ELSE
+                    SET v_CheckingClaimFee = v_SundryClaimFee;
+                    SET v_CalculationAmount = v_CalculationAmount - v_CheckingClaimFee;
+                END IF;
+            END IF;
+
+            -- 3.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+            IF  v_CalculationAmount > 0 THEN
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 4. Áî•ñ|—˜—pŠz ‚ğ‹‚ß‚é
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 1) Áî•ñ|—˜—pŠz ‚ª c‹à ˆÈã‚Ìê‡
+                IF  v_SundryUseAmount >= v_CalculationAmount    THEN
+                    -- Áî•ñ|—˜—pŠz ‚Í c‹à
+                    SET v_CheckingUseAmount = v_CalculationAmount;
+                    -- c‹à‚Í 0i¾ŞÛj
+                    SET v_CalculationAmount = 0;
+                -- ‚»‚êˆÈŠO
+                ELSE
+                    SET v_CheckingUseAmount = v_SundryUseAmount;
+                    SET v_CalculationAmount = v_CalculationAmount - v_CheckingUseAmount;
+                END IF;
+            END IF;
+
+            -- ++++++++++++++++++++++++++++++++++++++++
+            -- 5. Áî•ñ|Á‹àŠz‡Œv ‚ğ‹‚ß‚é
+            -- ++++++++++++++++++++++++++++++++++++++++
+            SET v_CheckingClaimAmount = v_CheckingUseAmount + v_CheckingClaimFee + v_CheckingDamageInterestAmount + v_CheckingAdditionalClaimFee;
+
+            -- ------------------------------
+            -- 5-6-3.G‘¹¸Ô“`ÃŞ°À‚Ìì¬
+            -- ------------------------------
+            -- æ“¾‚µ‚½Áî•ñ‚É-1‚ğŠ|‚¯‚é
+            INSERT
+            INTO    T_SundryControl(    ProcessDate                             -- ”­¶“ú
+                                    ,   SundryType                              -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   SundryAmount                            -- ‹àŠz
+                                    ,   SundryClass                             -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   OrderSeq                                -- ’•¶SEQ
+                                    ,   OrderId                                 -- ’•¶ID
+                                    ,   ClaimId                                 -- ¿‹ID
+                                    ,   Note                                    -- ”õl
+                                    ,   CheckingUseAmount                       -- Áî•ñ|—˜—pŠz
+                                    ,   CheckingClaimFee                        -- Áî•ñ|¿‹è”—¿
+                                    ,   CheckingDamageInterestAmount            -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   CheckingAdditionalClaimFee              -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   DailySummaryFlg                         -- “úŸXVÌ×¸Ş
+                                    ,   RegistDate                              -- “o˜^“ú
+                                    ,   RegistId                                -- “o˜^Ò
+                                    ,   UpdateDate                              -- XV“ú
+                                    ,   UpdateId                                -- XVÒ
+                                    ,   ValidFlg                                -- —LŒøÌ×¸Ş
+                                   )
+                                   VALUES
+                                   (    DATE(NOW())                             -- ”­¶“ú
+                                    ,   1                                       -- í—ŞiGû“ü^G‘¹¸j
+                                    ,   v_CheckingClaimAmount * -1              -- ‹àŠz
+                                    ,   99                                      -- Gû“üEG‘¹¸‰È–Ú
+                                    ,   pi_order_seq                            -- ’•¶SEQ
+                                    ,   v_OrderId                               -- ’•¶ID
+                                    ,   v_ClaimId                               -- ¿‹ID
+                                    ,   NULL                                    -- ”õl
+                                    ,   v_CheckingUseAmount * -1                -- Áî•ñ|—˜—pŠz
+                                    ,   v_CheckingClaimFee * -1                 -- Áî•ñ|¿‹è”—¿
+                                    ,   v_CheckingDamageInterestAmount * -1     -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                    ,   v_CheckingAdditionalClaimFee * -1       -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                    ,   0                                       -- “úŸXVÌ×¸Ş
+                                    ,   NOW()                                   -- “o˜^“ú
+                                    ,   pi_user_id                              -- “o˜^Ò
+                                    ,   NOW()                                   -- XV“ú
+                                    ,   pi_user_id                              -- XVÒ
+                                    ,   1                                       -- —LŒøÌ×¸Ş
+                                   );
+
+            -- ------------------------------
+            -- 5-6-4.ÅI¿‹Šz >= “ü‹àŠz ‚Ìê‡
+            -- ------------------------------
+            IF  v_ClaimAmount >= pi_receipt_amount + v_ReceiptAmount THEN
+                -- ------------------------------
+                -- 5-6-4-1.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     LastProcessDate     =   DATE(NOW())                                     -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq      =   v_ReceiptSeq                                    -- ÅI“ü‹àSEQ
+                    ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount          -- “ü‹àŠz‡Œv
+                    ,   SundryLossTotal     =   SundryLossTotal - v_CheckingClaimAmount         -- G‘¹¸‡Œv
+                    ,   UpdateDate          =   NOW()
+                    ,   UpdateId            =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+
+            -- ------------------------------
+            -- 5-6-5.“ü‹àŠz > ÅI¿‹Šz ‚Ìê‡
+            -- ------------------------------
+            ELSEIF  pi_receipt_amount + v_ReceiptAmount > v_ClaimAmount THEN
+                -- ------------------------------
+                -- 5-6-5-1.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                -- ‰ßè“ü‹à•ª‚ğ‘«‚µ‚±‚Ş
+                UPDATE  T_ClaimControl
+                SET     ClaimedBalance      =   ClaimedBalance - v_InsReceiptUseAmount          -- ¿‹c‚
+                    ,   LastProcessDate     =   DATE(NOW())                                     -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq      =   v_ReceiptSeq                                    -- ÅI“ü‹àSEQ
+                    ,   CheckingClaimAmount =   CheckingClaimAmount + v_InsReceiptUseAmount     -- Áî•ñ|Á‹àŠz‡Œv
+                    ,   CheckingUseAmount   =   CheckingUseAmount + v_InsReceiptUseAmount       -- Áî•ñ|—˜—pŠz
+                    ,   BalanceClaimAmount  =   BalanceClaimAmount - v_InsReceiptUseAmount      -- c‚î•ñ|c‚‡Œv
+                    ,   BalanceUseAmount    =   BalanceUseAmount - v_InsReceiptUseAmount        -- c‚î•ñ|—˜—pŠz
+                    ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount          -- “ü‹àŠz‡Œv
+                    ,   SundryLossTotal     =   SundryLossTotal - v_SundryAmount                -- G‘¹¸‡Œv
+                    ,   UpdateDate          =   NOW()
+                    ,   UpdateId            =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+            END IF;
+        -- ------------------------------
+        -- 5-7.ÅI¿‹Šz > “ü‹àÏŠz > Å’á¿‹Šz ‚Ìê‡
+        -- ------------------------------
+        ELSEIF  v_ClaimAmount > v_ReceiptAmount AND v_ReceiptAmount > v_MinClaimAmount  THEN
+            -- ------------------------------
+            -- 5-7-1.G‘¹¸‚ÌÃŞ°À‚ğæ“¾
+            -- ------------------------------
+            -- æ“¾Œ”‚ª1Œ‚Æ‚ÍŒÀ‚ç‚È‚¢‚½‚ßAOrderSeq ‚É•R‚Ã‚­G‘¹¸ÃŞ°À‚Ì»ÏØ‚ğæ“¾‚·‚é
+            SELECT  SUM(SundryAmount)                   -- ‹àŠz
+                ,   SUM(CheckingUseAmount)              -- Áî•ñ|—˜—pŠz
+                ,   SUM(CheckingClaimFee)               -- Áî•ñ|¿‹è”—¿
+                ,   SUM(CheckingDamageInterestAmount)   -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                ,   SUM(CheckingAdditionalClaimFee)     -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                ,   COUNT(*)
+            INTO    v_SundryAmount
+                ,   v_SundryUseAmount
+                ,   v_SundryClaimFee
+                ,   v_SundryDamageInterestAmount
+                ,   v_SundryAdditionalClaimFee
+                ,   v_Cnt
+            FROM    T_SundryControl
+            WHERE   OrderSeq    =   pi_order_seq
+            ;
+
+            IF  v_Cnt = 0   THEN
+                SET po_ret_sts  =   -1;
+                SET po_ret_msg  =   'G‘¹¸ƒf[ƒ^‚ª‘¶İ‚µ‚Ü‚¹‚ñB';
+                LEAVE proc;
+            END IF;
+
+            -- ------------------------------
+            -- 5-7-2.G‘¹¸‹àŠz > “ü‹àŠz ‚Ìê‡
+            -- ------------------------------
+            IF  v_SundryAmount > pi_receipt_amount  THEN
+                -- ------------------------------
+                -- 5-7-2-1.Ô“`—pÁî•ñ‚ğŒvZ
+                -- ------------------------------
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 1. Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ğ‹‚ß‚é
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 1) Áî•ñ|¿‹’Ç‰Áè”—¿ ‚ª “ü‹àŠz ˆÈã‚Ìê‡
+                IF  v_SundryAdditionalClaimFee >= pi_receipt_amount THEN
+                    -- Áî•ñ|¿‹’Ç‰Áè”—¿ ‚Í “ü‹àŠz
+                    SET v_CheckingAdditionalClaimFee = pi_receipt_amount;
+                    -- c‹à‚Í 0i¾ŞÛj
+                    SET v_CalculationAmount = 0;
+                -- ‚»‚êˆÈŠO
+                ELSE
+                    SET v_CheckingAdditionalClaimFee = v_SundryAdditionalClaimFee;
+                    SET v_CalculationAmount = pi_receipt_amount - v_CheckingAdditionalClaimFee;
+                END IF;
+
+                -- 1.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+                IF  v_CalculationAmount > 0 THEN
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 2. Áî•ñ|’x‰„‘¹ŠQ‹à ‚ğ‹‚ß‚é
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 1) Áî•ñ|’x‰„‘¹ŠQ‹à ‚ª c‹à ˆÈã‚Ìê‡
+                    IF  v_SundryDamageInterestAmount >= v_CalculationAmount THEN
+                        -- Áî•ñ|’x‰„‘¹ŠQ‹à ‚Í c‹à
+                        SET v_CheckingDamageInterestAmount = v_CalculationAmount;
+                        -- c‹à‚Í 0i¾ŞÛj
+                        SET v_CalculationAmount = 0;
+                    -- ‚»‚êˆÈŠO
+                    ELSE
+                        SET v_CheckingDamageInterestAmount = v_SundryDamageInterestAmount;
+                        SET v_CalculationAmount = v_CalculationAmount - v_CheckingDamageInterestAmount;
+                    END IF;
+                END IF;
+
+                -- 2.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+                IF  v_CalculationAmount > 0 THEN
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 3. Áî•ñ|¿‹è”—¿ ‚ğ‹‚ß‚é
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 1) Áî•ñ|¿‹è”—¿ ‚ª c‹à ˆÈã‚Ìê‡
+                    IF  v_SundryClaimFee >= v_CalculationAmount THEN
+                        -- Áî•ñ|¿‹è”—¿ ‚Í c‹à
+                        SET v_CheckingClaimFee = v_CalculationAmount;
+                        -- c‹à‚Í 0i¾ŞÛj
+                        SET v_CalculationAmount = 0;
+                    -- ‚»‚êˆÈŠO
+                    ELSE
+                        SET v_CheckingClaimFee = v_SundryClaimFee;
+                        SET v_CalculationAmount = v_CalculationAmount - v_CheckingClaimFee;
+                    END IF;
+                END IF;
+
+                -- 3.‚Åc‹à‚ª‘¶İ‚·‚éê‡
+                IF  v_CalculationAmount > 0 THEN
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 4. Áî•ñ|—˜—pŠz ‚ğ‹‚ß‚é
+                    -- ++++++++++++++++++++++++++++++++++++++++
+                    -- 1) Áî•ñ|—˜—pŠz ‚ª c‹à ˆÈã‚Ìê‡
+                    IF  v_SundryUseAmount >= v_CalculationAmount    THEN
+                        -- Áî•ñ|—˜—pŠz ‚Í c‹à
+                        SET v_CheckingUseAmount = v_CalculationAmount;
+                        -- c‹à‚Í 0i¾ŞÛj
+                        SET v_CalculationAmount = 0;
+                    -- ‚»‚êˆÈŠO
+                    ELSE
+                        SET v_CheckingUseAmount = v_SundryUseAmount;
+                        SET v_CalculationAmount = v_CalculationAmount - v_CheckingUseAmount;
+                    END IF;
+                END IF;
+
+                -- ++++++++++++++++++++++++++++++++++++++++
+                -- 5. Áî•ñ|Á‹àŠz‡Œv ‚ğ‹‚ß‚é
+                -- ++++++++++++++++++++++++++++++++++++++++
+                SET v_CheckingClaimAmount = v_CheckingUseAmount + v_CheckingClaimFee + v_CheckingDamageInterestAmount + v_CheckingAdditionalClaimFee;
+
+                -- ------------------------------
+                -- 5-7-2-2.G‘¹¸Ô“`ÃŞ°À‚Ìì¬
+                -- ------------------------------
+                -- æ“¾‚µ‚½Áî•ñ‚É-1‚ğŠ|‚¯‚é
+                INSERT
+                INTO    T_SundryControl(    ProcessDate                             -- ”­¶“ú
+                                        ,   SundryType                              -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   SundryAmount                            -- ‹àŠz
+                                        ,   SundryClass                             -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   OrderSeq                                -- ’•¶SEQ
+                                        ,   OrderId                                 -- ’•¶ID
+                                        ,   ClaimId                                 -- ¿‹ID
+                                        ,   Note                                    -- ”õl
+                                        ,   CheckingUseAmount                       -- Áî•ñ|—˜—pŠz
+                                        ,   CheckingClaimFee                        -- Áî•ñ|¿‹è”—¿
+                                        ,   CheckingDamageInterestAmount            -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   CheckingAdditionalClaimFee              -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   DailySummaryFlg                         -- “úŸXVÌ×¸Ş
+                                        ,   RegistDate                              -- “o˜^“ú
+                                        ,   RegistId                                -- “o˜^Ò
+                                        ,   UpdateDate                              -- XV“ú
+                                        ,   UpdateId                                -- XVÒ
+                                        ,   ValidFlg                                -- —LŒøÌ×¸Ş
+                                       )
+                                       VALUES
+                                       (    DATE(NOW())                             -- ”­¶“ú
+                                        ,   1                                       -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   v_CheckingClaimAmount * -1              -- ‹àŠz
+                                        ,   99                                      -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   pi_order_seq                            -- ’•¶SEQ
+                                        ,   v_OrderId                               -- ’•¶ID
+                                        ,   v_ClaimId                               -- ¿‹ID
+                                        ,   NULL                                    -- ”õl
+                                        ,   v_CheckingUseAmount * -1                -- Áî•ñ|—˜—pŠz
+                                        ,   v_CheckingClaimFee * -1                 -- Áî•ñ|¿‹è”—¿
+                                        ,   v_CheckingDamageInterestAmount * -1     -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   v_CheckingAdditionalClaimFee * -1       -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   0                                       -- “úŸXVÌ×¸Ş
+                                        ,   NOW()                                   -- “o˜^“ú
+                                        ,   pi_user_id                              -- “o˜^Ò
+                                        ,   NOW()                                   -- XV“ú
+                                        ,   pi_user_id                              -- XVÒ
+                                        ,   1                                       -- —LŒøÌ×¸Ş
+                                       );
+
+                -- ------------------------------
+                -- 5-7-2-3.¿‹ÃŞ°À‚ÌXV
+                -- ------------------------------
+                UPDATE  T_ClaimControl
+                SET     LastProcessDate     =   DATE(NOW())                                 -- ÅI“ü‹àˆ—“ú
+                    ,   LastReceiptSeq      =   v_ReceiptSeq                                -- ÅI“ü‹àSEQ
+                    ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount      -- “ü‹àŠz‡Œv
+                    ,   SundryLossTotal     =   SundryLossTotal - v_CheckingClaimAmount     -- G‘¹¸‡Œv
+                    ,   UpdateDate          =   NOW()
+                    ,   UpdateId            =   pi_user_id
+                WHERE   ClaimId =   v_ClaimId
+                ;
+
+            -- ------------------------------
+            -- 5-7-3.“ü‹àŠz >= G‘¹¸‹àŠz ‚Ìê‡
+            -- ------------------------------
+            ELSEIF  pi_receipt_amount >= v_SundryAmount THEN
+                -- ------------------------------
+                -- 5-7-3-1.G‘¹¸Ô“`ÃŞ°À‚Ìì¬
+                -- ------------------------------
+                -- æ“¾‚µ‚½G‘¹¸Šz‚É-1‚ğŠ|‚¯‚é
+                INSERT
+                INTO    T_SundryControl(    ProcessDate                         -- ”­¶“ú
+                                        ,   SundryType                          -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   SundryAmount                        -- ‹àŠz
+                                        ,   SundryClass                         -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   OrderSeq                            -- ’•¶SEQ
+                                        ,   OrderId                             -- ’•¶ID
+                                        ,   ClaimId                             -- ¿‹ID
+                                        ,   Note                                -- ”õl
+                                        ,   CheckingUseAmount                   -- Áî•ñ|—˜—pŠz
+                                        ,   CheckingClaimFee                    -- Áî•ñ|¿‹è”—¿
+                                        ,   CheckingDamageInterestAmount        -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   CheckingAdditionalClaimFee          -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   DailySummaryFlg                     -- “úŸXVÌ×¸Ş
+                                        ,   RegistDate                          -- “o˜^“ú
+                                        ,   RegistId                            -- “o˜^Ò
+                                        ,   UpdateDate                          -- XV“ú
+                                        ,   UpdateId                            -- XVÒ
+                                        ,   ValidFlg                            -- —LŒøÌ×¸Ş
+                                       )
+                                       VALUES
+                                       (    DATE(NOW())                         -- ”­¶“ú
+                                        ,   1                                   -- í—ŞiGû“ü^G‘¹¸j
+                                        ,   v_SundryAmount * -1                 -- ‹àŠz
+                                        ,   99                                  -- Gû“üEG‘¹¸‰È–Ú
+                                        ,   pi_order_seq                        -- ’•¶SEQ
+                                        ,   v_OrderId                           -- ’•¶ID
+                                        ,   v_ClaimId                           -- ¿‹ID
+                                        ,   NULL                                -- ”õl
+                                        ,   v_SundryUseAmount * -1              -- Áî•ñ|—˜—pŠz
+                                        ,   v_SundryClaimFee * -1               -- Áî•ñ|¿‹è”—¿
+                                        ,   v_SundryDamageInterestAmount * -1   -- Áî•ñ|’x‰„‘¹ŠQ‹à
+                                        ,   v_SundryAdditionalClaimFee * -1     -- Áî•ñ|¿‹’Ç‰Áè”—¿
+                                        ,   0                                   -- “úŸXVÌ×¸Ş
+                                        ,   NOW()                               -- “o˜^“ú
+                                        ,   pi_user_id                          -- “o˜^Ò
+                                        ,   NOW()                               -- XV“ú
+                                        ,   pi_user_id                          -- XVÒ
+                                        ,   1                                   -- —LŒøÌ×¸Ş
+                                       );
+
+                -- ------------------------------
+                -- 5-7-3-2.“ü‹àŠz = G‘¹¸‹àŠz ‚Ìê‡
+                -- ------------------------------
+                IF  pi_receipt_amount = v_SundryAmount  THEN
+                    -- ------------------------------
+                    -- 5-7-3-2-1.¿‹ÃŞ°À‚ÌXV
+                    -- ------------------------------
+                    UPDATE  T_ClaimControl
+                    SET     LastProcessDate     =   DATE(NOW())                                 -- ÅI“ü‹àˆ—“ú
+                        ,   LastReceiptSeq      =   v_ReceiptSeq                                -- ÅI“ü‹àSEQ
+                        ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount      -- “ü‹àŠz‡Œv
+                        ,   SundryLossTotal     =   SundryLossTotal - v_SundryAmount            -- G‘¹¸‡Œv
+                        ,   UpdateDate          =   NOW()
+                        ,   UpdateId            =   pi_user_id
+                    WHERE   ClaimId =   v_ClaimId
+                    ;
+                END IF;
+
+                -- ------------------------------
+                -- 5-7-3-3.“ü‹àŠz > G‘¹¸‹àŠz ‚Ìê‡
+                -- ------------------------------
+                IF  pi_receipt_amount > v_SundryAmount  THEN
+                    -- ------------------------------
+                    -- 5-7-2-3.¿‹ÃŞ°À‚ÌXV
+                    -- ------------------------------
+                    -- ‰ßè•ª‚ğ‘«‚µ‚±‚Ş
+                    UPDATE  T_ClaimControl
+                    SET     ClaimedBalance      =   ClaimedBalance - v_InsReceiptUseAmount          -- ¿‹c‚
+                        ,   LastProcessDate     =   DATE(NOW())                                     -- ÅI“ü‹àˆ—“ú
+                        ,   LastReceiptSeq      =   v_ReceiptSeq                                    -- ÅI“ü‹àSEQ
+                        ,   CheckingClaimAmount =   CheckingClaimAmount + v_InsReceiptUseAmount     -- Áî•ñ|Á‹àŠz‡Œv
+                        ,   CheckingUseAmount   =   CheckingUseAmount + v_InsReceiptUseAmount       -- Áî•ñ|—˜—pŠz
+                        ,   BalanceClaimAmount  =   BalanceClaimAmount - v_InsReceiptUseAmount      -- c‚î•ñ|c‚‡Œv
+                        ,   BalanceUseAmount    =   BalanceUseAmount - v_InsReceiptUseAmount        -- c‚î•ñ|—˜—pŠz
+                        ,   ReceiptAmountTotal  =   ReceiptAmountTotal + pi_receipt_amount          -- “ü‹àŠz‡Œv
+                        ,   SundryLossTotal     =   SundryLossTotal - v_SundryAmount                -- G‘¹¸‡Œv
+                        ,   UpdateDate          =   NOW()
+                        ,   UpdateId            =   pi_user_id
+                    WHERE   ClaimId =   v_ClaimId
+                    ;
+                END IF;
+            END IF;
+        END IF;
+    END IF;
+END$$

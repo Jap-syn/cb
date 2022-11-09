@@ -1,0 +1,109 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwsprcpt/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">雑損失・雑収入一覧</h3>
+	<!-- ページナビゲーション -->
+	<?php echo $this->render('cbadmin/page_navigation.php'); ?>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr height="30">
+            <td class="l_data">
+                <form id="sform" name="sform" method="post" action="rwsprcpt/losslist">
+                    <?php echo $this->losstypeTag; ?>　
+                    発生日時の期間：
+                    <input type="text" style="width:90px;" name="ProcessDateF" id="ProcessDateF" value="<?php echo f_e($this->ProcessDateF); ?>" />～
+                    <input type="text" style="width:90px;" name="ProcessDateT" id="ProcessDateT" value="<?php echo f_e($this->ProcessDateT); ?>" />
+                    (YYYY-MM-DD形式で入力)
+                    <input type="submit" id="btnSearch" value="　検　索　" />
+                </form>
+            </td>
+            <td class="r_data">
+                <span class="pager"><a class="download_link" href="<?php echo $this->durl; ?>">一覧をCSVダウンロード</a></span>
+            </td>
+        </tr>
+        </tr>
+        </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <input type="button" onclick="window.open('rwsprcpt/lossedit')" value="　新規登録　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+        <form id="form" name="form">
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>種類</th>
+            <th>発生日</th>
+            <th>金額</th>
+            <th>注文ID</th>
+            <th>請求先氏名</th>
+            <th>発生起因（科目）</th>
+            <th>指示</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <?php     $row = $this->list[$i]; ?>
+          <tr>
+            <td class="c_data" width="100"><?php echo $row['SundryType']; ?></td>
+            <td class="c_data" width="70" ><?php echo $row['ProcessDate']; ?></td>
+            <td class="r_data" width="70" ><?php echo f_nf($row['SundryAmount'], '#,##0'); ?></td>
+            <td class="c_data" width="120"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+            <td class="l_data" width="120"><?php echo $row['NameKj']; ?></td>
+            <td class="l_data"><?php echo $row['SundryClass']; ?></td>
+            <td class="c_data"><a target="_blank" href="rwsprcpt/lossedit/sseq/<?php echo $row['SundrySeq']; ?>">追加登録</a></td>
+          </tr>
+          <tr class="border">
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

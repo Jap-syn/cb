@@ -1,0 +1,83 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">社内与信確定待ちリスト　　　与信確定待ち：　<?php echo f_e($this->listcount); ?>　件</h3>
+    <form name="form" method="post" action="rwcredit/donejudge">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th rowspan="2">注文<br />SEQ</th>
+            <th>注文ID</th>
+            <th rowspan="2">分類</th>
+            <th>事業者名</th>
+            <th colspan="2">請求先氏名・住所</th>
+            <th>メール</th>
+            <th rowspan="2">与信点数</th>
+            <th rowspan="2">与信判断</th>
+          </tr>
+          <tr>
+            <th>注文日</th>
+            <th>事業者ID</th>
+            <th colspan="2">配送先氏名・住所</th>
+            <th>利用額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td rowspan="2" class="r_data">
+              <?php echo $this->list[$i]["OrderSeqHidden"]; ?>
+              <?php echo $this->list[$i]["OrderSeq"]; ?>
+            </td>
+            <td class="l_data"><a href="rwcredit/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["OrderId"]); ?></a></td>
+            <td rowspan="2" class="c_data"><?php echo f_e($this->list[$i]["IncreArCaption"]); ?></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["EnterpriseNameKj"]); ?></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><a href="rworder/detail/oseq/<?php echo f_e($this->list[$i]["OrderSeq"]); ?>"><?php echo f_e($this->list[$i]["NameKj"]); ?></a></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["UnitingAddress"]); ?>...</td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["MailAddress"]); ?></td>
+            <td rowspan="2" class="c_data" <?php echo $this->list[$i]["CelStyleScore"]; ?>><?php echo f_e($this->list[$i]["Incre_ScoreTotal"]); ?></td>
+            <td rowspan="2" class="c_data"><?php echo $this->list[$i]["CreditJudgeTag"]; ?></td>
+          </tr>
+          <tr>
+            <td class="l_data"><?php echo f_e($this->list[$i]["ReceiptOrderDate"]); ?></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["EnterpriseLoginId"]); ?></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["DestNameKj"]); ?></td>
+            <td class="l_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["DestUnitingAddress"]); ?>...</td>
+            <td class="r_data" <?php echo $this->list[$i]["CelStyle"]; ?>><?php echo f_e($this->list[$i]["UseAmount"]); ?></td>
+          </tr>
+          <tr class="border">
+            <td colspan="9">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="9" class="c_data">
+              <p>
+              <input type="submit" value="　　　　社内与信確定　　　　" />
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

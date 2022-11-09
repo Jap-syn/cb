@@ -1,0 +1,201 @@
+<?php
+
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+    ul.errors {
+      border: solid 1px silver;
+      color: crimson;
+      background-color: lemonchiffon;
+      font-size: 10pt;
+      padding: 4px !important;
+      padding-left: 24px !important;
+    }
+    ul.errors li.error {
+      margin : 0px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+    <form id="edit_form" action="combinedclaim/mergeconfirm" method="post">
+      <!-- start contents -->
+      <div id="contents">
+        <h3 class="contents_title">請求取りまとめ注文一覧</h3>
+        <?php if( isset($this->error) ) {?>
+        <ul class="errors">
+          <li><?php echo f_e($this->error); ?></li>
+        </ul>
+        <?php } ?>
+        <?php  
+        // count関数対策
+        if(!empty($this->sites)) {?>
+        <div class="tab_container" id="mainTab">
+          <div>
+            <ul class="tab_bar">
+            <?php 
+              // count関数対策
+              $sitesCount = count($this->sites);
+              for ($i = 0 ; $i < $sitesCount ; $i++) {?>
+              <li id="info_tab" class="tab_item <?php echo $this->sid == f_e($this->sites[$i]["SiteId"]) ? "selected" : "" ?>">
+                <a class="tab" href="combinedclaim/orderlistbysite/eid/<?php echo f_e($this->eid); ?>/site/<?php echo f_e($this->sites[$i]["SiteId"]); ?>/mode/<?php echo f_e($this->mode); ?>/status/<?php if (isset($this->combinedStatus)) { echo f_e($this->combinedStatus);} else { echo 0;} ?>" /><?php echo f_e($this->sites[$i]["SiteNameKj"]); ?></a>
+              </li>
+            <?php }?>
+            </ul>
+          </div>
+        </div>
+        <?php }?>
+        <?php  
+          // count関数対策
+          if(!empty($this->sites)) {?>
+        <div class="tab_pages">
+          <div id="info_tab_page" class="tab_page">
+        <?php } else {?>
+        <div style="margin: 5px 25px;">
+        <?php }?>
+          <table style="margin: 0px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <tr>
+              <td class="l_data">
+                <input type="radio" name="combinedStatus" id="combinedStatus0" value="0" <?php if(f_e($this->combinedStatus) == 0){echo "checked";} else {echo "";}?>>とりまとめ　　　　　
+                <input type="radio" name="combinedStatus" id="combinedStatus9" value="1" <?php if(f_e($this->combinedStatus) == 1){echo "checked";} else {echo "";}?>>とりまとめキャンセル　　　　
+                <input type="button" name="reSearch" id="reSearch" value="再検索">
+              </td>
+            </tr>
+            <tr>
+              <td class="l_data">
+              <?php $coralviewhelper = new CoralViewHelperValueFormat();?>
+                該当件数　<?php echo $coralviewhelper->valueFormat( ($this->list) ? $this->list->count() : 0, 'number', '#,##0' ); ?> 件
+              </td>
+            </tr>
+          </table>
+          <div style="margin: 0px; height: 300px; border: 1px solid gray; overflow-y: scroll; ">
+            <table style="margin: 0px; clear:both;" width="862" id="search_result" class="datatable sortable" cellpadding="1" cellspacing="1" border="0">
+              <thead>
+                <tr>
+                  <th width="30px" class="unsortable"></th>
+                  <th width="80px">注文ID</th>
+                  <th width="80px">注文日</th>
+                  <th width="100px">氏名</th>
+                  <th width="350px">住所</th>
+                  <th width="100px">電話番号</th>
+                  <?php if (f_e($this->combinedStatus) == 1) { // 取りまとめキャンセルモードのときのみ表示する。 ?>
+                  <th width="200px">エラー理由</th>
+                  <?php } ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  // 取りまとめ番号バックアップ用変数
+                  $combinedGpNoBack = "";
+if ($this->list) {
+                  // リストが有効な時に限定
+                  $i = 0;
+                  foreach ($this->list as $row) {
+                    // 取りまとめキャンセルの場合
+                    if (f_e($this->combinedStatus) == 1) {
+                      // 現在の取りまとめGP番号を取得
+                      $combinedGpNo = $row["CombinedDictateGroup"];
+                      // 取りまとめGP番号は変わった場合、変数をインクリメントする。
+                      if ($combinedGpNo != $combinedGpNoBack) {
+                        if ($i == 0) {
+                          // 背景色設定用変数
+                          $nBkColorNo = 0;
+                        } else {
+                          $nBkColorNo = $nBkColorNo + 1;
+                        }
+                      }
+                      // 行の背景色を設定する
+                      if ($nBkColorNo % 3 == 0){
+                        $BackColor = 'cyan';
+                      } else if ($nBkColorNo % 3 == 1) {
+                        $BackColor = 'gray';
+                      } else if ($nBkColorNo % 3 == 2) {
+                        $BackColor = 'purple';
+                      }
+                      // ひとつ前の取りまとめ番号をバックアップ
+                      $combinedGpNoBack = $combinedGpNo;
+                    }
+                    // 背景色を設定
+                    if (f_e($this->combinedStatus) == 1) {
+                ?>
+                <tr class="<?php echo $BackColor ?>">
+                <?php } else { ?>
+                <tr>
+                <?php } ?>
+                  <td nowrap class="data">
+                    <input name="data[OrderSeq<?php echo $i; ?>]" id="OrderSeq<?php echo $i; ?>" type="checkbox" value="<?php echo f_e($row["OrderSeq"]); ?>" <?php if($row["OrderSeq"] == (isset($this->data["OrderSeq".$i]) ? $this->data["OrderSeq".$i] : 0)) echo "checked"; ?> />
+                  </td>
+                  <td nowrap title="<?php echo f_e($row["OrderId"]); ?>" class="l_data"><a target="_blank" href="rworder/detail/oseq/<?php echo f_e($row["OrderSeq"]); ?>" /><?php echo f_e($row["OrderId"]); ?></a></td>
+                    <input type="hidden" name="data[OrderId<?php echo $i; ?>]" value="<?php echo f_e($row["OrderId"]); ?>">
+                  <td nowrap title="<?php echo f_e($row["ReceiptOrderDate"]); ?>" class="l_data"><?php echo f_e($row["ReceiptOrderDate"]); ?></td>
+                  <td nowrap title="<?php echo f_e($row["NameKj"]); ?>" class="l_data"><a target="_blank" href="customerinquiry/detail/custid/<?php echo $row["CustomerId"]; ?>" /><?php echo f_e($row["NameKj"]); ?></a></td>
+                  <td nowrap title="<?php echo f_e($row["UnitingAddress"]); ?>" class="l_data"><?php echo f_e($row["UnitingAddress"]); ?></td>
+                  <td nowrap title="<?php echo f_e($row["Phone"]); ?>" class="l_data"><?php echo f_e($row["Phone"]); ?></td>
+                  <?php if (f_e($this->combinedStatus) == 1) { // 取りまとめキャンセルモードのときのみ表示する。 ?>
+                  <td nowrap title="<?php echo f_e($row["ErrorMsg"]); ?>" class="l_data"><?php echo f_e($row["ErrorMsg"]); ?></td>
+                  <?php } ?>
+                </tr>
+                <?php $i++; ?>
+                <?php } ?>
+                <?php
+}
+                ?>
+              </tbody>
+            </table>
+          </div>
+        <?php 
+          // count関数対策
+          if(!empty($this->sites)) {?>
+          </div>
+        </div>
+        <?php } else {?>
+        </div>
+        <?php }?>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td>
+                <input type="button" id="doSelect" name="doSelect" value="取りまとめ"　 <?php if(f_e($this->combinedStatus) == 0){echo "";} else {echo "disabled";}?>>
+                <input type="button" name="doAll" id="doAll" value="全取りまとめ" <?php if(f_e($this->combinedStatus) == 0){echo "";} else {echo "disabled";}?>>
+                <input type="button" name="doCancel" id="doCancel" value="取りまとめキャンセル" <?php if(f_e($this->combinedStatus) == 0){echo "disabled";} else {echo "";}?>>
+                <input type="hidden" name="data[mode]" value="<?php echo f_e($this->mode); ?>">
+                <input type="hidden" name="data[eid]"  value="<?php echo f_e($this->eid); ?>">
+                <input type="hidden" name="data[sid]"  value="<?php echo f_e($this->sid); ?>">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <?php echo $this->render('cbadmin/page_footer.php'); ?>
+      </div>
+      <!-- end contents -->
+    </form>
+  </div>
+  <script>
+    Event.observe(window, "load", function() {
+      Event.observe($("doSelect"), "click", function() {
+        $("edit_form").submit();
+        return false;
+      });
+      Event.observe($("doAll"), "click", function() {
+        $("edit_form").action = $("edit_form").action.replace(/\/mergeconfirm$/, "/mergeseparateconfirm");
+        $("edit_form").submit();
+         return false;
+       });
+       Event.observe($("reSearch"), "click", function() {
+         $("edit_form").action = $("edit_form").action.replace(/\/mergeconfirm$/, "/orderlist/eid/<?php echo f_e($this->eid); ?>/mode/<?php echo f_e($this->mode); ?>");
+         $("edit_form").submit();
+         return false;
+       });
+       Event.observe($("doCancel"), "click", function() {
+         $("edit_form").submit();
+         return false;
+       });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$has_info = isset($this->group);
+$has_data = isset($this->usage);
+$has_error = isset($this->error);
+$msg_only = isset($this->msg_only);
+?>
+<style type="text/css">
+.usage-info {
+}
+.usage-info .label {
+  display: inline-block;
+  width: 80px;
+  font-weight: bold;
+}
+#contents form.compact-form {
+  display: inline;
+  margin: 0 10px;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+  <?php
+  $group = $this->group;
+  $filters = $this->filters;
+  ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      口座返却
+    <?php if($has_info) { ?>
+      - 口座グループ '<?php echo f_e(sprintf('%s / %s', $this->group['ManageKey'], $this->group['ManageKeyLabel'])); ?>'
+    <?php } ?>
+    </h3>
+  <?php if($has_error) { ?>
+    <div class="page_error_message">
+      <?php if(!$msg_only) { ?>以下のエラーが発生しました：<?php } ?>
+      <?php echo f_e($this->error); ?>
+    </div>
+  <?php } ?>
+  <?php if($has_data) { ?>
+    <?php if(!$has_error) { ?>
+    <div class="page_info_message">
+      <?php echo f_nf($this->total, '#,##0'); ?> 件の口座を返却します。<strong>この操作は取り消せません</strong>
+    </div>
+    <?php } ?>
+    <h4 class="category-title">口座グループ詳細</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1">
+      <tbody>
+        <tr>
+          <td class="r_label">管理グループキー</td>
+          <td class="l_data"><?php echo f_e($this->group['ManageKey']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">表示名</td>
+          <td class="l_data"><?php echo f_e($this->group['ManageKeyLabel']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">登録日時</td>
+          <td class="l_data"><?php echo f_df($this->group['RegistDate'], 'Y年 n月 j日 H:i'); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">登録口座数</td>
+          <td class="l_data"><?php echo f_nf($this->total, '#,##0'); ?> 件</td>
+        </tr>
+        <tr>
+          <td class="r_label">口座内訳</td>
+          <td class="l_data">
+          <?php foreach($this->usage as $key => $row) { ?>
+            <div class="usage-info">
+              <span class="label"><?php echo f_e($row['label']); ?></span>
+              <?php echo f_nf($row['count'], '#,##0'); ?> 件
+            </div>
+          <?php } ?>
+          </td>
+        </tr>
+    </table>
+  <?php } ?>
+    <div class="submit-area">
+    <?php if($has_data && !$has_error) { ?>
+    <form class="compact-form" action="jnbgrp/doret" method="post">
+      <input name="gid" type="hidden" value="<?php echo f_e($this->group['AccountGroupId']); ?>" />
+      <button type="submit" onclick="return confirm('本当に返却を実行しますか？')">返却を実行</button>
+    </form>
+    <form class="compact-form" action="jnb/detail/oid/<?php echo f_e($this->summary['OemId']); ?>" method="get">
+      <button type="submit">キャンセル</button>
+    </form>
+    <?php } else if($has_data) { ?>
+      <a href="jnb/detail/oid/<?php echo f_e($this->summary['OemId']); ?>">JNB登録内容詳細へ戻る</a>
+    <?php } else { ?>
+      <a href="jnb/list">JNB契約一覧へ</a>
+    <?php } ?>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,58 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/operator/page_menu2.php'); ?>
+    <div class="title"><span>パスワード変更</span></div>
+<form id="login_form" name="form" method="POST" action="operator/chgpw/cmd/e">
+<table class="datatable">
+<?php if(!$this->altLogin) { ?>
+  <tr>
+    <td class="r_label width_300">現在のパスワード</td>
+    <td class="l_data">
+      <input type="password" id="opw" name="opw" value="<?php echo f_e($this->error['opw']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['eopw']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+<?php } ?>
+  <tr>
+    <td class="r_label">新しいパスワード</td>
+    <td class="l_data">
+      <input type="password" id="npw1" name="npw1" value="<?php echo f_e($this->error['npw1']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['enpw1']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>  <tr>
+    <td class="r_label">確認</td>
+    <td class="l_data">
+      <input type="password" id="npw2" name="npw2" value="<?php echo f_e($this->error['npw2']); ?>" />
+      <div style="float:right;width: 435px;"><?php echo $this->error['enpw2']; ?></div>
+      <div style="float:none; clear: both; font-size: 0; height: 0; line-height:0"></div>
+    </td>
+  </tr>
+</table>
+  <div class="btncontents">
+        <button class="default_btn" type="submit">　変　更　</button>
+  </div>
+</form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe( window, "load", function(evt) {
+  Event.observe( $("login_form"), "submit", function(evt) {
+    if( $("npw1").value.trim().length == 0 ) {
+      alert( "パスワードを空にすることはできません。" );
+      Event.stop( evt );
+      return;
+    }
+  }.bindAsEventListener( $("login_form") ) );
+}.bindAsEventListener( window ) );
+</script>
+</html>

@@ -1,0 +1,170 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$currentTitle = '立替サイクル登録';
+?>
+	<style>
+	ul.errors {
+		border: solid 1px silver;
+		color: crimson;
+		background-color: lemonchiffon;
+		font-size: 10pt;
+		padding: 4px !important;
+		padding-left: 24px !important;
+	}
+	ul.errors li.error {
+		margin : 0px !important;
+	}
+	#ip_help_toggle,
+	#ip_help_toggle:link,
+	#ip_help_toggle:hover,
+	#ip_help_toggle:visited,
+	#ip_help_toggle:active {
+		font-size: 11px;
+		padding: 2px 4px;
+	}
+	#ip_help_toggle:hover {
+		background-color: white;
+		color: royalblue;
+	}
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/payingcycle/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3><?php echo $currentTitle; ?></h3>
+
+<!-- count関数対策 -->
+<?php if( !empty($this->errorMessages)) { ?>
+<ul class="errors"><?php foreach($this->errorMessages as $error) { ?>
+	<li><?php echo escape($error); ?></li>
+<?php } ?></ul>
+<?php } ?>
+
+<form id="edit_form" action="payingcycle/confirm" method="post">
+  <input id="PayingCycleId" name="rels[PayingCycleId]" type="hidden" value="<?php echo f_e($this->rels['PayingCycleId']); ?>" />
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td class="r_label">立替サイクル登録/名称<font color="red">*</font></td>
+      <td class="l_data">
+        <input type="text" id="PayingCycleName" name="rels[PayingCycleName]" size="40" value="<?php echo f_e($this->rels['PayingCycleName']);?>">
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">表示順<font color="red">*</font></td>
+      <td class="l_data">
+        <input type="text" id="ListNumber" name="rels[ListNumber]" size="40" value="<?php echo f_e($this->rels['ListNumber']);?>">
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替サイクル/種別</td>
+      <td class="l_data">
+		<input id="PayingDecisionClass" name="rels[PayingDecisionClass]" type="radio" size="40" value="0"
+		<?php if($this->rels['PayingDecisionClass'] == 0){echo 'checked';}?>/>毎週
+		<input id="PayingDecisionClass" name="rels[PayingDecisionClass]" type="radio" size="40" value="1"
+		<?php if($this->rels['PayingDecisionClass'] == 1){echo 'checked';}?>/>日付指定
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">締めP<font color="red">*</font></td>
+      <td class="l_data">
+        <?php echo $this->fixPatternTag; ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替確定日/毎週</td>
+      <td class="l_data">
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="1"
+		<?php if($this->rels['PayingDecisionDay'] == 1){echo 'checked';}?>/>月
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="2"
+		<?php if($this->rels['PayingDecisionDay'] == 2){echo 'checked';}?>/>火
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="3"
+		<?php if($this->rels['PayingDecisionDay'] == 3){echo 'checked';}?>/>水
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="4"
+		<?php if($this->rels['PayingDecisionDay'] == 4){echo 'checked';}?>/>木
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="5"
+		<?php if($this->rels['PayingDecisionDay'] == 5){echo 'checked';}?>/>金
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="6"
+		<?php if($this->rels['PayingDecisionDay'] == 6){echo 'checked';}?>/>土
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="radio" size="40" value="0"
+		<?php if(isset($this->rels['PayingDecisionDay']) AND $this->rels['PayingDecisionDay'] == 0){echo 'checked';}?>/>日
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替確定日/日付指定</td>
+      <td class="l_data">
+        <?php echo $this->payingDecisionDate1; ?>
+        <?php echo $this->payingDecisionDate2; ?>
+        <?php echo $this->payingDecisionDate3; ?>
+        <?php echo $this->payingDecisionDate4; ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日種別</td>
+      <td class="l_data">
+		<input id="PayingClass" name="rels[PayingClass]" type="radio" size="40" value="0"
+		<?php if($this->rels['PayingClass'] == 0){echo 'checked';}?>/>翌週
+		<input id="PayingClass" name="rels[PayingClass]" type="radio" size="40" value="1"
+		<?php if($this->rels['PayingClass'] == 1){echo 'checked';}?>/>翌月
+		<input id="PayingClass" name="rels[PayingClass]" type="radio" size="40" value="2"
+		<?php if($this->rels['PayingClass'] == 2){echo 'checked';}?>/>翌々月
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日翌週</td>
+      <td class="l_data">
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="1"
+		<?php if($this->rels['PayingDay'] == 1){echo 'checked';}?>/>月
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="2"
+		<?php if($this->rels['PayingDay'] == 2){echo 'checked';}?>/>火
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="3"
+		<?php if($this->rels['PayingDay'] == 3){echo 'checked';}?>/>水
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="4"
+		<?php if($this->rels['PayingDay'] == 4){echo 'checked';}?>/>木
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="5"
+		<?php if($this->rels['PayingDay'] == 5){echo 'checked';}?>/>金
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="6"
+		<?php if($this->rels['PayingDay'] == 6){echo 'checked';}?>/>土
+		<input id="PayingDay" name="rels[PayingDay]" type="radio" size="40" value="0"
+		<?php if(isset($this->rels['PayingDay']) AND $this->rels['PayingDay'] == 0){echo 'checked';}?>/>日
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日/翌月－翌々月</td>
+      <td class="l_data">
+        <?php echo $this->payingMonth; ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">有効設定</td>
+      <td class="l_data">
+		<input type="checkbox" id="ValidFlg"  name="rels[ValidFlg]" value="1"
+		  <?php if($this->rels['ValidFlg'] == 1){echo 'checked';}?>>
+	  </td>
+    </tr>
+  </table>
+
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr align="center">
+      <td>
+        <input type="submit" value="　確　定　" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

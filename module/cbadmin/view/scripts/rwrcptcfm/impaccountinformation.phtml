@@ -1,0 +1,59 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+body.atpay #wrapper,
+-->
+</style>
+</head>
+<body class="atpay">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">口座情報取込</h3>
+    <h4><?php echo $this->message; ?></h4>
+
+      <!-- ■口座振替契約申込結果エラーデータ(口座振替契約申込結果エラーデータあり時に表示 ※例外発生有無に依存しない)■- -->
+      <!-- count関数対策 -->
+      <?php if (!empty($this->edata)) { ?>
+      <h4 style="color:red;">以下のデータはエラーのため登録されていません。エラー内容の確認をお願いします。</h4>
+      <p>口座振替契約申込結果エラーデータ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>行</th>
+            <th>顧客番号</th>
+            <th>エラー内容</th>
+          </tr>
+          <?php
+          // count関数対策
+            $edataCount = count($this->edata);
+            for ($i = 0 ; $i < $edataCount ; $i++) { ?>
+          <tr>
+            <td class="c_data" width="35" ><?php echo $this->edata[$i]['LineNumber']; ?></td>
+            <td class="c_data" width="70" ><?php echo f_e($this->edata[$i]['CustomerNumber']); ?></td>
+            <td class="l_data">
+            <?php $j = 0; ?>
+            <?php foreach ($this->edata[$i]['ErrorInfo'] as $key => $value) { ?>
+            <?php     if ($j > 0) { ?><br/><?php } ?>
+            <?php     echo $value[0]; ?>
+            <?php     $j++; ?>
+            <?php } ?>
+            </td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

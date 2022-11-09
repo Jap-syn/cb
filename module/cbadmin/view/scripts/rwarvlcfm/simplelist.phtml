@@ -1,0 +1,227 @@
+<?php
+use Coral\Base\BaseGeneralUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<script type="text/javascript">
+  function load()
+  {
+
+  }
+  /*
+   * 伝票修正解除
+   */
+  function backdelimodefy(oseq)
+  {
+    var url = '<?php echo $this->baseUrl;?>/rwarvlcfm/backdelimodefy/seq/' + oseq;
+
+    var ajax = new Ajax.Request(
+      url,
+      {
+        method: 'get',
+        asynchronous: false
+      });
+
+    var res = eval('(' + ajax.transport.responseText + ')');
+
+    if  (res['status'] != 1) {
+      alert('伝票修正解除に失敗しました。 Err=' + res['status']);
+      return;
+    }
+
+    window.location.reload(true);
+  }
+</script>
+<style>
+  td, th {
+    padding: 2px !important;
+    vertical-align: top;
+  }
+  a.mail {
+    float: right;
+    margin: 1px 0px 0px 2px;
+    border: none;
+  }
+  a.mail img {
+    border: none 0px;
+  }
+</style>
+</head>
+<body onLoad="javascript:load();">
+  <div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/rwarvlcfm/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+      <h3 class="contents_title">着荷確認</h3>
+
+      <div class="page_nav" style="border-top-width: 1px;">
+        確認日一括設定：
+        <?php echo $this->gcadTag; ?>
+        <button id="apply_gcad" style="padding-left: 16px; padding-right: 16px;">一括変更</button>
+      </div>
+      <form name="form" method="post" action="rwarvlcfm/up">
+        <table style="clear:both; margin: 0px 0px 0px 25px;" width="840" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="r_data" style="padding: 8px;"><input style="width: 120px;" type="submit" value="着荷確認決定" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin: 0px 24px 0px 25px; height: 280px; border: 1px solid gray; overflow-y: scroll; ">
+          <table style="clear:both; margin: 0px;" width="840" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <thead>
+              <tr>
+                <td class="c_label" style="width: 102px;">事業者名</td>
+                <td class="c_label" style="width: 34px;">伝登日</td>
+                <td class="c_label" style="width: 74px;">配送先氏名</td>
+                <td class="c_label" style="width: 128px;">伝票番号</td>
+                <td class="c_label" style="width: 24px;">締P</td>
+                <td class="c_label" style="width: 38px;">利用額</td>
+                <td class="c_label" style="width: 152px;">確認</td>
+                <td class="c_label" style="width: 92px;">メモ</td>
+                <td class="c_label" style="width: 78px;">確認日</td>
+
+              </tr>
+            </thead>
+            <tbody>
+              <?php /*for ($i = 0 ; $i < count($this->list) ; $i++) {*/ ?>
+              <?php foreach($this->list as $i => $list_item) { ?>
+              <?php
+                      // 伝票修正があったか？ 非ヌル且つ[伝票番号色戻し]より後に更新があればtrueを、そうでなければfalse
+                      $isDeliModefy = (!is_null($list_item['Hrc32RegDate']) && ($list_item['Hrc32RegDate'] > $list_item['Hrc34RegDate'])) ? true : false;
+              ?>
+              <tr class="orderstatus_<?php echo $list_item['is_receipted'] ? 'receipted' : 'noreceipt'; ?>_normal" title="<?php echo $list_item['receipted_info']; ?>">
+                <td class="l_data<?php if($list_item['Special01Flg']) echo ' sp_ent_flg'; ?>">
+                  <input type="hidden" name="OrderSeq<?php echo $i; ?>" id="OrderSeq<?php echo $i; ?>" value="<?php echo $list_item["OrderSeq"]; ?>" />
+                  <?php $link_title = sprintf('事業者ID：%s%s', $list_item['EnterpriseId'], $list_item['Special01Flg'] ? '(特殊店舗)' : ''); ?>
+                  <a href="enterprise/detail/eid/<?php echo f_e($list_item['EnterpriseId']); ?>" target="_blank" title="<?php echo f_e($link_title); ?>" style="line-height: 105%;">
+                    <?php echo f_e($list_item["EnterpriseNameKj"]); ?>
+                  </a>
+                  <input type="hidden" name="Deli_PayChgCondition<?php echo $i; ?>" id="Deli_PayChgCondition<?php echo $i; ?>" value="<?php echo $list_item["Deli_PayChgCondition"]; ?>" />
+                  <input type="hidden" name="OutOfAmends<?php echo $i; ?>" id="OutOfAmends<?php echo $i; ?>" value="<?php echo $list_item["OutOfAmends"]; ?>" />
+                </td>
+                <td class="l_data"><?php echo $list_item["Deli_JournalIncDate"]; ?></td>
+                <td class="l_data">
+                  <a target="_blank" href="rworder/detail/oseq/<?php echo $list_item["OrderSeq"]; ?>" title="注文ID：<?php echo f_e($list_item['OrderId']); ?>" style="line-height: 105%;">
+                    <?php echo $list_item["OrderId"]; ?>
+                  </a>
+                  </br><?php echo $list_item["DestNameKj"]; ?>
+                </td>
+                <td class="l_data copy_target_cell">
+                    <?php if ($isDeliModefy) { ?><font color="red"><?php } ?>
+                    <?php echo preg_replace('/[-]/', '', BaseGeneralUtils::convertWideToNarrow($list_item["Deli_JournalNumber"])); ?>
+                    <?php if ($isDeliModefy) { ?></font><?php } ?>
+                    <a class="mail" id="diff_mail_<?php echo $list_item['OrderSeq']; ?>" href="javascript:void(0)" onclick="return send_diff_mail(this)" title="事業者へ伝票番号間違いのメールを送信します">
+                        <img id="diff_mail_icon_<?php echo $list_item['OrderSeq']; ?>" src="../images/slipnum_diff_01.png" />
+                    </a>
+                    <input <?php if (!$isDeliModefy) { echo ' style="display:none"'; } ?> style="font-size: 11px; width:60px;" type="button" value="修正解除" onclick='backdelimodefy(<?php echo $list_item["OrderSeq"]; ?>);' />
+                </td>
+                <td class="l_data"><?php echo $list_item["FixPattern"]; ?></td>
+                <td class="r_data"><?php echo f_nf($list_item["UseAmount"], '#,##0'); ?></td>
+                <td class="c_data"><?php echo $list_item["confirmTag"]; ?></td>
+                <td class="c_data"><?php echo $list_item["noArrReasonTag"]; ?></td>
+                <td class="c_data date_list_container"><?php echo $list_item["cadTag"]; ?></td>
+              </tr>
+              <tr class="border">
+                <td colspan="7">
+                  <img src="../images/spacer_gray.gif" height="1" width="1">
+                </td>
+              </tr>
+              <?php } ?>
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div style="margin: 10px 0 4px 25px; text-align:right; width: 858px"><a href="<?php echo f_e($this->confirmUrl); ?>" target="_blank">⇒ 別ウィンドウで開く</a></div>
+      <iframe style="margin: 0px 0px 10px 25px; height: 280px; width: 858px;" id="confirmpage" src="<?php echo $this->confirmUrl; ?>">
+      iframe 対応ブラウザを使用してください。
+      </iframe>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script>
+  Event.observe(window, "load", function() {
+    Event.observe($("apply_gcad"), "click", function() {
+      var val = $("gcad").options[$("gcad").selectedIndex].value;
+      document.getElementsByClassName("date_list_container").each( function(container) {
+        var target = container.getElementsByTagName("select")[0];
+        if( target ) target.value = val;
+      });
+    });
+    var unselect_text = function() {
+      try {
+        if(window.getSelection) {
+          window.getSelection().collapse(document.body, 0);
+        } else {
+          var selection = document.selection.createRange();
+          selection.setEndPoint('EndToStart', selection);
+          selection.select();
+        }
+      } catch(e) {}
+    }
+    $A(document.getElementsByClassName('copy_target_cell')).each(function(td) {
+      Event.observe(td, 'dblclick', function(evt) {
+        var txt = this.textContent || this.innerText;
+        if(new Element.ClassNames(this).include('r_data')) {
+          txt = txt.replace(/,/g, '');
+        }
+        unselect_text();
+        prompt('コピーできます', txt.trim());
+      }.bindAsEventListener(td));
+    });
+  });
+  function build_path(path) {
+    var path1 = (document.getElementsByTagName("base")[0] || { href : "" }).href;
+    return [
+      path1.replace(/\/$/, ""),
+      path.replace(/^\//, "")
+    ].join("/");
+  }
+  function send_diff_mail(link) {
+    function build_image_path(image_name) {
+      return build_path( "../images/{0}".format(image_name) );
+    }
+
+    var classNames = new Element.ClassNames(link);
+    if( !classNames.include("sent") && !classNames.include("seinding") && confirm("伝票番号間違いのメールを通知しますか？")) {
+      var id = link.id.replace(/^diff_mail_/, "");
+      var img = ( $("diff_mail_icon_{0}".format(id)) || { src : "" } );
+      img.src = build_image_path("loading_mini_01.gif");
+      classNames.add("sending");
+      new Ajax.Request(
+        build_path("rwarvlcfm/sendmail/seq/{0}/stamp/{1}".format(id, new Date().valueOf())), {
+          method : "get",
+          onComplete : function(xhr) {
+            classNames.remove("seinding");
+            try {
+              var response = xhr.responseText.parseJSON();
+            } catch(err) {
+              response = {
+                status : false,
+                msg : err
+              };
+            }
+            if(response && response.status) {
+              classNames.add("sent");
+              img.src = build_image_path("slipnum_diff_02.png");
+              link.title = "メール送信済み";
+            } else {
+              if(! response) {
+                response.msg = "unknown reason";
+              }
+              img.src = build_image_path("slipnum_diff_01.png");
+              alert("メールの送信に失敗しました。しばらくたってからやり直してください。\nmsg:{0}".format(response.msg));
+            }
+          }
+        } );
+      classNames.add("sending");
+    }
+    return false;
+  }
+</script>
+</html>

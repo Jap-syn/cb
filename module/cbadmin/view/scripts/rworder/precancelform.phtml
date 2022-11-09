@@ -1,0 +1,87 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+      <?php
+      if ($this->usedTodo2Pay == false) {?>
+          <h3 class="contents_title">キャンセル処理（申請）</h3>
+      <?php
+      } else {?>
+          <h3 class="contents_title">キャンセル処理（確定）</h3>
+      <?php }
+      ?>
+
+    <form name="form" method="post" action="rworder/precanceldone">
+      <?php if( $this->hash ) { ?>
+      <input name="content_hash" value="<?php echo $this->hash; ?>" type="hidden" />
+      <input name="idx" value="<?php echo $this->index_in_cache; ?>" type="hidden" />
+      <?php } ?>
+      <table style="clear:both; margin: 0px 0px 25px 25px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>注文Seq</th>
+            <th>注文ID</th>
+            <th>注文日</th>
+            <th>事業者名</th>
+            <th>請求先氏名</th>
+            <th>住所</th>
+            <th>キャンセル</th>
+          </tr>
+          <tr>
+            <td class="r_data">
+              <input type="hidden" name="OrderSeq" id="OrderSeq" value="<?php echo f_e($this->list["OrderSeq"]); ?>" />
+              <?php echo f_e($this->list["OrderSeq"]); ?>
+            </td>
+            <td class="l_data">
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list["OrderSeq"]; ?>"><?php echo $this->list["OrderId"]; ?></a>
+            </td>
+            <td class="c_data"><?php echo f_e($this->list["ReceiptOrderDate"]); ?></td>
+            <td class="l_data"><?php echo f_e($this->list["EnterpriseNameKj"]); ?></td>
+            <td class="l_data">
+              <a target="_blank" href="customerinquiry/detail/custid/<?php echo $this->list['CustomerId']; ?>"><?php echo $this->list["NameKj"]; ?></a>
+            </td>
+            <td class="l_data"><?php echo f_e($this->list["UnitingAddress"]); ?>...</td>
+            <td class="c_data"><?php echo $this->list["CancelType"]; ?></td>
+          </tr>
+
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="10" class="c_data">
+              <p>キャンセル理由：<?php echo $this->cancelReasonListTag; ?></p>
+              <input type="text" size="40" name="CancelReason" id="CancelReason" /><br />
+              <?php if($this->list["CombinedClaimTargetStatus"] == 91 || $this->list["CombinedClaimTargetStatus"] == 92) { ?>
+              <p style="color: red;">とりまとめのすべての商品がキャンセルされます</p>
+              <?php } ?>
+                <?php
+                if ($this->usedTodo2Pay == false) {?>
+                    <input style="margin: 8px; " type="submit" value="　　キャンセル処理（申請）実行　　" />
+                    <?php
+                } else {?>
+                    <p style="color: red;">【注意】届いてから支払いの注文の為、キャンセル取消ができません。</p>
+                    <input style="margin: 8px; " type="submit" value="　　キャンセル処理（確定）実行　　" />
+                <?php }
+                ?>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

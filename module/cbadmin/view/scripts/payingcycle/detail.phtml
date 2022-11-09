@@ -1,0 +1,173 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$currentTitle = '立替サイクル登録完了';
+?>
+	<style>
+	ul.errors {
+		border: solid 1px silver;
+		color: crimson;
+		background-color: lemonchiffon;
+		font-size: 10pt;
+		padding: 4px !important;
+		padding-left: 24px !important;
+	}
+	ul.errors li.error {
+		margin : 0px !important;
+	}
+	#ip_help_toggle,
+	#ip_help_toggle:link,
+	#ip_help_toggle:hover,
+	#ip_help_toggle:visited,
+	#ip_help_toggle:active {
+		font-size: 11px;
+		padding: 2px 4px;
+	}
+	#ip_help_toggle:hover {
+		background-color: white;
+		color: royalblue;
+	}
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/payingcycle/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+<h3><?php echo $currentTitle; ?></h3>
+
+<!-- count関数対策 -->
+<?php if( !empty($this->errorMessages)) { ?>
+<ul class="errors"><?php foreach($this->errorMessages as $error) { ?>
+	<li><?php echo escape($error); ?></li>
+<?php } ?></ul>
+<?php } ?>
+
+<form id="confirm_form" method="post">
+  <input id="PayingCycleId" name="rels[PayingCycleId]" type="hidden" value="<?php echo $this->rels['PayingCycleId']; ?>" />
+  <table class="datatable" width="865" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td class="r_label">立替サイクル登録/名称<font color="red">*</font></td>
+      <td class="l_data" width=575>
+        <input type="hidden" id="PayingCycleName" name="rels[PayingCycleName]" value="<?php echo f_e($this->rels['PayingCycleName']);?>">
+        <?php echo f_e($this->rels['PayingCycleName']);?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">表示順<font color="red">*</font></td>
+      <td class="l_data">
+        <input type="hidden" id="ListNumber" name="rels[ListNumber]" value="<?php echo ($this->rels['ListNumber']);?>">
+        <?php echo ($this->rels['ListNumber']);?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替サイクル/種別</td>
+      <td class="l_data">
+        <input type="hidden" id="PayingDecisionClass" name="rels[PayingDecisionClass]" value="<?php echo ($this->rels['PayingDecisionClass']);?>">
+        <?php if($this->rels['PayingDecisionClass'] == 0){echo '毎週';}?>
+        <?php if($this->rels['PayingDecisionClass'] == 1){echo '日付指定';}?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">締めP<font color="red">*</font></td>
+      <td class="l_data">
+		<input type="hidden" id="FixPattern" name="rels[FixPattern]" value="<?php echo ($this->rels['FixPattern']);?>">
+        <?php if($this->rels['FixPattern'] == NULL){echo "--"; ?>
+        <?php }else{ echo $this->code->getMasterCaption(2, $this->rels['FixPattern']);};?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替確定日/毎週</td>
+      <td class="l_data">
+		<input id="PayingDecisionDay" name="rels[PayingDecisionDay]" type="hidden" value="<?php echo ($this->rels['PayingDecisionDay']);?>">
+		<?php if($this->rels['PayingDecisionDay'] == NULL){echo "--"; ?>
+        <?php }else{ echo $this->code->getMasterCaption(53, $this->rels['PayingDecisionDay']);};?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替確定日/日付指定</td>
+      <td class="l_data">
+        <input id="PayingDecisionDate1" name="rels[PayingDecisionDate1]" type="hidden" value="<?php echo ($this->rels['PayingDecisionDate1']);?>">
+        <input id="PayingDecisionDate2" name="rels[PayingDecisionDate2]" type="hidden" value="<?php echo ($this->rels['PayingDecisionDate2']);?>">
+        <input id="PayingDecisionDate3" name="rels[PayingDecisionDate3]" type="hidden" value="<?php echo ($this->rels['PayingDecisionDate3']);?>">
+        <input id="PayingDecisionDate4" name="rels[PayingDecisionDate4]" type="hidden" value="<?php echo ($this->rels['PayingDecisionDate4']);?>">
+        <?php if($this->rels['PayingDecisionDate1']==0){
+                echo "--";
+              }else{
+                echo $this->code->getMasterCaption(76, $this->rels['PayingDecisionDate1']);
+              }
+              echo " / ";
+        ?>
+        <?php if($this->rels['PayingDecisionDate2']==0){
+                echo "--";
+              }else{
+                echo $this->code->getMasterCaption(76, $this->rels['PayingDecisionDate2']);
+              }
+              echo " / ";
+        ?>
+        <?php if($this->rels['PayingDecisionDate3']==0){
+                echo "--";
+              }else{
+                echo $this->code->getMasterCaption(76, $this->rels['PayingDecisionDate3']);
+              }
+              echo " / ";
+        ?>
+        <?php if($this->rels['PayingDecisionDate4']==0){
+                echo "--";
+              }else{
+                echo $this->code->getMasterCaption(76, $this->rels['PayingDecisionDate4']);
+              }
+        ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日種別</td>
+      <td class="l_data">
+        <input id="PayingClass" name="rels[PayingClass]" type="hidden" value="<?php echo ($this->rels['PayingClass']);?>">
+		<?php if($this->rels['PayingClass'] == 0){echo '翌週';}?>
+		<?php if($this->rels['PayingClass'] == 1){echo '翌月';}?>
+		<?php if($this->rels['PayingClass'] == 2){echo '翌々月';}?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日翌週</td>
+      <td class="l_data">
+        <input id="PayingDay" name="rels[PayingDay]" type="hidden" value="<?php echo ($this->rels['PayingDay']);?>">
+		<?php if($this->rels['PayingDay'] == NULL){echo "--"; ?>
+        <?php }else{ echo $this->code->getMasterCaption(53, $this->rels['PayingDay']);};?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">立替日/翌月－翌々月</td>
+      <td class="l_data">
+        <input type="hidden" id="PayingMonth" name="rels[PayingMonth]" value="<?php echo ($this->rels['PayingMonth']);?>">
+          <?php if($this->rels['PayingMonth']==0){
+                echo "--";
+              }else{
+                echo $this->code->getMasterCaption(77, $this->rels['PayingMonth']);
+              }
+          ?>
+	  </td>
+    </tr>
+    <tr>
+      <td class="r_label">有効設定</td>
+      <td class="l_data">
+		<input type="hidden" id="ValidFlg"  name="rels[ValidFlg]" value="<?php echo ($this->rels['PayingMonth']);?>">
+		  <?php if($this->rels['ValidFlg'] == 0){echo '無効';}?>
+		  <?php if($this->rels['ValidFlg'] == 1){echo '有効';}?>
+	  </td>
+    </tr>
+  </table>
+
+</form>
+
+  </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

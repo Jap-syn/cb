@@ -1,0 +1,295 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$depoMap = array(
+  '0' => '普通',
+  '1' => '当座'
+);
+?>
+<style type="text/css">
+#contents table.formtable th.id-col {
+  width: 45px;
+}
+#contents table.formtable th.name-col {
+  width: 388px;
+}
+#contents table.formtable th.count-col {
+  width: 75px;
+}
+#contents table.formtable th.per-col {
+  width: 75px;
+}
+#contents table.formtable th.action-col {
+  width: 120px;
+}
+#contents table.formtable tr.active-group td {
+}
+#contents table.formtable tr.disposed-group td {
+  color: #666;
+}
+#contents table.formtable tr.disposed-group td a {
+  color: #66f;
+}
+#contents table.formtable tr.disposed-group td.action {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAACXBIWXMAAAdiAAAHYgE4epnbAAAAEklEQVR4nGNk+M8AB0wMDMRwADLSAQfvSjVpAAAAAElFTkSuQmCC');
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: 3px 0;
+}
+#contents table.formtable tr td.used-percentage {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAB2EAAAdhAZXDuLYAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAAASSURBVBhXY/j/5CEcEcV58hAAgNAsQV77X7kAAAAASUVORK5CYII=');
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: 0 100%;
+}
+#contents table.formtable tr td.used-percentage.notice {
+  color: crimson;
+}
+#contents table.formtable tr td.used-percentage.alert {
+  font-weight: bold;
+}
+#contents table.formtable button {
+  width: 60px;
+}
+</style>
+<script type="text/javascript">
+function moveToReturn(gid) {
+  location.href = [
+    (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+    'smbcpagrp/ret/gid/' + gid
+  ].join('/');
+}
+function initPercentage() {
+  document.getElementsByClassName('used-percentage').each(function(td) {
+    var per = parseFloat(td.innerHTML.replace(/[^\d\.]/g, ''));
+    td.style.backgroundSize = '{0}% 100%'.format(per);
+    if(per > 50) new Element.ClassNames(td).add('notice');
+    if(per > 85) new Element.ClassNames(td).add('alert');
+  });
+}
+Event.observe(window, 'load', function() {
+  initPercentage();
+<?php if($this->allowRestore) { ?>
+
+  var
+    MAX = 50;
+    grpStage = {},
+    updateStage = function() {
+      $H(grpStage).keys().each(function(key) {
+        var v = parseInt(grpStage[key] / MAX * 100);
+        document.getElementsByClassName('action', $('grp-row-{0}'.format(key))).each(function(cell) {
+          cell.style.backgroundSize = '1px {0}%'.format(v);
+        });
+      });
+    },
+    decTimer = setInterval(function() {
+      $H(grpStage).keys().each(function(key) {
+        if(grpStage[key] > 0) grpStage[key]--;
+        updateStage();
+      });
+    }, 500);
+  document.getElementsByClassName('grp-row').findAll(function(tr) {
+    return new Element.ClassNames(tr).include('disposed-group');
+  }).each(function(tr) {
+    var key = tr.id.match(/^grp-row-(.+)$/) && RegExp.$1 || null;
+    if(key) {
+      grpStage[key] = 0;
+      var id = 'anchor-{0}'.format(key);
+      if(new Element.ClassNames($(id)).include('action-anchor')) {
+        Event.observe($(id), 'dblclick', function(evt) {
+          var key = this.id.match(/^anchor-(.+)$/) && RegExp.$1 || null;
+          if(key) {
+            grpStage[key]+= 2;
+            if(grpStage[key] >= MAX) {
+              grpStage[key] = MAX;
+              if(confirm('ダブルクリックしまくった成果として、この口座グループを返却済みから復帰させますか？\n（復帰後のトラブルに関しては一切関知いたしません！！）')) {
+                var url = [
+                  (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/*$/, ''),
+                  'smbcpagrp/restore'
+                ].join('/');
+                var form = Object.extend(document.createElement('form'), {
+                  action : url,
+                  method : 'post'
+                });
+                form.appendChild(Object.extend(document.createElement('input'), {
+                  type : 'hidden',
+                  name : 'gid',
+                  value : key
+                }));
+                document.body.appendChild(form);
+                form.submit();
+              } else {
+                grpStage[key] = 0;
+              }
+            }
+            updateStage();
+          }
+        }.bindAsEventListener($(id)));
+      }
+    }
+  });
+
+<?php } ?>
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpa/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座登録内容詳細</h3>
+    <div class="detail-tools">
+        <a href="smbcpa/edit/oid/<?php echo f_e($this->oid); ?>">　編集　</a>
+    </div>
+
+    <h4 class="category-title">基本情報</h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+        <?php /* ---------------------------------------------------------- OEM先 */ ?>
+        <tr>
+          <td class="r_label">OEM先</td>
+          <td class="l_data">
+          <?php if($this->data['OemId']) { ?>
+            <a href="oem/detail/oid/<?php echo f_e($this->data['OemId']); ?>" target="_blank">
+              <?php echo f_e(sprintf('%d：%s', $this->data['OemId'], $this->data['OemNameKj'])); ?>
+            </a>
+          <?php } else { ?>
+            <?php echo f_e(sprintf('%d：%s', $this->data['OemId'], $this->data['OemNameKj'])); ?>
+          <?php } ?>
+          </td>
+        </tr>
+
+        <?php /* ---------------------------------------------------------- 登録日時 */ ?>
+        <tr>
+          <td class="r_label">登録日時</td>
+          <td class="l_data">
+            <?php echo f_df($this->data['RegistDate'], 'Y年n月j日 H時i分'); ?>
+          </td>
+        </tr>
+
+        <?php /* ---------------------------------------------------------- 名称 */ ?>
+        <tr>
+          <td class="r_label">名称</td>
+          <td class="l_data">
+            <?php echo f_e($this->data['DisplayName']); ?>
+          </td>
+        </tr>
+
+        <?php /* ---------------------------------------------------------- 銀行名 */ ?>
+        <tr>
+          <td class="r_label">銀行名</td>
+          <td class="l_data">
+            <?php echo f_e($this->data['BankName']); ?>
+          </td>
+        </tr>
+
+        <?php /* ---------------------------------------------------------- 銀行コード */ ?>
+        <tr>
+          <td class="r_label">銀行コード</td>
+          <td class="l_data">
+            <?php echo f_e($this->data['BankCode']); ?>
+          </td>
+        </tr>
+
+        <?php /* ---------------------------------------------------------- 銀行コード */ ?>
+        <tr>
+          <td class="r_label">メモ</td>
+          <td class="l_data multi-line-text">
+            <p><?php echo f_br($this->data['Memo']); ?></p>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <h4 class="category-title">
+      口座グループ
+      <span style="font-weight: normal; margin-left: 20px">
+      <!-- count関数対策 -->
+      <?php if(!empty($this->groups)) { ?>
+        (<?php
+          // count関数対策
+          $listCount = count($this->groups);
+          echo f_nf($listCount, '#,##0'); ?> グループ登録済み)
+      <?php } else { ?>
+        (登録なし)
+      <?php } ?>
+      </span>
+    </h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+      <thead>
+        <tr>
+          <th class="id-col">id</th>
+          <th class="name-col">管理番号/管理名</th>
+          <th class="count-col">口座数</th>
+          <th class="count-col">(請求中)</th>
+          <th class="count-col">(空き)</th>
+          <th class="per-col">利用率</th>
+          <th class="action-col">返却</th>
+        </tr>
+      </thead>
+      <tbody>
+    <?php
+    $grp_conf = array(
+      '使用中' => array(),
+      '返却済み' => array()
+    );
+    foreach($this->groups as $grp) {
+      if(!$grp['ReturnedFlg']) {
+        $grp_conf['使用中'][] = $grp;
+      } else {
+        $grp_conf['返却済み'][] = $grp;
+      }
+    }
+    ?>
+    <?php foreach($grp_conf as $grp_kind => $list) { ?>
+      <!-- count関数対策 -->
+      <?php if(empty($list)) continue; ?>
+      <tr>
+        <td class="l_label" colspan="8"><?php echo f_e($grp_kind); ?></td>
+      </tr>
+      <?php foreach($list as $grp) { ?>
+        <tr id="grp-row-<?php echo f_e($grp['AccountGroupId']); ?>" class="grp-row <?php echo f_e($grp['ReturnedFlg'] ? 'disposed' : 'active'); ?>-group">
+          <td class="r_data"><?php echo f_e($grp['AccountGroupId']); ?></td>
+          <td class="l_data">
+            <a href="smbcpagrp/detail/gid/<?php echo f_e($grp['AccountGroupId']); ?>">
+              <?php echo f_e(sprintf('%s / %s', $grp['ManageKey'], $grp['ManageKeyLabel'])); ?>
+            </a>
+          </td>
+          <td class="r_data"><?php echo f_nf($grp['TotalCount'], '#,##0'); ?></td>
+          <td class="r_data"><?php echo f_nf($grp['ClaimingCount'], '#,##0'); ?></td>
+          <td class="r_data"><?php echo f_nf($grp['UsableCount'], '#,##0'); ?></td>
+          <td class="r_data used-percentage"><?php echo f_e($grp['UsedPercentage']); ?> %</td>
+          <td class="c_data action">
+          <?php if($grp['ReturnedFlg']) { ?>
+            <span id="anchor-<?php echo f_e($grp['AccountGroupId']); ?>"<?php if($grp['TotalCount'] > 0) echo ' class="action-anchor"'; ?>>返却済</span>
+          <?php } else { ?>
+            <?php if($grp['UsedCount'] == 0) { ?>
+            <button type="button" onclick="moveToReturn(<?php echo f_e($grp['AccountGroupId']); ?>)">返却</button>
+            <?php } else { ?>
+            返却不可
+            <?php } ?>
+          <?php } ?>
+          </td>
+        </tr>
+      <?php } ?>
+    <?php } ?>
+        <tr>
+          <td class="c_data" colspan="8">
+            <a href="smbcpagrp/accedit/oid/<?php echo f_e($this->data['OemId']); ?>">SMBCバーチャル口座登録</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

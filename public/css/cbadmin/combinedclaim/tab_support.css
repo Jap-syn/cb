@@ -1,0 +1,75 @@
+.tab_container {
+	border: solid 0px silver;
+	background-color: white;
+	margin-top: 16px;
+	margin-left: 25px;
+}
+
+ul.tab_bar {
+	white-space: nowrap;
+	list-style: none;
+	font-size: 10pt;
+	margin: 0px;
+	padding: 0px;
+	padding-left: 20px;
+	padding-bottom: 4px;
+	border-bottom: solid 3px #FFCC00;
+}
+
+ul.tab_bar li {
+	display: inline;
+	padding: 2px 4px;
+	text-align: center;
+	border: solid 1px silver;
+	border-bottom-width: 0px;
+	margin-right: 4px;
+}
+
+/* for IE6 */
+* html ul.tab_bar {
+	padding-bottom: 3px;
+}
+* html ul.tab_bar li {
+	padding-bottom: 3px;
+}
+
+/* for IE7 */
+*+html ul.tab_bar {
+	padding-bottom: 3px;
+}
+*+html ul.tab_bar li {
+	padding-bottom: 0px;
+}
+
+ul.tab_bar li a:link,
+ul.tab_bar li a:hover,
+ul.tab_bar li a:visited,
+ul.tab_bar li a:active {
+	color: dimgray;
+	text-decoration: none;
+	padding: 2px 4px;
+}
+ul.tab_bar li a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+ul.tab_bar li.selected,
+ul.tab_bar li.selected a:link,
+ul.tab_bar li.selected a:hover,
+ul.tab_bar li.selected a:visited,
+ul.tab_bar li.selected a:active {
+	background-color: #FFCC00;
+	border-color: #FFCC00;
+	color: black;
+}
+
+.tab_pages {
+	background-color: white;
+	padding: 8px 14px;
+}
+
+.tab_page {
+	background-color: white;
+}
+

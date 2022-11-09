@@ -1,0 +1,494 @@
+<?php
+use member\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+use Coral\Coral\Validate\CoralValidateUtility;
+use models\Logic\LogicAccountValidity;
+
+$validity_logic = new LogicAccountValidity(Application::getInstance()->dbAdapter);
+$pswExpireSoon = $validity_logic->needAlertForEnterprise($this->entInfo['EnterpriseId']);
+$pswExpireDate = $validity_logic->getEnterpriseExpireDate($this->entInfo['EnterpriseId']);
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+$fd = $this->postData;
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div style="color: red;">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+// 代理ログイン中フラグ
+$hasAltUserInfo = $this->altUserInfo != null;
+?>
+
+<style>
+  div.error-message {
+    margin-bottom: 5px;
+    padding: 10px;
+    border: double 3px gray;
+    width: 724px;
+    background-color: mistyrose;
+    magin: 10px 10px 10px 10px;
+    font-weight: bold;
+    color: firebrick;
+
+  }
+</style>
+
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+    // title
+    'お客様の登録情報は以下の通りです'
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+//$this->getHelper('ValueFormat')->setReplaceEmpty( true );
+$viewHelper = new CoralViewHelperValueFormat();
+$viewHelper->setReplaceEmpty( true );
+
+?>
+<div class="tab_container" id="mainTab">
+    <div>
+        <ul class="tab_bar">
+            <li id="info_tab" class="tab_item">
+                <a class="tab" href="#" onclick="return false;">登録情報</a>
+            </li>
+            <li id="site_tab" class="tab_item">
+                <a class="tab" href="#" onclick="return false;">サイト情報</a>
+            </li>
+            <li id="edit_tab" class="tab_item">
+                <a class="tab" href="#" onclick="return false;">設定変更</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab_pages">
+        <!-- 登録情報タブ -->
+        <div id="info_tab_page" class="tab_page">
+            <script>$("info_tab_page").style.display = "none";</script>
+            <table id="info_table" border="1" cellpadding="0" cellspacing="0">
+                <?php /* 基本情報 */ ?>
+                <tr>
+                    <th colspan="2">基本情報</th>
+                </tr>
+                <tr>
+                    <td class="row_header">申込日</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['ApplicationDate'], 'date' ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">ID・パスワード発行日</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['ServiceInDate'], 'date' ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">ログインID</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['LoginId'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">パスワード</td>
+                    <td>(非表示)</td>
+                </tr>
+                <?php if($validity_logic->passwordValidityEnabled() && $this->entInfo['LastPasswordChanged']) { ?>
+                <tr>
+                    <td class="row_header">パスワード更新日</td>
+                    <td>
+                        <?php echo f_df($this->entInfo['LastPasswordChanged'], 'Y/m/d H:i'); ?>
+                        (<span<?php if($pswExpireSoon) echo ' style="font-weight: bold"'; ?>>
+                        <?php echo f_df($pswExpireDate, 'Y/m/d'); ?></span>まで有効)
+                    </td>
+                <?php } ?>
+
+                <?php /* 事業者情報 */ ?>
+                <tr>
+                    <th colspan="2">企業情報 </th>
+                </tr>
+                <tr>
+                    <td class="row_header">会社名</td>
+                    <td>
+                        <?php echo $viewHelper->valueFormat( $this->entInfo['EnterpriseNameKj'] ); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header">会社名カナ</td>
+                    <td>
+                        <?php echo $viewHelper->valueFormat( $this->entInfo['EnterpriseNameKn'] ); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header" rowspan="2">所在地</td>
+                    <td style="border-bottom-width: 0px">
+                        〒 <?php echo $viewHelper->valueFormat( $this->entInfo['PostalCode'] ); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td><?php
+                            echo $viewHelper->valueFormat( join('', array(
+                                $this->entInfo['PrefectureName'],
+                                $this->entInfo['City'],
+                                $this->entInfo['Town'],
+                                $this->entInfo['Building']
+                            ) ) );
+                    ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">代表者氏名</td>
+                    <td>
+                        <?php echo $viewHelper->valueFormat( $this->entInfo['RepNameKj'] ); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header">代表者カナ氏名</td>
+                    <td>
+                        <?php echo $viewHelper->valueFormat( $this->entInfo['RepNameKn'] ); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header">代表電話番号</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['Phone'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">代表FAX番号</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['Fax'] ); ?></td>
+                </tr>
+
+                <?php /* 連絡先情報 */ ?>
+                <tr>
+                    <th colspan="2">ご連絡先情報</th>
+                </tr>
+                <tr>
+                    <td class="row_header editable">ご担当者氏名</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['CpNameKj'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">ご担当者カナ氏名</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['CpNameKn'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">ご担当者部署名</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['DivisionName'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">メールアドレス</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['MailAddress'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">連絡先電話番号</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['ContactPhoneNumber'] ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header editable">連絡先FAX番号</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['ContactFaxNumber'] ); ?></td>
+                </tr>
+
+                <?php /* サービス内容 */ ?>
+                <tr>
+                    <th colspan="2">サービス内容</th>
+                </tr>
+                <tr>
+                    <td class="row_header">利用プラン</td>
+                    <td><?php
+                        // 2015/04/08現在 M_PricePlan 内にデータなし → 利用プランはfifiが表示される。
+                        if( is_array( $this->plan ) ) {
+                            echo $viewHelper->valueFormat( $this->plan['PricePlanName'] );
+                        } else {
+                            echo $viewHelper->valueFormat('fifi');
+                        }
+                    ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">月額固定費用(税抜)</td>
+                    <td><?php echo $viewHelper->valueFormat( f_get_monthly_fee($this->entInfo), 'number', '\ #,##0' ); ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">締めパターン</td>
+                    <td><?php echo $this->paying['PayingCycleName']; ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">税区分</td>
+                    <td><?php
+                        if( $this->entInfo['TaxClass'] == 0 ) {
+                            echo '内税';
+                        } else {
+                            echo '外税';
+                        }
+                    ?></td>
+                </tr>
+                <tr>
+                    <td class="row_header">精算方法</td>
+                    <td><?php
+                        if( $this->entInfo['ClaimClass'] == 0 ) {
+                            echo '都度請求';
+                        } else {
+                            echo '次回繰越';
+                        }
+                    ?></td>
+                </tr>
+
+                <?php /* システム情報 */ ?>
+                <tr>
+                    <th colspan="2">システム情報</th>
+                </tr>
+                <tr>
+                    <td class="row_header">事業者ID</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['EnterpriseId'] ); ?></td>
+                </tr>
+
+                <?php /* 銀行口座 */ ?>
+                <tr>
+                    <th colspan="2">入金口座情報</th>
+                </tr>
+                <tr>
+                    <td class="row_header">銀行名・支店名</td>
+                    <td>
+                        <?php
+                            echo
+                                $viewHelper->valueFormat( $this->entInfo['FfName'] ) .
+                                ' ' .
+                                $viewHelper->valueFormat( $this->entInfo['FfBranchName'] );
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header">口座番号</td>
+                    <td>
+                        <?php
+                            if( is_array( $this->masters['FfAccountClass'] ) ) {
+                                echo $viewHelper->valueFormat( $this->masters['FfAccountClass'][$this->entInfo['FfAccountClass']] );
+                            }
+                            echo
+                                ' ' .
+                                $viewHelper->valueFormat( $this->entInfo['FfAccountNumber'] );
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="row_header">口座名義</td>
+                    <td><?php echo $viewHelper->valueFormat( $this->entInfo['FfAccountName'] ); ?></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- サイト情報タブ -->
+        <div id="site_tab_page" class="tab_page">
+            <script>$("site_tab_page").style.display = "none";</script>
+            <?php echo $this->render('member/account/site_table.php'); ?>
+        </div>
+
+        <!-- 設定変更タブ -->
+        <div id="edit_tab_page" class="tab_page" style="display: none;">
+            <form id="modify_form" action="account/confirm" method="post">
+                <?php /*$this->getHelper('ValueFormat')->setReplaceEmpty();*/ ?>
+                <?php $viewHelper->setReplaceEmpty(); ?>
+                <?php if(isset($this->errors['BatchLock'])){ ?>
+                <div class="error-message">
+                    <?php show_error_message($this->errors['BatchLock']); ?>
+                </div>
+                <?php }?>
+                <table id="modify_table" border="1" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <th colspan="2">パスワードの変更</th>
+                    </tr>
+                    <tr>
+                        <td class="row_header" colspan="2">
+                            <input class="mod_item" id="changePassword" name="ChangePassword" type="checkbox" value="1"<?php if( isset($this->editData['ChangePassword']) ) { if( $this->editData['ChangePassword'] != '' )  { echo ' checked="checked"'; } } ?> />
+                            <label for="changePassword">変更する</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="row_header" id="CurrentPassword_label">現在のパスワード</td>
+                        <td>
+                            <input class="mod_item" name="CurrentPassword" id="currentPassword" type="password" size="30" value="<?php if( isset( $this->editData['CurrentPassword']) ) { echo f_e($this->editData['CurrentPassword']); } ?>" disabled="disabled"<?php if($hasAltUserInfo) echo ' style="display:none"'; ?> />
+                            <?php if($hasAltUserInfo) { ?>（代理ログイン中につき入力不要）<?php } ?>
+                            <?php show_error_message($this->errors['CurrentPassword']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="row_header" id="NewPassword_label">新しいパスワード</td>
+                        <td>
+                            <input class="mod_item" name="NewPassword" id="newPassword" type="password" size="30" value="<?php if( isset( $this->editData['NewPassword']) ) { echo f_e($this->editData['NewPassword']); } ?>" disabled="disabled" />
+                            <?php show_error_message($this->errors['NewPassword']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="row_header" id="NewPassword2_label">新しいパスワード(確認)</td>
+                        <td>
+                            <input class="mod_item" name="NewPassword2" id="newPassword2" type="password" size="30" value="<?php if( isset( $this->editData['NewPassword2']) ) { echo f_e($this->editData['NewPassword2']); } ?>" disabled="disabled" />
+                            <?php show_error_message($this->errors['NewPassword2']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">連絡先ご担当の変更</th>
+                    </tr>
+                <?php
+                    foreach( $this->validators as $key => $conf ) {
+                        $classNames = array( 'mod_item' );
+                        if( $conf['require'] ) $classNames[] = 'no_empty';
+                        if( ! empty( $conf['type'] ) ) $classNames[] = $conf['type'];
+                        $classNames = join( ' ', $classNames );
+                ?>
+                    <tr>
+                        <td class="row_header" id="<?php echo $key; ?>_label"><?php echo $viewHelper->valueFormat( $conf['label'] ); ?></td>
+                        <td>
+                            <input class="<?php echo $classNames; ?>" name="<?php echo $key; ?>" size="<?php echo $conf['size']; ?>" value="<?php echo $viewHelper->valueFormat( $this->editData[ $key ] ); ?>" />
+                            <?php show_error_message($this->errors[ $key ]); ?><a style="font-size:12px"><?php echo $conf['text']; ?></a>
+                            </td>
+                    </tr>
+                <?php
+                    }
+                ?>
+                    <tr>
+                        <th colspan="2">与信NG表示期間の設定</th>
+                    </tr>
+                    <tr>
+                        <td class="row_header" id="CreditNgDispDays_label">与信NG表示期間</td>
+                        <td>
+                            <input class="mod_item" name="CreditNgDispDays" id="CreditNgDispDays" type="text" size="20" value="<?php if (isset($this->creditNgDays) ) { echo f_e( $this->creditNgDays ); } ?>" />
+                            <?php show_error_message($this->errors['CreditNgDispDays']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">表示対象の変更</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            　　　　　
+                            <input type="radio" name="JournalRegistDispClass" id="JournalRegistDispClass0" value="0" <?php if ($this->journalRegist == 0) { echo 'checked'; } ?> />全て表示　　　　　　
+                            <input type="radio" name="JournalRegistDispClass" id="JournalRegistDispClass1" value="1" <?php if ($this->journalRegist == 1) { echo 'checked'; } ?> />入力可能のみ表示
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">配送伝票入力時の表示順設定</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            　　　　　表示順１<?php echo $this->dispOrder1Tag; ?>
+                            　　　　表示順２<?php echo $this->dispOrder2Tag; ?>
+                            　　　　表示順３<?php echo $this->dispOrder3Tag; ?>
+                            <?php show_error_message($this->errors['dispOrder']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">請求書発行(同梱待ちリスト)の表示順設定</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            　　　　　表示順<?php echo $this->claimOrder1Tag; ?>
+                            <?php echo $this->claimOrder2Tag; ?>
+                            <?php show_error_message($this->errors['dispOrder2']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">履歴検索時の表示件数設定</th>
+                    </tr>
+                    <tr>
+                        <td class="row_header" id="DisplayCount_label"">1ページの表示件数</td>
+                        <td>
+                            <input class="mod_item" name="DisplayCount" id="DisplayCount" type="text" size="20" value="<?php if (isset($this->displayCount) ) { echo f_e( $this->displayCount ); } ?>" />(50～1000の間で指定)
+                            <?php show_error_message($this->errors['DisplayCount']); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="submit_area" colspan="2">
+                            <button type="submit" disabled="disabled">この内容で設定を変更</button>
+                            <button type="reset" onclick="window.location.href=document.getElementsByTagName('base')[0].href + 'account/index/mode/reset'">変更をリセット</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<div class="information_container">
+    <ul class="information">
+        <li>「登録情報」で項目名に「<img src="../images/icon_editable_item_s.gif">」がついている項目は「設定変更」から編集可能です。</li>
+        <li>その他の内容の変更については、当社までメールにてお問い合わせ下さい。</li>
+        <li>「設定変更」で項目名に「<img src="../images/order_item_must.png">」がついている項目は入力必須です。</li>
+    </ul>
+</div>
+
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php echo $this->render('member/tab_support.php'); ?>
+<script>
+var validate_rules = {
+    'mail_addr' : <?php echo CoralValidateUtility::EMAIL_ADDRESS; ?>,
+    'phone_number' : <?php echo CoralValidateUtility::PHONE_NUMBER; ?>
+}
+
+with( { tab : new TabControl( $("mainTab") ) } ) {
+    tab.tabs[<?php echo $this->tabIndex; ?>].show();
+}
+
+document.getElementsByClassName("editable", $("info_table")).each( function(col) {
+    col.title = "「設定変更」から編集可能です";
+} );
+
+with( { chk : Object.extend( $("changePassword"), {
+    toggle : function() {
+        this.checked = ! this.checked;
+        this.changeChecked();
+
+        return this;
+    },
+    changeChecked : function() {
+        var flg = this.checked;
+        ["currentPassword","newPassword","newPassword2"].map( function(id) {
+            return $(id);
+        }).each( function(field) {
+            field.disabled = ! flg;
+            new Element.ClassNames( field )[ flg ? "remove" : "add" ]( "disabled" );
+        } );
+    }
+} ) } ) {
+    Event.observe( chk, "click", function(evt) {
+        this.changeChecked();
+    }.bindAsEventListener( chk ) );
+}
+
+document.getElementsByClassName("no_empty", $("modify_form")).each( function(field) {
+    if( ! /input/i.test( field.tagName ) ) throw $continue;
+    var label = $("{0}_label".format( field.name ));
+    if( label ) {
+        new Element.ClassNames( label ).add( "no_empty" );
+    }
+} );
+$("changePassword").toggle().toggle();
+</script>
+</html>
+

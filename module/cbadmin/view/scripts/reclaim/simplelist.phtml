@@ -1,0 +1,178 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/reclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">再請求書発行待ちリスト(CSV一括出力)</h3>
+
+    <form id="form" name="form">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th>【今回の出力対象】</td>
+        </tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim7" id="ReClaim7" value="1" onclick="enableControl()"/> 再請求７出力（再請求６発行済み）</td></tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim6" id="ReClaim6" value="1" onclick="enableControl()"/> 再請求６出力（再請求５発行済み）</td></tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim5" id="ReClaim5" value="1" onclick="enableControl()"/> 再請求５出力（再請求４発行済み）</td></tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim4" id="ReClaim4" value="1" onclick="enableControl()"/> 再請求４出力（再請求３発行済み）</td></tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim3" id="ReClaim3" value="1" onclick="enableControl()"/> 再請求３出力（再請求１発行済み）</td></tr>
+        <tr><td class="l_data"><input type="checkbox" name="ReClaim1" id="ReClaim1" value="1" onclick="enableControl()"/> 再請求１出力（初回請求書発行済み）</td></tr>
+      </table>
+
+      <table style="clear:both;" width="430" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th colspan="2">【確定待ち件数】</th>
+        </tr>
+        <tr><td class="l_data">再請求７確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim7, '#,##0') ?> 件</td></tr>
+        <tr><td class="l_data">再請求６確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim6, '#,##0') ?> 件</td></tr>
+        <tr><td class="l_data">再請求５確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim5, '#,##0') ?> 件</td></tr>
+        <tr><td class="l_data">再請求４確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim4, '#,##0') ?> 件</td></tr>
+        <tr><td class="l_data">再請求３確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim3, '#,##0') ?> 件</td></tr>
+        <tr><td class="l_data">再請求１確定待ち件数</td><td class="r_data"><?php echo f_nf($this->CntWaitReclaim1, '#,##0') ?> 件</td></tr>
+      </table>
+
+      <table style="clear:both;" width="430" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <th colspan="2">【再請求書出力設定】</th>
+        </tr>
+        <tr><td class="l_data">再請求７</td><td class="l_data"><?php echo '《' . $this->EstReclaim7['Class3'] . '》、経過日数 《' . $this->EstReclaim7['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求６</td><td class="l_data"><?php echo '《' . $this->EstReclaim6['Class3'] . '》、経過日数 《' . $this->EstReclaim6['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求５</td><td class="l_data"><?php echo '《' . $this->EstReclaim5['Class3'] . '》、経過日数 《' . $this->EstReclaim5['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求４</td><td class="l_data"><?php echo '《' . $this->EstReclaim4['Class3'] . '》、経過日数 《' . $this->EstReclaim4['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求３</td><td class="l_data"><?php echo '《' . $this->EstReclaim3['Class3'] . '》、経過日数 《' . $this->EstReclaim3['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求１</td><td class="l_data"><?php echo '《' . $this->EstReclaim1['Class3'] . '》、経過日数 《' . $this->EstReclaim1['Class1'] . '》 日以上'; ?></td></tr>
+        <tr><td class="l_data">再請求１(マイページ)</td><td class="l_data"><?php echo 'マイページ発行依頼分は経過日数指定なし'; ?></td></tr>
+      </table>
+      <br>
+
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td class="c_data">
+          <button id="submit1" type="button">　CSV一括出力　</button>　
+          <button id="submit2" type="button">　印刷済に更新　</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script src="../member/js/cover.js"></script>
+
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+    // 初期値設定(全てチェックオン)
+    $('ReClaim7').checked = true;
+    $('ReClaim6').checked = true;
+    $('ReClaim5').checked = true;
+    $('ReClaim4').checked = true;
+    $('ReClaim3').checked = true;
+    $('ReClaim1').checked = true;
+
+    enableControl();
+
+    window.WindowCover = createCover();
+    document.body.appendChild( window.WindowCover );
+
+});
+
+// [CSV一括出力]ボタンのイネーブル制御
+function enableControl(){
+	// (１つでもチェックが入っている時は有効、そうでない時は無効)
+    if ($('ReClaim7').checked ||
+        $('ReClaim6').checked ||
+        $('ReClaim5').checked ||
+        $('ReClaim4').checked ||
+        $('ReClaim3').checked ||
+        $('ReClaim1').checked) {
+    	$('submit1').disabled = false;
+    }
+    else {
+        $('submit1').disabled = true;
+    }
+}
+
+// [CSV一括出力]ボタン押下
+Event.observe($("submit1"), "click", function() {
+	$("submit1").disabled = true;
+
+	WindowCover.show();
+
+	// AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/simplecsv1";
+    var ajax = new Ajax.Request( url, {method: 'get', parameters: str, onComplete: submit1OnComplete, asynchronous: true });
+
+});
+
+function submit1OnComplete(httpObj){
+
+	var res = eval('(' + httpObj.responseText + ')');
+    if  (res['status'] == 2) {
+
+    	var msg = "以下の注文の請求データ作成に失敗しました。\n";
+    	msg += "エラー内容を確認し、注文情報を修正してください。\n\n";
+    	msg += "\n";
+    	msg += res['message']
+    	msg += "\n\n";
+    	msg += "ファイルのダウンロードは、[OK]ボタンをクリックした後に行われます。\n";
+    	msg += "(エラーが発生した上記注文は含まれません)\n";
+
+    	alert(msg);
+    }
+
+    if  (res['status'] == 9) {
+    	var msg = "エラーが発生しました。エラーが頻発する場合は、システム管理者へご連絡ください。\n";
+    	msg += res['message'];
+    	alert(msg);
+    	location.reload(true);
+        return;
+    }
+
+    // (２．ＣＳＶ出力)
+    var str = Form.serialize('form');
+    var url = "<?php echo $this->baseUrl; ?>/reclaim/simplecsv2?" + str;
+    var ref = window.open( url );
+
+    // CSV出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+}
+
+//[印刷済に更新]ボタン押下
+Event.observe($("submit2"), "click", function() {
+	$("submit2").disabled = true;
+
+	setTimeout(function() {
+    	var str = Form.serialize('form');
+        var url = "<?php echo $this->baseUrl; ?>/reclaim/simpleup";
+        var ajax = new Ajax.Request( url, {method: 'get', parameters: str, asynchronous: false });
+        var res = eval('(' + ajax.transport.responseText + ')');
+        if  (res['status'] != 1) {
+            alert(res['status']);
+        }
+        else {
+        	alert('更新処理が完了しました。');
+        }
+
+        location.reload(true);
+	}, 0)
+});
+</script>
+</html>

@@ -1,0 +1,1138 @@
+<?php
+use cbadmin\classes\SearchfCache;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+// 各メインメニューの件数を取得
+$normalProcessMenusCount    = 0; // 通常処理
+$alertMenusCount            = 0; // アラート
+$specialProcessMenusCount   = 0; // 特殊処理
+$newclaimMenusCount         = 0; // 新規債権
+$searchMenusCount           = 0; // 検索・統計
+$keiriMenusCount            = 0; // 経理処理
+$enterpriseMenusCount       = 0; // 加盟店事業者管理
+$oemMenusCount              = 0; // OEM先管理
+$searchfMenusCount          = 0; // 不払い管理
+$kanriMenusCount            = 0; // 管理機能
+
+foreach( $this->menu_auth_info as $key => $val) {
+
+    foreach ( $val as $k => $v ) {
+
+        // validflgが落ちているものはスキップ
+        if (!$v) {
+            continue;
+        }
+
+        // メニュー別に件数をカウント
+        if ($key == 'normalProcessMenus' ) {
+            // ------------------------------
+            // 通常処理
+            // ------------------------------
+            $normalProcessMenusCount += 1;
+
+        } elseif( $key == 'alertMenus' ) {
+            // ------------------------------
+            // アラート
+            // ------------------------------
+            $alertMenusCount += 1;
+
+        } elseif( $key == 'specialProcessMenus' ) {
+            // ------------------------------
+            // 特殊処理
+            // ------------------------------
+            $specialProcessMenusCount += 1;
+
+        } elseif( $key == 'newclaimMenus' ) {
+            // ------------------------------
+            // 新規債権
+            // ------------------------------
+            $newclaimMenusCount += 1;
+
+        } elseif( $key == 'searchMenus' ) {
+            // ------------------------------
+            // 検索・統計
+            // ------------------------------
+            $searchMenusCount += 1;
+
+        } elseif( $key == 'keiriMenus' ) {
+            // ------------------------------
+            // 経理処理
+            // ------------------------------
+            $keiriMenusCount += 1;
+
+        } elseif( $key == 'enterpriseMenus' ) {
+            // ------------------------------
+            // 加盟店事業者管理
+            // ------------------------------
+            $enterpriseMenusCount += 1;
+
+        } elseif( $key == 'oemMenus' ) {
+            // ------------------------------
+            // OEM先管理
+            // ------------------------------
+            $oemMenusCount += 1;
+
+        } elseif( $key == 'searchfMenus' ) {
+            // ------------------------------
+            // 不払い管理
+            // ------------------------------
+            $searchfMenusCount += 1;
+
+        } elseif( $key == 'kanriMenus' ) {
+            // ------------------------------
+            // 管理機能
+            // ------------------------------
+            $kanriMenusCount += 1;
+
+        }
+
+    }
+
+}
+
+?>
+<style type="text/css">
+.external-count-info {
+  display: inline-block;
+  width: 120px;
+  height: 34px;
+  background-color: #f5deb3;
+  border: solid 3px #f4a460;
+  box-shadow: 3px 5px 4px #666;
+  text-align: center;
+  font-size: 13px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.external-count-info a,
+.external-count-info span {
+  line-height: 17px;
+}
+.external-count-info .count-view {
+  font-weight: bold;
+  color: blue;
+}
+.jnb-warning {
+  display: block;
+  font-weight: bold;
+  padding: 2px 4px;
+  border: double 3px firebrick;
+  background-color: yellow;
+  color: red;
+  font-size: 14px;
+  margin: 0 2px;
+}
+.notice_container {
+	width: 800px;
+	height: 150px;
+	overflow-y: scroll;
+	border: 1px #c0c0c0 solid;
+	margin-top: 0.2em;
+}
+</style>
+<script type="text/javascript" src="../js/json.js"></script>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  var
+    url = (function(part) {
+      var base = (document.getElementsByTagName('base')[0] || { href : '' }).href;
+      return [base.replace(/\/$/, ''), (part || '').replace(/^\//, '')].join('/');
+    })('api/countapiorders'),
+    onSuccess = function(xhr) {
+      onRequesting = false;
+      var data = xhr.responseText.parseJSON(), count = null;
+      if(data && ('Count' in data) && !isNaN(data.Count)) {
+        count = data.Count;
+      }
+      document.getElementsByClassName('count-view', $('api-order-wait-count')).each(function(ele) {
+        ele.innerHTML = count === null ? '--' : '({0}/{1}件)'.format(count, data.TotalCount || '--').escapeHTML();
+      });
+    },
+    onFailure = function(xhr) {
+      onRequesting = false;
+      // nop
+    },
+    onError = function(req, err) {
+      onRequesting = false;
+      onFailure(req.transport);
+    },
+    onRequesting = false,
+    getApiOrderCount = function() {
+      if(onRequesting) return;
+      onRequesting = true;
+      new Ajax.Request(url, {
+        method : 'get',
+        onComplete : onSuccess,
+        onFailure : onFailure,
+        onException : onError
+      });
+    };
+  getApiOrderCount();
+  setInterval(getApiOrderCount, 1000 * 10);
+});
+</script>
+</head>
+<body>
+<?php echo $this->render('cbadmin/index/page_header.php'); ?>
+<br />
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 通常処理メニュー
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php if (isset($this->batcherror)) { ?>
+<table width="819" border="0" cellpadding="0" cellspacing="0">
+  <tr><td style="color:red;">バッチが異常終了しています。システム担当者に連絡してください。</td></tr>
+</table>
+<p>
+<?php }  ?>
+
+<?php
+if ( $normalProcessMenusCount > 0 ) {
+?>
+<table width="819" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="138" rowspan="2"><img src="../images/Normal_operation_01.gif" alt="通常処理" width="138" height="27" /></td>
+    <td style="text-align: right;"><span style="color: red; margin-right:20px;"><?php echo $this->highlight['isJudgeProcessing']; ?></span><?php echo $this->highlight['Today']; ?></td>
+  </tr>
+  <tr>
+    <td height="1" valign="bottom"><img src="../images/spacer_blue.gif" alt="青線" width="680" height="1" /></td>
+  </tr>
+</table>
+<br>
+<table width="819" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['rwcredit'] ) { ?>
+        <td width="137" height="80" background="../images/Blue_Arrow_01.gif">
+        　<a href="rwcredit/list2/mode/waitconfirm">１.社内与信</a><br />
+        　<span class="style3" style="margin-left: 20px">（<?php echo $this->highlight['rw11count']; ?>/<?php echo $this->highlight['rw15count']; ?>件）</span>
+        </td>
+    <?php } else { ?>
+        <td width="137" height="80" >
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } ?>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['dmicredit'] ) { ?>
+        <td width="137" height="80" background="../images/Blue_Arrow_01.gif">
+            　<a href="rwcredit/list2/mode/reserve">２.与信保留</a><br />
+          <span class="style3" style="margin-left: 20px">（<?php echo $this->highlight['rw21count']; ?>件）</span>
+        </td>
+    <?php } else { ?>
+        <td width="137" height="80" >
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } ?>
+    <td width="137" height="80" background="../images/Blue_Arrow_02.gif">
+    　伝票番号登録<br />
+      <span class="style3">&nbsp;</span>
+    </td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['rwclaim'] ) { ?>
+        <td width="137" height="80" background="../images/Blue_Arrow_01.gif">
+            　<a href="rwclaim/list">３.請求書発行</a><br />
+          <span class="style3" style="margin-left: 20px">（<?php echo $this->highlight['rw41Acount']; ?>/<?php echo $this->highlight['rw41Bcount']; ?>件）</span>
+        </td>
+    <?php } else { ?>
+        <td width="137" height="80" >
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } ?>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['rwarvlcfm'] ) { ?>
+        <td width="137" height="80" background="../images/Blue_Arrow_01.gif">
+            　<a href="rwarvlcfm/list">４.着荷確認</a><br />
+              <span class="style6" style="font-weight: normal; margin-left: 24px;"><a href="rwarvlcfm/lump">&raquo; 一括確認</a></span><br />
+              <span class="style6" style="font-weight: normal; margin-left: 24px;"><a href="rwarvldata/index">&raquo; 着荷確認ﾃﾞｰﾀ</a></span>
+              <span class="style3">&nbsp;</span>
+        </td>
+    <?php } else { ?>
+        <td width="137" height="80" >
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } ?>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['rwrcptcfm'] ) { ?>
+        <td height="80" align="center" background="../images/Blue_Arrow_03.gif">
+            <a href="rwrcptcfm/list">５.入金確認</a><br />
+            <span class="style6" style="font-weight: normal; margin-left: 12px;"><a href="rwrcptcfm/list/delay/0">&raquo; 300日未満</a></span><br />
+            <span class="style6" style="font-weight: normal; margin-left: 24px;"><a href="rwrcptcfm/list/delay/1">&raquo; 300日以上</a></span>
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } else { ?>
+        <td height="80" align="center">
+            <span class="style3">&nbsp;</span>
+        </td>
+    <?php } ?>
+  </tr>
+  <tr>
+    <td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['dbstatus'] ) { ?>
+      <div id="api-order-wait-count" class="external-count-info">
+        <a href="dbstatus/waitapiorders">API与信待ち</a><br />
+        <span class="count-view">--</span>
+      </div>
+    <?php } ?>
+    </td>
+    <td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['jnbrcpt'] ) { ?>
+      <div id="jnb-manual-cfm-count" class="external-count-info">
+        <a href="jnbrcpt/index">JNB手動入金待ち</a><br />
+        <span class="count-view"><?php echo f_e($this->jnb_rcpt_count); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+    <td>
+    <?php if ( true ) { ?>
+      <div id="smbcpa-manual-cfm-count" class="external-count-info">
+        <a href="smbcparcpt/index">SMBC手動入金待ち</a><br />
+        <span class="count-view"><?php echo f_e($this->smbcpa_rcpt_count); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+<?php
+// ↓↓↓ 2015-07-14 追加（ただし、機能未整理のため、不要ならば消す） by suzuki_h
+/*
+// 一旦削除。必要になったら戻す（20150916_suzuki_h）
+?>
+    <td>
+    <?php if ($this->menu_auth_info['normalProcessMenus']['enterpriseadd'] ) { ?>
+      <div id="ent-manual-add-count" class="external-count-info">
+        <a href="">加盟店追加ﾊﾞｯﾁ起動</a><br />
+        <span class="count-view"><?php echo f_e($this->ent_add_count); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+<?php
+*/
+// ↑↑↑ 2015-07-14 追加（ただし、機能未整理のため、不要ならば消す） by suzuki_h
+?>
+<?php
+// ↓↓↓未使用のままのため廃止し、新たなメニューに置き換え
+/*
+    <td colspan="2">
+    <?php if ($this->menu_auth_info['normalProcessMenus']['jnberraccounts'] ) { ?>
+        <?php if(count($this->invalid_jnb_accounts)) { ?>
+          <div class="jnb-warning">
+            JNB口座重複割り当て件数：<?php echo f_nf(count($this->invalid_jnb_accounts), '#,##0'); ?> 件
+            <div>
+              <a href="jnb/erraccounts">⇒ 詳細</a>
+            </div>
+          </div>
+        <?php } else { ?>
+          &nbsp;
+        <?php } ?>
+    <?php } ?>
+    </td>
+*/
+// ↑↑↑未使用のままのため廃止し、新たなメニューに置き換え
+?>
+    <td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['jnberraccounts'] ) { ?>
+      <div id="jnb-manual-cfm-count" class="external-count-info">
+        <a href="claimerror/list">請求エラー件数</a><br />
+        <span class="count-view"><?php echo f_e($this->invalid_jnb_accounts); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+    <td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['jnbsberraccounts'] ) { ?>
+      <div id="jnb-manual-cfm-count" class="external-count-info">
+        <a href="sbpscancelapierror/list">SB連携エラー件数</a><br />
+        <span class="count-view"><?php echo f_e($this->invalid_jnb_SB_accounts); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+    <td>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['jnbpyeerraccounts'] ) { ?>
+      <div id="jnb-manual-cfm-count" class="external-count-info">
+        <a href="payeasyerror/list">PyE連携エラー件数</a><br />
+        <span class="count-view"><?php echo f_e($this->invalid_jnb_PyE_accounts); ?>件</span>
+      </div>
+    <?php } ?>
+    </td>
+  </tr>
+  <tr>
+    <!-- *** [自動入金停止の可能性アリ！] *** -->
+    <?php if ($this->menu_auth_info['normalProcessMenus']['jnbmon'] && $this->jnb_rcpt_abend_count > 0) { ?>
+    <td>
+      <div class="jnb-warning" style="margin-top: 20px;">
+        JNB自動入金停止の可能性アリ！
+        <div>
+            <a href="jnbmon/autorcpt">⇒ 詳細</a>
+        </div>
+      </div>
+    </td>
+    <?php } ?>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['credittransferalert'] ) { ?>
+    <td>
+      <div id="jnb-manual-cfm-count" class="external-count-info" style="margin-top: 20px;">
+        <a href="credittransfer/alertlist">口座振替アラート</a><br />
+        <span class="count-view"><?php echo f_e($this->credit_transfer_alert_count); ?>件</span>
+      </div>
+    </td>
+    <?php } ?>
+    <?php if ( $this->menu_auth_info['normalProcessMenus']['mufjerror'] ) { ?>
+      <td>
+        <div id="jnb-manual-cfm-count" class="external-count-info" style="margin-top: 20px;">
+          <a href="mufjerror/list">MUFJ入金エラー件数</a><br />
+          <span class="count-view"><?php echo f_e($this->invalid_mufj_accounts); ?>件</span>
+        </div>
+      </td>
+    <?php } ?>
+  </tr>
+</table>
+<br />
+<?php
+}
+?>
+<table width="819" border="0" cellspacing="1" cellpadding="0">
+  <tr>
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 特殊処理メニュー
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $specialProcessMenusCount > 0 ) {
+?>
+  <td width="20" valign="top">
+    <table width="258" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="138" rowspan="2"><img src="../images/Irregular_operation_01.gif" alt="特殊処理" width="138" height="27" /></td>
+          <td colspan="5" valign="bottom">&nbsp;</td>
+        </tr>
+        <tr>
+          <td height="1" colspan="5" valign="bottom"><img src="../images/spacer_orange.gif" alt="橙線" width="1" height="1" /><img src="../images/spacer_orange.gif" alt="青線" width="120" height="1" /></td>
+        </tr>
+        <tr>
+          <td height="1" colspan="6">
+          <table width="268" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" valign="middle">&nbsp;</td>
+              <td height="10" align="center" valign="middle">&nbsp;</td>
+            </tr>
+            <tr>
+            <?php if ($this->menu_auth_info['specialProcessMenus']['reclaim'] ) { ?>
+              <td width="134" height="80" align="center" valign="middle" background="../images/Yellow_Arrow_01.gif">
+                    <p>
+                      <a href="reclaim/list">再請求</a><br />
+                      <span class="style3">（<?php echo $this->highlight['reclaimcount']; ?>件）</span><br>
+                      <span class="style6" style="font-weight: normal; "><a href="reclaim/simplelist">&raquo; 一括CSV</a></span>
+                    </p>
+              </td>
+            <?php } else { ?>
+              <td width="134" height="80" align="center" valign="middle" >
+              </td>
+            <?php } ?>
+            <?php if ($this->menu_auth_info['specialProcessMenus']['cancel'] ) { ?>
+              <td width="134" height="80" align="center" valign="middle" background="../images/Yellow_Arrow_01.gif">
+                <a href="cancel/list">キャンセル確認</a><br />
+                <span class="style3">（<?php echo $this->highlight['cancelcount']; ?>件）</span>
+              </td>
+            <?php } else { ?>
+              <td width="134" height="80" align="center" valign="middle" >
+              </td>
+            <?php } ?>
+            </tr>
+          </table>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+    <td width="30">&nbsp;</td>
+<?php
+}
+?>
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 新規債権／滞留アラートメニュー
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $newclaimMenusCount > 0 || $alertMenusCount > 0 ) {
+?>
+    <td align="left" valign="top">
+    <table border="0" cellspacing="0" cellpadding="0">
+      <tr>
+      <?php if ($this->menu_auth_info['newclaimMenus']['searchf'] ) { ?>
+        <td height="27"><img src="../images/Fubarai_operation_01.gif" alt="新規債権" width="166" height="27" /></td>
+      <?php } else { ?>
+        <td height="27" width="400"></td>
+      <?php } ?>
+      <td align="right">
+<?php
+if ( $alertMenusCount > 0 ) {
+?>
+            <?php if ($this->menu_auth_info['alertMenus']['retentionalert'] ) { ?>
+                <a href="retentionalert/search" target="_blank" style="color:red;">滞留アラート</a>
+            <?php } ?>
+<?php
+}
+?>
+         </td>
+      </tr>
+      <tr>
+        <?php if ($this->menu_auth_info['newclaimMenus']['searchf'] ) { ?>
+            <td colspan="2" height="1" valign="bottom"><img src="../images/spacer_red.gif" alt="赤線" width="500" height="1" /></td>
+        <?php } else { ?>
+            <td></td>
+        <?php } ?>
+      </tr>
+      <tr>
+        <td colspan="2" valign="top">
+        <?php if ($this->menu_auth_info['newclaimMenus']['searchf'] ) { ?>
+            <table style="font-size:24px; margin-top:20px; margin-left:30px;" border="0" cellpadding="0" cellspacing="1">
+              <?php foreach($this->fubarai_summary as $key => $summary) { ?>
+              <tr>
+                <td style="width: 165px"><?php echo f_e($summary['label']); ?></td>
+                <td>
+                  <a href="<?php echo f_e($summary['url']); ?>" style="color:red;">こちら</a>
+                </td>
+              </tr>
+              <?php } ?>
+              <tr>
+                <td colspan="2" style="font-weight: bold; color: red; font-size:10px; padding: 1px 4px;">
+                  ※：上記リンクをクリックすると、他のウィンドウで表示している不払い検索の結果はクリアされます
+                </td>
+              </tr>
+            </table>
+        <?php } ?>
+        </td>
+      </tr>
+    </table>
+    </td>
+<?php
+}
+?>
+
+  </tr>
+</table>
+<br />
+
+<?php if (isset($this->notice)) { ?>
+<table style="font-size: 12px;"　width="819" border="0" cellspacing="0" cellpadding="0">
+  <table width="800" border="0" cellspacing="0" cellpadding="2">
+  <tr>
+    <td bgcolor="#CCCCCC"><span class="style10">お知らせ</span></td>
+  </tr>
+  </table>
+</table>
+<div class="notice_container">
+    <?php echo $this->notice; ?>
+</div>
+<?php } ?>
+
+<br />
+<table style="font-size: 12px;"　width="819" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td valign="top">
+<?php
+// 左辺のメニュー表示があれば、widthは400とする
+$left_width = 0;
+if ( $searchMenusCount > 0 || $keiriMenusCount > 0 || $enterpriseMenusCount > 0 || $oemMenusCount > 0 ) {
+    $left_width = 400;
+}
+?>
+    <table width="<?php echo $left_width; ?>" border="0" cellspacing="0" cellpadding="2">
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 検索・統計
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $searchMenusCount > 0 ) {
+?>
+      <tr>
+        <td colspan="2" bgcolor="#CCCCCC"><span class="style10">検索・統計</span></td>
+      </tr>
+      <tr>
+        <td width="60" rowspan="10" align="center" valign="middle"><img src="../images/icon_search.gif" alt="検索・統計" width="50" height="42" /></td>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['searcho'] ) { ?>
+                ■<a href="searcho/form">注文検索</a> /
+                <a href="searcho/qform">簡易検索</a> /
+                <a href="searcho/sform">定型検索</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['searchf'] ) { ?>
+                ■<a href="searchf/form">不払検索</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['searcho'] ) { ?>
+                ■<a href="searcho/search/IsHoldBox/1">保留注文一覧</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['searcho'] ) { ?>
+                ■<a href="searcho/rformcsv">注文検索結果CSV</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['statistics'] ) { ?>
+                ■<a href="statistics">売上統計</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['entsales'] ) { ?>
+                ■<a href="statistics/entsales">事業者別売上</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['entmanagement'] ) { ?>
+                ■<a href="entmanagement/index">事業者管理統計</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['externaldemand'] ) { ?>
+                ■<a href="externaldemand/regist">外部督促取り込み</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['rwordercsv'] ) { ?>
+                ■<a href="rwordercsv/form">備考コメント一括登録</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['searchMenus']['cancelregister'] ) { ?>
+                ■<a href="cancelregister/cancelregisterform">債権返却一括キャンセル</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td width="60" align="center" valign="middle">&nbsp;</td>
+        <td align="right">&nbsp;</td>
+      </tr>
+<?php
+}
+?>
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 経理処理
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $keiriMenusCount > 0 ) {
+?>
+
+      <tr>
+        <td colspan="2" bgcolor="#CCCCCC"><span class="style10">経理処理</span></td>
+      </tr>
+      <tr>
+        <td width="60" rowspan="44" align="center" valign="middle"><img src="../images/icon_keiri.gif" alt="経理" width="50" height="49" /></td>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['paying'] ) { ?>
+                ■<a href="paying/list">立替確認</a><span class="style7"><?php echo $this->highlight['mustcharge']; ?></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['monthly'] ) { ?>
+                ■<a href="monthly/fixedlist">月次明細書</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['spclpaying'] ) { ?>
+                ■<a href="spclpaying/list">臨時加盟店立替精算</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['payingback'] ) { ?>
+                ■<a href="payingback/list">立替精算戻し指示一覧</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['rwsprcpt'] ) { ?>
+                ■<a href="rwsprcpt/lacklist">その他経理</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['accountreport'] ) { ?>
+                ■<a href="accountreport/accdllist">会計帳票ダウンロード</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['oemclosing'] ) { ?>
+                ■<a href="oemclosing/index">OEM明細確認</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['creditloss'] ) { ?>
+                ■<a href="creditloss/list">貸し倒れ処理</a><span class="style7"></span>
+            <?php } ?>
+        </td>
+      </tr>
+      <!-- tr>
+      <td>■<a href="oemmonthly">OEM月次明細書</a><span class="style7"></span></td>
+      </tr -->
+      <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+      </tr>
+<?php if (false) { /* Del By Takemasa(NDC) 20150618 未使用項目の非表示化 */ ?>
+      <tr>
+        <td>■<a href="rwrcptcfm/impbpform">銀行・郵便局CSVインポート</a></td>
+      </tr>
+      <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td>■<a href="rwrcptcfm/impform">コンビニ入金CSVインポート</a></td>
+      </tr>
+      <tr>
+        <td>■<a href="rwrcptcfm/imptform">ところくん入金CSVインポート</a></td>
+      </tr>
+      <tr>
+        <td>■<a href="rwrcptcfm/impcfform">ＣＦ入金CSVインポート</a></td>
+      </tr>
+      <tr>
+        <td>■<a href="rwrcptcfm/impjpform">ゆうちょ入金CSVインポート</a></td>
+      </tr>
+<?php } ?>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impap'] ) { ?>
+                ■<a href="rwrcptcfm/impapform">アプラス入金CSVインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impatpay'] ) { ?>
+                ■<a href="rwrcptcfm/impatpayform">@Payment(EG社)インポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impatpaycb'] ) { ?>
+                ■<a href="rwrcptcfm/impatpaycbform">＠ペイメントインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impsmbc'] ) { ?>
+                ■<a href="rwrcptcfm/impsmbcform">SMBC決済ステーションインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impmt'] ) { ?>
+                ■<a href="rwrcptcfm/impmtform">MTデータインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impdtl'] ) { ?>
+                ■<a href="rwrcptcfm/impdtlform">詳細入金インポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impnttst'] ) { ?>
+                ■<a href="rwrcptcfm/impnttstform">NTTスマートトレードインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['nttstlist'] ) { ?>
+                ■<a href="rwrcptcfm/impnttstlist">NTTスマートトレード結果一覧</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['imppaymentafter'] ) { ?>
+                ■<a href="rwrcptcfm/imppaymentafterform">SB決済データインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['paymentafterlist'] ) { ?>
+                ■<a href="rwrcptcfm/imppaymentafterlist">SB決済データ結果一覧</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impmizuhofactor'] ) { ?>
+                ■<a href="rwrcptcfm/impmizuhofactorform">みずほファクターインポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['mizuhofactorlist'] ) { ?>
+                ■<a href="rwrcptcfm/impmizuhofactorlist">みずほファクター結果一覧</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impsmbcperfect'] ) { ?>
+                ■<a href="rwrcptcfm/impsmbcperfectform">SMBCパーフェクト口座インポート</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['smbcperfectlist'] ) { ?>
+                ■<a href="rwrcptcfm/impsmbcperfectlist">SMBCパーフェクト口座結果一覧</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['jnbrcpt'] ) { ?>
+                ■<a href="jnbrcpt/index">JNB手動入金確認</a>
+            <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['smbcparcpt'] ) { ?>
+                ■<a href="smbcparcpt/index">SMBCバーチャル口座手動入金確認</a>
+            <?php } ?>
+        </td>
+      </tr>
+
+    <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td>[口座振替]</td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['creacctrns'] ) { ?>
+                ■<a href="rwrcptcfm/creacctrnsform">SMBC振替請求データ作成</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['dlacctrns'] ) { ?>
+                ■<a href="rwrcptcfm/dlacctrnslist">SMBC振替請求データダウンロード</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impacctrns'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnsform">SMBC振替結果インポート</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['acctrnslist'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnslist">SMBC振替結果一覧</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['creacctrnsmufj'] ) { ?>
+                ■<a href="rwrcptcfm/creacctrnsmufjform">MUFJ振替請求データ作成</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['dlacctrnsmufj'] ) { ?>
+                ■<a href="rwrcptcfm/dlacctrnsmufjlist">MUFJ振替請求データダウンロード</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impacctrnsmufj'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnsmufjform">MUFJ振替結果インポート</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['acctrnslistmufj'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnsmufjlist">MUFJ振替結果一覧</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="line-height: 20%;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['creacctrnsmhf'] ) { ?>
+                ■<a href="rwrcptcfm/creacctrnsmhfform">みずほ振替請求データ作成</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['dlacctrnsmhf'] ) { ?>
+                ■<a href="rwrcptcfm/dlacctrnsmhflist">みずほ振替請求データダウンロード</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['impacctrnsmhf'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnsmhfform">みずほ振替結果インポート</a>
+            <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <?php if ($this->menu_auth_info['keiriMenus']['acctrnslistmhf'] ) { ?>
+                ■<a href="rwrcptcfm/impacctrnsmhflist">みずほ振替結果一覧</a>
+            <?php } ?>
+        </td>
+    </tr>
+
+      <tr>
+        <td width="60" align="center" valign="middle">&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+<?php
+}
+?>
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 加盟店事業者管理
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $enterpriseMenusCount > 0 ) {
+?>
+      <tr>
+        <td colspan="2" bgcolor="#CCCCCC"><span class="style10">加盟店事業者管理</span></td>
+      </tr>
+      <tr>
+        <td width="60" align="center" valign="middle"><img src="../images/icon_shop.gif" alt="事業者登録" width="40" height="50" /></td>
+        <td>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['searche'] ) { ?>
+            ■<a href="searche/form">事業者検索</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['enterpriselist'] ) { ?>
+            ■<a href="searche/search">事業者一覧</a><br/>
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['enterpriseform'] ) { ?>
+            ■<a href="enterprise/form/mode/new">新規事業者登録</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['enterpriseclaim'] ) { ?>
+            ■<a href="enterpriseclaim/form">事業者別請求残高検索</a><br />
+          <?php } ?>
+
+          <br />
+          <?php if ($this->menu_auth_info['enterpriseMenus']['apiuseradd'] ) { ?>
+            ■<a href="apiuser/add">新規APIユーザー登録</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['apiuserlist'] ) { ?>
+            ■<a href="apiuser/list">APIユーザー一覧</a><br />
+          <?php } ?>
+          <br />
+          <?php if ($this->menu_auth_info['enterpriseMenus']['combinedclaim'] ) { ?>
+            ■<a href="combinedclaim/list">請求取りまとめ事業者一覧</a><br />
+          <?php } ?>
+
+          <br />
+          <?php if ($this->menu_auth_info['enterpriseMenus']['enterprisecontract'] ) { ?>
+            ■<a href="enterprisecontract/list">加盟店サイト契約情報一覧</a><br />
+          <?php } ?>
+
+          <br />
+          <?php if ($this->menu_auth_info['enterpriseMenus']['customeradrslist'] ) { ?>
+            ■<a href="customeradrslist/list">顧客統合 名寄せリスト</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['customerinquiry'] ) { ?>
+            ■<a href="customerinquiry/form">顧客照会検索</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['agencyfeesummary'] ) { ?>
+            ■<a href="agencyfeesummary/list">代理店手数料確認</a><br />
+          <?php } ?>
+          <?php if ($this->menu_auth_info['enterpriseMenus']['impaccountinformationform']) { ?>
+            ■<a href="rwrcptcfm/impaccountinformationform">口座情報取込</a><br />
+          <?php } ?>
+        </td>
+      </tr>
+      <tr>
+        <td width="60" align="center" valign="middle">&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+<?php
+}
+?>
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- ＯＥＭ先管理
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $oemMenusCount > 0 ) {
+?>
+
+      <tr>
+        <td colspan="2" bgcolor="#CCCCCC"><span class="style10">ＯＥＭ先管理</span></td>
+      </tr>
+      <tr>
+        <td width="60" align="center" valign="middle"><img src="../images/oem.gif" alt="OEM登録" width="40" height="50" /></td>
+        <td>
+            <?php if ($this->menu_auth_info['oemMenus']['oemlist'] ) { ?>
+                ■<a href="oem/list">OEM先一覧</a><br/>
+            <?php } ?>
+            <?php if ($this->menu_auth_info['oemMenus']['oemform'] ) { ?>
+                ■<a href="oem/form/mode/new">新規OEM先登録</a><br />
+            <?php } ?>
+            <?php if ($this->menu_auth_info['oemMenus']['oemdeliv'] ) { ?>
+                ■<a href="oemdeliv/index">OEM別配送方法設定</a><br />
+            <?php } ?>
+        </td>
+      </tr>
+<?php
+}
+?>
+
+    </table></td>
+    <td align="right" valign="top">
+      <table width="400" border="0" cellspacing="0" cellpadding="2">
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 不払い管理
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $searchfMenusCount > 0 ) {
+?>
+        <tr>
+          <td colspan="2" bgcolor="pink"><span class="style10">不払い管理</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="font-weight: bold; color: red; font-size:9pt; padding: 1px 4px;">
+            ※：以下のリンクをクリックすると、他のウィンドウで表示している不払い検索の結果はクリアされます
+          </td>
+        </tr>
+        <tr>
+          <td width="60" align="center" valign="middle"><img src="../images/icon_administration.gif"></td>
+          <td align="left" style="line-height: 150%; font-size: 9pt;">
+            <?php
+            $month_list = SearchfCache::generateMonthList(36);  // 指定可能範囲を過去3ヵ年に変更（10.4.5 eda）
+            ?>
+            <?php if ($this->menu_auth_info['searchfMenus']['willpaynotinc'] ) { ?>
+                ■<a href="searchf/directsearch/will/<?php echo SearchfCache::REDO_EXPRESSIONS_EXCLUDE; ?>">不払い者一覧（支払意思あり除く）</a><br />
+            <?php } ?>
+            <?php if ($this->menu_auth_info['searchfMenus']['willpayinc'] ) { ?>
+                ■<a href="searchf/directsearch">不払い者一覧（支払意思あり含む）</a><br />
+            <?php } ?>
+            <?php if ($this->menu_auth_info['searchfMenus']['past3days'] ) { ?>
+                ■<a href="searchf/directsearch/past_days_from/3">不届き者リスト（支払約束から3日以上経過）</a><br />
+            <?php } ?>
+            <?php if ($this->menu_auth_info['searchfMenus']['fubarailist1'] ) { ?>
+                ■<select id="fubarai_month_list1">
+                  <?php foreach($month_list as $info) { ?>
+                    <option value="<?php echo $info['value']; ?>"><?php echo $info['label']; ?></option>
+                  <?php } ?>
+                  </select>
+                  <a href="#" onclick="return navigate_fubarai($('fubarai_month_list1').value);">不払い者（支払意思あり除く）</a><br />
+            <?php } ?>
+            <?php if ($this->menu_auth_info['searchfMenus']['fubarailist2'] ) { ?>
+                ■<select id="fubarai_month_list2">
+                  <?php foreach($month_list as $info) { ?>
+                    <option value="<?php echo $info['value']; ?>"><?php echo $info['label']; ?></option>
+                  <?php } ?>
+                  </select>
+                  <a href="#" onclick="return navigate_fubarai($('fubarai_month_list2').value, true);">不払い者（支払意思あり含む）</a><br />
+            <?php } ?>
+              <script>
+              function navigate_fubarai(month, include_will) {
+                try {
+                  var params = {
+                    filter_month : month,
+                    will : include_will ? "<?php echo SearchfCache::REDO_EXPRESSIONS_ALL; ?>" : "<?php echo SearchfCache::REDO_EXPRESSIONS_EXCLUDE; ?>"
+                  };
+                  var url = "<?php echo $this->baseUrl; ?>/searchf/directsearch/{0}".format(
+                    $H( params ).map( function(pair) {
+                      return "{0}/{1}".format( escape(pair.key), escape(pair.value) );
+                    } ).join("/")
+                  );
+                  window.location.href = url;
+                } catch(e) {
+                  alert(e);
+                }
+                return false;
+              }
+              </script>
+          </td>
+        </tr>
+      </table>
+      <p />
+<?php
+}
+?>
+
+<!--
+-----------------------------------------------------------------------------------------------------------------------
+-- 管理機能
+-----------------------------------------------------------------------------------------------------------------------
+-->
+<?php
+if ( $kanriMenusCount > 0 ) {
+?>
+
+        <?php if ($this->isAdmin == 'yes') { echo $this->render('cbadmin/index/cmenu1.phtml'); } else { echo $this->render('cbadmin/index/cmenu2.phtml'); } ?>
+<?php
+}
+?>
+	</td>
+  </tr>
+</table>
+</body>
+</html>

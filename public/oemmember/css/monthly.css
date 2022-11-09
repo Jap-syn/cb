@@ -1,0 +1,211 @@
+.main_contents {
+	height: auto;
+}
+table.claim_result {
+	margin: 0px;
+	float: none !important;
+	display: block;
+}
+table.claim_result th,
+table.claim_result td {
+	padding: 2px !important;
+}
+
+div.layout_container {
+	margin-bottom: 20px;
+}
+
+table.claim_result .col_1 {
+	width: 25px;
+}
+table.claim_result .col_2 {
+	width: 75px;
+}
+table.claim_result .col_3 {
+	width: 120px;
+}
+table.claim_result .col_4 {
+	width: 140px;
+}
+table.claim_result .col_5,
+table.claim_result .col_6,
+table.claim_result .col_7,
+table.claim_result .col_8,
+table.claim_result .col_9 {
+	width: 50px;
+}
+table.claim_result .col_10 {
+	width: 100px;
+}
+table.claim_result tr.summary td {
+	font-size: 10pt;
+}
+
+table.charge_list_table {
+	width: 870px !important;
+}
+table.stamp_list_table {
+	width: 700px !important;
+}
+table.cancel_list_table {
+	width: 785px !important;
+}
+
+table.summary_table .summary_label_col {
+	width: 440px !important;
+}
+
+table.summary_table .summary_value_col {
+	width: 430px !important;
+}
+
+table.summary_table tr.fat_border td {
+	border-bottom-style: solid;
+	border-bottom-width: 2px;
+}
+
+table.summary_table tr.double_border td {
+	border-bottom-style: double;
+	border-bottom-width: 3px;
+}
+
+div.note {
+	margin-left: 16px;
+	width: 858px !important;
+}
+
+.tab_pages {
+	padding-left: 8px;
+}
+
+.summary_title,
+.list_summary {
+	width: 870px !important;
+	margin-bottom: 14px;
+}
+
+.summary_title {
+	text-align: center;
+}
+
+.list_summary .issue_date {
+	float: right;
+}
+
+/* printing headers */
+.print_header {
+	width: 870px !important;
+}
+
+#summary_issue_date {
+	text-align: right;
+	margin-bottom: 8px;
+}
+.print_header_left {
+	float: left;
+	width: 49%;
+	font-size: 10pt;
+}
+.print_header_right {
+	float: right;
+	width: 49%;
+	font-size: 10pt;
+	text-align: right;
+}
+#address_label {
+}
+.enterprise_name {
+	font-size: 12pt;
+	margin-left: 8px;
+}
+#address_data {
+	margin-left: 60px;
+}
+
+#issue_message {
+	float: left;
+	width: 49%;
+	font-size: 9pt;
+	margin: 20px 8px 10px 8px;
+}
+
+#stamp_image {
+	position: absolute;
+	right: 5px;
+	display: none;
+	width: 0px;
+	height: 0px;
+}
+
+.printer_visible {
+	display: none;
+}
+
+.float_clear {
+	font-size: 0px !important;
+	float: none !important;
+	clear: both !important;
+}
+
+@media print {
+	* {
+		background-color: white !important;
+		color: black !important;
+	}
+	
+	.application_header,
+	.application_header a,
+	.application_header img,
+	.command_bar,
+	#header_menu,
+	#application_footer,
+	.submenu_container,
+	.footer_menu,
+	.page_title,
+	form {
+		display: none !important;
+	}
+	
+	#application_footer {
+		border: none 0px !important;
+		background-color: transparent !important;
+		color: black !;
+		text-align: right;
+	}
+	
+	.tab_pages {
+		border-top-width: 0px !important;
+	}
+	
+	.tab_container .tab_bar .tab_item {
+		display: none;
+	}
+	
+	.tab_container .tab_bar .selected {
+		display: block;
+		border: none;
+		background-color: transparent !important;
+		color: black !important;
+		text-align: left;
+	}
+	.tab_container .tab_bar .selected a {
+		background-color: transparent !important;
+		color: black !important;
+	}
+	
+	#summary_tab {
+		font-size: 24pt;
+		text-align: center;
+	}
+	
+	#stamp_image {
+		display: inline;
+		width: auto;
+		height: 65px;
+	}
+	
+	.printer_visible {
+		display: block;
+	}
+}
+

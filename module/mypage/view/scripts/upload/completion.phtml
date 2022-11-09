@@ -1,0 +1,38 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">アップロード完了</div>
+        <?php
+        echo $this->render( 'mypage/menu.php' );
+        ?>
+        <div id="d_01">身分証明証のアップロードが完了致しました。<br />
+        身分証明証の確認には数営業日かかります。
+        <div  id="completion"><br /><input id="green_btn" type="submit" value="トップへ" onclick="location.href='<?php echo $this->baseUrl; ?>/index/index'" /></div>
+        </div>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

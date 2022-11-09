@@ -1,0 +1,25 @@
+.csv_result {
+	border : solid darkslategray;
+	border-width: 1px 0px 0px 1px;
+	font-size: 10pt;
+}
+
+.csv_result th,
+.csv_result td,
+.csv_result * th,
+.csv_result * td {
+	overflow: hidden;
+	border: solid darkslategray;
+	border-width: 0px 1px 1px 0px;
+	padding: 1px 3px;
+	white-space: nowrap;
+}
+
+.csv_result th {
+	background-color: #0066FF;
+	color: white;
+	font-weight: bold;
+}
+
+.csv_result td {
+}

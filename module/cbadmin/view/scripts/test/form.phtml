@@ -1,0 +1,91 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+<!-- start contents -->
+<div id="contents">
+<h3>与信テスト</h3>
+<form name="form" method="post" action="test/confirm">
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <td class="label">氏名</td>
+      <td class="data"><input name="CustName" type="text" id="CustName" value="<?php echo $this->fd["CustName"]; ?>" /><?php echo $this->error["CustName"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">住所</td>
+      <td class="data">〒
+        <input name="PostalCode" type="text" id="PostalCode" value="<?php echo $this->fd["PostalCode"]; ?>" />
+        <input type="button" value="検索" onClick="getAddress($('PostalCode').value);" /><br />
+        <?php echo $this->prefectureTag; ?>
+        <!-- <input name="PrefectureName" type="text" id="PrefectureName" value="<?php echo $this->fd["PrefectureName"]; ?>" /> --> 
+        　(市区郡)<input size="30" name="City" type="text" id="City" value="<?php echo $this->fd["City"]; ?>" /><br />
+        　(町域)<input size="50" name="Town" type="text" id="Town" value="<?php echo $this->fd["Town"]; ?>" /><br />
+        　(建物)<input size="50" name="Building" type="text" id="Building" value="<?php echo $this->fd["Building"]; ?>" />
+        <?php echo $this->error["PostalCode"]; ?>
+        <?php echo $this->error["PrefectureCode"]; ?>
+        <?php echo $this->error["City"]; ?>
+        <?php echo $this->error["Town"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">利用額</td>
+      <td class="data"><input name="RiyouGaku" type="text" id="RiyouGaku" value="<?php echo $this->fd["RiyouGaku"]; ?>" />
+      <?php echo $this->error["RiyouGaku"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">商品名</td>
+      <td class="data"><input name="ItemName" type="text" id="ItemName" value="<?php echo $this->fd["ItemName"]; ?>" />
+      <?php echo $this->error["ItemName"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">事業者ログインID</td>
+      <td class="data"><input name="EnterpriseLoginId" type="text" id="EnterpriseLoginId" value="<?php echo $this->fd["EnterpriseLoginId"]; ?>" />
+      <?php echo $this->error["EnterpriseLoginId"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">メールアドレス</td>
+      <td class="data"><input size="40" name="MailAddress" type="text" id="MailAddress" value="<?php echo $this->fd["MailAddress"]; ?>" />
+      <?php echo $this->error["MailAddress"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">配送先氏名</td>
+      <td class="data"><input name="CustNameH" type="text" id="CustNameH" value="<?php echo $this->fd["CustNameH"]; ?>" /><?php echo $this->error["CustNameH"]; ?></td>
+    </tr>
+    <tr>
+      <td class="label">配送先住所</td>
+      <td class="data">〒
+        <input name="PostalCodeH" type="text" id="PostalCodeH" value="<?php echo $this->fd["PostalCodeH"]; ?>" />
+        <!-- <input type="button" value="検索" onClick="getAddress($('PostalCode').value);" /><br /> -->
+        <?php echo $this->prefectureTagH; ?>
+        　(市区郡)<input size="30" name="CityH" type="text" id="CityH" value="<?php echo $this->fd["CityH"]; ?>" /><br />
+        　(町域)<input size="50" name="TownH" type="text" id="TownH" value="<?php echo $this->fd["TownH"]; ?>" /><br />
+        　(建物)<input size="50" name="BuildingH" type="text" id="BuildingH" value="<?php echo $this->fd["BuildingH"]; ?>" />
+        <?php echo $this->error["PostalCodeH"]; ?>
+        <?php echo $this->error["PrefectureCodeH"]; ?>
+        <?php echo $this->error["CityH"]; ?>
+        <?php echo $this->error["TownH"]; ?>
+      </td>
+    </tr>
+    <tr align="center">
+      <td class="data" colspan="2">　</td>
+    </tr>
+    <tr align="center">
+      <td colspan="2">
+        <input type="submit" value="　確　定　" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

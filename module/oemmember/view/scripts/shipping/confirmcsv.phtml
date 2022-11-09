@@ -1,0 +1,307 @@
+<?php
+
+use oemmember\Application;
+use oemmember\classes\DuplicateRegistrationConfig;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use models\Table\TableOrderItems;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+$colheaders = array( '<tr><th>行</th>' );
+foreach( $this->colSchema as $schema ) {
+    $colheaders[] = "<th>{$schema['Caption']}</th>";
+}
+$colheaders[] = '</tr>';
+$colheaders = join('', $colheaders);
+?>
+<div class="main_contents">
+
+<?php
+// 入力合計行数
+$totalCount = $this->totalCount;
+// 検証対象はデータ行のみなので不要
+// // ヘッダ行があったら、表示行数からその分を差し引く
+// if( $this->headerRow != null ) $totalCount -= 1;
+
+// エラーリスト
+$errors = $this->errorRows;
+// エラーの有無
+$hasError = !empty($errors) ? true : false;
+
+// コマンドバー使用
+// タイトルのみ設定
+$errorsCount = 0;
+if (!empty($errors)) {
+    $errorsCount = count($errors);
+}
+$validRowsCount = 0;
+if (!empty($this->validRows)) {
+    $validRowsCount = count($this->validRows);
+}
+$commandBar = new CoralViewCommandBar(
+    (
+        $hasError ?
+            '入力データにエラーがあるため登録できません ( ' . $errorsCount . ' / ' . $validRowsCount . ' 件 )' :
+            ( $validRowsCount . ' 件のデータが登録可能です' )
+    )
+);
+if( ! $hasError ) {
+    // 正常時のボタンを構成
+    $commandBar->addButton(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'confirmed',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/saveCsv/mode/save/back/'. $this->back,
+                CoralViewCommandBarButton::OPTION_TEXT => 'この内容で登録',
+                CoralViewCommandBarButton::OPTION_TITLE => '内容に問題がなければ、ここをクリックして登録を完了させます'
+            )
+        )
+    )->addButton(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'rollback',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/'. $this->back . '/mode/rollback',
+                CoralViewCommandBarButton::OPTION_TEXT => 'CSVファイル選択に戻る',
+                CoralViewCommandBarButton::OPTION_TITLE => 'アップロードするファイルを訂正する場合はここをクリックします'
+            )
+        )
+    );
+} else {
+    // エラーがある場合のボタンを構成
+    $commandBar->addButton(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'rollback',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/' . $this->back . '/mode/rollback',
+                CoralViewCommandBarButton::OPTION_TEXT => '一括伝票入力画面へ戻る',
+                CoralViewCommandBarButton::OPTION_TITLE => '前の画面に戻ってファイルを訂正してください'
+            )
+        )
+    );
+}
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+setReplaceEmpty( true );
+?>
+<div class="error_journal_container" id="validate_journal_area" style="display: none">
+<h4>伝票番号</h4>
+<ul class="error_journal_table"></ul>
+</div>
+<?php if( $hasError ) {
+    // エラーあり
+?>
+    <h3>エラー内容</h3>
+    <center>
+    <table class="csv_result" border="1" cellpadding="0" cellspacing="0">
+        <thead><tr><th>行</th><th>注文ID</th><th>任意注文番号</th><th>エラー内容</th></tr></thead>
+        <tbody>
+    <?php foreach( $errors as $error ) { ?>
+        <tr>
+        <td><?php echo ($error->getLineNumber() + 1); ?></td>
+        <td><?php echo escape( $error->getData()['_raw_data']['OrderId'] ); ?></td>
+        <td><?php echo escape( $error->getData()['_raw_data']['Ent_OrderId'] ); ?></td>
+        <td>
+<?php
+            foreach( $error->getData() as $key => $data ) {
+                if( ! preg_match( '/^\d+$/', $key ) ) continue;
+                $colName = key( $data );
+                $colLabel = $colName;
+                foreach( $this->colSchema as $schema ) {
+                    if( $schema['ColumnName'] == $colName ) {
+                        $colLabel = $schema['Caption'];
+                    }
+                }
+                echo "$colLabel : {$data[$colName]}" . '<br/>';
+            }
+?>
+        </td></tr>
+<?php
+    }
+?>
+        </tbody>
+    </table>
+    </center>
+</div>
+<?php
+} else {
+    // エラーなし
+
+    // カラムヘッダデータとデータ行リストの準備
+    $colheaders = array( '<tr><th>行</th>' );
+    foreach( $this->colSchema as $schema ) {
+        $colheaders[] = "<th>{$schema['Caption']}</th>";
+    }
+    $colheaders[] = '</tr>';
+    $colheaders = join('', $colheaders);
+
+    $rows = $this->validRows;
+?>
+</br>
+    <div style="padding-left: 40px">
+    <table id="result_table" class="csv_result" border="1" cellpadding="0" cellspacing="0">
+        <thead><?php echo $colheaders; ?></thead>
+        <tbody>
+<?php
+$rowsCount = 0;
+if (!empty($rows)) {
+    $rowsCount = count($rows);
+}
+    for($i = 0; $i < $rowsCount; $i++) {
+?>
+
+<?php $row = $rows[ $i ]->getData();
+                //重複した配送伝票番号の部分を強調する
+                if((trim(nvl($row['Deli_JournalNumber'])) != '') && ('1' == $this->caution || '1' == $this->csvCaution)) {
+                    if (in_array($row['OrderSeq'], $this->duplicateJournalNumberInDbOrderIdList)) { ?>
+                        <tr class="caution_area">
+              <?php } elseif('1' == $this->csvCaution && in_array($row['OrderSeq'], $this->duplicateJournalNumberInCsvOrderIdList)) { ?>
+                        <tr class="csv_caution">
+              <?php } else { ?>
+                        <tr>
+              <?php } ?>
+          <?php } else { ?>
+                    <tr>
+          <?php } ?>
+                <td><?php echo ($i + 1); ?></td>
+<?php
+
+        foreach( $this->colSchema as $schema ) {
+            $col = $schema['ColumnName'] == 'Deli_DeliveryMethod' ? $row[  'Deli_DeliveryMethodName' ] : $row[ $schema['ColumnName'] ];
+
+            if( $col == null || strlen($col) == 0 ) $col = '　';
+                echo "<td>$col</td>";
+            }
+
+?>
+            </tr>
+<?php
+    }
+?>
+        </tbody>
+    </table>
+    </div>
+<?php $config = new DuplicateRegistrationConfig(); ?>
+    <div class="submit_area" style="text-align:center; margin-top: 20px;">
+        <button type="button" id="regist_button" <?php if(!$config->shippingcsv && ('1' == $this->caution || '1' == $this->csvCaution)) echo 'disabled="disabled"'; ?>>この内容で登録</button>
+        <button type="button" id="rollback_button">CSVファイル選択に戻る</button></br>
+        <div class="error_journal_check">
+    <?php if('1' == $this->caution || '1' == $this->csvCaution) { ?>
+        (重複を無視する)<input type='checkbox' id='JournalNumberCheck' name='JournalNumberCheck'<?php if($config->shippingcsv) echo ' checked="checked"'; ?> onclick="buttonSetting()"/>
+    <?php } ?>
+        </div>
+    </div>
+</div>
+<script>
+Event.observe( window, "load", function() {
+    <?php if('1' == $this->caution || '1' == $this->csvCaution) { ?>
+        var entarea = $("validate_journal_area");
+        Element.hide( entarea );
+
+        var enttitle = entarea.getElementsByTagName("h4")[0];
+        var entroot = document.getElementsByClassName("error_journal_table", entarea)[0];
+        var inner = "";
+        var duplicationpast = "<li>過去に登録された配送伝票番号と重複しています。</li>";
+        var duplicationcsv = "<li>登録する配送伝票番号が重複しています。</li>";
+        <?php if('1' == $this->caution) { ?>
+        inner = inner + duplicationpast;
+        <?php }?>
+        <?php if('1' == $this->csvCaution) { ?>
+        inner = inner + duplicationcsv;
+        <?php }?>
+        entroot.innerHTML = inner;
+        enttitle.innerHTML = "登録内容に重複があります。このまま登録する場合は、登録ボタン下にある「重複を無視する」チェックボックスをチェックしてください";
+
+        Element.show( entarea );
+        setTimeout( function() {
+            bytefx.scroll( entarea, 70 );
+        }, 0 );
+    <?php }?>
+    buttonSetting();
+});
+
+new base.UI.TableEx( $("result_table"), { height : 300 } );
+Event.observe( $("regist_button"), "click", function(evt) {
+	var back = "<?php echo $this->back; ?>";
+    window.location.href = "{0}shipping/saveCsv/mode/save/back/{1}".format( document.getElementsByTagName("base")[0].href, back );
+}.bindAsEventListener( $("result_button") ) );
+
+Event.observe( $("rollback_button"), "click", function(evt) {
+	var back = "<?php echo $this->back; ?>";
+    window.location.href = "{0}shipping/{1}/mode/rollback".format( document.getElementsByTagName("base")[0].href, back );
+}.bindAsEventListener( $("rollback_button") ) );
+
+//登録ボタン制御
+function buttonSetting(){
+    // 重複登録無視チェック状態を取得
+    var
+        j_id = 'JournalNumberCheck',
+        <?php if($this->caution == 1 || $this->csvCaution == 1) { ?>
+        allow_dup_regist = ($(j_id) || { checked : false }).checked;
+        <?php } else { ?>
+        allow_dup_regist = true;
+        <?php } ?>
+
+    // チェック状態を保存
+    var
+        url = '{0}ajax/dupconfig/mode/set/key/shippingcsv/value/{1}'.format(
+            document.getElementsByTagName('base')[0].href,
+            allow_dup_regist
+        ),
+        terminate = function() {
+        	var back = "<?php echo $this->back; ?>";
+            ($(j_id) || { checked : false } ).checked = allow_dup_regist;
+            $('regist_button').disabled = !allow_dup_regist;
+            ($('confirmed') || { href : null }).href =
+                allow_dup_regist ?
+                    '{0}shipping/saveCsv/mode/save/back/{1}'.format( document.getElementsByTagName("base")[0].href, back ) :
+                    'javascript:void(0)';
+            ($('confirmed') || { onclick : null }).onclick =
+                allow_dup_regist ? null : function() { return false; };
+        }
+
+    <?php if($this->caution == 1 || $this->csvCaution == 1) { ?>
+    new Ajax.Request(url, {
+        'method' : 'post',
+        onComplete : function(xhr) {
+            try {
+                var config = xhr.responseText.parseJSON();
+                allow_dup_regist = !!(config || { shippingcsv : false }).shippingcsv;
+            } catch(e) {}
+            terminate();
+        }
+    });
+    <?php } else { ?>
+    terminate();
+    <?php } ?>
+}
+</script>
+<?php
+setReplaceEmpty();
+}
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>
+

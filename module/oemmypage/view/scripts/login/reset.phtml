@@ -1,0 +1,72 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/login/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再設定</h5>
+    <div id="d_01" style="margin-left: 50px;">
+        <span style="font-weight: normal;">新しいパスワードをご入力ください。<br />パスワードの変更後は、新しいパスワードでログインしていただけます。</span><br /><br />
+    </div>
+
+    <?php if (isset($this->errors)) { ?>
+    <div class="alertbox" style="display:block;" >
+    <?php     foreach ($this->errors as $error) { ?>
+    <p class="error"><?php echo $error; ?></p>
+    <?php     } ?>
+    </div>
+    <?php } ?>
+
+    <form name="form" method="post" action="login/resetcomplete">
+        <input type="hidden" name="customerid" value="<?php echo f_e($this->customerid); ?>" />
+        <table class="datatable" width="600" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr>
+                    <td class="member_info_normal" style="width: 200px;">新しいパスワード<br /><font style="color: red; font-weight: normal; font-size: 12px;">※必須</font></td>
+                    <td class="data"><input size="40" style="height:20px; margin-top:6px;" name="form[pwd]" type="password" id="pwd" value="<?php echo f_e($this->formdata['pwd']); ?>" />
+                    <br /><span id="biko_normal_12">&nbsp;&nbsp;※パスワードは半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上(英数記号混合)でご入力ください</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member_info_normal">新しいパスワード（確認用）<br /><font style="color: red; font-weight: normal; font-size: 12px;">※必須</font></td>
+                    <td class="data"><input size="40" style="height:20px; margin-top:6px;" name="form[pwd2]" type="password" id="pwd2" value="<?php echo f_e($this->formdata['pwd2']); ?>" />
+                    <br /><span id="biko_normal_12">&nbsp;&nbsp;※パスワードは半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上(英数記号混合)でご入力ください</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="datatable" width="600" cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+                <tr class="data">
+                    <td colspan="2" align="center"><br /><input id="goto_button" type="submit" value="設定する" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>
+

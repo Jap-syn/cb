@@ -1,0 +1,61 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/accountreport/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">会計帳票ダウンロード</h3>
+    <form id="monthly_form" name="monthly_form">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      　　　【月次】
+        <tbody>
+          <tr>
+            <th>ファイル作成日</th>
+            <th>会計月</th>
+            <th>ダウンロードリンク</th>
+          </tr>
+          <?php foreach ($this->monthlyList as $row) { ?>
+          <tr class="data">
+            <td  class="l_data"><?php echo $row['CreateDate']; ?></td>
+            <td  class="l_data"><?php echo $row['PresentMonth']; ?></td>
+            <td  class="l_data"><a href="accountreport/accdl/type/m/month/<?php echo $row['PresentMonth']; ?>">ダウンロード</a></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+    <br>
+
+    <form id="dairy_form" name="dairy_form">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      　　　【 日次】
+        <tbody>
+          <tr>
+            <th>ファイル作成日</th>
+            <th>会計月</th>
+            <th>ダウンロードリンク</th>
+          </tr>
+          <?php foreach ($this->dairyList as $row) { ?>
+          <tr class="data">
+            <td  class="l_data"><?php echo $row['CreateDate']; ?></td>
+            <td  class="l_data"><?php echo $row['PresentMonth']; ?></td>
+            <td  class="l_data"><a href="accountreport/accdl/type/d/day/<?php echo $row['CreateDate']; ?>">ダウンロード</a></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+
+</html>

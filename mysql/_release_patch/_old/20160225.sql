@@ -1,0 +1,3 @@
+ALTER TABLE `T_JudgeSystemResponse` 
+CHANGE COLUMN `SentRawData` `SentRawData` LONGTEXT NULL DEFAULT NULL ,
+CHANGE COLUMN `ReceivedRawData` `ReceivedRawData` LONGTEXT NULL DEFAULT NULL ;

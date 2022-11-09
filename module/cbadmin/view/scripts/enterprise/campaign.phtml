@@ -1,0 +1,266 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+function show_error_message($messages) {
+  if( empty($messages) ) return;
+  if( ! is_array($messages) ) $messages = array($messages);
+  $list = array();
+  foreach($messages as $msg) $list[] = f_e($msg);
+  echo '<div class="input_error_message">';
+  echo join('<br />', $list);
+  echo '</div>';
+}
+?>
+  <style>
+    .input_error_message {
+      color: red;
+    }
+  </style>
+</head>
+<body <?php echo isset($this->compMsg) ? 'onload="window.opener.campaignListReload();"' : ''; ?>>
+  <div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <!-- start #contents -->
+    <div id="contents">
+      <h3>キャンペーン設定</h3>
+      <div id="message" align="center"><?php echo $this->compMsg; ?></div>
+      <form name="form" action="enterprise/campaigndone" method="post">
+        <input type="hidden" id="EnterpriseId" name="form[EnterpriseId]" value="<?php echo f_e($this->eid);?>">
+        <input type="hidden" id="mode" name="mode" value="<?php echo f_e($this->mode);?>">
+        <input type="hidden" id="seq" name="seq" value="<?php echo f_e($this->seq);?>">
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr>
+              <td class="l_data" colspan="4">【キャンペーン内容】</td>
+            </tr>
+          <?php if (! $this->comp) { ?>
+            <tr>
+              <td class="r_label" colspan="2">期間<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="hidden" id="seq" name="form[Seq]" value="<?php echo f_e($this->data['Seq']); ?>">
+                <input type="text" id="dateFrom" name="form[DateFrom]" value="<?php echo f_e($this->data['DateFrom']); ?>">　～　<input type="text" id="dateTo" name="form[DateTo]" value="<?php echo f_e($this->data['DateTo']); ?>">　※YYYY-MM-DD形式で入力してください。
+                <?php show_error_message($this->error['DateFrom']); ?>
+                <?php show_error_message($this->error['DateTo']); ?>
+                <?php show_error_message($this->error['dateFromTo']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">利用プラン<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <select name="form[AppPlan]" id="plan">
+                  <option value="-1">-----</option>
+                <?php foreach ($this->plan as $value) { ?>
+                  <option value="<?php echo $value['PricePlanId'] ?>" <?php if ($value['PricePlanId'] == $this->data['AppPlan']) { echo 'selected'; }?>><?php echo $value['PricePlanName']; ?></option>
+                <?php } ?>
+                </select>
+                <?php show_error_message($this->error['AppPlan']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">月額固定費(税抜)<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="monthlyFee" name="form[MonthlyFee]" value="<?php echo f_e($this->data['MonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['MonthlyFee']); ?>
+              </td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 Stt -->
+            <tr>
+              <td class="r_label" colspan="2">同梱月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="includeMonthlyFee" name="atform[IncludeMonthlyFee]" value="<?php echo f_e($this->atecdata['IncludeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['IncludeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">API月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="apiMonthlyFee" name="atform[ApiMonthlyFee]" value="<?php echo f_e($this->atecdata['ApiMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['ApiMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="creditNoticeMonthlyFee" name="atform[CreditNoticeMonthlyFee]" value="<?php echo f_e($this->atecdata['CreditNoticeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['CreditNoticeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">次回請求与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="nCreditNoticeMonthlyFee" name="atform[NCreditNoticeMonthlyFee]" value="<?php echo f_e($this->atecdata['NCreditNoticeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['NCreditNoticeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">月額固定費予備(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="reserveMonthlyFee" name="atform[ReserveMonthlyFee]" value="<?php echo f_e($this->atecdata['ReserveMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['ReserveMonthlyFee']); ?>
+              </td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 End -->
+            <tr>
+              <td class="r_label" colspan="2">OEM月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemMonthlyFee" name="form[OemMonthlyFee]" value="<?php echo f_e($this->data['OemMonthlyFee']) ?>">　円　※ OEM先が指定されている場合、必須となります。
+                <?php show_error_message($this->error['OemMonthlyFee']); ?>
+              </td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 Stt -->
+            <tr>
+              <td class="r_label" colspan="2">OEM同梱月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemIncludeMonthlyFee" name="atform[OemIncludeMonthlyFee]" value="<?php echo f_e($this->atecdata['OemIncludeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['OemIncludeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEMAPI月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemApiMonthlyFee" name="atform[OemApiMonthlyFee]" value="<?php echo f_e($this->atecdata['OemApiMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['OemApiMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemCreditNoticeMonthlyFee" name="atform[OemCreditNoticeMonthlyFee]" value="<?php echo f_e($this->atecdata['OemCreditNoticeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['OemCreditNoticeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM次回請求与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemNCreditNoticeMonthlyFee" name="atform[OemNCreditNoticeMonthlyFee]" value="<?php echo f_e($this->atecdata['OemNCreditNoticeMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['OemNCreditNoticeMonthlyFee']); ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM月額固定費予備(税抜)</td>
+              <td class="l_data" colspan="2">
+                <input type="text" id="oemReserveMonthlyFee" name="atform[OemReserveMonthlyFee]" value="<?php echo f_e($this->atecdata['OemReserveMonthlyFee']) ?>">　円
+                <?php show_error_message($this->error['OemReserveMonthlyFee']); ?>
+              </td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 End -->
+          <?php } else { ?>
+            <tr>
+              <td class="r_label" colspan="2">期間<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['DateFrom']; ?>　～　<?php echo $this->data['DateTo']; ?></td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">利用プラン<font color="red">*</font></td>
+              <td class="l_data" colspan="2">
+                <?php foreach ($this->plan as $value) { ?>
+                  <?php if ($value['PricePlanId'] == $this->data['AppPlan']) echo $value['PricePlanName']; ?>
+                <?php } ?>
+              </td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">月額固定費(税抜)<font color="red">*</font></td>
+              <td class="l_data" colspan="2"><?php echo $this->data['MonthlyFee'] ?>　円</td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 Stt -->
+            <tr>
+              <td class="r_label" colspan="2">同梱月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['IncludeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">API月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['ApiMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['CreditNoticeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">次回請求与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['NCreditNoticeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">月額固定費予備(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['ReserveMonthlyFee'] ?>　円</td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 End -->
+            <tr>
+              <td class="r_label" colspan="2">OEM月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->data['OemMonthlyFee'] ?>　円</td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 Stt -->
+            <tr>
+              <td class="r_label" colspan="2">OEM同梱月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['OemIncludeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEMAPI月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['OemApiMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['OemCreditNoticeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM次回請求与信結果通知サービス月額固定費(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['OemNCreditNoticeMonthlyFee'] ?>　円</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM月額固定費予備(税抜)</td>
+              <td class="l_data" colspan="2"><?php echo $this->atecdata['OemReserveMonthlyFee'] ?>　円</td>
+            </tr>
+<!-- 2015/09/23 Y.Suzuki Add 会計対応 End -->
+          <?php } ?>
+            <tr>
+              <td class="r_label" colspan="2">決済上限額</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">決済手数料率</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（別送）</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">請求手数料（同梱）</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">再請求手数料</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM決済手数料率</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">OEM請求手数料</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+            <tr>
+              <td class="r_label" colspan="2">システム手数料</td>
+              <td class="l_data" colspan="2">※ サイト単位で編集します。</td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tbody>
+            <tr align="center">
+              <td style="padding: 2px 0px">
+              <?php if (! $this->comp) { ?>
+                <input type="submit" id="submit_button" value="キャンペーン登録" <?php echo $this->siteCnt === 0 ? 'disabled="disabled"' : ''; ?> />&nbsp;
+              <?php } ?>
+                <input type="button" id="close_button" onclick="window.close();" value="閉じる" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div><!-- end #contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div><!-- end #wrapper -->
+</body>
+</html>

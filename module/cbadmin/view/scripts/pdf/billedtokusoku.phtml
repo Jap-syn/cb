@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja-JP">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title><?php echo $this->title; ?></title>
+    <link rel="styleSheet" href="<?php echo $this->documentRoot; ?>/css/pdfhagaki.css" />
+    <script src="<?php echo $this->documentRoot; ?>/js/prototype.js"></script>
+  </head>
+  <body>
+    <?php foreach($this->datas as $data) { ?>
+    <div style="position: relative; width: 990px; height: 1370px;">
+    <!-- 督促文章 -->
+    <span style="top: 100px; left: 100px;">督促文章</span>
+    <!-- 払込取扱表 -->
+    <span style="top: 890px; left: 143px;" class="ocrb"><?php echo $data['PaymentNumber']; ?></span>
+    <span style="top: 935px; left: 22px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 0, 1); ?></span>
+    <span style="top: 935px; left: 46px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 1, 1); ?></span>
+    <span style="top: 935px; left: 70px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 2, 1); ?></span>
+    <span style="top: 935px; left: 94px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 3, 1); ?></span>
+    <span style="top: 935px; left: 118px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 4, 1); ?></span>
+    <span style="top: 935px; left: 153px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 5, 1); ?></span>
+    <span style="top: 935px; left: 189px;" class="ocrb">&nbsp;</span>
+    <span style="top: 935px; left: 213px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 6, 1); ?></span>
+    <span style="top: 935px; left: 237px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 7, 1); ?></span>
+    <span style="top: 935px; left: 261px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 8, 1); ?></span>
+    <span style="top: 935px; left: 285px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 9, 1); ?></span>
+    <span style="top: 935px; left: 309px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 10, 1); ?></span>
+    <span style="top: 935px; left: 333px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 11, 1); ?></span>
+    <span style="top: 935px; left: 380px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[7]; ?></span>
+    <span style="top: 935px; left: 404px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[6]; ?></span>
+    <span style="top: 935px; left: 428px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[5]; ?></span>
+    <span style="top: 935px; left: 452px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[4]; ?></span>
+    <span style="top: 935px; left: 476px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[3]; ?></span>
+    <span style="top: 935px; left: 500px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[2]; ?></span>
+    <span style="top: 935px; left: 524px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[1]; ?></span>
+    <span style="top: 935px; left: 548px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[0]; ?></span>
+    <span style="top: 980px; left: 45px; width: 320px;" class="l_data strcut"><?php echo f_e($data['Yu_SubscriberName']); ?></span>
+    <span style="top: 1052px; left: 82px; font-size: 17px;" class="ocrb"><?php echo str_replace(' ', '&nbsp;', $data['Yu_MtOcrCode1']); ?></span>
+    <span style="top: 1093px; left: 21px; font-size: 17px;" class="ocrb"><?php echo $data['Yu_MtOcrCode2']; ?></span>
+    <span style="top: 1150px; left: 47px; font-size: 12px;">住所等非表示払込書</span>
+    <span style="top: 1150px; left: 260px; font-size: 12px;"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 1170px; left: 47px; width: 360px; font-size: 12px;" class="l_data strcut"><?php echo f_e($data['NameKj']); ?> 様</span>
+    <?php if (strlen($data['Ean128']) > 0) {?>
+    <span style="top: 1210px; left: 105px;"><img src="<?php echo $data['Ean128']; ?>" /></span>
+    <span style="top: 1260px; left: 105px; font-size: 10px;"><?php echo $data['Cv_BarcodeString1']; ?></span>
+    <span style="top: 1270px; left: 105px; font-size: 10px;"><?php echo $data['Cv_BarcodeString2']; ?></span>
+    <?php } else { ?>
+    <span style="top: 1215px; left: 85px; max-width: 300px; font-size: 13px; line-height: 13px;" class="wb"><?php echo $data['Cv_BarcodeData']; ?></span>
+    <?php } ?>
+    <span style="top: 1285px; left: 80px; font-size: 8px;">MICS</span>
+    <span style="top: 1285px; left: 280px; font-size: 8px;"><?php echo date( 'Y', strtotime( $data['LimitDate'] ) ); ?></span>
+    <span style="top: 1285px; left: 318px; font-size: 8px;"><?php echo date( 'm', strtotime( $data['LimitDate'] ) ); ?></span>
+    <span style="top: 1285px; left: 340px; font-size: 8px;"><?php echo date( 'd', strtotime( $data['LimitDate'] ) ); ?></span>
+    <!-- 振込払込請求書兼受領証 -->
+    <span style="top: 930px; left: 625px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 0, 5); ?></span>
+    <span style="top: 930px; left: 710px;" class="ocrb"><?php echo substr($data['Yu_AccountNumber'], 5, 1); ?></span>
+    <span style="top: 930px; left: 745px; width: 90px;" class="c_data ocrb"><?php echo substr($data['Yu_AccountNumber'], 6); ?></span>
+    <span style="top: 975px; left: 625px; max-width: 200px; height: 35px; font-size: 13px; line-height: 13px;" class="wb"><?php echo f_e($data['Yu_SubscriberName']); ?></span>
+    <span style="top: 1038px; left: 657px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[7]; ?></span>
+    <span style="top: 1038px; left: 681px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[6]; ?></span>
+    <span style="top: 1038px; left: 705px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[5]; ?></span>
+    <span style="top: 1038px; left: 729px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[4]; ?></span>
+    <span style="top: 1038px; left: 753px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[3]; ?></span>
+    <span style="top: 1038px; left: 777px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[2]; ?></span>
+    <span style="top: 1038px; left: 801px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[1]; ?></span>
+    <span style="top: 1038px; left: 825px;" class="ocrb"><?php echo strrev($data['BilledAmt'])[0]; ?></span>
+    <span style="top: 1072px; left: 622px; font-size: 13px;">住所等非表示払込書</span>
+    <span style="top: 1072px; left: 750px; font-size: 13px;"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 1102px; left: 622px; max-width: 220px; height: 50px; font-size: 13px; line-height: 13px;" class="wb"><?php echo f_e($data['NameKj']); ?> 様</span>
+    <span style="top: 1157px; left: 622px; max-width: 220px; height: 50px; font-size: 13px; line-height: 13px;" class="wb">ご購入店：<?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 1210px; left: 667px; font-size: 8px;">MICS</span>
+    <!-- 領収書 -->
+    <span style="top: 950px; left: 870px; max-width: 90px; height: 20px; font-size: 9px; line-height: 9px;" class="wb"><?php echo f_e($data['NameKj']); ?> 様</span>
+    <span style="top: 990px; left: 870px; width: 100px; font-size: 9px;" class="c_data"><?php echo date( 'Y年m月d日', strtotime( $data['ReceiptOrderDate'] ) ); ?></span>
+    <span style="top: 1005px; left: 870px; width: 100px; font-size: 9px;" class="c_data"><?php echo $data['OrderId']; ?></span>
+    <span style="top: 1050px; left: 870px; width: 95px; font-size: 9px;" class="r_data"><?php echo f_nf( $data['BilledAmt'], '#,##0' ); ?> 円</span>
+    <span style="top: 1065px; left: 870px; width: 103px; font-size: 8px;" class="r_data">（消費税 <?php echo f_nf( nvl($data['TaxAmount'], 0), '#,##0' ); ?> 円）</span>
+    <span style="top: 1110px; left: 870px; max-width: 105px; height: 28px; font-size: 9px; line-height: 9px;" class="wb"><?php echo f_e($data['Accept']); ?></span>
+    <span style="top: 1125px; left: 870px; font-size: 9px;"><?php echo strlen($data['PrintContactPhoneNumber']) > 0 ? 'TEL:' . $data['PrintContactPhoneNumber'] : '' ?></span>
+    <span style="top: 1150px; left: 870px; max-width: 90px; height: 28px; font-size: 9px; line-height: 9px;" class="wb">ご購入店：<?php echo f_e($data['SiteNameKj']); ?></span>
+    <span style="top: 1300px; left: 935px; font-size: 8px;">MICS</span>
+    </div>
+    <?php } ?>
+  </body>
+</html>

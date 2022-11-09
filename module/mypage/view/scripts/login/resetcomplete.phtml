@@ -1,0 +1,47 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/login/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再設定完了</h5>
+    <div id="d_01" style="margin-left: 50px;">
+        <span style="font-weight: normal;">パスワードの再設定が完了いたしました。</span><br /><br />
+    </div>
+
+    <form name="form" method="post" action="login/login">
+        <table class="datatable" width="600" cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+                <tr class="data">
+                    <td colspan="2" align="center"><br /><input id="goto_button" type="submit" value="ログイン画面へ" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>
+

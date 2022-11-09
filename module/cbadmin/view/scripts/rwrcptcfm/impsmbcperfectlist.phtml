@@ -1,0 +1,60 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCパーフェクト口座結果一覧</h3>
+    <form method="post" action="rwrcptcfm/impsmbcperfectlist">
+      <div><span style="margin-left: 800px; "><button type="submit">　最新取得　</button></span></div>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>インポートファイル名</th>
+            <th width="160">ステータス</th>
+            <th width="160">処理日時</th>
+            <th width="160">詳細リンク</th>
+          </tr>
+          <?php if (isset($this->impsmbcperfectlist)) { ?>
+          <?php foreach ($this->impsmbcperfectlist as $row) { ?>
+          <tr class="data">
+            <td class="l_data"><?php echo f_e($row['FileName']); ?></td>
+            <td width="160" class="c_data" <?php if ($row['Status'] == 0) { echo 'style="background-color: aqua;"'; } ?>>
+                <?php if (       $row['Status'] == 0) { ?>処理中
+                <?php } else if ($row['Status'] == 1) { ?>正常完了
+                <?php } else if ($row['Status'] == 2) { ?><font color="red">インポートエラー</font>
+                <?php } ?>
+            </td>
+            <td width="160" class="c_data"><?php echo f_e($row['RegistDate']); ?></td>
+            <td width="160" class="c_data">
+                <?php if ($row['Status'] == 1 || $row['Status'] == 2) { ?>
+                <a href="rwrcptcfm/impsmbcperfectdtl/seq/<?php echo f_e($row['Seq']); ?>" target="_blank">詳細</a>
+                <?php } ?>
+            </td>
+          </tr>
+          <?php } ?>
+          <?php } ?>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+h3#content-title.loading {
+	color: #444;
+	border-left-color: darkgoldenrod;
+	background-color: #ffd030;
+}
+#contents table.wait-status-table {
+	width: 300px;
+}
+table.wait-status-table td {
+	background-color: white;
+}
+table.wait-status-table td.updated {
+	font-weight: bold;
+	color: royalblue;
+}
+table.wait-status-table td.row_header {
+}
+table.wait-status-table tr.total-row td {
+	border-top: double 3px silver;
+	font-weight: bold;
+}
+table.wait-status-table td.col_date {
+}
+table.wait-status-table td.col_wait,
+table.wait-status-table td.col_count {
+	text-align: right;
+	padding-right: 4px;
+}
+table.wait-status-table tr.total-row td.row_header {
+}
+#access-info {
+	width: 288px;
+	margin: 0px 25px 5px 25px;
+	border: double 3px silver;
+	color: dimgray;
+	background-color: lemonchiffon;
+	padding: 4px;
+}
+#time-gauge-container {
+	width: 302px;
+	margin: 5px 25px 0 25px;
+	border: none 0px;
+	background-color: white;
+	height: 1px;
+	overflow: hidden;
+}
+#time-gauge {
+	background-color: limegreen;
+	width: 100%;
+}
+#time-gauge.step1 {
+	background-color: limegreen;
+	width: 80%;
+}
+#time-gauge.step2 {
+	background-color: limegreen;
+	width: 60%;
+}
+#time-gauge.step3 {
+	background-color: darkorange;
+	width: 40%;
+}
+#time-gauge.step4 {
+	background-color: red;
+	width: 20%;
+}
+#time-gauge.step5 {
+	background-color: red;
+	width: 0%;
+}
+
+#console {
+	margin: 5px 25px;
+	margin-top: 0px;
+	font-size: 12px;
+	height: 150px;
+	padding: 0;
+	overflow: auto;
+	border: solid 1px silver;
+}
+#console .log {
+	white-space: nowrap;
+	padding: 1px;
+	border: dotted 1px silver;
+	line-height: 16px;
+}
+#console .log.error {
+	background-color: mistyrose;
+	color: firebrick;
+	font-weight: bold;
+	line-height: 14px;
+}
+</style>
+<style type="text/css">
+#judge-status {
+	position: absolute;
+	right: 2px;
+	top: 2px;
+	font-size: 12px;
+	border: double 3px black;
+	padding: 1px 4px;
+	background-color: pink;
+	color: firebrick;
+	font-weight: bold;
+}
+</style>
+<script type="text/javascript">
+var Application = {
+	baseUrl : (document.getElementsByTagName('base')[0] || { href : '' }).href,
+	
+	// nvl ユーティリティ
+	nvl : function (data, if_null) {
+		if (if_null == null) if_null = '';
+		return data === null ? if_null : data;
+	},
+	
+	// パス結合ユーティリティ
+	buildPath : function (path1, path2) {
+		return [Application.nvl(path1).replace(/[\/]*$/, ''), Application.nvl(path2).replace(/^[\/]*/, '')].join('/');
+	},
+	
+	// AjaxリクエストURL構築ユーティリティ
+	buildAppPath : function (path) {
+		return Application.buildPath(Application.baseUrl, Application.nvl(path));
+	}
+	
+};
+// 初期化処理
+Event.observe(window, 'load', function() {
+	Ajax.Responders.register({
+		onCreate : function() {
+			new Element.ClassNames($('content-title')).add('loading');
+		},
+		onComplete : function() {
+			new Element.ClassNames($('content-title')).remove('loading');
+		}
+	});
+	
+	var options = {
+		method : 'post',
+		asynchronous : true,
+		onComplete : function(xhr) {
+			var
+				info = xhr.responseText.parseJSON(),
+				success = !!info;
+			
+			// パースした結果が配列でなく、'error'プロパティがあったら
+			// サーバ側エラー
+			if('error' in info) {
+				throw new Error(info.error);
+			}
+			
+			$('wait-status-list').innerHTML = '';
+			if(info.length) {
+				info.each(function(item) {
+					var row = document.createElement('tr');
+					$('wait-status-list').appendChild(row);
+					['date', 'wait'/*, 'count'*/].each(function(key) {
+						if(!(key in item)) throw $continue;
+						var col = Object.extend(document.createElement('td'), {
+							className : 'col_' + key
+						});
+						if(key == 'date') {
+							try {
+								var date = Date.parseExact(item[key], 'yyyy-MM-dd HH:mm:ss');
+								col.innerHTML = date.format('M月d日 H時mm分').escapeHTML();
+							} catch(e) {
+								col.innerHTML = '合計';
+							}
+						} else {
+							col.innerHTML = String(item[key] || 0).escapeHTML();
+						}
+						row.appendChild(col);
+					});
+				});
+			} else {
+				$('wait-status-list').innerHTML = '<tr><td colspan="3">(与信実行待ちデータはありません)</td></tr>';
+			}
+		},
+		onException : function(ajax, error) {
+			err_log('件数取得時エラー：{0}'.format(error));
+		}
+	};
+	(function polling() {
+		new Ajax.Request(Application.buildAppPath('dbstatus/waitorderscount'), options);
+		var interval = 5 * 1000;
+		setTimeout(polling, interval);
+		
+		new Element.ClassNames($('time-gauge')).each(function(cn) {
+			new Element.ClassNames($('time-gauge')).remove(cn);
+		});
+		var
+			stepMax = 100,
+			stepInterval = parseInt(interval / stepMax),
+			step = 0;
+		setTimeout(function() {
+			if(++step <= stepMax) {
+				new Element.ClassNames($('time-gauge')).set('step{0}'.format(Math.floor(step / (stepMax * 0.2))));
+				$('time-gauge').style.width = '{0}%'.format(100 - (step * (100 / stepMax)));
+				setTimeout(arguments.callee, stepInterval);
+			}
+		}, stepInterval);
+	})();
+	
+	var options2 = {
+		method : 'post',
+		asynchronous : true,
+		onComplete : function(xhr) {
+			var
+				info = xhr.responseText.parseJSON(),
+				success = !!info;
+			
+			// パースした結果が配列でなく、'error'プロパティがあったら
+			// サーバ側エラー
+			if('error' in info) {
+				throw new Error(info.error);
+			}
+			
+			$('access-info').innerHTML = 'サーバ時刻：{0:M月d日 H:mm:ss}'.format(Date.parseExact(info.date, 'yyyy-MM-dd HH:mm:ss'));
+			Element[info.status == 'idle' ? 'hide' : 'show']($('judge-status'));
+		},
+		onException : function(ajax, error) {
+			err_log('ステータス取得時エラー：{0}'.format(error));
+		}
+	};
+	(function polling2() {
+		new Ajax.Request(Application.buildAppPath('dbstatus/judgestatus'), options2);
+		var interval = 1000 * 2.5;
+		setTimeout(polling2, interval);
+	})();
+	
+});
+// ログ出力
+function log(msg, isError) {
+	var limit = 300;	// 表示の上限
+	
+	var line = Object.extend(document.createElement('div'), {
+		className : ['log', (isError ? 'error' : null)].compact().join(' '),
+		innerHTML : '[{0:yyyy-MM-dd HH:mm:ss.fff}] {1}'.format(new Date(), Application.nvl(msg)).escapeHTML()
+	});
+	$('console').appendChild(line);
+	
+	// 自動スクロール
+	var f = function() {
+		$('console').scrollTop = $('console').scrollHeight;
+	};
+	
+	// 上限に達したら古いログから削除
+	var line_nums = $('console').childNodes.length;
+	if(line_nums > limit) {
+		setTimeout(function() {
+			for(var i = line_nums - limit; i > 0; i--) {
+				$('console').removeChild($('console').childNodes[0]);
+			}
+			setTimeout(f, 0);
+		}, 0);
+	} else {
+		setTimeout(f, 0);
+	}
+}
+
+// エラーログ出力
+function err_log(msg) {
+	log(msg, true);
+}
+
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 id="content-title" class="contents_title" style="position: relative">
+		社内与信実行待ち状況
+		<span id="judge-status" style="display:none">社内与信実行中</span>
+	</h3>
+	<div style="min-height: 250px">
+		<div id="time-gauge-container"><div id="time-gauge">&nbsp;</div></div>
+		<div id="access-info">サーバ時刻：(未定)</div>
+		<table class="datatable wait-status-table" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th>日時（15分単位）</th>
+					<th style="width: 75px">待ち件数</th>
+					<!-- <th style="width: 75px">登録件数</th> -->
+				</tr>
+			</thead>
+			<tbody id="wait-status-list"></tbody>
+		</table>
+	</div>
+	<hr />
+	<h4>エラーログ</h4>
+	<div id="console"></div>
+	<hr />
+	<h4>ファイルアップロードマックスサイズ</h4>
+	<?php print "upload_max_filesize : "  . ini_get('upload_max_filesize'); ?>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

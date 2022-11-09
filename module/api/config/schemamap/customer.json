@@ -1,0 +1,86 @@
+[
+	{
+		"name": "PostalCode",
+		"required": true,
+		"maxLength": 8,
+		"ordinal": 2
+	},
+	{
+		"name": "UnitingAddress",
+		"required": true,
+		"maxLength": 100,
+		"ordinal": 3
+	},
+	{
+		"name": "NameKj",
+		"required": true,
+		"maxLength": 30,
+		"ordinal": 4
+	},
+	{
+		"name": "NameKn",
+		"required": false,
+		"maxLength": 30,
+		"ordinal": 5
+	},
+	{
+		"name": "Phone",
+		"required": true,
+		"maxLength": 50,
+		"ordinal": 6
+	},
+	{
+		"name": "MailAddress",
+		"required": false,
+		"maxLength": 255,
+		"ordinal": 7
+	},
+	{
+		"name": "Occupation",
+		"required": false,
+		"maxLength": 255,
+		"ordinal": 8
+	},
+	{
+		"name": "EntCustId",
+		"required": false,
+		"maxLength": 255,
+		"ordinal": 25
+	},
+	{
+		"name": "CorporateName",
+		"required": false,
+		"maxLength": 255,
+		"ordinal": 26
+	},
+	{
+		"name": "DivisionName",
+		"required": false,
+		"maxLength": 255,
+		"ordinal": 27
+	},
+	{
+		"name": "CpNameKj",
+		"required": false,
+		"maxLength": 160,
+		"ordinal": 28
+	},
+	{
+		"name": "AddressKn",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "RegistId",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "UpdateId",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	}
+]

@@ -1,0 +1,28 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+<!-- start contents -->
+<div id="contents">
+<h3>DMIテストファイル作成</h3>
+<form name="form" enctype="multipart/form-data" method="post" action="test/makedmi">
+  <table class="table" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td><input type="file" size="80" name="dmifile" /></td>
+    </tr>
+    <tr>
+      <td><input type="submit" value="作成" /></td>
+    </tr>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

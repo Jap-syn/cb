@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/creditvalue/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>与信閾値</h3>
+<font size="5" color="#ff0000"><div id="updated" align="center"><?php echo $this->msg; ?></div></font>
+<form id="login_form" name="form" method="POST" action="creditvalue/save">
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td width="400" class="r_label">注文利用額</td>
+    <td class="l_data"><input type="text" id="opw" name="UserAmountOver" value="<?php echo $this->datas['UserAmountOver']; ?>" />円以上</td>
+  </tr>
+  <tr>
+    <td class="r_label">審査システム保留上限</td>
+    <td class="l_data"><input type="text" id="npw1" name="JudgeSystemHoldMAX" value="<?php echo $this->datas['JudgeSystemHoldMAX'] ?>" />点以上</td>
+  </tr>  <tr>
+    <td class="r_label">審査システム保留下限</td>
+    <td class="l_data"><input type="text" id="npw2" name="JudgeSystemHoldMIN" value="<?php echo $this->datas['JudgeSystemHoldMIN']; ?>" />点以下</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="data">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><button type="submit">　　O　K　　</button></td>
+  </tr>
+</table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

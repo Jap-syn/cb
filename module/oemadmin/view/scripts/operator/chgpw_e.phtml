@@ -1,0 +1,29 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style>
+    h4 {
+        margin-top: 22px;
+    }
+    h4 div {
+        border: 1px crimson solid;
+        padding: 10px;
+        border-radius: 3px;
+        background-color: lightyellow;
+        color: crimson;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/operator/page_menu2.php'); ?>
+    <div class="title"><span>パスワード変更</span></div>
+<h4><div align="center">パスワードを変更しました。</div></h4>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

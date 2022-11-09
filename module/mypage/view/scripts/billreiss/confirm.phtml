@@ -1,0 +1,161 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'mypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<script>
+function quitBox( cmd )
+{
+    if( cmd == 'quit' )
+    {
+        open( location, '_self' ).close();
+    }
+    return false;
+}
+</script>
+
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'mypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'mypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+    <div style="clear: both;" id="my_title">請求書再発行申請</div>
+    <form name="form" method="post" action="billreiss/reiss">
+        <div id="d_01">
+            <span class="c_blue_02">下記の内容で請求書を発行致します。</span>
+            <?php if( $this->reason != 'nonarrival' && !empty( $this->order['ReClaimFee'] ) ) { ?>
+            <br /><span>※再発行には</span><span class="c_red">再発行手数料</span><span>が加算されます。</span>
+            <?php } ?>
+        </div>
+        <div id="order_info">
+            <div id="lbl_03">
+                注文ID：<?php echo f_e( $this->order['OrderIds'] ); ?><br />
+                ご購入店注文番号：<?php echo f_e( $this->order['Ent_OrderId'] ); ?><br />
+                ご購入店名：<?php if( $this->order['CombinedClaimTargetStatus'] != 11 && !empty( $this->order['Url'] ) ) { echo f_e( $this->order['SiteNameKj'] ); } else { echo f_e( $this->order['EnterpriseNameKj'] ); } ?><br />
+                ご注文日：<?php echo f_df( $this->order['ReceiptOrderDate'], 'Y-m-d' ); ?><br />
+                期限日：<?php echo f_df( $this->order['F_LimitDate'], 'Y-m-d' ); ?>
+            </div>
+        </div>
+        <div id="d_01">ご請求先
+            <?php if( $this->order['AnotherDeliFlg'] == 1 ) { ?>
+            <div style="margin: 0px; margin-right: 5px;" id="d_02">
+                <button type="submit" onclick="document.forms.form.action='billreiss/confirm/claim/change'">お届け先住所に変更</button>
+            </div>
+            <?php } ?>
+            <table style="font-size: 12px; font-weight: normal;" width="510px" cellpadding="2" cellspacing="2" borde="1" frame="box">
+                <tr><td colspan="2" class="l_data"><span class="f_bold">〒　</span><?php echo f_e( $this->order['PostalCode'] ); ?></td></tr>
+                <tr><td class="l_data f_bold" width="120px">住所　　　　　　　　　　　：</td><td class="l_data"><?php echo f_e( $this->order['UnitingAddress'] ); ?></td></tr>
+                <tr><td class="l_data f_bold" width="120px">ご請求先氏名　　　　　：</td><td class="l_data"><?php echo f_e( $this->order['NameKj'] ); ?></td></tr>
+                <tr><td class="l_data f_bold" width="120px">電話番号　　　　　　　　：</td><td class="l_data"><?php echo f_e( $this->order['Phone'] ); ?></td></tr>
+            </table>
+            <div id="lable_03"><a href="https://atobarai-user.jp/faq/invoice/" target="_blank" float="right">ご請求先が異なる場合は？</a></div>
+        </div>
+        <div id="order_detail">
+            <div id="d_request_amount">
+                <div id="lbl_04">ご請求金額</div>
+                <?php if( ( $this->reason != 'nonarrival' ) && !empty( $this->order['ReClaimFee'] ) ) { ?>
+                <div class="c_red" id="lbl_05"><?php echo f_nf( nvl( (int)$this->orderClaimAmount + (int)$this->order['ReClaimFee'], 0 ), '\#,##0' ); ?></div>
+                <?php } else { ?>
+                <div class="c_data" id="lbl_05"><?php echo f_nf( nvl( (int)$this->orderClaimAmount, 0 ), '\#,##0' ); ?></div>
+                <?php } ?>
+            </div>
+
+            <table width="555" class="datatable" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr>
+                    <th class="th_01" width="55%">購入した商品</th>
+                    <th class="th_01" width="15%">単価</th>
+                    <th class="th_01" width="15%">点数</th>
+                    <th class="th_01" width="15%">小計</th>
+                </tr>
+                <?php foreach( $this->orderItems[$this->order['OrderSeq']] as $orderItem ) { ?>
+                <?php if( $orderItem['DataClass'] == 1 ) { ?>
+                <tr>
+                    <td class="l_data"><?php echo $orderItem['ItemNameKj']; ?></td>
+                    <td class="r_data"><?php if( !empty( $orderItem['UnitPrice'] ) ) { echo f_nf( nvl( $orderItem['UnitPrice'], 0 ), '#,##0' ); } ?></td>
+                    <td class="r_data"><?php if( !empty( $orderItem['UnitPrice'] ) ) { echo f_nf( nvl( $orderItem['ItemNum'], 0 ), '#,##0' ); } ?></td>
+                    <td class="r_data"><?php echo f_nf( nvl( $orderItem['SumMoney'], 0 ), '#,##0' ); ?></td>
+                </tr>
+                <?php } } if( !empty( $this->sumCarriage[$this->order['OrderSeq']] ) ) { ?>
+                <tr>
+                    <td class="l_data">送料</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumCarriage[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                </tr>
+                <?php } if( !empty( $this->sumSettlementFee[$this->order['OrderSeq']] ) ) { ?>
+                <tr>
+                    <td class="l_data">手数料</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumSettlementFee[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                </tr>
+                <?php } if( !empty( $this->sumTax[$this->order['OrderSeq']] ) ) { ?>
+                <tr>
+                    <td class="l_data">税額</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumTax[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( nvl( $this->sumTax[$this->order['OrderSeq']], 0 ), '#,##0' ); ?></td>
+                </tr>
+                <?php } if( ( $this->reason != 'nonarrival' ) && !empty( $this->order['ReClaimFee'] )) { ?>
+                <tr style="color: red; font-weight: bold;">
+                    <td class="l_data">再請求手数料</td>
+                    <td class="r_data"><?php echo (int)$this->order['ReClaimFee']; ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf((int)$this->order['ReClaimFee'], '#,##0' ); ?></td>
+                    <input name="reclaimfee" type="hidden" value="<?php echo (int)$this->order['ReClaimFee']; ?>" />
+                </tr>
+                <?php } else { if( !empty( $this->order['ClaimFee'] ) ) { ?>
+                <tr>
+                    <td class="l_data">再請求手数料</td>
+                    <td class="r_data"><?php echo $this->order['ClaimFee']; ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( $this->order['ClaimFee'], '#,##0' ); ?></td>
+                </tr>
+                <?php } } if( !empty( $this->order['DamageInterestAmount'] ) ) { ?>
+                <tr>
+                    <td class="l_data">遅延損害金</td>
+                    <td class="r_data"><?php echo $this->order['DamageInterestAmount']; ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( $this->order['DamageInterestAmount'], '#,##0' ); ?></td>
+                </tr>
+                <?php } if( !empty( $this->order['AdditionalClaimFee'] ) ) { ?>
+                <tr>
+                    <td class="l_data" >追加請求手数料</td>
+                    <td class="r_data"><?php echo $this->order['AdditionalClaimFee']; ?></td>
+                    <td class="r_data">1</td>
+                    <td class="r_data"><?php echo f_nf( $this->order['AdditionalClaimFee'], '#,##0' ); ?></td>
+                </tr>
+                <?php } ?>
+                </tbody>
+            </table>
+            <br/>
+            <div>
+                <input name="orderseq" type="hidden" value="<?php echo f_e( $this->order['OrderSeq'] ); ?>" />
+                <input name="reason" type="hidden" value="<?php echo f_e( $this->reason ); ?>" />
+                <input name="anotherDeliUpdFlg" type="hidden" value="<?php echo f_e( $this->anotherDeliUpdFlg ); ?>" />
+                <input style="width: 230px; margin-left: 55px" id="green_btn" type="button" value="再発行中止" onclick="return quitBox( 'quit' );" />
+                <input style="width: 230px; margin-left: 55px" id="red_btn" type="submit" value="請求書再発行" />
+            </div>
+        </div>
+    </form>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'mypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

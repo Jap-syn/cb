@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+?>
+<?php echo $this->render('cbadmin/rwarvldata/styles.php'); ?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwarvldata/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">着荷確認データの出力</h3>
+    <form class="application-form import-form" id="imp-upload" method="post" action="rwarvldata/export" enctype="multipart/form-data">
+        <input type="hidden" name="exp-params" value="<?php echo f_e($this->params); ?>" />
+        <div class="ui-parts">
+            <button type="submit">ダウンロード実行</button>
+        </div>
+    </form>
+    <h3 class="contents_title">着荷確認データの取り込み<?php echo $this->cnt; ?></h3>
+    <form class="application-form import-form" id="imp-upload" method="post" action="rwarvldata/impconfirm" enctype="multipart/form-data">
+        <div class="ui-parts">
+            <label>
+                <input id="imp-file" name="<?php echo $this->impFileField; ?>" type="file" />
+            </label>
+            <button type="submit">登録実行</button>
+            <?php if (strlen($this->errorMessage) > 0) { ?>
+            <br />
+            <span style="font-size: 18px; color: red;"><?php echo f_e($this->errorMessage); ?></span>
+            <?php } ?>
+        </div>
+    </form>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

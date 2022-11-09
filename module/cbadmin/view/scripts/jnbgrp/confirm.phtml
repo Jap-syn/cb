@@ -1,0 +1,104 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$totalCount = ((int)$this->count['ok']) + ((int)$this->count['ng']);
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  function submitTo(path) {
+    var baseUrl = (document.getElementsByTagName('base')[0] || { href : '' }).href;
+    $('progress-form').action = [baseUrl.replace(/\/+$/, ''), path].join('/');
+    setTimeout(function() {
+      $('progress-form').submit();
+    }, 250);
+    hideSubmits();
+  }
+  Event.observe($('cancel-import'), 'click', function() {
+    submitTo('jnbgrp/cancel');
+  });
+});
+function hideSubmits() {
+  ['exec-import', 'cancel-import', 'show-error-detail'].each(function(id) {
+    if($(id)) Element.hide(id);
+  });
+  Element.show('submitting-message');
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポート内容確認
+    <?php if(!$this->noOem) { ?>
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    <?php } ?>
+    </h3>
+  <?php if($this->noOem) { ?>
+    <p class="page_error_message">OEM先の指定が不正です。</p>
+    <div class="submit-area">
+      <a href="jnb/index">JNB契約一覧へ</a>
+    </div>
+  <?php } else { ?>
+    <?php if(isset($this->error)) { ?>
+    <p class="page_error_message">
+      以下の致命的なエラーが発生しました。もう一度やり直してください。
+      <ul>
+        <li><?php echo f_e($this->error); ?></li>
+      </ul>
+      <div class="submit-area">
+        <a href="jnbgrp/imp/oid/<?php echo f_e($this->data['OemId']); ?>">　インポート画面へ　</a>
+        <a href="jnb/index">　JNB契約一覧へ　</a>
+      </div>
+    </p>
+    <?php } else { ?>
+    <form id="progress-form" action="jnbgrp/save" method="post">
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+        <?php if($totalCount > 0) { ?>
+          <tr>
+            <td class="r_label">正常データ</td>
+            <td class="l_data"><?php echo f_nf($this->count['ok'], '#,##0'); ?> 件</td>
+          </tr>
+          <tr>
+            <td class="r_label">不正データ</td>
+            <td class="l_data"><?php echo f_nf($this->count['ng'], '#,##0'); ?> 件</td>
+          </tr>
+        <?php } else { ?>
+          <tr>
+            <td class="l_data">処理可能なデータはありません。</td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+      <div class="submit-area">
+        <span id="submitting-message" style="display: none">処理中...</span>
+        <input name="tid" type="hidden" value="<?php echo f_e($this->tranId); ?>" />
+        <input name="oid" type="hidden" value="<?php echo f_e($this->data['OemId']); ?>" />
+    <?php if($totalCount > 0) { ?>
+        <button type="submit" id="exec-import" onclick="hideSubmits()">インポート実行</button>
+        <button type="button" id="cancel-import">キャンセル</button>
+      <?php if($this->count['ng'] > 0) { ?>
+        <a id="show-error-detail" href="jnbgrp/csverr/oid/<?php echo f_e($this->data['OemId']); ?>/tid/<?php echo f_e($this->tranId); ?>">　不正データの詳細を見る </a>
+      <?php } ?>
+    <?php } else { ?>
+        <a href="jnbgrp/imp/oid/<?php echo f_e($this->data['OemId']); ?>">　インポート画面へ　</a>
+        <a href="jnb/index">　JNB契約一覧へ　</a>
+    <?php } ?>
+      </div>
+    </form>
+    <?php } ?>
+  <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

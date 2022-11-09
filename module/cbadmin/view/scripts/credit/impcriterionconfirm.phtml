@@ -1,0 +1,57 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">与信ｼｽﾃﾑ判定基準CSV登録・修正確認</h3>
+    <form name="form" method="post" action="credit/impcriterionform">
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <th>CSV列</th>
+        <th>与信判定基準ID</th>
+        <th>与信判定基準名</th>
+        <th>登録/更新</th>
+      </tr>
+      <?php if (isset($this->datas)) { ?>
+      <?php $i = 1; foreach($this->datas as $data) { ?>
+      <tr>
+        <td class="l_data">
+          <?php echo $i; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['CreditCriterionId']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['CreditCriterionName']; ?>
+        </td>
+        <td class="l_data">
+          <?php echo $data['process']; ?>
+        </td>
+      </tr>
+      <?php $i++; } ?>
+      <?php } ?>
+      <tr>
+        <td>
+        </td>
+      </tr>
+    </table>
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="c_label"><button type="submit">　<<　入力へ戻る　　</button></td>
+      </tr>
+    </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

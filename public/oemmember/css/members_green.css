@@ -1,0 +1,1617 @@
+/* -------------- member ----------*/
+/* グローバル */
+
+/* ボディ */
+body {
+	background-color: white;
+	color: black;
+}
+
+/* ページヘッダ */
+.application_header {
+	color: black;
+	border: solid #003C2C 0px;
+	border-bottom-width: 5px;
+}
+
+.page_title .message {
+	color: gray;
+}
+
+
+/* ログアウト */
+a#logout_menu,
+a#logout_menu:link,
+a#logout_menu:hover,
+a#logout_menu:visited,
+a#logout_menu:active {
+	border: solid 1px #003C2C;
+	color: white;
+}
+
+/* ヘッダメニュー */
+.header_menu {
+}
+
+.header_menu h3 {
+	color: white;
+	background-color: #003C2C;
+}
+
+
+.header_menu ul li {
+	background-color: white;
+	color: black;
+	border: solid 1px silver;
+}
+
+
+a.header_menu_item,
+a.header_menu_item:link,
+a.header_menu_item:hover,
+a.header_menu_item:visited,
+a.header_menu_item:active {
+	color: black;
+}
+
+a.header_menu_item:hover {
+	color: red;
+}
+
+.menu_description {
+	color: gray;
+}
+
+.header_menu ul li.hover {
+	background-color: lemonchiffon;
+	border-right: solid #003C2C 3px;
+}
+
+.header_menu ul li.hover .menu_description {
+	color: #444;
+}
+
+.header_menu ul li.hover a.header_menu_item:link,
+.header_menu ul li.hover a.header_menu_item:visited,
+.header_menu ul li.hover a.header_menu_item:active {
+	color: royalblue;
+}
+
+.header_menu ul li.hover a.header_menu_item:hover {
+	color: blue;
+}
+
+/* サブメニュー */
+.submenu_container {
+	background-color: white;
+	color: black;
+	border-color: silver dimgray dimgray silver;
+}
+
+.submenu_container a:link,
+.submenu_container a:hover,
+.submenu_container a:visited,
+.submenu_container a:active {
+	display: block;
+	color: dimgray;
+	border: solid white;
+	border-width: 1px 4px 1px 0px;
+}
+
+.submenu_container a:hover {
+	color: blue;
+	background-color: lemonchiffon;
+	border-color: silver;
+	border-right-color: #003C2C;
+}
+
+/* フッタメニュー */
+.footer_menu {
+}
+
+.footer_menu a,
+.footer_menu a:link,
+.footer_menu a:hover,
+.footer_menu a:visited,
+.footer_menu a:active {
+	color: black;
+}
+
+.footer_menu a:hover {
+	color: blue;
+}
+
+/* ページフッタ */
+#application_footer {
+	color: white;
+	background-color: dimgray;
+}
+
+/* セッションメッセージ */
+#system_messages {
+	border: solid 1px crimson;
+	background-color: lemonchiffon;
+	color: red;
+}
+
+.system_message {
+}
+
+.system_message_toolbar {
+	border-top: solid 1px silver;
+}
+
+a.system_message_toolbutton:link,
+a.system_message_toolbutton:hover,
+a.system_message_toolbutton:visited,
+a.system_message_toolbutton:active {
+	color: dimgray;
+}
+
+a.system_message_toolbutton:hover {
+	color: blue;
+}
+
+/* 補足情報 */
+.information_container {
+	border: solid 1px black;
+}
+
+ul.information {
+}
+
+/* noscriptメッセージ */
+.no_script_message {
+	border: solid 1px black;
+	background-color: lightyellow;
+	color: climson;
+}
+
+/* フォームフィールド */
+input.unfocused,
+textarea.unfocused,
+select.unfocused {
+	background-color: ghostwhite;
+}
+
+input.focused,
+textarea.focused,
+select.focused {
+	background-color: white;
+}
+
+input.disabled,
+textarea.disabled,
+select.disabled {
+	background-color: silver;
+}
+
+/* コマンドバー */
+.command_bar {
+	border: solid 0px lightslategray;
+	border-top-width: 1px;
+	background-color: aliceblue;
+}
+
+
+.command_bar .title {
+	margin-left: 8px;
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+
+a.command:hover {
+	background-color: ghostwhite;
+	border-color: lightslategray;
+	color: blue;
+}
+
+
+/* ページナビゲーションバー */
+.nav_bar {
+	border: solid 0px silver;
+	background-color: ghostwhite;
+}
+.nav_bar .command,
+.nav_bar .command:link,
+.nav_bar .command:active,
+.nav_bar .command:visited {
+	border-color: ghostwhite;
+}
+
+.nav_bar a.command:hover {
+	border-color: lightslategray;
+}
+.nav_bar span.command {
+	color: silver;
+}
+
+.nav_bar span#page_list {
+	border: solid 1px gainsboro;
+}
+
+/* 事業者向けメッセージ */
+.information_message {
+	border :solid 1px dimgray;
+	background-color: white;
+	color: black;
+}
+.information_message .message_title {
+	background-color: firebrick;
+	color: white;
+}
+
+
+/* クイック検索バー */
+.quick_serach_bar {
+	border-right: solid 1px white;
+}
+
+#quick_search_form {
+}
+
+#quick_search_form input {
+	border: solid 1px #003C2C;
+}
+
+#quick_search_form button {
+	border: solid 1px #003C2C;
+	background-color: coralpink;
+}
+
+
+
+
+/* ------- login  --------*/
+/* ログインフォーム */
+html.login form#login_form {
+    border: solid 1px #003C2C;
+}
+
+html.login form#login_form h3 {
+	background-color: #003C2C;
+	color: white;
+}
+
+/*---- index ----*/
+
+/* ブロックコンテナタイトル */
+html.index .block_container h3 {
+	
+	background-color: #A8D435;
+	color: black;
+}
+
+/* ブロック内要素 */
+html.index .large_menu,
+html.index .general_information,
+html.index .order_information {
+	border: solid 1px silver;
+	background-color: white;
+	color: black;
+}
+
+html.index .order_summaries {
+	color: dimgray;
+}
+
+html.index .order_summaries .summary_title {
+	background-color: #EAFF7F;
+}
+
+html.index a#reload_summary:link,
+html.index a#reload_summary:hover,
+html.index a#reload_summary:visited,
+html.index a#reload_summary:active {
+	color: silver;
+}
+html.index a#reload_summary:hover {
+	color: white;
+}
+
+html.index .large_menu a,
+html.index .large_menu a:link,
+html.index .large_menu a:hover,
+html.index .large_menu a:visited,
+html.index .large_menu a:active {
+	color: black;
+}
+
+html.index .large_menu.hover {
+	background-color: lemonchiffon;
+	border-right: solid 6px #003C2C;
+}
+
+html.index .large_menu.hover a {
+	color: royalblue;
+}
+
+html.index .large_menu a:hover {
+	color: blue;
+}
+
+/* ダウンロードページ */
+html.index table.download_links {
+	border: solid gray;
+	border-width: 1px 0px 0px 1px;
+}
+
+html.index table.download_links td.caption,
+html.index table.download_links td.link,
+html.index table.download_links td.desc {
+	border: solid gray;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.index table.download_links td.caption {
+	background-color: #EAFF7F;
+}
+
+html.index table.download_links td.desc {
+	background-color: lightyellow;
+	color: #303560;
+}
+
+html.index table.download_links td a:link,
+html.index table.download_links td a:hover,
+html.index table.download_links td a:active,
+html.index table.download_links td a:visited {
+	color: royalblue;
+}
+
+html.index table.download_links td a:hover {
+	color: blue;
+}
+
+/* ---- netb.ui.datepicker.css -----*/
+.netb_ui_datepicker {
+	background-color: transparent;
+}
+.netb_ui_datepicker table.header {
+	background-color: white;
+	border: solid 1px silver;
+}
+
+.netb_ui_datepicker table.body {
+	background-color: white;
+	border: solid 1px silver;
+}
+
+.netb_ui_datepicker table.body th {
+	border: solid 0px orange;
+}
+
+.netb_ui_datepicker table.body td {
+	border: solid 1px white;
+}
+
+.netb_ui_datepicker table.header .prev_year,
+.netb_ui_datepicker table.header .prev_month,
+.netb_ui_datepicker table.header .next_year,
+.netb_ui_datepicker table.header .next_month {
+	background-color: white;
+}
+
+
+
+.netb_ui_datepicker table.header .title {
+	color: dimgray;
+}
+
+.netb_ui_datepicker table.body .header_row {
+	color: brown;
+}
+
+.netb_ui_datepicker table.body .week_row {
+}
+
+.netb_ui_datepicker table.body .week_row td {
+	border: solid 1px white;
+}
+
+.netb_ui_datepicker table.body .week_row td.hover {
+	background-color: lightcyan;
+	border: solid 1px blue;
+}
+
+.netb_ui_datepicker table.body .date {
+	color: dimgray;
+}
+
+.netb_ui_datepicker table.body .other_month,
+.netb_ui_datepicker table.body .other_month {
+	background-color: white;
+	border-color: white;
+}
+
+.netb_ui_datepicker table.body td.selected {
+	border: solid 1px orange;
+	background-color: lemonchiffon;
+	color: black;
+}
+
+.netb_ui_datepicker table.body .holiday {
+	color: red;
+}
+
+.netb_ui_datepicker table.body .saturday {
+	color: blue;
+}
+
+.netb_ui_datepicker table.body .calendar_command_bar {
+	border-top: solid 1px orange;
+	background-color: white;
+}
+
+.netb_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:link,
+.netb_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:hover,
+.netb_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:active,
+.netb_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:visited {
+	color: dimgray;
+	border: solid 1px white;
+}
+
+.netb_ui_datepicker table.body .calendar_command_bar a.calendar_command_button:hover {
+	background-color: lightcyan;
+	color: black;
+	border-color: blue;
+}
+
+/* ----- netb.ui.modaldialog -----*/
+.netb_ui_modaldialog {
+	background-color: white;
+	color: black;
+}
+
+.netb_ui_modaldialog_background {
+	background-color: silver;
+}
+
+.netb_ui_modaldialog_title {
+	background-color: #0066cc;
+	color: white;
+}
+
+
+/* ------ csv_table.css ------*/
+
+html.csv_table .csv_result th,
+html.csv_table .csv_result td,
+html.csv_table .csv_result * th,
+html.csv_table .csv_result * td {
+	border: solid darkslategray;
+}
+
+html.csv_table .csv_result th {
+	background-color: #0066FF;
+	color: white;
+}
+
+/* ------ order_form.css ------ */
+
+/* テーブルクラス */
+html.order .order_items {
+	border: solid silver;
+	border-width: 1px 0px 0px 1px;
+}
+
+html.order .order_items th,
+html.order .order_items td {
+	border: solid 1px #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.order .order_items th {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.order .order_item th.item_name {
+	background-color: #999999;
+}
+
+html.order td.item_name {
+	background-color: #EAFF7F;
+}
+
+
+html.order td.item_help {
+	background-color: lightyellow;
+	color: #303560;
+}
+
+html.order .items_table {
+}
+
+html.order .items_table th.item_name {
+	background-color: #A8D435;
+}
+
+html.order .items_table td,
+.items_table td.item_name {
+	background-color: #EAFF7F;
+}
+
+html.order .items_table tr.extra_item_row td,
+.items_table tr.extra_item_row td.item_name {
+	background-color: #84beff;
+}
+
+html.order tr.validate_error,
+html.order tr.validate_error td,
+html.order tr.validate_error td.item_name,
+html.order tr.validate_error td.item_value,
+html.order tr.validate_error td.item_help {
+	background-color: lavenderblush;
+}
+
+html.order tr.validate_error td.item_name {
+	background-color: pink;
+	font-weight: bold;
+}
+
+html.order table.total_receipt td.item_help {
+	color: coral;
+}
+
+/* 検証エラー情報のコンテナ領域 */
+html.order .error_info_container {
+	border: solid 1px gray;
+}
+
+html.order .error_info_container h4,
+html.order ul.error_info_list {
+	background-color: pink;
+}
+
+html.order .error_info_container h4 {
+	border-bottom: solid 1px gray;
+	color: brown;
+}
+
+html.order ul.error_info_list {
+	background-color: lavenderblush;
+}
+
+html.order ul.error_info_list li {
+	color: brown;
+}
+
+html.order ul.error_info_list li.hover {
+	color: red;
+}
+
+html.order .error_ent_container {
+	border: solid 1px gray;
+}
+
+html.order .error_ent_container h4,
+html.order ul.error_ent_table {
+	background-color: yellow;
+}
+
+html.order .error_ent_container h4 {
+	border-bottom: solid 1px gray;
+	color: black;
+}
+
+html.order ul.error_ent_table {
+	background-color: khaki;
+}
+
+/* 確認情報のコンテナ領域 */
+html.order .confirmation_container {
+	border: solid 1px gray;
+}
+
+html.order .confirmation_container h4,
+html.order ul.confirmation_list {
+	background-color: gold;
+}
+
+html.order .confirmation_container h4 {
+	border-bottom: solid 1px gray;
+	color: brown;
+}
+
+html.order ul.confirmation_list {
+	background-color: lemonchiffon;
+}
+
+html.order ul.confirmation_list li {
+	color: brown;
+}
+
+html.order ul.confirmation li.hover {
+	color: dimgray;
+}
+
+/* モーダルダイアログ */
+html.order .netb_ui_modaldialog {
+	background-color: aliceblue;
+}
+
+html.order #address_selection_info {
+	border: solid 1px silver;
+	color: dimgray;
+	background-color: ghostwhite;
+}
+
+html.order .csv_result th {
+	background-color: #A8D435;
+	color: black;
+}
+/* ----- shipping_confirm_csv ---- */
+html.shipping_confirm_csv .order_items {
+	color: blue;
+}
+
+html.shipping_confirm_csv .header_row {
+	color: dimgray;
+}
+
+html.shipping_confirm_csv .error_row {
+	background-color: pink;
+	color: black;
+}
+
+
+html.shipping_confirm_csv .csv_result tr.odd,
+html.shipping_confirm_csv .csv_result tr.odd td {
+	background-color: white;
+}
+
+html.shipping_confirm_csv .csv_result tr.even,
+html.shipping_confirm_csv .csv_result tr.even td {
+	background-color: white;
+}
+
+
+html.shipping_confirm_csv .csv_result tr.caution,
+html.shipping_confirm_csv .csv_result tr.caution td {
+	background-color: lavenderblush;
+}
+
+html.shipping_confirm_csv .csv_result tr.csv_caution,
+html.shipping_confirm_csv .csv_result tr.csv_caution td {
+	background-color: lavenderblush;
+}
+
+
+/* 配送伝票番号の重複チェック */
+html.shipping_confirm_csv .numbercheck_area {
+	background-color: yellow;
+}
+
+html.shipping_confirm_csv .caution_area {
+	background-color: lavenderblush;
+}
+
+html.shipping_confirm_csv .error_journal_container {
+	border: solid 1px gray;
+}
+
+html.shipping_confirm_csv .error_journal_container h4,
+html.shipping_confirm_csv ul.error_journal_table {
+	background-color: yellow;
+}
+
+html.shipping_confirm_csv .error_journal_container h4 {
+	border-bottom: solid 1px gray;
+	color: black;
+}
+
+html.shipping_confirm_csv ul.error_journal_table {
+	background-color: khaki;
+}
+
+
+/* 任意番号警告用のコンテナ領域 */
+
+html.shipping_confirm_csv .error_ent_container {
+	border: solid 1px gray;
+}
+
+html.shipping_confirm_csv .error_ent_container h4,
+html.shipping_confirm_csv ul.error_ent_table {
+	background-color: yellow;
+}
+
+html.shipping_confirm_csv .error_ent_container h4 {
+	border-bottom: solid 1px gray;
+	color: black;
+}
+
+html.shipping_confirm_csv ul.error_ent_table {
+	background-color: khaki;
+}
+
+/* ----- shipping.css ----*/
+
+html.shipping .regist_table {
+	border: solid #999999;
+	border-width: 1px 0px 0px 1px;
+	
+}
+
+html.shipping .regist_table th,
+html.shipping .regist_table td {
+	border: solid #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.shipping .regist_table th {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.shipping .regist_table td.data {
+	background-color: #b3c6ff;
+}
+
+html.shipping .order_date {
+	color: #666666;
+}
+
+html.shipping tr.error,
+html.shipping tr.error td {
+	background-color: mistyrose;
+}
+
+html.shipping tr.error td.data {
+	background-color: pink;
+}
+
+html.shipping tr.disabled_row td {
+	background-color: ghostwhite;
+}
+
+html.shipping tr.disabled_row td.data {
+	background-color: silver;
+}
+
+html.shipping tr.readonly,
+html.shipping tr.readonly td {
+	background-color: white;
+	color: red;
+}
+
+html.shipping tr.readonly td.data {
+	background-color: white;
+	color: red;
+}
+
+html.shipping tr.readonly td .order_date {
+	color: red;
+}
+
+html.shipping .order_id a:link,
+html.shipping .order_id a:hover,
+html.shipping .order_id a:visited,
+html.shipping .order_id a:active {
+	color: blue;
+}
+
+html.shipping .order_id a:hover {
+	color: royalblue;
+	text-decoration: underline;
+}
+
+html.shipping tr.readonly .order_id a {
+	color: red;
+}
+
+html.shipping tr.readonly .order_id a:hover {
+	color: climson;
+}
+
+html.shipping tr.progress,
+html.shipping tr.progress td,
+html.shipping tr.progress td *,
+html.shipping tr.progress td .order_date,
+html.shipping tr.progress td .order_id {
+	color: green;
+}
+html.shipping tr.progress .order_id a {
+	color: green;
+}
+html.shipping tr.progress .order_id a:hover {
+	color: mediumseagreen;
+}
+
+html.shipping #loadingMessage {
+	border: solid 2px silver;
+	background-color: ghostwhite;
+	color: gray;
+}
+
+html.shipping div.summary {
+	border: solid 0px silver;
+	background-color: lemonchiffon;
+	color: #666;
+}
+
+/* 配送伝票番号の重複チェック */
+html.shipping .numbercheck_area {
+	background-color: yellow;
+}
+
+html.shipping .caution_area {
+	background-color: lavenderblush;
+}
+
+html.shipping .csv_caution {
+	background-color: lavenderblush;
+}
+
+
+html.shipping .error_journal_container {
+	border: solid 1px gray;
+}
+
+html.shipping .error_journal_container h4,
+ul.error_journal_table {
+	background-color: yellow;
+}
+
+html.shipping .error_journal_container h4 {
+	border-bottom: solid 1px gray;
+	color: black;
+}
+
+html.shipping ul.error_journal_table {
+	background-color: khaki;
+}
+html.shipping .csv_result th {
+	background-color: #A8D435;
+	color: black;
+}
+/*---- search.css ----*/
+html.search table.search_items {
+	border: solid gray;
+	border-width: 1px 0px 0px 1px;
+}
+
+html.search table.search_items th.group_header,
+html.search table.search_items td.search_item,
+html.search table.search_items th.column_header,
+html.search table.search_items td.display_order_item {
+	border: solid gray;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.search table.search_items th.group_header,
+html.search table.search_items th.column_header {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.search table.search_items td.caption {
+	background-color: #EAFF7F;
+}
+
+html.search table.search_items td.hidden {
+	background-color: #F8F8F8;
+	color: dimgray;
+}
+
+html.search table.search_items td.requesting {
+	background-color: papayawhip;
+	color: silver;
+}
+
+html.search table.search_items td.help {
+	background-color: lightyellow;
+	color: #303560;
+		font-size: 9pt;
+}
+
+html.search button.choose_date,
+html.search a.choose_date,
+html.search a.choose_date:link,
+html.search a.choose_date:hover,
+html.search a.choose_date:visited,
+html.search a.choose_date:active {
+	background-color: transparent;
+}
+
+
+/* 検索カラム並び替えUI */
+html.search #column_order_editor {
+	background-color: aliceblue;
+	color: black;
+
+}
+
+html.search #column_order_editor .help,
+html.search .container_area {
+	border: solid 1px black;
+	background-color: white;
+}
+
+html.search #visible_column_container {
+	background-color: aliceblue;
+}
+
+html.search #invisible_column_container {
+	background-color: #efefef;
+}
+
+html.search .column_object {
+	border: solid 1px dimgray;
+}
+
+html.search .visible_column {
+	background-color: #E8F0FF;
+	color : black;
+}
+
+html.search .invisible_column {
+	background-color: ghostwhite;
+	color: gray;
+	border-color: gray;
+}
+
+html.search .dragging_column {
+	background-color: lightyellow;
+	color: blue;
+}
+
+html.search .placeholder {
+	border-color: silver;
+	color: dimgray;
+	background-color: ghostwhite;
+}
+
+
+/* ----- search_result.css -----*/
+
+
+
+html.search_result table.search_items tr.hover td.caption {
+	background-color: lightskyblue;
+}
+
+/* 検索条件 */
+html.search_result .expression_list {
+	border: solid 1px gray;
+	background-color: lemonchiffon;
+	color: dimgray;
+}
+
+
+html.search_result .expression_list .title {
+	border: solid 0px silver;
+	color: #333333;
+}
+
+/* コマンドバー */
+html.search_result a#toggleList {
+	color: #333;
+}
+
+html.search_result #expressionSummary {
+	color: dimgray;
+}
+
+html.search_result a.do_cancel:link,
+html.search_result a.do_cancel:hover,
+html.search_result a.do_cancel:active,
+html.search_result a.do_cancel:visited {
+	background-color: lightgrey;
+	color: black;
+	border: solid 1px dimgray;
+}
+
+html.search_result a.do_cancel:hover {
+	color: blue;
+	background-color: aliceblue;
+}
+
+html.search_result td.progress {
+	color: green;
+}
+
+html.search_result td.canceled {
+	color: blue;
+}
+
+html.search_result td.unavailable {
+	color: gray;
+}
+
+html.search_result a.show_detail:link,
+html.search_result a.show_detail:hover,
+html.search_result a.show_detail:visited,
+html.search_result a.show_detail:active {
+	background-color: lightgrey;
+	color: black;
+	border: solid 1px dimgray;
+	font-size: 8pt;
+}
+
+html.search_result a.show_detail:hover {
+	color: royalblue;
+}
+
+/* 与信結果 */
+html.search_result table.search_items td.incre,
+html.search_result table.search_items td.incre_ok,
+html.search_result table.search_items td.incre_ng,
+html.search_result table.search_items td.incre_cancel {
+}
+
+/* 与信OK */
+html.search_result table.search_items td.incre_ok,
+html.search_result table.search_items td.incre_ok a {
+	color: blue;
+}
+/* 与信NG */
+html.search_result table.search_items td.incre_ng,
+html.search_result table.search_items td.incre_ng a {
+	color: red;
+}
+/* 与信中 */
+html.search_result table.search_items td.incre,
+html.search_result table.search_items td.incre a {
+	color: green;
+}
+/* キャンセル */
+html.search_result table.search_items td.incre_cancel,
+html.search_result table.search_items td.incre_cancel a {
+	color: #808080;
+}
+
+/* 行のホバー強調 */
+html.search_result table.search_items tr.item_row:hover {
+	background-color: lightcyan;
+}
+
+/* ----- netb.ui.customlist.css -----*/
+.netb_ui_customlist {
+    background-color : white;
+    color : black;
+}
+
+.netb_ui_customlist .list_item {
+	background-color: white;
+}
+
+.netb_ui_customlist .hover {
+	background-color: #afeeee;
+}
+
+.netb_ui_customlist .selected {
+	background-color: navy;
+	color: white;
+}
+
+/* ------ search_detail.css -----*/
+
+/* テーブル */
+html.search table.order_detail {
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+}
+
+/* デフォルトのtd */
+html.search table.order_detail th,
+html.search table.order_detail td {
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.search table.order_detail th.category_name {
+	background-color: #D4E772;
+	color: black;
+}
+
+html.search table.order_detail td.item_name {
+	background-color: #EAFF7F;
+}
+
+html.search table.order_detail td.no_display {
+	color: dimgray;
+}
+
+/* ----- claim.css ----*/
+
+
+/* 結果テーブル */
+html.claim table.claim_result {
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+	
+	
+}
+
+/* デフォルトのth, td */
+html.claim table.claim_result th,
+html.claim table.claim_result td {
+font-size: 9pt;
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+	padding: 2px 6px;
+}
+
+/* カラムヘッダ */
+html.claim table.claim_result th {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.claim table.claim_result th.minus_col {
+	background-color: olivedrab;
+}
+html.claim table.claim_result td.minus_col {
+	color: darkolivegreen;
+}
+
+/* ラベル項目 */
+html.claim table.claim_result td.seq_col,
+html.claim table.claim_result td.label_col {
+	background-color: #c1f3c6;
+}
+
+/* 合計カラム */
+html.claim table.claim_result td.total_col {
+	background-color: khaki;
+	color: firebrick;
+}
+html.claim table.claim_result tr.summary td {
+	font-size: 11pt;
+	padding: 6px 3px;
+}
+html.claim table.claim_result tr.summary td.claim_label_col,
+html.claim table.claim_result tr.summary td.claim_col {
+	background-color: #c1f3c6;
+	color: darkolivegreen;
+}
+html.claim table.claim_result tr.summary td.claim_col {
+	color: gray;
+}
+html.claim table.claim_result tr.last_summary_item td {
+	border-bottom: none 0px;
+}
+html.claim table.claim_result tr#grand_total_row td {
+	border-top: double 3px dimgray;
+	
+}
+
+html.claim table.claim_result tr#grand_total_row td.label_col {
+	background-color: #c1f3c6;
+	color: blue;
+}
+
+html.claim table.claim_result tr#grand_total_row td.total_col {
+	background-color: white;
+	color: blue;
+}
+
+html.claim table.claim_result td a:link,
+html.claim table.claim_result td a:hover,
+html.claim table.claim_result td a:visited,
+html.claim table.claim_result td a:active {
+	color: blue;
+}
+
+html.claim table.claim_result td a:hover {
+	color: royalblue;
+}
+
+html.claim div.note {
+	border: solid 1px dimgray;
+	background-color: #e0e0e0;
+	color: crimson;
+}
+
+div.note ul li {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+html.claim @media print {
+	* {
+		background-color: white !important;
+		color: black !important;
+	}
+	
+	#application_footer {
+		background-color: transparent !important;
+		color: black !;
+	}
+	
+}
+
+/* ---- tab_support ----*/
+
+.tab_container {
+	border: solid 0px silver;
+	background-color: white;
+}
+
+
+ul.tab_bar li {
+	border: solid 1px silver;
+}
+
+ul.tab_bar li a:link,
+ul.tab_bar li a:hover,
+ul.tab_bar li a:visited,
+ul.tab_bar li a:active {
+	color: dimgray;
+}
+ul.tab_bar li a:hover {
+	color: blue;
+}
+
+ul.tab_bar li.selected,
+ul.tab_bar li.selected a:link,
+ul.tab_bar li.selected a:hover,
+ul.tab_bar li.selected a:visited,
+ul.tab_bar li.selected a:active {
+	background-color: #003C2C;
+	border-color: #003C2C;
+	color: white;
+}
+
+.tab_pages {
+	background-color: white;
+	border-top: solid 3px #003C2C;
+}
+
+.tab_page {
+	background-color: white;
+}
+
+/* ---- monthly.css ----*/
+
+html.monthly @media print {
+	* {
+		background-color: white !important;
+		color: black !important;
+	}
+	
+	#application_footer {
+		background-color: transparent !important;
+		color: black !;
+	}
+	
+	
+	.tab_container .tab_bar .selected {
+		background-color: transparent !important;
+		color: black !important;
+	}
+	.tab_container .tab_bar .selected a {
+		background-color: transparent !important;
+		color: black !important;
+	}
+}
+/* ラベル項目 */
+html.monthly table.claim_result td.seq_col,
+html.monthly table.claim_result td.label_col {
+	background-color: #C1F3C6;
+}
+/* 合計カラム */
+html.monthly table.claim_result td.total_col {
+	background-color: khaki;
+	color: firebrick;
+}
+table.claim_result th {
+    background-color: #A8D435;
+    color: black;
+}
+/* ---- account.css -----*/
+
+
+/* 情報テーブル */
+html.account .tab_page table {
+	border: solid dimgray;
+	border-width: 1px 0px 0px 1px;
+}
+
+html.account .tab_page table th,
+html.account .tab_page table td {
+    padding: 2px 6px;
+	border: solid dimgray;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.account .tab_page table th {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.account .tab_page table td.row_header {
+	background-color: #EAFF7F;
+	padding-left: 16px;
+	
+}
+
+html.account .tab_page table td.no_empty {
+	padding-top: 10px;
+	padding-bottom: 8px;
+}
+html.account .tab_page table td.submit_area {
+padding: 8px;
+	border-top: double 3px silver;
+}
+
+html.account table.site_table {
+	color: #333;
+}
+
+html.account .site_table th,
+html.account .site_table td {
+	border-color: silver;
+}
+html.account .site_table th {
+	background-color: #E8F0FF;
+	color: #333;
+}
+
+html.account .site_table tr.not_valid {
+	background-color: #E8E8E8;
+	color: crimson;
+}
+
+/* 検証エラー情報のコンテナ領域 */
+html.account .error_info_container h4,
+html.account ul.error_info_list {
+	background-color: pink;
+}
+
+html.account .error_info_container h4 {
+	border-bottom: solid 1px gray;
+	color: brown;
+}
+
+html.account ul.error_info_list {
+	background-color: lavenderblush;
+}
+
+html.account ul.error_info_list li {
+	color: brown;
+}
+
+html.account ul.error_info_list li.hover {
+	color: red;
+}
+
+/* ---- combinedclaim.css -----*/
+html.combinedclaim table.search_items {
+	border: solid gray;
+}
+
+html.combinedclaim table.search_items td.search_item,
+html.combinedclaim table.search_items th.column_header {
+	border: solid gray;
+}
+
+html.combinedclaim table.search_items th.group_header,
+html.combinedclaim table.search_items th.column_header {
+	background-color: #0066FF;
+	color: white;
+}
+
+html.combinedclaim table.search_items td.column_data {
+	border: solid gray;
+}
+
+html.combinedclaim a.show_detail:link,
+html.combinedclaim a.show_detail:hover,
+html.combinedclaim a.show_detail:visited,
+html.combinedclaim a.show_detail:active {
+	color: black;
+}
+
+html.combinedclaim a.show_detail:hover {
+	color: royalblue;
+}
+
+/* ---- shipping_sp ----*/
+
+html.shippingsp dl.count_list dt {
+  background-color: #0066ff;
+  background-color: #a8d435;
+  color: white;
+ 
+}
+
+html.shippingsp table.count_prop_detail td.count_detail b {
+  background-color: lightcyan;
+  background-color: #d1e6ae;
+}
+
+html.shippingsp table.csv_result td.main_col {
+  background-color: lemonchiffon;
+}
+
+html.shippingsp .regist_table th {
+	background-color: #A8D435;
+	color: black;
+}
+
+.header_menu ul li.has_submenu .menu_description {
+	background-image: url('imageex/type/submenu_arrow');
+}
+
+/* ----- ordercancel.css ----*/
+
+html.ordercancel .regist_table {
+	border: solid #999999;
+	border-width: 1px 0px 0px 1px;
+	
+}
+
+html.ordercancel .regist_table th,
+html.ordercancel .regist_table td {
+	border: solid #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.ordercancel .regist_table th {
+	background-color: #A8D435;
+	color: black;
+}
+
+html.ordercancel .regist_table td.data {
+	background-color: #b3c6ff;
+}
+
+html.ordercancel .order_date {
+	color: #666666;
+}
+
+html.ordercancel tr.error,
+html.ordercancel tr.error td {
+	background-color: mistyrose;
+}
+
+html.ordercancel tr.error td.data {
+	background-color: pink;
+}
+
+html.ordercancel tr.disabled_row td {
+	background-color: ghostwhite;
+}
+
+html.ordercancel tr.disabled_row td.data {
+	background-color: silver;
+}
+
+html.ordercancel tr.readonly,
+html.ordercancel tr.readonly td {
+	background-color: white;
+	color: red;
+}
+
+html.ordercancel tr.readonly td.data {
+	background-color: white;
+	color: red;
+}
+
+html.ordercancel tr.readonly td .order_date {
+	color: red;
+}
+
+html.ordercancel .order_id a:link,
+html.ordercancel .order_id a:hover,
+html.ordercancel .order_id a:visited,
+html.ordercancel .order_id a:active {
+	color: blue;
+}
+
+html.ordercancel .order_id a:hover {
+	color: royalblue;
+	text-decoration: underline;
+}
+
+html.ordercancel tr.readonly .order_id a {
+	color: red;
+}
+
+html.ordercancel tr.readonly .order_id a:hover {
+	color: climson;
+}
+
+html.ordercancel tr.progress,
+html.ordercancel tr.progress td,
+html.ordercancel tr.progress td *,
+html.ordercancel tr.progress td .order_date,
+html.ordercancel tr.progress td .order_id {
+	color: green;
+}
+html.ordercancel tr.progress .order_id a {
+	color: green;
+}
+html.ordercancel tr.progress .order_id a:hover {
+	color: mediumseagreen;
+}
+
+html.ordercancel #loadingMessage {
+	border: solid 2px silver;
+	background-color: ghostwhite;
+	color: gray;
+}
+
+html.ordercancel div.summary {
+	border: solid 0px silver;
+	background-color: lemonchiffon;
+	color: #666;
+}
+
+html.ordercancel .numbercheck_area {
+	background-color: yellow;
+}
+
+html.ordercancel .caution_area {
+	background-color: lavenderblush;
+}
+
+html.ordercancel .csv_caution {
+	background-color: lavenderblush;
+}
+
+
+html.ordercancel .error_journal_container {
+	border: solid 1px gray;
+}
+
+html.ordercancel .error_journal_container h4,
+ul.error_journal_table {
+	background-color: yellow;
+}
+
+html.ordercancel .error_journal_container h4 {
+	border-bottom: solid 1px gray;
+	color: black;
+}
+
+html.ordercancel ul.error_journal_table {
+	background-color: khaki;
+}
+html.ordercancel .csv_result th {
+	background-color: #A8D435;
+	color: black;
+}
+
+/* ----- rwclaim.css ----*/
+
+html.rwclaim .search_items {
+	border: solid #999999;
+	border-width: 1px 0px 0px 1px;
+	
+}
+
+html.rwclaim .search_items th,
+html.rwclaim .search_items td {
+	border: solid #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.rwclaim .search_items th {
+	background-color: #A8D435;
+	color: black;
+}
+
+/* ----- merge.css ----*/
+
+html.merge .search_items {
+	border: solid #999999;
+	border-width: 1px 0px 0px 1px;
+	
+}
+
+html.merge .search_items th,
+html.merge .search_items td {
+	border: solid #999999;
+	border-width: 0px 1px 1px 0px;
+}
+
+html.merge .search_items th {
+	background-color: #A8D435;
+	color: black;
+}
+

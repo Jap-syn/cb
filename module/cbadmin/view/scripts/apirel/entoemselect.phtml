@@ -1,0 +1,84 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$isSelectMode = isset($this->apiUsers) && $this->apiUsers != null;
+?>
+	<style>
+	dl.subcontents {
+		padding: 8px !important;
+		margin: 20px 25px !important;
+	}
+	dl.subcontents dt {
+		font-size: 16px;
+		font-weight: bold;
+		margin: 8px 2px !important;
+	}
+	dl.subcontents dd {
+		margin: 20px;
+		margin-left: 40px;
+	}
+	select {
+		width: 296px;
+	}
+	select.entBox {
+		width: 100%;
+	}
+	button {
+		padding: 2px 6px;
+	}
+	option.valid {
+	}
+	option.invalid {
+		color: gray;
+		text-decoration: line-through;
+	}
+	.nav-tools {
+		font-size: 12px;
+		font-weight: normal;
+		padding: 2px 40px;
+	}
+	.nav-tools a,
+	.nav-tools span.dummy-link {
+		margin-left: 8px;
+		margin-right: 8px;
+	}
+	</style>
+</head>
+<body>
+<div id="wrapper">
+	<?php echo $this->render('cbadmin/page_header.php'); ?>
+	<?php echo $this->render('cbadmin/apirel/page_menu.php'); ?>
+
+	<!-- start contents -->
+	<div id="contents">
+		<h3 class="contents_title">サイト → APIユーザー 関連設定</h3>
+        <dl class="subcontents">
+            <dt>
+				サイト登録元のOEM先を指定してください
+				<div class="nav-tools">&nbsp;</div>
+			</dt>
+            <?php if( isset($this->error) ) {?>
+            <ul class="errors">
+                <font color="red"><?php echo f_e($this->error); ?></font>
+            </ul>
+            <?php } ?>
+
+            <dd>
+                <form name="form" method="post" action="apirel/ent2api">
+                    <select id="OemId" name="oemId" value="<?php echo f_e($oemId); ?>">
+                    <?php foreach($this->oemList as $value => $caption) { ?>
+                      <?php $selected = $fd['oemId'] == $value ? ' selected="selected"' : ''; ?>
+                      <option value="<?php echo f_e($value == 0 ? -1 : $value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+                    <?php } ?>
+                    </select>
+                    <input type="submit" name = "oem_user" id="submit_button" value="　選　択　" />
+                    <input type="submit" name = "causer" id="submit_button" value="　キャッチボール登録サイト　" />
+                </form>
+            </dd>
+
+        </dl>
+    </div>
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

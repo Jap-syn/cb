@@ -1,0 +1,148 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/creditloss/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">貸し倒れ処理</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tr height="30">
+            <td class="l_data" colspan="8">
+                <form id="sform" name="sform" method="post" action="creditloss/list">
+                    OEM：<?php echo $this->oemListTag; ?>　
+                    経過日数：<input type="text" style="width:50px;" name="course" id="course" value="<?php echo f_e($this->course); ?>" />日以上(督促日数)
+                    <input style="margin-left: 50px;" id="search" type="submit" value="　検　索　" />
+                </form>
+            </td>
+            <td class="r_data" colspan="3" >
+                <span class="pager"><a class="download_link" href="creditloss/dcsv<?php if( $this->oem ) { ?>/oem/<?php echo f_e($this->oem); } ?><?php if( $this->course ) { ?>/course/<?php echo f_e($this->course); } ?>">一覧をCSVダウンロード</a></span>
+            </td>
+        </tr>
+        </tr>
+        </table>
+        <form id="form" name="form" method="post" action="creditloss/save">
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <td class="l_data">
+            科目：<?php echo $this->kamokuListTag; ?>　
+            債権返却コメント：<input type="text" style="width:200px;" name="returnCmnt" id="returnCmnt" value="<?php echo f_e($this->returnCmnt); ?>" />
+          </td>
+        </tbody>
+        </table>
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <td align="right" style="background-color: white"></p>
+            <input id="btnAllOn"  type="button" onclick="allChecked(true, this.form,'chkDecision');" value="　全選択　" /></p>
+            <input id="btnAllOff" type="button" onclick="allChecked(false,this.form,'chkDecision');" value="　全解除　" />
+          </td>
+        </tbody>
+        </table>
+        <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>OEM名</th>
+            <th>注文ID</th>
+            <th>初回期限</th>
+            <th>最終請求</th>
+            <th>支払期限</th>
+            <th>請求</th>
+            <th>属性</th>
+            <th>請求先氏名</th>
+            <th>請求金額</th>
+            <th>残高</th>
+            <th>貸し倒れ</th>
+          </tr>
+          <?php
+            // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+                $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <?php     $row = $this->list[$i]; ?>
+          <tr>
+            <input type="hidden" name="OrderSeq<?php echo $i; ?>" value="<?php echo $row["OrderSeq"]; ?>"/>
+            <input type="hidden" name="OrderSeqList<?php echo $i; ?>" value="<?php echo $row["OrderSeqList"]; ?>"/>
+            <td class="l_data"><?php echo $row['OemNameKj']; ?></td>
+            <td class="c_data"><a target="_blank" href="rworder/detail/oseq/<?php echo $row['OrderSeq']; ?>"><?php echo $row['OrderId']; ?></a></td>
+            <td class="c_data"><?php echo $row['F_LimitDate']; ?></td>
+            <td class="c_data"><?php echo $row['ClaimDate']; ?></td>
+            <td class="c_data"><?php echo $row['LimitDate']; ?></td>
+            <td class="c_data"><?php echo $row['IncreCaption']; ?></td>
+            <td class="c_data"><?php echo $row['IncreLogCaption']; ?></td>
+            <td class="l_data"><a target="_blank" href="customerinquiry/detail/custid/<?php echo $row['CustomerId']; ?>"><?php echo $row['NameKj']; ?></a></td>
+            <td class="r_data"><?php echo f_nf($row['ClaimAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($row['ReceiptAmount'], '#,##0'); ?></td>
+            <td class="c_data"><input type="checkbox" name="chkDecision<?php echo $i; ?>" id="chkDecision<?php echo $i; ?>" /></td>
+          </tr>
+          <tr class="border">
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="c_data">
+              <input type="submit" name="btnCreditloss" value="　貸し倒れ確定　" />
+<?php if (false) { ?>
+              <button id="btnCreditloss" type="btnCreditloss">　貸し倒れ確定　</button>
+<?php } ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+<script type="text/javascript">
+//チェックボックス全件選択
+function allChecked(check, targetForm, colnm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        var str = targetForm.elements[j].name;
+        if (str.indexOf(colnm) == 0){
+            // オブジェクトがイネーブル時に限り処理を行う
+            if (!targetForm.elements[j].disabled) {
+                targetForm.elements[j].checked = check;
+            }
+        }
+    }
+}
+</script>
+
+</html>

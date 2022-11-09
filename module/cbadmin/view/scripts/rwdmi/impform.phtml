@@ -1,0 +1,35 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+<!--
+#formdiv {
+	margin-left: 25px;
+	text-align: center;
+}
+-->
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">DMI与信結果インポート</h3>
+    <form name="form" enctype="multipart/form-data" method="post" action="rwdmi/imp">
+      <div id="formdiv">
+      DMI与信結果ファイル　
+        <input type="file" name="dmires" size="80" />
+        <p><button type="submit">　　インポート　　</button></p>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

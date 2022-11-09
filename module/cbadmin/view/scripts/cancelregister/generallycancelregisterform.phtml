@@ -1,0 +1,44 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+        <h3 class="contents_title">通常一括キャンセル</h3>
+<?php
+session_start();
+if (isset($_SESSION['message'])) {
+    echo $_SESSION['message'];
+    unset($_SESSION['message']);
+}
+if (isset($_SESSION['ng'])) {
+    foreach($_SESSION['ng'] as $ng){
+        echo '<div align="center"><font color="red">'.$ng."\n".'</font></div>';
+    }
+    unset($_SESSION['ng']);
+}
+?>
+<form name="form" id="main-form" method="post" action="cancelregister/generallycancelregister">
+    <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+        <tr>
+            <td class="r_label">対象ID</td>
+            <td class="l_data"><textarea name="OrderId" id="OrderId" rows="50" cols="25" ></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="c_data"><input type="submit" id="btnConfirm" name="btnConfirm"value="　実行　" onClick="return dispConfirm()"/></td>
+        </tr>
+        </tbody>
+    </table>
+</form>
+    </div>
+    <!-- end contents -->
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

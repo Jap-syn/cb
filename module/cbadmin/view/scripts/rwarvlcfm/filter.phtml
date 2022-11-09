@@ -1,0 +1,92 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+.input_error_message {
+	color: red;
+}
+#loading_message {
+	margin: 5px 25px;
+	color: gray;
+	padding: 0px;
+	padding-left: 24px;
+	font-size: 16px;
+	background-image: url('../images/loading_mini_01.gif');
+	background-position: 2px center;
+	background-repeat: no-repeat;
+	border: solid 1px #ffcc00;
+}
+.form_item {
+	float: left;
+	margin-right: 15px;
+	padding: 2px 6px;
+}
+a.func_link,
+a.func_link:link,
+a.func_link:hover,
+a.func_link:active,
+a.func_link:visited {
+	font-size: 10px !important;
+	padding: 0px 6px;
+	margin-right: 10px;
+}
+
+tr.not_selected td {
+	background-color: #ccc;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwarvlcfm/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+	<?php /* フィルタ入力フォームを表示 */ ?>
+	<?php echo $this->render('cbadmin/rwarvlcfm/filter_expression_form.php'); ?>
+
+	<?php /* 対象リストを表示 */ ?>
+	<?php echo $this->render('cbadmin/rwarvlcfm/lump_list.php'); ?>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe(window, "load", function() {
+	Event.observe($("apply_gcad"), "click", function() {
+		var val = $("gcad").options[$("gcad").selectedIndex].value;
+		document.getElementsByClassName("date_list_container").each( function(container) {
+			var target = container.getElementsByTagName("select")[0];
+			if( target ) target.value = val;
+		});
+	});
+	var factory = function(flag) {
+		return function() {
+			document.getElementsByClassName("deli_check", $("main_form")).each(function(chk) {
+				chk.checked = flag;
+				toggleCheck(chk);
+			});
+		};
+	};
+
+	[ { id : "on", flag : true }, { id : "off", flag : false } ].each(function(conf) {
+		var id = "exec_all_{0}".format(conf.id);
+		Event.observe($(id), "click", factory(conf.flag));
+	});
+});
+function toggleCheck(chk) {
+	setTimeout(function() {
+		var row = $("row_{0}".format(chk.id.replace(/^chk_/, "")));
+		if(row) {
+			var cn = new Element.ClassNames(row);
+			cn[chk.checked ? "remove" : "add"]("not_selected");
+		}
+	}, 0);
+}
+</script>
+</html>

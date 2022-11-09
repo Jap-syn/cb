@@ -1,0 +1,1 @@
+ALTER TABLE `T_SmbcRelationLog` ADD INDEX `T_SmbcRelationLog05` (`AcceptNumber` ASC);

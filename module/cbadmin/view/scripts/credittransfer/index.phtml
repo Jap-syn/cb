@@ -1,0 +1,149 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+function show_error_message($messages) {
+    if( empty($messages) ) return;
+    if( ! is_array($messages) ) $messages = array($messages);
+    $list = array();
+    foreach($messages as $msg) $list[] = f_e($msg);
+    echo '<div class="input_error_message">';
+    echo join('<br />', $list);
+    echo '</div>';
+}
+?>
+<style type="text/css">
+<!--
+.input_error_message {
+    color: red;
+}
+-->
+</style>
+<script type="text/javascript">
+<!--
+	function navi()
+	{
+		var selected = $('pk').selectedIndex;
+		var key = $('pk').options[selected].value;
+
+        var h = '<?php echo $this->baseUrl; ?>/credittransfer/index/pk/' + key;
+        location.href = h;
+	}
+    function creditTransferLimitDayType()
+    {
+        if (document.getElementById('CreditTransferLimitDayType2').checked) {
+            document.getElementById('CreditTransferDay1').disabled = true;
+            document.getElementById('CreditTransferAfterLimitDay1').disabled = true;
+            document.getElementById('CreditTransferDay1').value = '';
+            document.getElementById('CreditTransferAfterLimitDay1').value = '';
+            document.getElementById('CreditTransferDay2').disabled = false;
+            document.getElementById('CreditTransferAfterLimitDayType').disabled = false;
+            document.getElementById('CreditTransferAfterLimitDay2').disabled = false;
+        } else {
+            document.getElementById('CreditTransferLimitDayType1').checked = true;
+            document.getElementById('CreditTransferDay1').disabled = false;
+            document.getElementById('CreditTransferAfterLimitDay1').disabled = false;
+            document.getElementById('CreditTransferDay2').disabled = true;
+            document.getElementById('CreditTransferAfterLimitDayType').disabled = true;
+            document.getElementById('CreditTransferAfterLimitDay2').disabled = true;
+            document.getElementById('CreditTransferDay2').value = '';
+            document.getElementById('CreditTransferAfterLimitDayType').value = 0;
+            document.getElementById('CreditTransferAfterLimitDay2').value = '';
+        }
+
+    }
+-->
+</script>
+</head>
+<body onLoad="javascript:creditTransferLimitDayType();">
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/gp/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>口座振替期間設定</h3>
+<div id="updated" align="center"><?php echo $this->updated; ?></div>
+<form id="mail" name="form" method="post" action="credittransfer/save">
+<input type="hidden" id="CreditTransferId" name="CreditTransferId" value="<?php echo $this->data['CreditTransferId']; ?>" />
+    <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+      <tr>
+        <td class="r_label">口座振替サービス</td>
+        <td class="l_data"><?php echo $this->tag; ?></td>
+      </tr>
+      <tr>
+        <td class="r_label">口座対象期間</td>
+        <td class="l_data">
+          <select id="CreditTransferSpanFromMonth" name="CreditTransferSpanFromMonth" value="<?php echo f_e($this->data['CreditTransferSpanFromMonth']); ?>">
+            <?php foreach($this->master_map['CreditTransferSpanFromMonth'] as $value => $caption) { ?>
+            <?php $selected = $this->data['CreditTransferSpanFromMonth'] == $value ? ' selected="selected"' : ''; ?>
+            <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+            <?php } ?>
+          </select>&nbsp;&nbsp;
+          <input type="text" id="CreditTransferSpanFromDay" name="CreditTransferSpanFromDay" value="<?php echo f_e($this->data['CreditTransferSpanFromDay']); ?>" />&nbsp;日
+          &nbsp;&nbsp;～&nbsp;&nbsp;
+          <select id="CreditTransferSpanToTypeMonth" name="CreditTransferSpanToTypeMonth" value="<?php echo f_e($this->data['CreditTransferSpanToTypeMonth']); ?>">
+            <?php foreach($this->master_map['CreditTransferSpanToTypeMonth'] as $value => $caption) { ?>
+            <?php $selected = $this->data['CreditTransferSpanToTypeMonth'] == $value ? ' selected="selected"' : ''; ?>
+            <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+            <?php } ?>
+          </select>&nbsp;&nbsp;
+          <input type="text" id="CreditTransferSpanToDay" name="CreditTransferSpanToDay" value="<?php echo f_e($this->data['CreditTransferSpanToDay']); ?>" />&nbsp;日
+            <?php show_error_message($this->error['CreditTransferSpanFromMonth']); ?>
+            <?php show_error_message($this->error['CreditTransferSpanFromDay']); ?>
+            <?php show_error_message($this->error['CreditTransferSpanToTypeMonth']); ?>
+            <?php show_error_message($this->error['CreditTransferSpanToDay']); ?>
+        </td>
+      </tr>
+      <tr>
+        <td class="r_label" rowspan="2">支払期限</td>
+        <td class="l_data">
+            <?php $checked = nvl($this->data['CreditTransferLimitDayType'], 1) == 1 ? ' checked="checked"' : ''; ?>
+            <input type="radio" id="CreditTransferLimitDayType1" name="CreditTransferLimitDayType" value="1"<?php echo $checked; ?> onclick="creditTransferLimitDayType();" />
+            振替日&nbsp;
+            <input type="text" id="CreditTransferDay1" name="CreditTransferDay" value="<?php echo f_e($this->data['CreditTransferDay']); ?>" />&nbsp;
+            日の&nbsp;&nbsp;
+            <input type="text" id="CreditTransferAfterLimitDay1" name="CreditTransferAfterLimitDay" value="<?php echo f_e($this->data['CreditTransferAfterLimitDay']); ?>" />&nbsp;
+            営業日後
+            <?php if ($this->data['CreditTransferLimitDayType'] == 1) {
+                show_error_message($this->error['CreditTransferLimitDayType']);
+                show_error_message($this->error['CreditTransferDay']);
+                show_error_message($this->error['CreditTransferAfterLimitDay']);
+            } ?>
+        </td>
+      </tr>
+      <tr>
+        <td class="l_data">
+            <?php $checked = nvl($this->data['CreditTransferLimitDayType'], 1) == 2 ? ' checked="checked"' : ''; ?>
+            <input type="radio" id="CreditTransferLimitDayType2" name="CreditTransferLimitDayType" value="2"<?php echo $checked; ?> onclick="creditTransferLimitDayType();" />
+            振替日&nbsp;
+            <input type="text" id="CreditTransferDay2" name="CreditTransferDay" value="<?php echo f_e($this->data['CreditTransferDay']); ?>" />&nbsp;
+            日の&nbsp;&nbsp;
+            <select id="CreditTransferAfterLimitDayType" name="CreditTransferAfterLimitDayType" value="<?php echo f_e($this->data['CreditTransferAfterLimitDayType']); ?>">
+                <?php foreach($this->master_map['CreditTransferAfterLimitDayType'] as $value => $caption) { ?>
+                    <?php $selected = $this->data['CreditTransferAfterLimitDayType'] == $value ? ' selected="selected"' : ''; ?>
+                    <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?> /><?php echo f_e($caption); ?>
+                <?php } ?>
+            </select>&nbsp;
+            <input type="text" id="CreditTransferAfterLimitDay2" name="CreditTransferAfterLimitDay" value="<?php echo f_e($this->data['CreditTransferAfterLimitDay']); ?>" />&nbsp;日
+            <?php if ($this->data['CreditTransferLimitDayType'] == 2) {
+                show_error_message($this->error['CreditTransferLimitDayType']);
+                show_error_message($this->error['CreditTransferDay']);
+                show_error_message($this->error['CreditTransferAfterLimitDayType']);
+                show_error_message($this->error['CreditTransferAfterLimitDay']);
+            } ?>
+        </td>
+      </tr>
+      <tr align="center">
+        <td colspan="2" class="c_data">
+          <input type="submit" value="　設　定　" />　　　
+        </td>
+      </tr>
+    </tbody>
+    </table>
+
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

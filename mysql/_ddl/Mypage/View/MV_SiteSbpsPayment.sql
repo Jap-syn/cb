@@ -1,0 +1,2 @@
+delimiter $$
+CREATE ALGORITHM=UNDEFINED DEFINER=`coraluser`@`%` SQL SECURITY DEFINER VIEW `coraldb_mypage01`.`MV_SiteSbpsPayment` AS select `coraldb_new01`.`T_SiteSbpsPayment`.`PaymentId` AS `PaymentId`,`coraldb_new01`.`T_SiteSbpsPayment`.`NumUseDay` AS `NumUseDay`,`coraldb_new01`.`T_SiteSbpsPayment`.`UseStartDate` AS `UseStartDate`,`coraldb_new01`.`T_SiteSbpsPayment`.`ValidFlg` AS `ValidFlg`,`coraldb_new01`.`T_SiteSbpsPayment`.`SiteId` AS `SiteId` from `coraldb_new01`.`T_SiteSbpsPayment`$$

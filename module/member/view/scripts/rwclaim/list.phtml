@@ -1,0 +1,276 @@
+<?php
+use member\Application;
+use Coral\Coral\Validate;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\Validate\CoralValidateUtility;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+use Zend\Validator;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'member/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'member/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'member/page_title.php' );
+?>
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+	// title
+	$this->numOfHistory . ' 件の履歴が見つかりました。',
+// buttons
+array(
+        new CoralViewCommandBarButton(
+        array(
+                CoralViewCommandBarButton::OPTION_ID => 'toggleNgItem',
+                CoralViewCommandBarButton::OPTION_HREF => 'rwclaim/csvsetting',
+                CoralViewCommandBarButton::OPTION_TEXT => '出力CSV設定',
+                CoralViewCommandBarButton::OPTION_TITLE => '出力CSVの設定を変更する場合にはここをクリックしてください'
+        )
+        ),
+        new CoralViewCommandBarButton(
+        array(
+                CoralViewCommandBarButton::OPTION_ID => 'toggleNgItem',
+                CoralViewCommandBarButton::OPTION_HREF => 'rwclaim/printadjust',
+                CoralViewCommandBarButton::OPTION_TEXT => '余白設定',
+                CoralViewCommandBarButton::OPTION_TITLE => '請求書の余白設定を変更する場合にはここをクリックしてください'
+        )
+        )
+)
+);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+
+  <!-- start contents -->
+  <div id="contents">
+
+    <h4>
+
+    <form name="sform" method="post" action="rwclaim/list">
+      <font color="red">検索条件を変更した場合は、必ず[検索]ボタンを押してください</font>
+      <?php $cntPrintFormDKList = 0;
+            if (!empty($this->PrintFormDKList)) {
+                $cntPrintFormDKList = count($this->PrintFormDKList);
+            }
+            if ($this->numOfHistory > 0 && $cntPrintFormDKList > 1) { ?>
+      <br /><font color="red">用紙が異なるサイトが混在するため印刷できません。印刷する場合はサイトを指定してください。</font>
+      <?php } ?>
+      </p>
+          <?php echo $this->cadTag; ?>
+          <?php if (!$this->HideToCbButton) { ?>
+            　<?php echo $this->ccscTag; ?>
+          <?php } ?>
+        　<?php echo $this->cpsTag; ?>
+        　<?php echo $this->cstTag; ?>
+        　<button id="search" type="submit" style="margin-left: 50px;">　検　索　</button>
+    </form>
+    </h4>
+
+
+    <?php if (isset($_SESSION['MRWCLAIM_message'])) { ?>
+    <div align="center"><font color="ff0000">
+    <?php     echo $_SESSION['MRWCLAIM_message']; unset($_SESSION['MRWCLAIM_message']); ?></font>
+    </div>
+    <?php } ?>
+
+    <form id="form" name="form" method="post" action="rwclaim/up">
+      <input type="hidden" name="listCnt" id="listCnt" value="<?php echo $this->numOfHistory;?>" />
+      <table style="clear:both;" width="1100" cellpadding="1" cellspacing="1" border="0">
+        <tr>
+          <td align="right">
+          <?php if (!$this->HideToCbButton) { ?>
+            <button type="button" onclick="allChecked(true, this.form,'chkBs'          );">　別送全選択　</button>
+          <?php } ?>
+            <button type="button" onclick="allChecked(true, this.form,'chkPrintCsv'    );">　印刷全選択　</button>
+            <button type="button" onclick="allChecked(true, this.form,'chkWaitDecision');">　確定待全選択　</button></p>
+          <?php if (!$this->HideToCbButton) { ?>
+            <button type="button" onclick="allChecked(false,this.form,'chkBs'          );">　別送全解除　</button>
+          <?php } ?>
+            <button type="button" onclick="allChecked(false,this.form,'chkPrintCsv'    );">　印刷全解除　</button>
+            <button type="button" onclick="allChecked(false,this.form,'chkWaitDecision');">　確定待全解除　</button>
+            </p>
+          </td>
+        </tr>
+      </table>
+      <table style="clear:both; font-size:10pt;" width="1100" class="search_items" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th class="column_header">No.</th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[0]); ?>" ><font color="white">注文ID<img src="<?php echo f_e($this->arrowimg[0]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[1]); ?>" ><font color="white">別配送先<img src="<?php echo f_e($this->arrowimg[1]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[2]); ?>" ><font color="white">印刷状態<img src="<?php echo f_e($this->arrowimg[2]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[3]); ?>" ><font color="white">同梱/<br>別送<img src="<?php echo f_e($this->arrowimg[3]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[4]); ?>" ><font color="white">任意注文番号<img src="<?php echo f_e($this->arrowimg[4]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[5]); ?>" ><font color="white">注文日<img src="<?php echo f_e($this->arrowimg[5]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[6]); ?>" ><font color="white">注文登録日<img src="<?php echo f_e($this->arrowimg[6]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[7]); ?>" ><font color="white">請求先氏名<img src="<?php echo f_e($this->arrowimg[7]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[8]); ?>" ><font color="white">請求先住所<img src="<?php echo f_e($this->arrowimg[8]); ?>"></font></a></th>
+            <th class="column_header"><a href="<?php echo f_e($this->sorturl[9]); ?>" ><font color="white">利用額<img src="<?php echo f_e($this->arrowimg[9]); ?>"></font></a></th>
+            <?php if (!$this->HideToCbButton) { ?>
+                <th class="column_header">別送</th>
+            <?php } ?>
+            <th class="column_header">印刷/CSV</th>
+            <th class="column_header">確定待ち</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php for ($i = 0 ; $i < $this->numOfHistory ; $i++) { ?>
+          <tr>
+            <input type="hidden" name="P_OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["P_OrderSeq"]; ?>">
+            <input type="hidden" name="UseAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]["UseAmount"]; ?>">
+            <input type="hidden" name="SiteId<?php echo $i; ?>" value="<?php echo $this->list[$i]["SiteId"]; ?>">
+            <td class="column_data"><?php echo $this->list[$i]["No"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["OrderId"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["AnotherDeliFlgStr"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["ConfirmWaitingFlgStr"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["ClaimSendingClassStr"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["Ent_OrderId"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["ReceiptOrderDate"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["RegistDate"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["NameKj"]; ?></td>
+            <td class="column_data"><?php echo $this->list[$i]["UnitingAddress"]; ?></td>
+            <td class="column_data"><?php echo f_nf($this->list[$i]["UseAmount"], '#,##0'); ?></td>
+            <?php if (!$this->HideToCbButton) { ?>
+                <td class="column_data"><input type="checkbox" name="chkBs<?php echo $i; ?>" id="chkBs<?php echo $i; ?>" <?php if( $this->list[$i]['ClaimSendingClassStr'] != '同梱' || $this->list[$i]['ConfirmWaitingFlgStr'] == '確定待ち') { echo 'disabled="disabled" '; } ?> /></td>
+            <?php } ?>
+            <td class="column_data"><input type="checkbox" name="chkPrintCsv<?php echo $i; ?>" id="chkPrintCsv<?php echo $i; ?>" <?php if( $this->list[$i]['ClaimSendingClassStr'] != '同梱') { echo 'disabled="disabled" '; } ?> /></td>
+            <td class="column_data"><input type="checkbox" name="chkWaitDecision<?php echo $i; ?>" id="chkWaitDecision<?php echo $i; ?>" <?php if( $this->list[$i]['ClaimSendingClassStr'] != '同梱' || $this->list[$i]['ConfirmWaitingFlgStr'] != '確定待ち') { echo 'disabled="disabled" '; } ?> /></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <table style="clear:both;" width="1100" cellpadding="0" cellspacing="0" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+                <table >
+                    <tr>
+                        <td width="500"></td>
+                        <td width="200"><?php if (!$this->HideToCbButton) { ?><button id="submit4" type="button">　別送に更新　</button><?php } ?></td>
+                        <td width="100">
+                          <?php foreach ($this->PrintFormDKList as $printFormDk => $cnt) {?>
+                          <input type="hidden" name="paperTypeVal" id="paperTypeVal" value="<?php echo $printFormDk; ?>" />
+                          <?php break; } ?>
+                          <?php if ( $this->ChargeClass < 2 ) { ?><button id="submit3" type="button" <?php echo $cntPrintFormDKList != 1 ? 'disabled="disabled"' : ''; ?>>　　印刷　　</button><?php } ?>
+                        </td>
+                        <td width="150"><?php if ( $this->SelfBillingExportAllow ) { ?><button id="submit2" type="button">　CSV出力　</button><?php } ?></td>
+                        <td width="150" align="right" ><button type="submit" name="submit3">　印刷済に更新　</button></td>
+                    </tr>
+                </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+<table style="clear:both;" width="1000" class="datatable" cellpadding="0" cellspacing="0" border="0"></table>
+
+<?php
+// フッタメニュー
+echo $this->render( 'member/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+<?php echo $this->render('member/tab_support.php'); ?>
+
+<script>
+//チェックボックス全件選択
+function allChecked(check, targetForm, colnm){
+    for (var j=0, k=targetForm.length; j<k; j++){
+        var str = targetForm.elements[j].name;
+        if (str.indexOf(colnm) == 0){
+            // オブジェクトがイネーブル時に限り処理を行う
+            if (!targetForm.elements[j].disabled) {
+                targetForm.elements[j].checked = check;
+            }
+        }
+    }
+}
+
+<?php if ( $this->SelfBillingExportAllow ) { ?>
+Event.observe($("submit2"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/jobparamset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // CSV出力処理
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/csvoutput";
+    var ref = window.open( url );
+
+    // CSV出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+
+});
+<?php } ?>
+
+<?php if ( $this->ChargeClass < 2 ) { ?>
+Event.observe($("submit3"), "click", function() {
+    // AJAX通信でフォーム情報をセッションに設定
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/jobparamset";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+
+    // PDF出力処理
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/print";
+    var ref = window.open( url );
+
+    // PDF出力が終わったら随時リロードする
+    // 最大10秒待機させる
+    var wait = 0;
+    var intvl = setInterval(function() {
+    	wait++;
+        if (ref.closed == true || wait == 50){
+            clearInterval(intvl);
+            location.reload(true);
+        }
+    }, 200);
+
+});
+<?php } ?>
+
+<?php if (!$this->HideToCbButton) { ?>
+Event.observe($("submit4"), "click", function() {
+    var str = Form.serialize('form');   // フォーム内容をシリアライズ
+    var url = "<?php echo $this->baseUrl; ?>/rwclaim/upbs";
+    var ajax = new Ajax.Request( url, {method: 'post', parameters: str, asynchronous: false });
+    var res = eval('(' + ajax.transport.responseText + ')');
+    if  (res['status'] == 1) {
+        // 成功⇒検索ボタン押下処理
+        document.getElementById('search').click();
+    }
+    else {
+        // 失敗⇒メッセージ創出
+        alert(res['status']);
+    }
+});
+<?php } ?>
+
+</script>
+</html>

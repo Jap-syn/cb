@@ -1,0 +1,36 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/searchf/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>オートコールCSVインポート　完了</h3>
+<h4><?php echo $this->importInfo; ?></h4>
+<!-- count関数対策 -->
+<?php if (!empty($this->nonsetlist)) { ?>
+<h4><font color="red">※以下の注文ID(付加情報)は、取り込まれませんでした。(未エクスポート)</font></h4>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <?php $nonsetliststr = implode('/', $this->nonsetlist); ?>
+  <tr><td class="l_data" style="word-break: break-all"><?php echo $nonsetliststr; ?></td></tr>
+</table>
+<?php } ?>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <thead>
+  </thead>
+  <tbody>
+  <tr>
+    <td colspan="8" class="c_data"><input type="button" value="ファイル取り込みへ戻る" onclick="location.href='searchf/import'" /></td>
+  </tr>
+  </tbody>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/monthly/page_menu2.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">月次明細（請求書兼納品書）</h3>
+    <!--
+    <div style="clear:both;">
+      <div id="lbl1">
+      </div>
+      <div id="cmd1"></div>
+    </div>
+    -->
+    <form name="form" method="post" action="monthly/fixedlist">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>対象期間</th>
+            <th>お取引<br />件数</th>
+            <th>ご利用<br />総額</th>
+            <th>決済手数料<br />合計</th>
+            <th>請求手数料<br />合計</th>
+            <th>印紙代<br />合計</th>
+            <th>月額<br />固定費</th>
+            <th>前回繰越<br />(固定費)</th>
+            <th>CNL<br />返金分</th>
+            <th>振込<br />手数料</th>
+            <th>精算<br />調整額</th>
+            <th>立替精算<br />戻し額</th>
+            <th>請求金額</th>
+            <th>支払総額</th>
+          </tr>
+          <?php 
+          // count関数対策 
+          $listCount = 0;
+          if (!empty($this->list)) {
+              $listCount = count($this->list);
+          }	
+          for ($i = 0 ; $i < $listCount; $i++) { ?>
+          <tr>
+            <td class="c_data"><?php echo $this->list[$i]['term']; ?></td>
+            <td class="r_data"><?php echo $this->list[$i]['OrderCount']; ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['OrderAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['SettlementFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['ClaimFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['StampFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['MonthlyFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['CarryOverMonthlyFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['CancelRepaymentAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['FfTransferFee'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['AdjustmentAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['PayBackAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['ClaimAmount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->list[$i]['PaymentAmount'], '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

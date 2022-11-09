@@ -1,0 +1,400 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+#error-info {
+    margin: 5px 25px;
+    padding: 5px 20px;
+    background-color: lemonchiffon;
+    color: crimson;
+    border: double 3px firebrick;
+}
+
+#contents .action-area {
+    margin: -5px 25px 20px 25px;
+    border: solid 1px silver;
+    border-top: none 0px;
+    padding: 2px 25px;
+}
+#contents .action-area a {
+    margin: 0 12px;
+}
+
+#contents .content-box,
+#contents form#form {
+    margin: 5px 25px;
+    margin-bottom: 25px;
+}
+#contents form#form {
+    margin-top: 40px;
+    text-align: center;
+}
+form#form button {
+    width: 180px;
+    padding: 4px 12px;
+    font-size: 18px;
+    margin: 0 10px;
+}
+
+#contents .content-box .list-box {
+}
+#contents .content-box .list-box h4 {
+    margin: 5px 0;
+    padding: 0;
+}
+#contents .content-box .left-list-box {
+    float: left;
+    margin-left: 20px;
+}
+#contents .content-box .right-list-box {
+    float: right;
+    margin-right: 20px;
+}
+#contents .content-box .list-box .control-area {
+    text-align: center;
+}
+#contents .content-box .list-box .control-area button {
+    /*width: 100px;*/
+    padding: 2px 8px;
+    margin: 5px;
+}
+
+#contents .content-box select.item-list {
+    width: 380px;
+    height: 200px;
+}
+
+select.item-list option {
+    height: 18px;
+    font-size: 14px;
+    padding: 3px 0 0 4px;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    line-height: 0;
+    font-size: 0;
+    visibility: hidden;
+    clear: both;
+}
+</style>
+<script type="text/javascript">
+// 指定select要素の現在の情報を取得する
+function listInfo(ele) {
+    var
+        list = $(ele),
+        size = list.options.length,
+        current = list.selectedIndex >= 0 ? list.options[list.selectedIndex] : null,
+        curIndex = list.selectedIndex;
+    return {
+        list : list,
+        size : size,
+        current : current,
+        curIndex : curIndex
+    };
+}
+
+// リストで項目が選択された(選択された項目)
+function selectedListSelected() {
+    var info = listInfo('selected-list');
+
+    // アクションボタンの状態を更新
+    $('up-to-item').disabled = !(info.current && info.curIndex > 0);
+    $('down-to-item').disabled = !(info.current && info.curIndex < info.size - 1);
+    $('remove-item').disabled = !info.current;
+    $('remove-item-all').disabled = info.size == 0;
+}
+
+// リストで項目が選択された(選択可能な項目)
+function selectableListSelected() {
+    var info = listInfo('selectable-list');
+
+    // アクションボタンの状態を更新
+    $('selectable-to-selected').disabled = !(info.current);
+    $('selectable-to-selected-all').disabled = !(info.size > 0);
+}
+
+// リストの選択項目を1つ上に移動する(選択された項目)
+function upToItem() {
+    if($('up-to-item').disabled) return;
+
+    var
+        info = listInfo('selected-list'),
+        // 現在の1つ上の項目
+        target = info.list.options[info.curIndex - 1];
+
+    if(target) {
+        info.list.insertBefore(info.current, target);
+        // ボタンの状態を更新
+        updateButtons();
+    }
+}
+
+// リストの選択項目を1つ下に移動する(選択された項目)
+function downToItem() {
+    if($('down-to-item').disabled) return;
+
+    var
+        info = listInfo('selected-list'),
+        // 現在の1つ下の項目
+        target = info.list.options[info.curIndex + 1];
+
+    if(target) {
+        info.list.insertBefore(target, info.current);
+        // ボタンの状態を更新
+        updateButtons();
+    }
+}
+
+// リストの選択項目(選択された項目)をリストから削除して(選択可能な項目)へ移動する
+function removeBy() {
+    if($('remove-item').disabled) return;
+
+    var
+        selectedInfo = listInfo('selected-list'),
+        selectableInfo = listInfo('selectable-list'),
+        // 挿入場所（＝現在選択中の項目値より大きい最小値を持つ項目）
+        target = $A(selectableInfo.list.options).find(function(opt) {
+            return (Number(opt.value) > Number(selectedInfo.current.value));
+        });
+
+    if(target) {
+        // 途中に差し込む
+        selectableInfo.list.insertBefore(selectedInfo.current, target);
+    } else {
+        // 末尾に差し込む
+        selectableInfo.list.appendChild(selectedInfo.current);
+    }
+
+    var lastIndex = selectedInfo.curIndex, selectedInfo = listInfo('selected-list');
+    selectedInfo.list.selectedIndex = lastIndex < selectedInfo.size ? lastIndex : lastIndex - 1;
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// リストの全ての項目(選択された項目)をリストから削除して(選択可能な項目)へ移動する
+function removeByAll() {
+    if($('remove-item-all').disabled) return;
+
+    $('selected-list').disabled = $('selectable-list').disabled = true;
+    var info = listInfo('selected-list');
+    if(info.size) {
+        info.list.selectedIndex = 0;
+        updateButtons();
+        removeBy();
+        if($('selected-list').options.length) {
+            // 項目が残っている限り再帰的に処理する
+            setTimeout(removeByAll, 0);
+        } else {
+            // 全削除が完了したのでリストを使用可能に
+            $('selected-list').disabled = $('selectable-list').disabled = false;
+        }
+    }
+}
+
+// リストの選択項目(選択可能な項目)を(選択された項目)リストへ移動する
+function moveTo() {
+    if($('selectable-to-selected').disabled) return;
+
+    var
+        selectedInfo = listInfo('selected-list'),
+        selectableInfo = listInfo('selectable-list'),
+        // 「使用する」リストの選択項目
+        target = selectedInfo.list.options[selectedInfo.curIndex + 1];
+
+    if(selectedInfo.curIndex >= 0 && target) {
+        // 選択項目があったらその直後に挿入
+        selectedInfo.list.insertBefore(selectableInfo.current, target);
+    } else {
+        // 選択項目がないので末尾へ挿入
+        selectedInfo.list.appendChild(selectableInfo.current);
+    }
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// リストの全項目(選択可能な項目)を(選択された項目)リストへ移動する
+function moveToAll() {
+    if($('selectable-to-selected-all').disabled) return;
+
+    var
+        selectedInfo = listInfo('selected-list'),
+        selectableInfo = listInfo('selectable-list');
+
+    // 常に末尾へ逐次挿入する
+    $A(selectableInfo.list.options).each(function(opt) {
+    	selectedInfo.list.appendChild(opt);
+    });
+
+    // ボタンの状態を更新
+    updateButtons();
+}
+
+// 各select要素の状態に応じて各種ボタンの状態を更新する
+function updateButtons() {
+    selectedListSelected();
+    selectableListSelected();
+
+    // フォームの内容を更新する
+    var data = $A($('selected-list').options).map(function(opt) {
+        return Number(opt.value);
+    });
+    $('fixed-data').value = data.toJSONString();
+}
+
+// 指定リストの内容を現在のDBの状態に合わせて更新する
+function refreshSpecifiedList(ele, callback) {
+    var
+        list = $(ele),
+        id = list.id;
+    if(!['selected-list', 'selectable-list'].include(id)) return;
+    var
+        funcName = {
+            'selected-list' : 'current',
+            'selectable-list' : 'master'
+        }[id],
+        url = [
+            (document.getElementsByTagName('base')[0] || { href : '' }).href.replace(/\/+$/, ''),
+            'fixednote/{0}/seq/{1}'.format(funcName, $('seq').value)
+        ].join('/'),
+        onError = function() {
+            refresh([]);
+        },
+        terminate = function() {
+            try {
+                (callback || Prototype.emptyFunction)();
+            } catch(e) {}
+        },
+        refresh = function(list) {
+            $(id).options.length = 0;
+            list.each(function(data) {
+                $(id).appendChild(Object.extend(
+                    document.createElement('option'),
+                    {
+                        innerHTML : '{0}：{1}'.format(
+                                                        data.Seq,
+                                                        data.Note).escapeHTML(),
+                        value : data.Seq
+                    }
+                ));
+            });
+            terminate();
+        },
+        ajaxHandled = false;
+    new Ajax.Request(url, {
+        method : 'GET',
+        onFailure : onError,
+        onException : function(xhr, err) {
+            if(!ajaxHandled) {
+                ajaxHandled = true;
+                //console.log(err);
+                onError();
+            }
+        },
+        onComplete : function(xhr) {
+            refresh(xhr.responseText.parseJSON());
+        }
+    });
+}
+
+// 各リストを初期化する
+function initList() {
+    $('selected-list').disabled = $('selectable-list').disabled = true;
+
+    // マスターから初期化
+    refreshSpecifiedList('selectable-list', function() {
+        // マスター初期化が完了したので使用するリストを更新
+        refreshSpecifiedList('selected-list', function() {
+            // 使用するリストにある項目をマスターから削除
+            $A($('selected-list').options).each(function(opt) {
+                var dup = $A($('selectable-list').options).find(function(mOpt) {
+                    return mOpt.value == opt.value;
+                });
+                if(dup) $('selectable-list').removeChild(dup);
+            });
+            $('selected-list').disabled = $('selectable-list').disabled = false;
+            updateButtons();
+        });
+    });
+}
+
+// 初期化処理
+function init() {
+    // 各種イベントのバインド
+    [
+        { id : 'selected-list', meth : selectedListSelected },
+        { id : 'selectable-list', meth : selectableListSelected },
+        { id : 'up-to-item', meth : upToItem },
+        { id : 'down-to-item', meth : downToItem },
+        { id : 'remove-item', meth : removeBy },
+        { id : 'remove-item-all', meth : removeByAll },
+        { id : 'selectable-to-selected', meth : moveTo },
+        { id : 'selectable-to-selected-all', meth : moveToAll },
+        { id : 'reset', meth : initList }
+    ].each(function(conf) {
+        Event.observe($(conf.id), 'click', conf.meth);
+    });
+
+    // ボタンの状態を更新
+    updateButtons();
+
+    // 各リストを初期化
+    initList();
+}
+
+// windowの準備ができたら初期化を実行
+Event.observe(window, 'load', init);
+</script>
+</head>
+<body>
+<div id="wrapper">
+    <?php echo $this->render('cbadmin/page_header.php'); ?>
+    <?php echo $this->render('cbadmin/fixednote/page_menu.php'); ?>
+
+    <!-- start contents -->
+    <div id="contents">
+    <?php if(isset($this->error)) { ?>
+        <div id="error-info"><?php echo f_e($this->error); ?></div>
+    <?php } ?>
+        <h3 class="contents_title">定型備考関連付け （グループ名称 ： <?php echo f_e($this->seqnote); ?>）</h3>
+        <div class="content-box clearfix">
+            <div class="list-box left-list-box">
+                <h4>使用するコメント</h4>
+                <select class="item-list" id="selected-list" size="2">
+                </select>
+                <div class="control-area">
+                    <button id="up-to-item">↑ 上へ</button>
+                    <button id="down-to-item">↓ 下へ</button>
+                    <button id="remove-item">× 削除</button>
+                    <button id="remove-item-all">× 全て削除</button>
+                </div>
+            </div>
+
+            <div class="list-box right-list-box">
+                <h4>使用可能なコメント</h4>
+                <select class="item-list" id="selectable-list" size="2">
+                </select>
+                <div class="control-area">
+                    <button id="selectable-to-selected">← 使用する</button>
+                    <button id="selectable-to-selected-all">← 全て使用</button>
+                </div>
+            </div>
+        </div>
+        <form id="form" action="fixednote/relatedone" method="post">
+            <input type="hidden" name="seq" id="seq" value="<?php echo f_e($this->seq); ?>" />
+            <input type="hidden" name="data" id="fixed-data" value="" />
+            <button type="submit" id="submit">登録</button>
+            <button type="button" id="reset">リセット</button>
+        </form>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

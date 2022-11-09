@@ -1,0 +1,499 @@
+@CHARSET "UTF-8";
+
+#my_title {
+	width: 400px;
+	font: bold 2.0em 'arial', sans-serif;
+	text-align: left;
+	margin: 5px 0px 5px 25px;
+	padding: 5px 20px 5px 0px;
+	color: #333333;
+	float: left;
+}
+
+#loginstatus01 {
+	float: right;
+	margin-right: 25px;
+	padding-right: 5px;
+	color: #666666;
+	/*font-size: 1.2em;*/
+	text-align: right;
+}
+
+#loginstatus01 a {
+	color: #000000;
+}
+
+/*ログアウト*/
+#logout_btn {
+	border-radius: 8px;
+	background-color: #D9D9D9;
+	width: 100px;
+	height: 20px;
+	font-size: 15px;
+	font-weight: bold;
+	text-align: center;
+	color: #000000;
+	padding: 5px 0px 5px 0px;
+	margin: 5px;
+}
+
+#logout_btn a:link, #logout_btn a:hover, #logout_btn a:visited, #logout_btn a:active {
+	color: #000000;
+	text-decoration: none;
+}
+
+#logout_btn a:hover {
+	text-decoration: underline;
+}
+
+/*ヘッダー部のユーザ名称*/
+#user_info {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: right;
+	color: #000000;
+	width: 300px;
+	padding: 5px;
+	margin: 5px;
+}
+
+/*画面遷移*/
+#lable_03 {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: right;
+	padding: 5px;
+	margin-left: 25px;
+}
+
+#lable_03 a {
+	color: #009DE4;
+	text-decoration: underline;
+}
+
+/*画面項目*/
+#lable_04 {
+	font-size: 18px;
+	font-weight: bold;
+	text-align: left;
+	color: #000000;
+}
+
+/*画面遷移*/
+#lable_05 {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    float: right;
+}
+
+#lable_05 a {
+    color: #009DE4;
+    text-decoration: underline;
+}
+
+/*メニュー*/
+#menu_title {
+	border-radius: 8px;
+	background-color: #E4EDD1;
+	width: 220px;
+	height: 25px;
+	font-size: 20px;
+	font-weight: bold;
+	text-align: center;
+	padding: 10px 0px 5px 0px;
+	margin: 5px;
+}
+
+/*メニュー明細*/
+#menu_content {
+	font-size: 20px;
+	text-align: left;
+	padding: 10px 2px 5px 20px;
+	margin: 5px;
+}
+
+#menu_content a {
+	color: #000000;
+	text-decoration: underline;
+}
+
+.r_float {
+	float: right;
+}
+
+.l_float {
+	float: left;
+}
+
+#d_01 {
+	font-size: 14px;
+	font-weight: bold;
+	float: left;
+	margin: 5px;
+	margin-left: 25px;
+	padding: 5px;
+	padding-left: 20px;
+	width: 500px;
+}
+
+#d_02 {
+	border-radius: 10px;
+	border: 1px lightgray solid;
+	background-color: #D9D9D9;
+	width: 130px;
+	text-align: center;
+	margin: 5px 0px 5px 25px;
+	padding: 2px;
+	float: right;
+}
+
+#d_02 button {
+	font-weight: bold;
+	width: auto;
+	padding: 0px;
+	margin: 0px;
+	background: none;
+	border: 0px;
+	line-height: 14px;
+	overflow: visible;
+	cursor: pointer;
+}
+
+#d_03 {
+	border-radius: 1px;
+	border: 2px #E4EDD1 solid;
+	background-color: #FFFFFF;
+	width: 170px;
+	text-align: left;
+	margin: 5px 0px 5px 5px;
+	padding-left: 5px;
+	float: right;
+}
+
+#d_04 {
+	border-radius: 10px;
+	border: 2px #E4EDD1 solid;
+	background-color: #EAEFF7;
+	width: 170px;
+	text-align: left;
+	margin: 5px 0px 5px 5px;
+	padding-left: 5px;
+	float: right;
+}
+
+#d_05 {
+	border-radius: 1px;
+	border: 2px #E4EDD1 solid;
+	background-color: #FFFFFF;
+	width: 220px;
+	text-align: left;
+	margin-top: 15px;
+	float: right;
+	font-weight: bold;
+}
+
+#d_06 {
+    border-radius: 1px;
+    border: 6px #E4EDD1 solid;
+    background-color: #FFFFFF;
+    width: 90%;
+    height: auto;
+    text-align: left;
+    margin: 5px 0px 5px 5px;
+    padding: 13px 13px 13px 13px;
+    font-size: 24px;
+}
+
+#d_07 {
+    border-radius: 10px;
+    border: 1px lightgray solid;
+    background-color: #9BBB59;
+    width: 170px;
+    height: 26px;
+    text-align: center;
+    margin: 5px 5px 5px 5px;
+    padding: 6px 0px 0px 0px;
+    float: right;
+}
+
+#d_07 button {
+    font-weight: bold;
+    width: auto;
+    height: auto;
+    padding: 0px;
+    margin: 0px;
+    background: none;
+    border: 0px;
+    line-height: 20px;
+    overflow: visible;
+    cursor: pointer;
+    color: white;
+    font-size: 20px;
+}
+
+#d_08 {
+    font-size: 14px;
+    font-weight: bold;
+    float: left;
+    margin: 5px;
+    margin-left: 25px;
+    padding: 5px;
+    padding-left: 20px;
+    width: 550px;
+}
+
+#d_09 {
+    border-radius: 10px;
+    border: 1px lightgray solid;
+    background-color: #9BBB59;
+    width: 170px;
+    height: 26px;
+    text-align: center;
+    margin: 5px 5px 5px 65px;
+    padding: 6px 0px 0px 0px;
+}
+
+#d_09 button {
+    font-weight: bold;
+    background: none;
+    border: 0px;
+    line-height: 20px;
+    overflow: visible;
+    cursor: pointer;
+    color: white;
+    font-size: 20px;
+}
+
+#d_10 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+    padding-left: 20px;
+    width: 500px;
+}
+
+#lbl_01 {
+	font-size: 16px;
+	text-align: left;
+	color: green;
+	margin: 5px;
+}
+
+#lbl_02 {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+	color: #0070C0;
+	margin: 5px;
+}
+
+#lbl_03 {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+	padding: 5px;
+	margin-left: 25px;
+}
+
+#lbl_04 {
+	font-weight: bold;
+	text-align: left;
+	float: left;
+	margin: 5px 00px 0px 15px;
+}
+
+#lbl_05 {
+	font-weight: bold;
+	text-align: right;
+	margin: 5px 15px 0px 0px;
+}
+
+#lbl_06 {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    margin: 5px;
+}
+
+/* 注文情報 */
+#order_info {
+	width: 360px;
+	text-align: center;
+	background-color: #FFFFFF;
+	padding: 5px;
+	margin: 5px 0px 5px 5px;
+	margin-left: 25px;
+	float: left;
+}
+
+/* 請求情報 */
+#bill_info {
+	width: 180px;
+	font-weight: bold;
+	background-color: #FFFFFF;
+	padding: 5px;
+	margin: 5px 0px 5px 5px;
+	float: left;
+}
+
+#menu {
+	width: 220px;
+	background-color: #FFFFFF;
+	margin: 30px 25px 5px 5px;
+	padding-right: 5px;
+	float: right;
+}
+
+/* 注文情報詳細 */
+#order_detail {
+	width: 585px;
+	text-align: center;
+	background-color: #FFFFFF;
+	float: left;
+}
+
+#order_detail table {
+	padding: 0px;
+	margin: 0px 0px 5px 25px;
+}
+
+/*テーブルの緑色TH 例：注文明細*/
+.th_01 {
+	background-color: #E4EDD1;
+	color: #000000;
+	font-weight: normal;
+	text-align: left;
+	padding: 3px;
+	font-size: 14px:
+}
+
+/* 請求先情報 */
+/* 配送先情報 */
+#cust_info,
+#deli_info {
+	width: 585px;
+	background-color: #FFFFFF;
+	padding: 5px;
+	margin: 5px 0px 5px 5px;
+	float: left;
+}
+
+#cust_info table,
+#deli_info table {
+	padding: 0px;
+	margin: 0px 0px 10px 35px;
+}
+
+#info_title {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+	margin-left: 25px;"
+}
+
+/* 会員情報 */
+td.member_info {
+	background-color: #E4EDD1;
+	font-size: 12px;
+}
+
+td.member_info2 {
+	background-color: #9BBB59;
+	font-size: 12px;
+}
+
+/* 緑ボタン */
+#green_btn {
+	border-radius: 8px;
+	background-color: #9BBB59;
+	color: #FFFFFF;
+	width: 190px;
+	height: 60px;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	padding: 15px 0px 15px 0px;
+	margin: 5px;
+}
+
+/* 赤ボタン */
+#red_btn {
+	border-radius: 8px;
+	background-color: #C0504D;
+	color: #FFFFFF;
+	width: 190px;
+	height: 60px;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	padding: 15px 0px 15px 0px;
+	margin: 5px;
+}
+
+/*  */
+#paySelect_btn {
+    border-radius: 8px;
+    background-color: #9BBB59;
+    color: #FFFFFF;
+    height: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: left;
+    padding: 5px 0px 5px 0px;
+    margin: 5px;
+    width: 70px;
+}
+
+/*  */
+#payHelp_btn {
+    border-radius: 8px;
+    border: 1px #86a644 solid;
+    background-color: #FFFFFF;
+    color: #9BBB59;
+    height: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: left;
+    padding: 5px 0px 5px 0px;
+    margin: 5px;
+    width: auto;
+}
+
+.tb_05 {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    font-weight: bold;
+    font-variant: normal;
+    font-style: normal;
+    font-size: 15px;
+    width: 350px;
+    height: 28px;
+}
+
+.tb_06 {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    width: 80px;
+}
+
+.tb_07 {
+	margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    font-weight: normal;
+    font-variant: normal;
+    font-style: normal;
+    font-size: 12px;
+    width: 80px;
+}
+
+.tb_08 {
+    width: 20px;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    font-weight: normal;
+    font-variant: normal;
+    font-style: normal;
+}
+

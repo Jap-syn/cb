@@ -1,0 +1,129 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+<!--
+.damage {
+}
+
+.damage .target_cell {
+	background-color: #ffddff;
+}
+
+/* [paging] */
+.page_nav {
+	border-top-width: 1px;
+	margin-bottom: -5px;
+}
+-->
+</style></head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">入金確認</h3>
+    <div style="clear:both;">
+      <div id="lbl1">
+        <table style="margin-top: 75px; margin-bottom:75px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+          <tr>
+            <td colspan="2" class="c_label">入金確認待ち</td>
+            <td colspan="2" class="c_label">初回請求期限切れ</td>
+          </tr>
+          <tr>
+            <td width="100" class="r_data"><span class="cnt"><?php echo $this->confirmationCnt; ?>　件</span></td>
+            <td width="150" class="r_data"><span class="cnt"><?php echo $this->valueFormat($this->confirmationAmount, 'number', '#,##0'); ?>　円</span></td>
+            <td width="100" class="r_data"><span class="cnt"><?php echo $this->expireCnt; ?>　件</span></td>
+            <td width="150" class="r_data"><span class="cnt"><?php echo $this->valueFormat($this->expireAmount, 'number', '#,##0'); ?>　円</span></td>
+          </tr>
+        </table>
+      </div>
+      <div id="cmd1"><a href="rwrcptcfm/impbpform">銀行・郵便局CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impform">コンビニ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/imptform">ところくん入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impcfform">ＣＦ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impjpform">ゆうちょ入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impapform">アプラス入金CSVインポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impatpayform">＠Payment(EG社)インポート</a></div>
+      <div id="cmd1"><a href="rwrcptcfm/impatpaycbform">＠ペイメントインポート</a></div>
+    </div>
+	<div style="clear: both; float: none;">&nbsp;</div>
+	<?php /*echo $this->render('page_navigation.php');*/ ?>
+    <form name="form" method="post" action="rwrcptcfm/confirm">
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+          	<th>注文ID</th>
+          	<th>初回<br />期限</th>
+          	<th>最終<br />請求</th>
+          	<th>支払<br />期限</th>
+          	<th>請求</th>
+          	<th>属性</th>
+          	<th>請求先氏名</th>
+          	<th>請求額</th>
+          	<th>入金形態</th>
+          	<th>入金日</th>
+          	<th>実入金額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?> 
+          <tr <?php echo $this->list[$i]["DamageRecord"]; ?>>
+            <td class="l_data target_cell">
+              <input type="hidden" name="OrderSeq<?php echo $i; ?>" id="OrderSeq<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderSeq"]; ?>" />
+              <input type="hidden" name="OrderId<?php echo $i; ?>" id="OrderId<?php echo $i; ?>" value="<?php echo $this->list[$i]["OrderId"]; ?>" />
+              <input type="hidden" name="OutOfAmends<?php echo $i; ?>" id="OutOfAmends<?php echo $i; ?>" value="<?php echo $this->list[$i]["OutOfAmends"]; ?>" />
+              <?php echo $this->list[$i]["OrderId"]; ?>
+            </td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["Clm_F_LimitDate"]; ?></td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["Clm_L_ClaimDate"]; ?></td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["Clm_L_LimitDate"]; ?></td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["Clm_L_ClaimPattern"]; ?></td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["IncreArCaption"]; ?></td>
+            <td class="l_data target_cell">
+              <input type="hidden" name="NameKj<?php echo $i; ?>" id="NameKj<?php echo $i; ?>" value="<?php echo $this->list[$i]["NameKj"]; ?>" />
+              <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>">
+                <?php echo $this->list[$i]["NameKj"]; ?>
+              </a>
+            </td>
+            <td class="r_data target_cell">
+              <input type="hidden" name="ClaimTotalAmount<?php echo $i; ?>" id="ClaimTotalAmount<?php echo $i; ?>" value="<?php echo $this->list[$i]["ClaimTotalAmount"]; ?>" />
+              <?php echo f_nf($this->list[$i]["ClaimTotalAmount"], '#,##0'); ?>
+            </td>
+            <td class="c_data target_cell"><?php echo $this->list[$i]["receiptFormTag"]; ?></td>
+            <td class="l_data target_cell">
+              <input size="13" style="text-align: right;" type="text" name="Rct_ReceiptDate<?php echo $i; ?>" id="Rct_ReceiptDate<?php echo $i; ?>" />
+            </td>
+            <td class="r_data target_cell">
+              <input size="10" style="text-align: right;" type="text" name="Rct_ReceiptAmount<?php echo $i; ?>" id="Rct_ReceiptAmount<?php echo $i; ?>" />
+            </td>
+          </tr>
+          <tr class="border">
+            <td>
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="12" class="c_data">
+              <input type="hidden" name="page" value="<?php echo $this->current_page; ?>" />
+              <input type="submit" value="　　入金確定　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

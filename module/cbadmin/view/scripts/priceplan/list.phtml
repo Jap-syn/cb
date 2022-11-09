@@ -1,0 +1,53 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/priceplan/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">加盟店料金プラン一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>料金プラン</th>
+            <th>月額固定費</th>
+            <th>決済上限額</th>
+            <th>決済手数料率</th>
+            <th>請求手数料（別送）</th>
+            <th>請求手数料（同梱）</th>
+            <th>再請求手数料</th>
+            <th>無効</th>
+            <th>&nbsp;</th>
+          </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td class="l_data"><?php echo $row['PricePlanName']; ?></td>
+            <td class="r_data"><?php echo valueFormat($row['MonthlyFee'], 'number', '#,##0') . '円'; ?></td>
+            <td class="r_data"><?php echo valueFormat($row['SettlementAmountLimit'], 'number', '#,##0') . '円'; ?></td>
+            <td class="r_data"><?php echo doubleval($row['SettlementFeeRate']) . '％'; ?></td>
+            <td class="r_data"><?php echo valueFormat($row['ClaimFeeBS'], 'number', '#,##0') . '円'; ?></td>
+            <td class="r_data"><?php echo valueFormat($row['ClaimFeeDK'], 'number', '#,##0') . '円'; ?></td>
+            <td class="r_data"><?php echo valueFormat($row['ReClaimFee'], 'number', '#,##0') . '円'; ?></td>
+            <td class="c_data"><?php if ($row['ValidFlg'] == 1) echo ''; else echo '無効'; ?></td>
+            <td class="c_data"><a href="priceplan/edit/ppid/<?php echo $row['PricePlanId']; ?>">編集</a></td>
+          </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

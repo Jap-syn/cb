@@ -1,0 +1,896 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+<style type="text/css">
+h3#content-title.loading {
+	color: #444;
+	border-left-color: darkgoldenrod;
+	background-color: #ffd030;
+}
+div.command-bar {
+	margin: 5px 25px;
+	padding: 5px;
+	padding-left: 10px;
+	border: solid 1px silver;
+}
+#contents dl.legend {
+	border: double 3px gray;
+	background-color: lemonchiffon;
+	font-size: 13px;
+	margin-bottom: 20px;
+}
+dl.legend dt {
+	margin-left: 5px;
+}
+dl.legend dd {
+	
+}
+ul.legend-list {
+	list-style: none;
+}
+ul.legend-list li label {
+	font-weight: bold;
+}
+ul.legend-list li.notice {
+}
+ul.legend-list li.warn {
+	color: firebrick;
+}
+
+table#proc-table tr.odd {
+	background-color: azure;
+}
+table#proc-table tr.even {
+	background-color: white;
+}
+table#proc-table td {
+	padding: 4px 2px;
+	font-size: 11px;
+	line-height: 1.25;
+}
+table#proc-table tr.notice td,
+table#proc-table tr.warn td {
+	font-weight: bold;
+}
+table#proc-table tr.warn td {
+	color: firebrick;
+}
+#proc-list .col_thread_id,
+#proc-list .col_time {
+	text-align: right;
+}
+#proc-list .col_cmd {
+	text-align: center;
+}
+#proc-list .col_cmd button {
+	padding: 2px 6px;
+}
+#console {
+	margin: 5px 25px;
+	margin-top: 0px;
+	font-size: 12px;
+	height: 150px;
+	padding: 0;
+	overflow: auto;
+	border: solid 1px silver;
+}
+#console .log {
+	white-space: nowrap;
+	padding: 1px;
+	border: dotted 1px silver;
+	line-height: 16px;
+}
+#console .log.error {
+	background-color: mistyrose;
+	color: firebrick;
+	font-weight: bold;
+	line-height: 14px;
+}
+
+a.custom-button {
+	display: inline-block;
+	border: solid 1px silver;
+	padding: 0px 16px;
+	color: dimgray;
+}
+a.custom-button:hover {
+	text-decoration: none;
+	background-color: azure;
+	color: blue;
+}
+#toggle-slowlog-visible {
+	float: right;
+	position: relative;
+	margin-right: 8px;
+}
+.badge-outer {
+	display: block;
+	height: 16px;
+	line-height: 16px;
+	font-size: 10px;
+	border: solid 1px #666;
+	background-color: white;
+	text-align: center;
+	-moz-border-radius: 9px;
+	border-radius: 9px;
+	position: absolute;
+	right: -12px;
+	top: -5px;
+}
+.badge-inner {
+	display: block;
+	height: 12px;
+	line-height: 12px;
+	border: solid 1px gray;
+	background-color: silver;
+	font-weight: bold;
+	color: white;
+	text-align: center;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+	margin: 1px;
+	padding: 0 4px;
+}
+#slowlog-count-badge {
+	background-color: red;
+	border-color: firebrick;
+}
+
+#slowlog-container {
+	width: 813px;
+	overflow: hidden;
+}
+#slowlog-container.visible {
+	min-height: 150px !important;
+}
+#slowlog-table {
+	width: 813px;
+	margin-right: 0px;
+}
+table#slowlog-table tr.odd {
+	background-color: azure;
+}
+table#slowlog-table tr.even {
+	background-color: white;
+}
+table#slowlog-table td {
+	padding: 4px 2px;
+	font-size: 11px;
+	line-height: 1.25;
+}
+#slowlog-list .col_thread_id,
+#slowlog-list .col_start,
+#slowlog-list .col_time {
+	text-align: right;
+}
+#slowlog-list .col_cmd {
+	text-align: center;
+}
+#proc-list .clickable,
+#slowlog-list .clickable {
+	cursor: pointer;
+}
+#slowlog-metadata {
+	margin: 6px;
+	border: double 3px;
+	padding: 1px 4px;
+}
+#slowlog-command {
+	width: 790px;
+	height: 280px;
+	font-size: 12px;
+}
+#slowlog-action-container {
+	margin: 8px 0;
+	padding: 4px;
+	border: none 0px;
+	border-top: insert 2px;
+	text-align: right;
+}
+#close-slowlog-detail {
+	padding: 2px 8px;
+}
+
+#time-gauge-container {
+	margin: 0;
+	margin-top: 5px;
+	background-color: white;
+	display: inline-block;
+	position: relative;
+	width: 5px;
+	height: 14px;
+	overflow: hidden;
+	border: solid 1px silver;
+}
+#time-gauge-container.disabled {
+	border-color: transparent;
+}
+#time-gauge {
+	position: absolute;
+	bottom: 0;
+	background-color: limegreen;
+	width: 100%;
+	height: 100%;
+}
+#time-gauge.step1 {
+	background-color: limegreen;
+}
+#time-gauge.step2 {
+	background-color: limegreen;
+}
+#time-gauge.step3 {
+	background-color: yellowgreen;
+}
+#time-gauge.step4 {
+	background-color: orange;
+}
+#time-gauge.step5 {
+	background-color: darkorange;
+}
+
+</style>
+<script type="text/javascript">
+window.pollingTimer = null;
+window.pollingStepTimer = null;
+window.pollingInterval = 5000;
+
+var Application = {
+	baseUrl : (document.getElementsByTagName('base')[0] || { href : '' }).href,
+	
+	// nvl ユーティリティ
+	nvl : function (data, if_null) {
+		if (if_null == null) if_null = '';
+		return data === null ? if_null : data;
+	},
+	
+	// パス結合ユーティリティ
+	buildPath : function (path1, path2) {
+		return [Application.nvl(path1).replace(/[\/]*$/, ''), Application.nvl(path2).replace(/^[\/]*/, '')].join('/');
+	},
+	
+	// AjaxリクエストURL構築ユーティリティ
+	buildAppPath : function (path) {
+		return Application.buildPath(Application.baseUrl, Application.nvl(path));
+	}
+	
+};
+
+var ComboStorage = Object.extend(Class.create(), {
+	cookieName : 'ComboStorageStore',
+	hasLocalStorage :
+		('localStorage' in window) &&
+		('setItem' in window.localStorage) &&
+		(window.localStorage.setItem instanceof Function),
+	
+	__instances : {},
+	
+	getStorage : function(key) {
+		return (!(key in ComboStorage.__instances)) ?
+			new ComboStorage(key, arguments[1]) :
+			ComboStorage.__instances[key];
+	},
+	getAllStorages : function() {
+		return Object.extend({}, ComboStorage.__instances);
+	},
+	__setInstance : function(instance) {
+		if(instance instanceof ComboStorage) {
+			var key = instance.key;
+			ComboStorage.__instances[key] = instance;
+		}
+	}
+	
+});
+ComboStorage.prototype = {
+	initialize : function(key, useCookie) {
+		this.key = key;
+		this.useCookie = !!useCookie;
+		this._data = null;
+		if(ComboStorage.hasLocalStorage) {
+			this._data = window.localStorage[this.key];
+		} else if(this.useCookie) {
+			var cookie =
+				Application.nvl(new CookieManager().getCookie(ComboStorage.cookieName), '{}')
+					.parseJSON();
+			this._data = (key in cookie) ? cookie[key] : null;
+		}
+		ComboStorage.__setInstance(this);
+	},
+	hasData : function() {
+		return this._data != null;
+	},
+	load : function() {
+		var result = null;
+		if(this.hasData()) {
+			try {
+				result = this._data.parseJSON();
+			} catch(e) {
+				this._data = null;
+			}
+		}
+		return result;
+	},
+	save : function(value) {
+		var data = this._data = (value != null ? value.toJSONString() : null);
+		if(ComboStorage.hasLocalStorage) {
+			if(data != null) {
+				window.localStorage[this.key] = data;
+			} else {
+				delete window.localStorage[this.key];
+			}
+		} else if(this.useCookie) {
+			var cookie =
+				Application.nvl(new CookieManager().getCookie(ComboStorage.cookieName), '{}')
+					.parseJSON();
+			if(data != null) {
+				cookie[this.key] = data;
+			} else {
+				delete cookie[this.key];
+			}
+			new CookieManager()
+				.setCookie(ComboStorage.cookieName, cookie.toJSONString());
+		}
+		return this;
+	}
+};
+var SlowLog = Class.create();
+SlowLog.prototype = {
+	/**
+	 * options:
+	 *  - threshold : Number
+	 *  - limit : Number
+	 *  - onChange : Function
+	 */
+	initialize : function(options) {
+		options = Object.extend({
+			threshold : 600,
+			limit : 10,
+			onChange : Prototype.K
+		}, options);
+		this._threshold = (isNaN(options.threshold) || parseInt(options.threshold) < 1) ?
+			600 : parseInt(options.threshold);
+		this._limit = (isNaN(options.limit) || parseInt(options.limit) < 1) ?
+			1 : (parseInt(options.limit) > 100 ? 100 :  parseInt(options.limit));
+		this.onChange = (options.onChange && options.onChange instanceof Function) ? options.onChange : Prototype.K;
+		this._list = [];
+		
+		this._storageKey = 'cbadmin-dbstatus-slowlog';
+		this._storage = ComboStorage.getStorage(this._storageKey);
+		this._load();
+	},
+	count : function() {
+		return this._list.length;
+	},
+	getAll : function() {
+		return [].concat(this._list).sort(function(a, b) {
+			if(a.time == b.time) {
+				if(a.start == b.start) {
+					return a.thread_id < b.thread_id ? 1 : -1;
+				}
+				return a.start < b.start ? 1 : -1;
+			}
+			return a.time < b.time ? 1 : -1;
+		});
+	},
+	findBy : function(conf) {
+		return this._list.findAll(function(log) {
+			var result = false;
+			$H(conf).each(function(pair) {
+				if((pair.key in log) && log[pair.key] == pair.value) {
+					result = true;
+					throw $break;
+				}
+			});
+			return result;
+		});
+	},
+	find : function(thread_id) {
+		var result = this.findBy({thread_id : thread_id});
+		return result && result[0];
+	},
+	append : function(log) {
+		if(log.time >= this._threshold && /^select\s/i.test(log.info.trim())) {
+			var current = this._list.find(function(value, index) {
+				return value.thread_id == log.thread_id;
+			});
+			var changed = false;
+			if(current) {
+				current.time = log.time;
+				changed = true;
+			} else {
+				var dump = this.getAll().toJSONString();
+				var start = new Date(new Date().valueOf() - (log.time * 1000)).format('yyyy-MM-dd HH:mm:ss');
+				this._list.push(Object.extend({ start : start }, log));
+				if(this._list.length > this._limit) this._compact();
+				changed = this.getAll().toJSONString() != dump;
+			}
+			this._save();
+			if(changed) this._onchange();
+		}
+		return this;
+	},
+	remove : function(thread_id) {
+		var current_count = this._list.length;
+		this._list = this._list.findAll(function(value, index) {
+			return value.thread_id != thread_id;
+		});
+		this._save();
+		if(this._list.length != current_count) this._onchange();
+		return this;
+	},
+	_compact : function() {
+		this._list = this.getAll().slice(0, this._limit);
+		this._save();
+		return this;
+	},
+	_save : function() {
+		var cache = {
+			list : this._list,
+			threshold : this.threshold,
+			limit : this.limit
+		};
+		this._storage.save(cache);
+	},
+	_load : function()  {
+		var cache = this._storage.load();
+		if(cache) {
+			this._list = cache.list;
+			this.threshold = cache.thrhreshold;
+			this.limit = cache.threshold;
+			this._save();
+			this._onchange();
+		}
+		return this;
+	},
+	_onchange : function() {
+		((this.onChange && (this.onChange instanceof Function) && this.onChange) || Prototype.K)(this);
+	}
+};
+Event.observe(window, 'load', function() {
+	Ajax.Responders.register({
+		onCreate : function() {
+			new Element.ClassNames($('content-title')).add('loading');
+		},
+		onComplete : function() {
+			new Element.ClassNames($('content-title')).remove('loading');
+		}
+	});
+	
+	// ログ出力
+	function log(msg, isError) {
+		var limit = 300;	// 表示の上限
+		
+		var line = Object.extend(document.createElement('div'), {
+			className : ['log', (isError ? 'error' : null)].compact().join(' '),
+			innerHTML : '[{0:yyyy-MM-dd HH:mm:ss.fff}] {1}'.format(new Date(), Application.nvl(msg)).escapeHTML()
+		});
+		$('console').appendChild(line);
+		
+		// 自動スクロール
+		var f = function() {
+			$('console').scrollTop = $('console').scrollHeight;
+		};
+		
+		// 上限に達したら古いログから削除
+		var line_nums = $('console').childNodes.length;
+		if(line_nums > limit) {
+			setTimeout(function() {
+				for(var i = line_nums - limit; i > 0; i--) {
+					$('console').removeChild($('console').childNodes[0]);
+				}
+				setTimeout(f, 0);
+			}, 0);
+		} else {
+			setTimeout(f, 0);
+		}
+	}
+	
+	// エラーログ出力
+	function err_log(msg) {
+		log(msg, true);
+	}
+	
+	// プロセスリストを非同期取得し表示を更新する
+	function fetchProcList() {
+		var
+			options = {
+				method : 'post',
+				asynchronous : true,
+				onComplete : function(xhr) {
+					var data = xhr.responseText.parseJSON();
+					if(!data) {
+						// JSON形式でない場合
+						throw new Error('invalid response: cannot parse to JSON');
+					}
+					
+					// パースした結果が配列でなく、'error'プロパティがあったら
+					// サーバ側エラー
+					if(!(data instanceof Array) && 'error' in data) {
+						throw new Error(data.error);
+					}
+					
+					$('proc-list').innerHTML = '';
+					
+					// 行クラスを決定するヘルパー
+					var calcRowClass = function(data) {
+						// 60分を超過しているクエリはwarn
+						if(data.time > 3600) return 'warn';
+						
+						// 10分を超過しているクエリはnotice
+						if(data.time > 600) return 'notice';
+						
+						return '';
+					};
+					
+					// 不要行のトリミング
+					data = data.findAll(function(item) {
+						if(/show (full )?processlist/.test(item.info)) return false;
+						if(!item.state.length && !item.info.length) return false;
+						return true;
+					});
+					
+					var warn_count = 0, notice_count = 0;
+					data.each(function(item, idx) {
+						var row = Object.extend(document.createElement('tr'), {
+							className : idx % 2 ? 'odd' : 'even'
+						});
+						var cls = calcRowClass(item);
+						if(cls == 'notice') notice_count++;
+						if(cls == 'warn') warn_count++;
+						new Element.ClassNames(row).add(cls);
+						$('proc-list').appendChild(row);
+						
+						['thread_id', 'host_sign', 'time', 'state', 'info', 'cmd'].each(function(key) {
+							if(key == 'cmd') {
+								// コマンドボタンセル
+								var btn = Object.extend(document.createElement('button'), {
+									type : 'button',
+									innerHTML : '強制終了'
+								});
+								var col = Object.extend(document.createElement('td'), {
+									className : 'col_cmd'
+								});
+								row.appendChild(col);
+								// noticeかwarnで且つSELECT文の場合のみ強制終了可能
+								if(/^select\s/i.test(item.info.trim()) && (cls == 'notice' || cls == 'warn')) {
+									col.appendChild(btn);
+									Event.observe(btn, 'click', makeHandler(item.thread_id).bindAsEventListener(btn));
+								}
+							} else {
+								// データセル
+								var text = String(item[key]), limit = 180;
+								if(key == 'info') {
+									// ステートメント情報の整形
+									text = text.replace(/((\r\n)|[\r\n\s])/g, ' ').replace(/\s+/g, ' ');
+									if(text.length > limit) text = text.substr(0, limit - 1) + '...';
+								}
+								row.appendChild(Object.extend(document.createElement('td'), {
+									innerHTML : text.escapeHTML(),
+									className : ['col_' + key, key == 'info' ? 'clickable' : null].compact().join(' '),
+									title : (key == 'info' ? item.info : '').escapeHTML(),
+									ondblclick : key == 'info' ?
+										function() {
+											var title = 'スレッドID: {0} / 実行時間: {1} sec'.format(
+												item.thread_id || '-',
+												item.time || '-'
+											).escapeHTML();
+											var sql = item.info;
+											showSql(sql, title);
+										} : Prototype.emptyFunction
+								}));
+							}
+						});
+					});
+					
+					// warnかnoticeのデータがある場合はログにも出力する
+					if(warn_count + notice_count > 0) {
+						var msg = '{0} 件のプロセス（要注意：{1} 件、注意：{2} 件）'.format(data.length,warn_count, notice_count);
+						if(warn_count || (warn_count + notice_count) > 4) {
+							// warnがあるか、noticeが5件以上ある場合はエラーログ
+							err_log(msg);
+						} else {
+							log(msg);
+						}
+					}
+					terminate();
+					
+					data.each(function(item) {
+						window.slowlog.append(item);
+					});
+				},
+				onException : function(ajax, err) {
+					// 処理エラー時はエラーログを出力
+					err_log(err);
+					terminate();
+				}
+			},
+			terminate = function() {
+				// 非同期リクエスト終了処理
+			},
+			makeHandler = function(thread_id) {
+				// 「強制終了」ボタン向けにスレッドIDを拘束したメソッドを生成
+				return function() {
+					log('スレッドID {0} を強制終了'.format(thread_id));
+					new Ajax.Request(Application.buildAppPath('dbstatus/killproc'), Object.extend({
+						postBody : $H({
+							thread_id : thread_id || -1
+						}).toQueryString()
+					}, options));
+				};
+			};
+		new Ajax.Request(Application.buildAppPath('dbstatus/proclist'), options);
+	}
+	
+	var resetPolling = function(isSuspend) {
+		if(pollingTimer) clearInterval(pollingTimer);
+		if(pollingStepTimer) clearInterval(pollingStepTimer);
+		var radios = document.getElementsByClassName('polling-interval');
+		new Element.ClassNames($('time-gauge')).each(function(cn) {
+			new Element.ClassNames($('time-gauge')).remove(cn);
+		});
+		if(isSuspend) {
+			new Element.ClassNames($('time-gauge-container')).add('disabled');
+			Element.hide($('time-gauge'));
+			pollingTimer = null;
+			pollingStepTimer = null;
+			log('継続監視を停止');
+			radios.each(function(radio) { radio.disabled = true; });
+		} else {
+			new Element.ClassNames($('time-gauge-container')).remove('disabled');
+			Element.show($('time-gauge'));
+			pollingTimer = setInterval(fetchProcList, pollingInterval);
+			log('継続監視を開始：監視間隔 = {0} 秒ごと'.format(pollingInterval / 1000));
+			radios.each(function(radio) { radio.disabled = false; });
+			
+			if(pollingInterval >= 2000) {
+				var step = 0, stepInterval = parseInt(pollingInterval / 50);
+				pollingStepTimer = setInterval(function() {
+					step++;
+					var stepClass = Math.floor(step / 10) + 1;
+					new Element.ClassNames($('time-gauge')).set('step{0}'.format(stepClass));
+					$('time-gauge').style.height = '{0}%'.format(100 - (step * 2));
+					if(step >= 50) {
+						step = 0;
+						setTimeout(function() {
+							new Element.ClassNames($('time-gauge')).each(function(cn) {
+								new Element.ClassNames($('time-gauge')).remove(cn);
+							});
+						}, stepInterval / 2);
+					}
+				}, stepInterval);
+			} else {
+				new Element.ClassNames($('time-gauge-container')).add('disabled');
+				Element.hide($('time-gauge'));
+			}
+		}
+	};
+	
+	// 継続監視チェックボックス
+	Event.observe($('do-polling'), 'change', function() {
+		setTimeout(function() {
+			if($('do-polling').checked) {
+				fetchProcList();
+				resetPolling();
+			} else {
+				resetPolling(true);
+			}
+		}, 0);
+	}.bindAsEventListener($('do-polling')));
+	
+	// 継続間隔設定ラジオボタン
+	document.getElementsByClassName('polling-interval').each(function(radio) {
+		Event.observe(radio, 'click', function(evt) {
+			pollingInterval = Number(this.value);
+			resetPolling();
+		}.bindAsEventListener(radio));
+	});
+	Event.observe($('toggle-slowlog-visible'), 'click', function() {
+		var
+			target_id = 'slowlog-container',
+			trigger_id = 'toggle-slowlog-visible';
+		if(Element.visible($(target_id))) {
+			$(trigger_id + '-label').innerHTML = '重い処理の履歴を表示';
+			new Element.ClassNames($(target_id)).remove('visible');
+			bytefx.size($(target_id), { width : 843, height : 0 }, 25, function() {
+				Element.hide($(target_id));
+				$(target_id).style.height = 'auto';
+				new Element.ClassNames($(target_id)).add('visible');
+			});
+		} else {
+			$(trigger_id + '-label').innerHTML = '重い処理の履歴を隠す';
+			new Element.ClassNames($(target_id)).remove('visible');
+			$(target_id).style.height = '0px';
+			Element.show($(target_id));
+			bytefx.size($(target_id), { width : 843, height : 150 }, 25, function() {
+				$(target_id).style.height = 'auto';
+				new Element.ClassNames($(target_id)).add('visible');
+				updateSlowLogView();
+			});
+		}
+	});
+	Event.observe($('refresh-slowlog'), 'click', updateSlowLogView);
+	
+	function updateSlowLogView() {
+		$('slowlog-list').innerHTML = '';
+		var
+			makeHandler = function(thread_id) {
+				return function() {
+					window.slowlog.remove(thread_id);
+					updateSlowLogView();
+				};
+			},
+			makePopupHandler = function(thread_id) {
+				return function() {
+					showSlowLogDetail(thread_id);
+				};
+			};
+		window.slowlog.getAll().each(function(log, idx) {
+			var row = Object.extend(document.createElement('tr'), {
+				className : idx % 2 ? 'odd' : 'even'
+			});
+			$('slowlog-list').appendChild(row);
+			
+			['thread_id', 'start', 'time', 'info', 'cmd'].each(function(key) {
+				if(key == 'cmd') {
+					// コマンドボタンセル
+					var btn = Object.extend(document.createElement('button'), {
+						type : 'button',
+						innerHTML : '削除'
+					});
+					var col = Object.extend(document.createElement('td'), {
+						className : 'col_cmd'
+					});
+					col.appendChild(btn);
+					row.appendChild(col);
+					Event.observe(btn, 'click', makeHandler(log.thread_id));
+				} else {
+					// データセル
+					var text = String(log[key]), limit = 80;
+					if(key == 'info') {
+						// ステートメント情報の整形
+						text = text.replace(/((\r\n)|[\r\n\s])/g, ' ').replace(/\s+/g, ' ');
+						if(text.length > limit) text = text.substr(0, limit - 1) + '...';
+					}
+					var col = Object.extend(document.createElement('td'), {
+						innerHTML : text.escapeHTML(),
+						className : ['col_' + key, key == 'info' ? 'clickable' : null].compact().join(' '),
+						title : (key == 'info' ? log.info : '').escapeHTML()
+					});
+					row.appendChild(col);
+					if(key == 'info') {
+						Event.observe(col, 'dblclick', makePopupHandler(log.thread_id));
+					}
+				}
+			});
+		});
+		$('refresh-slowlog').disabled = true;
+	}
+	function showSlowLogDetail(thread_id) {
+		var log = window.slowlog.find(thread_id);
+		var title = 'スレッドID: {0} / 開始日時: {1} / 実行時間: {2} sec'.format(
+			log.thread_id,
+			log.start,
+			log.time
+		).escapeHTML();
+		var sql = log.info;
+		showSql(sql, title);
+	}
+	
+	window.slowlog = new SlowLog({
+		threshold : 60,
+		limit : 10,
+		onChange : function(slowlog) {
+			$('slowlog-count-badge').innerHTML = '{0}'.format(slowlog.count()).escapeHTML();
+			$('refresh-slowlog').disabled = false;
+			bytefx.color(
+				$('slowlog-count-badge'),
+				'backgroundColor',
+				'#ffff00', '#ff0000', 3,
+				function() {
+					$('slowlog-count-badge').style.backgroundColor = null;
+				} );
+		}
+	});
+	window.slowlogPopup = new NetB.UI.ModalDialog(
+		$('slowlog-detail'),
+		{
+			title: '重い処理の詳細',
+			width: 800,
+			height: 400,
+			draggable: true
+		}
+	);
+	Element.show($('slowlog-detail'));
+	Event.observe($('close-slowlog-detail'), 'click', function() {
+		window.slowlogPopup.close();
+	});
+	
+	fetchProcList();
+	resetPolling();
+});
+function showSql(sql, title) {
+	$('slowlog-metadata').innerHTML = title || 'SQL詳細';
+	$('slowlog-command').value = sql;
+	window.slowlogPopup.open();
+}
+
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 id="content-title" class="contents_title">データベースステータス</h3>
+	<dl class="legend">
+		<dt>凡例</dt>
+		<dd>
+			<ul class="legend-list">
+				<li class="notice"><label>太字</label> ... 10分以上応答がない要求</li>
+				<li class="warn"><label>赤太字</label> ... 1時間以上応答がない要求。システム全体の負荷原因となっている可能性が高い</li>
+			</ul>
+		</dd>
+	</dl>
+	
+	<div class="command-bar">
+		<div id="time-gauge-container"><div id="time-gauge">&nbsp;</div></div>
+		<label><input id="do-polling" type="checkbox" checked="checked"/>継続監視</label>
+		<label style="margin-left: 40px"><input id="interval10" class="polling-interval" type="radio" name="polling-interval" value="10000" />10秒ごと</label>
+		<label><input id="interval5" class="polling-interval" type="radio" name="polling-interval" value="5000" checked="checked" />5秒ごと</label>
+		<label><input id="interval2" class="polling-interval" type="radio" name="polling-interval" value="2000" />2秒ごと</label>
+		<label><input id="interval1" class="polling-interval" type="radio" name="polling-interval" value="1000" />1秒ごと</label>
+		<label><input id="interval05" class="polling-interval" type="radio" name="polling-interval" value="500" />0.5秒ごと</label>
+		<a id="toggle-slowlog-visible" href="javascript:void(0)" class="custom-button">
+			<span id="toggle-slowlog-visible-label">重い処理の履歴を表示</span>
+			<span class="badge-outer"><span class="badge-inner" id="slowlog-count-badge">0</span></span>
+		</a>
+		<div id="slowlog-container" style="display: none">
+			<div style="text-align: right; margin-top: 10px;"><button id="refresh-slowlog" type="button" disabled="disabled">表示を更新</button></div>
+			<table id="slowlog-table" class="datatable" cellpadding="1" cellspacing="1" border="0">
+				<thead>
+					<tr>
+						<th style="width: 62px">スレッドID</th>
+						<th style="width: 120px">開始日時</th>
+						<th style="width: 50px">実行時間</th>
+						<th>処理内容</th>
+						<th style="width: 80px">操作</th>
+					</tr>
+				</thead>
+				<tbody id="slowlog-list"></tbody>
+			</table>
+		</div>
+	</div>
+	
+	<div style="min-height: 400px">
+		<table id="proc-table" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+			<thead>
+				<tr>
+					<th style="width: 62px">スレッドID</th>
+					<th style="width: 100px">接続</th>
+					<th style="width: 50px">実行時間</th>
+					<th style="width: 120px">状況</th>
+					<th>処理内容</th>
+					<th style="width: 100px">操作</th>
+				</tr>
+			</thead>
+			<tbody id="proc-list"></tbody>
+		</table>
+	</div>
+	<hr />
+	<h4>エラーログ</h4>
+	<div id="console"></div>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('page_footer.php'); ?>
+<div id="slowlog-detail" style="display: none">
+	<div id="slowlog-metadata"></div>
+	<textarea id="slowlog-command" readonly="readonly"></textarea>
+	<div id="slowlog-action-container">
+		<button id="close-slowlog-detail" type="button">閉じる</button>
+	</div>
+</div>
+</div>
+</body>
+</html>

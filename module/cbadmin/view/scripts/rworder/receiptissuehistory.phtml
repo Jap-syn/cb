@@ -1,0 +1,88 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+    <style type="text/css">
+        #contents table.datatable th,
+        #contents table.datatable td {
+            padding: 1px 2px;
+        }
+        #contents table.datatable tr.even td {
+            background-color: #f8f8f8;
+        }
+        #contents table.datatable .type {
+            width: 160px;
+        }
+        #contents table.datatable .date {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <?php echo $this->render('cbadmin/page_header.php'); ?>
+        <!-- start contents -->
+        <div id="contents">
+            <h3 class="contents_title">
+                <?php echo f_e($this->oc['NameKj']); ?>
+                (<?php echo f_e($this->oc['OrderId']); ?>　／　<span id="oseq"><?php echo f_e($this->oc['OrderSeq']); ?>)
+                の領収書履歴一覧
+            </h3>
+            <div style="text-align: right; width: 862px;">
+                <div style="float: left">
+                    <table style="width: 662px;margin: 5px 25px;" class="datatable" cellpadding="1" cellspacing="1">
+                        <tr>
+                            <td colspan="2" class="data" style="text-align: left;">【請求状況】</td>
+                        </tr>
+                        <tr>
+                            <th width="200">項目</th>
+                            <th>値</th>
+                        </tr>
+                        <tr>
+                            <td class="r_label">請求金額</td>
+                            <td class="l_data"><?php echo f_nf($this->oc['ClaimAmount'], '#,##0'); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">初回請求書発行日</td>
+                            <td class="l_data"><?php echo f_df($this->oc['F_ClaimDate'], 'Y/m/d'); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">決済確定日</td>
+                            <td class="l_data"><?php echo f_df($this->oc['CreditSettlementDecisionDate'], 'Y/m/d'); ?></td>
+                        </tr>
+                        <tr>
+                            <td class="r_label">領収書発行回数</td>
+                            <td class="l_data"><?php echo f_e($this->oc['ReceiptIssueCount']); ?></td>
+                        </tr>
+                    </table>
+                </div>
+                <a href="rworder/detail/oseq/<?php echo f_e($this->oc['OrderSeq']); ?>">注文詳細へ戻る</a>
+                <div style="clear: both; float: none; font-size: 0; height: 0; line-height: 0"></div>
+            </div>
+            <!-- count関数対策 -->
+            <?php if(!empty($this->list)) { ?>
+            <table style="width: 372px;margin: 5px 25px;" class="datatable" cellpadding="1" cellspacing="1" border="0">
+                <thead>
+                    <tr>
+                        <th class="type">領収書発行回数</th>
+                        <th class="date">領収書発行日時</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach(array_reverse($this->list) as $i => $his) { ?>
+                    <tr class="<?php echo f_e($i % 2 == 0 ? 'odd' : 'even'); ?>">
+                        <td class="c_data"><?php echo f_e($this->oc['ReceiptIssueCount'] - $i); ?></td>
+                        <td class="c_data"><?php echo f_df($his['ReceiptIssueDate'], 'Y/m/d H:i:s'); ?></td>
+                        <?php $i + 1; ?>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+            <?php } else { ?>
+            <div style="margin: 5px 25px">領収書発行履歴がありません</div>
+            <?php } ?>
+        </div>
+        <?php echo $this->render('cbadmin/page_footer.php'); ?>
+    </div>
+</body>
+</html>

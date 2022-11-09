@@ -1,0 +1,222 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwrcptcfm/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBC決済ステーションインポート</h3>
+	<h4><?php echo $this->message; ?></h4>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+			<th>決済手段</th>
+            <th>取込件数</th>
+            <th>支払金額総計</th>
+            <th>請求金額総計</th>
+            <th>差額総計</th>
+          </tr>
+          <?php if (isset($this->valid_items)) {
+                $convenienceStoreCount = 0;
+            	$postCount = 0;
+            	$bankCount = 0;
+            	$convenienceStoreReceiptAmount = 0;
+            	$postReceiptAmount = 0;
+            	$bankReceiptAmount = 0;
+            	$convenienceStoreClaimAmount = 0;
+            	$postClaimAmount = 0;
+            	$bankClaimAmount = 0;
+            	$convenienceStoreSagaku = 0;
+            	$postSagaku = 0;
+            	$bankSagaku = 0;
+            	?>
+          <?php foreach($this->valid_items as $item_data) { ?>
+		  <?php
+
+			/** @var LogicSmbcRelationReceiptItem */
+			$data = $item_data['data'];
+			$more_data = $this->more_infos[$item_data['index']];
+		  ?>
+
+            	<?php
+					switch($data->payWayType)
+					{
+						case 1:
+							$convenienceStoreCount++;
+							$convenienceStoreReceiptAmount += $data->receiptAmount;
+							$convenienceStoreClaimAmount += $more_data['claimAmount'];
+							$convenienceStoreSagaku += $more_data['sagaku'];
+							break;
+						case 2:
+						    $postCount++;
+						    $postReceiptAmount += $data->receiptAmount;
+						    $postClaimAmount += $more_data['claimAmount'];
+						    $postSagaku += $more_data['sagaku'];
+							break;
+						case 3:
+						    $bankCount++;
+						    $bankReceiptAmount += $data->receiptAmount;
+						    $bankClaimAmount += $more_data['claimAmount'];
+						    $bankSagaku += $more_data['sagaku'];
+							break;
+						default:
+							break;
+					}
+                }?>
+			 <?php if($convenienceStoreCount != 0){ ?>	          <tr>
+             <td class="l_data">
+             <?php echo 'コンビニ';  ?>
+			</td>
+			<td class="l_data">
+             <?php echo $convenienceStoreCount;  ?>
+			</td>
+            <td class="r_data"><?php echo f_e($convenienceStoreReceiptAmount); ?></td>
+            <td class="r_data"><?php echo f_e($convenienceStoreClaimAmount); ?></td>
+            <td class="r_data"><?php echo f_e($convenienceStoreSagaku); ?></td>
+          </tr>
+          <?php } ?>
+
+             <?php if($postCount != 0){ ?>	          <tr>
+             <td class="l_data">
+             <?php echo '郵便';  ?>
+			</td>
+			<td class="l_data">
+             <?php echo $postCount;  ?>
+			</td>
+            <td class="r_data"><?php echo f_e($postReceiptAmount); ?></td>
+            <td class="r_data"><?php echo f_e($postClaimAmount); ?></td>
+            <td class="r_data"><?php echo f_e($postSagaku); ?></td>
+          </tr>
+          <?php } ?>
+
+          	 <?php if($bankCount != 0){ ?>	          <tr>
+             <td class="l_data">
+             <?php echo '銀行';  ?>
+			</td>
+			<td class="l_data">
+             <?php echo $bankCount;  ?>
+			</td>
+            <td class="r_data"><?php echo f_e($bankReceiptAmount); ?></td>
+            <td class="r_data"><?php echo f_e($bankClaimAmount); ?></td>
+            <td class="r_data"><?php echo f_e($bankSagaku); ?></td>
+          </tr>
+          <?php } ?>
+
+          <?php } ?>
+        </tbody>
+      </table>
+      <br/>
+      <p>入金処理対象外データ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+			<th>決済手段</th>
+			<th>注文ID</th>
+          	<th>請求番号</th>
+            <th>決済受付番号</th>
+			<th>決ステ処理日</th>
+            <th>エラー情報</th>
+          </tr>
+          <?php foreach($this->error_items as $item_data) { ?>
+		  <?php
+			/** @var LogicSmbcRelationReceiptItem */
+			$data = $item_data['data'];
+		  ?>
+          <tr>
+            <td class="l_data">
+            	<?php
+				  if($data) {
+					  switch($data->payWayType)
+					  {
+						case 1:
+							echo 'コンビニ';
+							break;
+						case 2:
+							echo '郵振';
+							break;
+						case 3:
+							echo '銀行';
+							break;
+						default:
+							echo f_e('n/a:' . $data->billMethod);
+							break;
+					  }
+				  } else {
+					echo 'n/a';
+				  }
+				?>
+			</td>
+            <td class="l_data">
+			<?php if($data) { ?>
+			  <a href="rworder/detail/oseq/<?php echo f_e($data->orderSeq); ?>" target="_blank">
+				<?php echo f_e($data->orderId); ?>
+			  </a>
+			<?php } else { ?>
+			  n/a
+			<?php } ?>
+			</td>
+            <td class="l_data"><?php echo $data ? f_e($data->shopOrderNumber) : 'n/a'; ?></td>
+            <td class="l_data"><?php echo $data ? f_e($data->kessaiNumber) : 'n/a'; ?></td>
+            <td class="r_data"><?php echo $data ? f_e($data->processDate) : 'n/a'; ?></td>
+            <td class="l_data"><?php echo f_e($item_data['reason']); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+
+      <!-- count関数対策 -->
+      <?php if (!empty($this->cancel_items)) { ?>
+      <br/>
+      <p>取消対象データ</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>決済手段</th>
+            <th>注文ID</th>
+            <th>請求（補助）番号</th>
+            <th>決済受付番号</th>
+            <th>入金金額</th>
+          </tr>
+          <?php foreach($this->cancel_items as $item_data) { ?>
+          <tr>
+            <td class="l_data"><?php echo 'コンビニ'; ?></td>
+            <td class="l_data"><a href="rworder/detail/oseq/<?php echo f_e($item_data['data']->orderSeq); ?>" target="_blank"><?php echo $item_data['data']->orderId; ?></a></td>
+            <td class="l_data"><?php echo $item_data['raw_data'][9]; ?></td>
+            <td class="l_data"><?php echo $item_data['raw_data'][10]; ?></td>
+            <td class="r_data"><?php echo f_nf(nvl($item_data['raw_data'][13],0), '#,##0'); ?></td>
+          <tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <?php } ?>
+
+      <?php if ($this->kakuhoSummary['recordCount'] > 0) { ?>
+      <br>
+      <p>その他(入金処理対象外データ)</p>
+      <table style="clear:both; font-size: 11px;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>決済手段</th>
+            <th>取込件数</th>
+            <th>支払金額総計</th>
+          </tr>
+          <tr>
+            <td class="l_data"><?php echo '(確報)コンビニ'; ?></td>
+            <td class="r_data"><?php echo f_nf($this->kakuhoSummary['recordCount'], '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_nf($this->kakuhoSummary['paymentAmount'], '#,##0'); ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <?php } ?>
+
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/rwordercsv/page_menu.php'); ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">備考コメント一括登録</h3>
+
+    <div style="margin: 5px 25px;">
+        <span style="font-size: 11px;">
+            ファイル「<?php echo f_e($this->fileName); ?>」をインポートしました。<BR>
+            (取込OK件数：<?php echo f_e($this->nrmCount); ?>件)
+        </span>
+    <table width="860" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+            <tr align="center">
+                <td style="padding: 2px 0px">
+                    <input type="button" id="ok_button" value="　O　K　" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+<br/>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+<script>
+Event.observe(window, "load", function() {
+  Event.observe($("ok_button"), "click", function() {
+	location.href = "rwordercsv/form";
+    return false;
+  });
+});
+</script>
+</body>
+</html>

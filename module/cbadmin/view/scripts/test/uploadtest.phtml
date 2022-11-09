@@ -1,0 +1,26 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<h3>api/saveFile テストフォーム</h3>
+<form action="api/saveFile" method="post" enctype="multipart/form-data">
+	<label for="upload_type">
+		アップロードタイプ：
+		<select name="upload_type" id="upload_type">
+			<option value="0">タイプ 0</option>
+			<option value="1">タイプ 1</option>
+			<option value="2">タイプ 2</option>
+		</select>
+	</label>
+	<label for="upload_file">
+		ファイル：
+		<input name="upload_file" id="upload_file" type="file" size="60" />
+	</label>
+	<hr />
+	<button type="submit">アップロード</button>
+</form>
+</body>
+</html>
+

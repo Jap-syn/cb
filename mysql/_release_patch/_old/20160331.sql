@@ -1,0 +1,1 @@
+INSERT INTO T_SystemProperty(Module, Category, Name, PropValue, Description, RegistDate, RegistId, UpdateDate, UpdateId, ValidFlg) VALUES( '[DEFAULT]','systeminfo', 'OrderMypageCloseValidDays', '30', '注文マイページ有効期間日数（クローズ後経過した日数を指定）', NOW(), 9, NOW(), 9, '1');

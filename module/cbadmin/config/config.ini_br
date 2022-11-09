@@ -1,0 +1,63 @@
+; セクション database
+; データベースの初期化パラメータを指定します
+[database]
+driver  = Pdo_MySql
+;database = coraldb_test03
+database = coraldb_new01
+username = coraluser
+password = coralmaster
+hostname = aws-a-db1.cirprqejebgf.ap-northeast-1.rds.amazonaws.com
+;port     =
+;charset  =
+;unix_socket =
+
+; セクション auth_manager
+; 認証マネージャの初期化パラメータを指定します。
+[auth_manager]
+; 認証に使用するテーブル名を指定します
+tablename = T_Operator
+; 認証IDの列名を指定します
+id_column = LoginId
+; 認証パスワードの列名を指定します
+password_column = LoginPasswd
+; 認証マネージャのログ出力の有効・無効を設定します
+log_enabled = true
+
+; セクション mail
+[mail]
+; SMTP
+smtp = localhost
+;
+;NDCテスト環境
+;smtp = 192.168.5.133
+;
+; 文字セット
+charset = ISO-2022-JP
+
+; システムメール送信先（バッチエラー時などに送信されるあて先）
+system_mail_address = issue-CB_B2C_HOSYU-58ObJRs6slpLARPw14NRB0euB@i8.backlog.com
+
+; セクション log
+[log]
+; ログファイルのベース名
+log_name = cbadmin_log_%timestamp:Ymd%
+; ログ保存先ディレクトリパス
+log_dir = ./data/log
+; テキストログを使用するか
+use_text_log = true
+; SQLiteログを使用するか（非推奨：少々重い）
+;use_sqlite_log = false
+; 出力バッファログを使用するか（非推奨：すべてechoされてしまう）
+;use_console_log = false
+; ログクラスの内部エラーを記録するログファイルのパス
+;error_log = ./NetB_Log_error.log
+; メッセージフィルタの閾値（デフォルト推奨、デバッグ時は7を指定）
+;priority_threshold = 7
+
+; セクション 郵便番号
+[postalcode]
+post_file = /var/www/html/postcode/KEN_ALL.CSV
+
+; セクション バーコード
+[barcode]
+barcode_lib = /var/www/html/htdocs_atobarai/vendor/barcode.php

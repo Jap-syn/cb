@@ -1,0 +1,46 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header_sp.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+<script>
+function quitBox( cmd )
+{
+	if( cmd == 'quit' )
+	{
+		open( location, '_self' ).close();
+	}
+	return false;
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/page_header_sp.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message_sp.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">変更完了</div>
+        <div id="d_01" >退会処理が完了しました。<br />登録中のメールアドレスに退会完了メールを<br />送信致しました。</div>
+        <div style="text-align: center;"><input id="green_btn" type="button" value="画面を閉じる" onclick="return quitBox( 'quit' );" /></div>
+        <?php
+            echo $this->render( 'oemmypage/menu_sp.php' );
+        ?>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer_sp.php' );
+?>
+
+</div>
+</body>
+</html>

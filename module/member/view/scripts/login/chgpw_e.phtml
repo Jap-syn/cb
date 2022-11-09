@@ -1,0 +1,46 @@
+<?php
+
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'member/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '後払い決済管理システム';
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'member/page_header.php' );
+?>
+<div id="header_menu" class="header_menu" style="line-height:100%">
+    <h3>
+        <a id="logout_menu" href="login/logout" style="line-height:100%">⇒ログアウト</a>
+    </h3>
+</div>
+
+<div class="page_title">パスワード変更　
+</div>
+
+
+<div class="main_contents">
+
+
+</br>
+<center>
+パスワードを変更しました。
+</br>
+</center>
+</div>
+</br>
+<?php
+// 共通ページフッタ
+echo $this->render( 'member/page_footer.php' );
+?>
+</body>
+
+</html>
+

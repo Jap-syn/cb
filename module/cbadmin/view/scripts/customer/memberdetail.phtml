@@ -1,0 +1,170 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'cbadmin/document_header.php' );
+
+?>
+<style>
+td.l_data span.wrap_container {
+    width: 398px;
+    overflow: hidden;
+    float: left;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<?php echo $this->render('cbadmin/page_header.php'); ?>
+<?php echo $this->render('cbadmin/customer/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>事業者別顧客詳細情報</h3>
+
+<div class="div01">
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+    <tr>
+      <td colspan="2" class="l_data">
+        【基本情報】
+        <a style="margin-left: 12px;" href="customer/memberedit/ecseq/<?php echo f_e( $this->ecseq ); ?>">　編集　</a>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">事業者ID</td>
+      <td class="l_data"><?php echo f_e( $this->data['EnterpriseId'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">事業者名</td>
+      <td class="l_data"><?php echo f_e( $this->data['EnterpriseNameKj'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">顧客ID</td>
+      <td class="l_data"><?php echo f_e( $this->ecseq ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">顧客名</td>
+      <td class="l_data"><?php echo f_e( $this->data['NameKj'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">顧客名カナ</td>
+      <td class="l_data"><?php echo f_e( $this->data['NameKn'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">郵便番号</td>
+      <td class="l_data"><?php echo f_e( $this->data['PostalCode'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">住所</td>
+      <td class="l_data"><?php echo f_e( $this->data['UnitingAddress'] ); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【連絡先情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label">電話番号</td>
+      <td class="l_data"><?php echo f_e( $this->data['Phone'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">メールアドレス</td>
+      <td class="l_data">
+        <span class="wrap_container">
+        <?php echo f_e( $this->data['MailAddress'] ); ?>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【その他】</td>
+    </tr>
+    <tr>
+      <td class="r_label">BtoB与信限度額</td>
+      <td class="l_data"><?php if( !empty( $this->data['BtoBCreditLimitAmountFlg'] ) ) { echo 'あり'; } else { echo 'なし'; } ?><br />
+      限度額　<?php echo f_nf( nvl( $this->data['BtoBCreditLimitAmount'], 0 ), '#,##0' ); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">付帯情報</td>
+      <td class="l_data">
+      <input name="BlackFlg" type="checkbox" disabled="disabled"<?php if( $this->data['BlackFlg'] ) echo ' checked="checked"'; ?> />ブラック顧客　
+      <input name="GoodFlg" type="checkbox" disabled="disabled"<?php if( $this->data['GoodFlg'] ) echo ' checked="checked"'; ?> />優良顧客　
+      <input name="ClaimerFlg" type="checkbox" disabled="disabled"<?php if( $this->data['ClaimerFlg'] ) echo ' checked="checked"'; ?> />クレーマー　
+      <input name="RemindStopFlg" type="checkbox" disabled="disabled"<?php if( $this->data['RemindStopFlg'] ) echo ' checked="checked"'; ?> />督促ストップ　
+      <input name="IdentityDocumentFlg" type="checkbox" disabled="disabled"<?php if( $this->data['IdentityDocumentFlg'] ) echo ' checked="checked"'; ?> />身分証アップロード
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">メモ</td>
+      <td class="l_data">
+        <textarea name="Note" rows="3" cols="60" disabled="disabled"><?php echo f_e( $this->data['Note'] ); ?></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【注文・請求情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label">請求残高</td>
+      <td class="l_data"><a href="rwrcptcfm/list/ecs/<?php echo f_e( $this->ecseq ); ?>" target="_blank"><?php echo f_nf( nvl( $this->order['SumClaimedBalance'], 0 ), '#,##0' ); ?>　円</a></td>
+    </tr>
+    <tr>
+      <td class="r_label">不払い金合計</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->nonPayment['SumClaimedBalance'], 0 ), '#,##0' ); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">不払い件数</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->nonPayment['Cnt'], 0 ), '#,##0' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">注文金額合計</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->order['SumUseAmount'], 0 ), '#,##0' ); ?>　円</td>
+    </tr>
+    <tr>
+      <td class="r_label">注文件数</td>
+      <td class="l_data"><?php echo f_nf( nvl( $this->order['Cnt'], 0 ), '#,##0' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">最新注文日付</td>
+      <td class="l_data"><a href="rworder/detail/oseq/<?php echo f_e( $this->lastorder['OrderSeq'] ); ?>" target="_blank"><?php echo f_df( $this->lastorder['RegistDate'], 'Y-m-d' ); ?></a></td>
+    </tr>
+    <tr>
+      <td class="r_label">最新注文支払期限</td>
+      <td class="l_data"><?php echo f_df( $this->lastorder['LimitDate'], 'Y-m-d' ); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="l_data">【口座振替情報】</td>
+    </tr>
+    <tr>
+      <td class="r_label">金融機関</td>
+      <td class="l_data">
+        銀行名：<?php echo f_e($this->data["FfName"]); ?>　銀行番号：<?php echo f_e($this->data["FfCode"]); ?><br />
+        支店名：<?php echo f_e($this->data["FfBranchName"]); ?>　支店番号：<?php echo f_e($this->data["FfBranchCode"]); ?><br />
+        預金種目：<?php echo f_e($this->data["FfAccountClassKeyContent"]); ?><br />
+        口座番号：<?php echo f_e($this->data["FfAccountNumber"]); ?><br />
+        預金者名：<?php echo f_e($this->data["FfAccountName"]); ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="r_label">申込完了予定日</td>
+      <td class="l_data"><?php echo f_df( $this->data['RequestCompScheduleDate'], 'Y-m-d' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">申込完了日</td>
+      <td class="l_data"><?php echo f_df( $this->data['RequestCompDate'], 'Y-m-d' ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">申込ステータス</td>
+      <td class="l_data"><?php echo f_e( $this->data['RequestStatusKeyContent'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">申込サブステータス</td>
+      <td class="l_data"><?php echo f_e( $this->data['RequestSubStatusKeyContent'] ); ?></td>
+    </tr>
+    <tr>
+      <td class="r_label">備考</td>
+      <td class="l_data"><?php echo f_e( $this->data['FfNote'] ); ?></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="c_data"><button type="button" onclick="location.href='customerInquiry/detail/ecid/<?php echo f_e( $this->data['ManCustId'] );?>'">戻　る</button></td>
+    </tr>
+  </table>
+</div>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div></body>
+</html>

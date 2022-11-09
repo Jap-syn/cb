@@ -1,0 +1,40 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+
+?>
+
+<div class="main_contents">
+	<div class="command_bar">
+		<div class="title">日付の指定が不正です</div>
+	</div>
+	<p style="width: 80%; margin: 20px auto">
+		<a href="shipping/changeCsv">配送伝票更新ページへ戻る</a>
+	</p>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>

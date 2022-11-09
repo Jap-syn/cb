@@ -1,0 +1,61 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+  .login_param {
+    background-color: white;
+  }
+  .login_focused_param {
+    background-color: lightyellow;
+  }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/login/page_header.php'); ?>
+  <?php //echo $this->render('cbadmin/login/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">オペレーター認証</h3>
+    <form id="login_form" class="login_form" method="post" action="login/auth">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td width="400" class="r_label">オペレーターID</td>
+            <td class="l_data"><input id="op_loginid" name="op_loginid" type="text" size="32" class="login_param" /></td>
+          </tr>
+          <tr>
+            <td class="r_label">パスワード</td>
+            <td class="l_data"><input id="op_passwd" name="op_passwd" type="password" size="32" class="login_param" /></td>
+          </tr>
+          <tr>
+            <td colspan="2" class="data">&nbsp;</td>
+          </tr>
+          <tr>
+            <td colspan="2" align="center"><button type="submit">　　ログイン　　</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+Event.observe( window, "load", function() {
+  document.getElementsByClassName("login_param").each( function(field) {
+    Event.observe( field, "focus", function(evt) {
+      new Element.ClassNames(this).add( "login_focused_param" );
+    }.bindAsEventListener(field) );
+    Event.observe( field, "blur", function(evt) {
+      new Element.ClassNames(this).remove( "login_focused_param" );
+    }.bindAsEventListener(field) );
+  } );
+  ( $("op_loginid") || { focus : Prototype.K } ).focus();
+} );
+</script>
+</html>

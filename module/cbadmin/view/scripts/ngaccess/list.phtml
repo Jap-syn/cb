@@ -1,0 +1,132 @@
+<?php
+use Coral\Base\BaseHtmlUtils;
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/ngaccess/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">不正アクセス登録一覧</h3>
+    <form name="form" method="post" action="ngaccess/up">
+      <input type="hidden" name="mode" id="mode" value="<?php echo f_e($this->mode); ?>" />
+      <?php if (isset($_SESSION['NGACCESSCLEAR_UPDATED'])) { ?>
+      <div align="center"><font color="red" size="2"><b>更新しました。　<?php echo  date("Y-m-d H:i:s"); ?></b></font></div>
+      <?php     unset($_SESSION['NGACCESSCLEAR_UPDATED']); ?>
+      <?php } ?>
+
+      <?php if ($this->mode == 'ip') { ?>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data" colspan="3" style="font-weight: bold;">ＩＰアドレス</td>
+          </tr>
+          <tr>
+            <th  width="70px">解除指示</th>
+            <th>IPアドレス</th>
+            <th  width="70px">状態</th>
+          </tr>
+          <!-- count関数対策 -->
+          <?php if (!empty($this->ipdatas)) { ?>
+              <?php $i = 0; ?>
+              <?php foreach ($this->ipdatas as $row) { ?>
+              <tr>
+                <td class="c_data">
+                    <input type="hidden" name="iploginid<?php echo $i; ?>" id="iploginid<?php echo $i; ?>" value="<?php echo $row['LoginId']; ?>" />
+
+                    <?php if ($row['Status'] != 1/* 指示済でない */) { ?>
+                      <input type="checkbox" name="ipchk<?php echo $i; ?>" id="ipchk<?php echo $i; ?>" />
+                    <?php } ?>
+                </td>
+                <td class="l_data"><?php echo $row['LoginId']; ?></td>
+                <td class="c_data" <?php if ($row['Status'] == 1) { ?>style="background-color: lemonchiffon;"<?php } ?>>
+                    <?php echo ($row['Status'] == 1) ? '指示済' : '未指示'; ?>
+                </td>
+              </tr>
+              <?php     $i++ ?>
+              <?php } ?>
+          <?php } else { ?>
+              <tr>
+                <td class="l_data" colspan="3" style="color: #888;">ロック中のＩＰアドレスはありません</td>
+              </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <?php } ?>
+
+      <?php if ($this->mode != 'ip') { ?>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data" colspan="5" style="font-weight: bold;">ログイン</td>
+          </tr>
+          <tr>
+            <th  width="70px">解除指示</th>
+            <th  width="150px">ログイン情報</th>
+            <th>名称</th>
+            <?php if ($this->mode != 'cbadmin') { ?><th width="200px">ＯＥＭ名</th><?php } ?>
+            <th width="70px">状態</th>
+          </tr>
+          <!-- count関数対策 -->
+          <?php if (!empty($this->logindatas)) { ?>
+              <?php $i = 0; ?>
+              <?php foreach ($this->logindatas as $row) { ?>
+              <tr>
+                <td class="c_data">
+                    <input type="hidden" name="loginid<?php echo $i; ?>" id="loginid<?php echo $i; ?>" value="<?php echo $row['LoginId']; ?>" />
+                    <input type="hidden" name="type<?php echo $i; ?>" id="type<?php echo $i; ?>" value="<?php echo $row['Type']; ?>" />
+
+                    <?php if ($row['Status'] != 1/* 指示済でない */) { ?>
+                      <input type="checkbox" name="chk<?php echo $i; ?>" id="chk<?php echo $i; ?>" />
+                    <?php } ?>
+                </td>
+                <td class="l_data"><?php echo $row['LoginId']; ?></td>
+                <td class="l_data"><?php echo $row['NameKj']; ?></td>
+                <?php if ($this->mode != 'cbadmin') { ?><td class="l_data"><?php echo $row['OemNameKj']; ?></td><?php } ?>
+                <td class="c_data" <?php if ($row['Status'] == 1) { ?>style="background-color: lemonchiffon;"<?php } ?>>
+                    <?php echo ($row['Status'] == 1) ? '指示済' : '未指示'; ?>
+                </td>
+              </tr>
+              <?php     $i++ ?>
+              <?php } ?>
+          <?php } else { ?>
+              <tr>
+                <td class="l_data" colspan="5" style="color: #888;">ロック中のログインはありません</td>
+              </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+      <?php } ?>
+
+      <table style="clear:both;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="c_data">
+              <input id="btnupdate" type="submit" value="　　　更　新　　　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script type="text/javascript">
+// ページ初期化
+Event.observe( window, "load", function() {
+    // 解除対象が１件もない場合は更新ボタンの無効化
+    // count関数対策 
+	<?php if (empty($this->ipdatas) && empty($this->logindatas)) { ?>
+       document.getElementById('btnupdate').disabled = true;
+    <?php } ?>
+} );
+</script>
+</html>

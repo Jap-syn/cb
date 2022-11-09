@@ -1,0 +1,79 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+?>
+</head>
+<body onload="window.opener=self;">
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/login/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message.php' );
+
+?>
+<!-- start contents -->
+<div id="contents">
+<div id="login_area">
+    <h5>パスワードの再発行</h5>
+    <div id="d_01" style="margin-left: 50px;">
+        <span style="font-weight: normal;">ご本人様確認のため、必要情報をご入力ください。</span><br /><br />
+    </div>
+
+    <?php if (isset($this->errors)) { ?>
+    <div class="alertbox" style="display:block;" >
+    <?php     foreach ($this->errors as $error) { ?>
+    <p class="error"><?php echo $error; ?></p>
+    <?php     } ?>
+    </div>
+    <?php } ?>
+
+    <form name="form" method="post" action="login/reissueconfirm" novalidate="novalidate">
+        <input type="hidden" name="customerid" value="<?php echo f_e($this->customerid); ?>" />
+        <table class="datatable" width="600" cellpadding="1" cellspacing="1" border="0">
+            <tr>
+                <td class="member_info_normal" style="width: 200px;">メールアドレス<font style="color: red; font-weight: normal; font-size: 12px;">　　※必須</font></td>
+                <td class="data"><input type="email" size="40" style="height:20px; margin:6px 0;" name="form[MailAddress]" value="<?php echo f_e($this->formdata['MailAddress']); ?>" />
+                </td>
+            </tr>
+            <tr>
+                <td class="member_info_normal">名前<font style="color: red; font-weight: normal; font-size: 12px;">　　※必須</font></td>
+                <td class="data">
+                <span class="f_bold">姓</span>　　<input  size="15" style="height:20px; margin:6px 0;" name="form[NameSeiKj]" type="text" value="<?php echo f_e($this->formdata['NameSeiKj']); ?>" />　　
+                <span class="f_bold">名</span>　　<input  size="15" style="height:20px; margin:6px 0;" name="form[NameMeiKj]" type="text" value="<?php echo f_e($this->formdata['NameMeiKj']); ?>" />
+                </td>
+            </tr>
+            <tr>
+                <td class="member_info_normal">電話番号<font style="color: red; font-weight: normal; font-size: 12px;">　　※必須</font></td>
+                <td class="data">
+                     <input size="6" style="height:20px; margin:6px 0;" name="form[Phone_1]" type="tel" value="<?php echo f_e($this->formdata['Phone_1']); ?>" />
+                　-　<input size="6" style="height:20px; margin:6px 0;" name="form[Phone_2]" type="tel" value="<?php echo f_e($this->formdata['Phone_2']); ?>" />
+                　-　<input size="6" style="height:20px; margin:6px 0;" name="form[Phone_3]" type="tel" value="<?php echo f_e($this->formdata['Phone_3']); ?>" />
+                </td>
+            </tr>
+        </table>
+        <table class="datatable" width="600" cellpadding="0" cellspacing="0" border="0">
+            <tr class="data">
+                <td colspan="2" align="center"><br /><input id="goto_button" type="submit" value="登録内容を確認する" /></td>
+            </tr>
+            <tr class="data">
+                <td colspan="2" align="center"><br /><input id="backto_button" type="button" value="画面を閉じる" onclick="window.close();" /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>
+

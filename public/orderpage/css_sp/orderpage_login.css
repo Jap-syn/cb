@@ -1,0 +1,111 @@
+@CHARSET "UTF-8";
+
+div#Tlogin_area {
+    margin: 10px auto;
+}
+
+div#Tlogin_area h5 {
+	margin: 20px 20px 20px 10px;
+	padding: 4px 8px;
+	font-size: 20pt;
+	color: green;
+}
+
+div#login_area h5 {
+    margin: 20px 20px 20px 10px;
+    padding: 4px 8px;
+    font-size: 20pt;
+    color: green;
+}
+
+div#login_area h6 {
+	margin: 10px 20px;
+	padding: 4px 8px;
+	font-size: 16pt;
+	color: #9BBB59;
+}
+
+div#login_area table {
+	margin: 20px auto;
+}
+
+div#login_area tr {
+	margin: 5px 0px;
+}
+
+div#login_area td.r_area {
+	text-align: right;
+	background-color: #ffffff;
+}
+
+div#login_area td.l_area {
+	text-align: left;
+	background-color: #ffffff;
+	font-size: 18px;
+    font-weight: bold;
+    padding-left: 8%;
+}
+
+div#login_area td.c_area {
+	text-align: center;
+	background-color: #ffffff;
+}
+
+/*ログイン*/
+#login_btn {
+	border-radius: 8px;
+	background-color: #C0504D;
+	color: #FFFFFF;
+	width: 90%;
+	height: 150%;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	padding: 15px 0px 15px 0px;
+	margin-left: 6%;
+}
+
+/*新規登録*/
+#new_btn {
+	border-radius: 8px;
+	background-color: #9BBB59;
+	color: #FFFFFF;
+	width: 190px;
+	height: 30px;
+	font-size: 26px;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+	padding: 15px 0px 15px 0px;
+	margin: 5px;
+}
+
+#new_btn a:link, #new_btn a:hover, #new_btn a:visited, #new_btn a:active {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+#new_btn a:hover {
+	text-decoration: underline;
+}
+
+input#submit_button {
+    font-size: 20px;
+    padding: 15px 35px;
+    margin: 15px;
+    background: #bad93d;
+    border-style: none;
+    cursor: pointer;
+    display: inline-block;
+    color: #000;
+
+}
+
+input#submit_button:hover {
+    background: #9fbe25;
+        -webkit-box-shadow:inset 0px 0px 5px #00c;
+        -moz-box-shadow:inset 0px 0px 5px #00c;
+        box-shadow:inset 0px 0px 5px #00c;
+    color: #ffffff;
+    font-weight: bold;
+}

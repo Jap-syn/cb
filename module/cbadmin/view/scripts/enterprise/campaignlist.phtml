@@ -1,0 +1,24 @@
+<table class="datatable" width="500" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td colspan="5" class="data">【キャンペーン設定】</td>
+  </tr>
+  <tr>
+    <th>プラン名</th>
+    <th>期間FROM</th>
+    <th>期間TO</th>
+    <th>月額固定費</th>
+    <th>表示</th>
+  </tr>
+  <?php foreach ($this->campaign as $value) { ?>
+  <tr>
+    <td class="l_data"><?php echo f_e($value['PricePlanName']); ?></td>
+    <td class="c_data"><?php echo f_df($value['DateFrom'], 'Y-m-d'); ?></td>
+    <td class="c_data"><?php echo f_df($value['DateTo'], 'Y-m-d'); ?></td>
+    <td class="r_data"><?php echo f_nf(nvl($value['MonthlyFee'], 0), '#,##0'); ?></td>
+    <td class="c_data"><input type="button" id="campaign" name="campaign" onclick="window.open('<?php echo 'enterprise/campaign/eid/' . f_e($this->eid) . '/mode/edit/seq/' . $value['Seq'];?>')" value="表示"></td>
+  </tr>
+  <?php } ?>
+  <tr>
+    <td colspan="5" class="c_data"><input type="button" id="insertRow" name="insertRow" onclick="window.open('<?php echo 'enterprise/campaign/eid/' . f_e($this->eid) . '/mode/new';?>')" value="行追加"></td>
+  </tr>
+</table>

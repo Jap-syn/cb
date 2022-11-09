@@ -1,0 +1,35 @@
+.base_ui_tableex {
+	clear: both;
+	width: auto;
+	overflow: auto;
+}
+
+.base_ui_tableex_outerheader,
+.base_ui_tableex_outerbody,
+.base_ui_tableex_header,
+.base_ui_tableex_body {
+	clear: both;
+	white-space: no-wrap;
+	width: auto;
+	overflow: hidden;
+}
+
+.base_ui_tableex_outerbody {
+	overflow: auto;
+}
+
+.base_ui_tableex_body {
+	overflow: visible;
+}
+
+.base_ui_tableex_column {
+	float: left;
+	text-align: center;
+	white-space: no-wrap;
+	overflow: hidden;
+}
+
+.base_ui_tableex_header {
+	clear: none;
+}
+

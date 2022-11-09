@@ -1,0 +1,90 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<style>
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/agency/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title"><?php if(isset($this->mode)) echo 'OEM先'; ?>代理店一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+
+        <tr height="30">
+            <td class="l_data" colspan="5">
+                <form name="form" method="post" action="agency/list">
+                    OEM先
+                    <select id="OemId" name="OemId" >
+                    <?php foreach($this->oemList as $value => $caption) { ?>
+                        <?php $selected = $this->selectOemId == $value ? ' selected="selected"' : '';?>
+                        <option value="<?php echo f_e($value); ?>"<?php echo $selected; ?>><?php echo f_e($caption); ?></option>
+                    <?php } ?>
+                    </select>
+                    <input type="submit" id="submit_button" value="　検　索　" />
+                </form>
+            </td>
+            <td class="r_data" colspan="3" >
+                <span class="pager"><a class="download_link" href="agency/dcsv<?php if( isset( $this->selectOemId ) ) { echo '/oemid/' . $this->selectOemId; } ?>">一覧をCSVダウンロード</a></span>
+            </td>
+        </tr>
+
+        <tbody>
+          <tr>
+            <th>OEM先名</th>
+            <th>代理店ID</th>
+            <th>代理店名</th>
+            <th>代理店名カナ</th>
+            <th>キャッチボール営業担当</th>
+            <th>担当者名</th>
+            <th>連絡先</th>
+            <th>&nbsp;</th>
+          </tr>
+          <?php foreach ($this->list as $row) { ?>
+          <tr class="<?php echo $row['BkColor']; ?>">
+            <td class="l_data"><?php echo $row['OemNameKj']; ?></td>
+            <td class="l_data"><?php echo $row['AgencyId']; ?></td>
+            <td class="l_data"><?php echo $row['AgencyNameKj']; ?></td>
+            <td class="l_data"><?php echo $row['AgencyNameKn']; ?></td>
+            <td class="l_data"><?php echo $row['Salesman']; ?></td>
+            <td class="l_data"><?php echo $row['RepNameKj']; ?></td>
+            <td class="l_data"><?php echo $row['Phone']; ?></td>
+            <td class="c_data"><a href="agency/edit/aid/<?php echo $row['AgencyId']; ?>">編集</a></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

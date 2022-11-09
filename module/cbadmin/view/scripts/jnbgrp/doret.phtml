@@ -1,0 +1,40 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$error = $this->error;
+$has_data = isset($this->usage);
+$msg_only = isset($this->msg_only);
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+  <?php
+  $group = $this->group;
+  $filters = $this->filters;
+  ?>
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">口座返却エラー</h3>
+    <div class="page_error_message">
+      <?php if(!$msg_only) { ?>以下のエラーが発生しました：<?php } ?>
+      <?php echo f_e($error); ?>
+    </div>
+    <div class="submit-area">
+    <?php if($has_data) { ?>
+      <a href="jnb/detail/oid/<?php echo f_e($this->summary['OemId']); ?>">JNB登録内容詳細へ戻る</a>
+    <?php } else { ?>
+      <a href="jnb/list">JNB契約一覧へ</a>
+    <?php } ?>
+    </div>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

@@ -1,0 +1,75 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/index/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$commandBar = new CoralViewCommandBar(
+    // title
+    'リンクをクリックするとファイルをダウンロードします'
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+<table class="download_links" cellpadding="0" cellspacing="0" border="1">
+<?php foreach($this->downloads as $download_info) { ?>
+<?php
+// 公開用のdocフォルダを参照している場合は、参照パスの調整を行う
+$href = $download_info['href'];
+if ( strpos($href, '/doc/') > 0 ) {
+    $href = '/../' . $href;
+}
+?>
+    <tr>
+        <td class="caption"><?php echo $download_info['text']; ?></td>
+        </td>
+        <td class="link">
+            <a class="common_download" href="<?php echo $href; ?>" title="<?php echo $download_info['title']; ?>">
+                download
+            </a>
+        </td>
+        <td class="desc">
+            <?php echo $download_info['desc']; ?>
+        </td>
+    </tr>
+<?php } ?>
+</table>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+<script>
+Event.observe( window, "load", function(evt) {
+    // ID:ダウンロードのクリックによるunload関係時はWindowCoverを出さないようにする
+    Event.observe( document.body, "click", function(evt) {
+        WindowCover.suspend = document.getElementsByClassName("common_download").include( Event.element(evt) );
+    }.bindAsEventListener( document.body ) );
+}.bindAsEventListener( window ) );
+</script>
+</html>

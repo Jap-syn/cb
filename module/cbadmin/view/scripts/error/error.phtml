@@ -1,0 +1,29 @@
+<?php
+$errors = Zend_Controller_Front::getInstance()->getResponse()->getException();
+
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+<div id="contents">
+    <h1 style="margin: 0px 25px 10px 20px; padding: 0px 20px 0px 20px;">システムエラー</h1>
+    <h4>エラーが発生しました。　後ほどもう一度お試しください。</h4>
+    <h3>詳細</h3>
+    <pre style="height: 400px; margin: 20px 25px 10px; padding: 10px 20px; overflow: auto; border: index 2px;">
+    <?php foreach($errors as $error) { ?>
+    <h4><?php echo f_e($error->getMessage()); ?></h4>
+    <div><?php echo f_e($error->getTraceAsString()); ?></div>
+    <hr />
+    <?php } ?>
+    </pre>
+    <div style="text-align: center;">
+    <a href="#" onClick="javascript:history.back();">戻　る</a>
+    </div>
+</div>
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

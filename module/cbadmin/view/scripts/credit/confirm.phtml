@@ -1,0 +1,100 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信条件新規登録確認</h3>
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信条件新規登録確認</h3>
+    <?php } ?>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <form id="confirm_form"　name="form" method="post" action="credit/save">
+    <input type="hidden" name="hash" value="<?php echo f_e($this->hashedData); ?>" />
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <input type="hidden" name="EnterpriseId" value="" />
+    <?php } else { ?>
+    <input type="hidden" name="EnterpriseId" value="<?php echo f_e($this->EnterpriseId); ?>" />
+    <?php } ?>
+
+      <table width="860" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+            <tr>
+                <th>項目種別</th>
+                <th>検索方法</th>
+                <th>条件文字列</th>
+                <th>コメント</th>
+                <th>ポイント</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="l_data">
+                    <?php echo f_e($this->category); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->pattern); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->data['Cstring']); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->data['Comment']); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->data['Point']); ?>
+                </td>
+            </tr>
+        </tbody>
+      </table>
+          <!--
+              ボタン類
+            -->
+        <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr align="center">
+            <td>
+                <button id="submit_button" type="button" class="action">この内容で登録</button>
+                <button id="backto_button" type="button" class="action">&laquo; 入力へ戻る</button>
+            </td>
+          </tr>
+        </table>
+   </form>
+   <!-- 検索画面への遷移 -->
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <form id="new_form" action="credit/new" method="post">
+        <input name="hash" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+    </form>
+    <?php } else { ?>
+    <form id="new_form" action="credit/new/eid/<?php echo f_e($this->EnterpriseId); ?>" method="post">
+        <input name="hash" type="hidden" value="<?php echo f_e($this->hashedData); ?>" />
+    </form>
+    <?php } ?>
+
+  </div>
+    <script type="text/javascript">
+    Event.observe(window, "load", function() {
+        // 戻るボタン
+        Event.observe($("backto_button"), "click", function() {
+            $("new_form").submit();
+        });
+        // 更新ボタン
+        Event.observe($("submit_button"), "click", function() {
+            $("confirm_form").submit();
+        });
+
+    });
+    </script>
+
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/agency/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>代理店登録完了</h3>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td class="label">OEM先名</td>
+    <td class="data"><?php echo escape($this->data["OemNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">登録日</td>
+    <td class="data"><?php echo escape($this->data["ApplicationDate"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">キャッチボール営業</td>
+    <td class="data"><?php echo escape($this->data["Salesman"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">代理店名</td>
+    <td class="data"><?php echo escape($this->data["AgencyNameKj"]); ?></td>
+  </tr>
+  <tr>
+    <td class="label">代理店名カナ</td>
+    <td class="data"><?php echo escape($this->data["AgencyNameKn"]); ?></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="c_data">
+      <a href="agency/edit/aid/<?php echo $this->aid; ?>">編集画面へ</a>
+    </td>
+  </tr>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

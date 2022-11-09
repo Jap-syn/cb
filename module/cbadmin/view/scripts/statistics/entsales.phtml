@@ -1,0 +1,79 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">事業者別売上</h3>
+    <form name="form" method="post" action="statistics/entsales">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+<!-- 
+              立替確定日範囲　(YYYY-MM-DD)　：
+-->
+              立替実行予定日範囲　(YYYY-MM-DD) ：
+              <input type="text" name="f" id="f" value="<?php echo $this->f; ?>" />～
+              <input type="text" name="t" id="t" value="<?php echo $this->t; ?>" />
+              <input style="margin: 0px 20px; " type="submit" value="　表　示　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>EID</th>
+            <th>事業者名</th>
+            <th>掲載確認日</th>
+            <th>営業担当</th>
+            <th>売上</th>
+            <th>立替件数</th>
+            <th>取引総額</th>
+            <th>未収件数</th>
+            <th>未収金額</th>
+          </tr>
+          <?php 
+          // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+            $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="r_data"><?php echo f_e($this->list[$i]['EnterpriseId']); ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]['EnterpriseNameKj']); ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]['PublishingConfirmDate']); ?></td>
+            <td class="l_data"><?php echo f_e($this->list[$i]['Salesman']); ?></td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list[$i]['Uriage'], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_e($this->list[$i]['ChargeCount']); ?></td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list[$i]['UseAmount'], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_e($this->list[$i]['MisyuCnt']); ?></td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list[$i]['MisyuAmount'], 'number', '#,##0'); ?></td>
+          </tr>
+          <?php } ?>
+          <tr>
+            <td colspan="4" class="c_data">合計</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->total['Uriage'], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_e($this->total['ChargeCount']); ?></td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->total['UseAmount'], 'number', '#,##0'); ?></td>
+            <td class="r_data"><?php echo f_e($this->total['MisyuCnt']); ?></td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->total['MisyuAmount'], 'number', '#,##0'); ?></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

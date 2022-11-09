@@ -1,0 +1,82 @@
+<?php
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+<style>
+table {
+	font-size: 9pt;
+}
+</style>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+<?php
+foreach( array(
+	array( 'title' => 'T_Order', 'name' => 'order' ),
+	array( 'title' => 'T_Customer', 'name' => 'customer' ),
+	array( 'title' => 'T_DeliveryDestination', 'name' => 'delivery', 'nest' => true ),
+	array( 'title' => 'T_OrderItems', 'name' => 'order_items', 'nest' => true )
+) as $info ) {
+	$cat = $info['name'];
+	$list = $info['nest'] ?
+		$this->orderData[$cat] : array( $this->orderData[$cat] );
+?>
+<h3><?php echo $info['title']; ?></h3>
+<table border="1" cellpadding="1" cellspacing="0">
+	<thead>
+		<tr>
+<?php foreach( array_keys($list[0]) as $key ) {?>
+			<th><?php echo $key; ?></th>
+<?php } ?>
+		</tr>
+	</thead>
+	<tbody>
+<?php
+	foreach( $list as $row ) {
+?>
+		<tr>
+<?php
+		foreach( array_values( $row ) as $value ) {
+?>
+			<td><?php echo $value; ?></td>
+<?php
+		}
+?>
+		</tr>
+<?php
+	}
+?>
+	</tbody>
+</table>
+
+<?php } ?>
+
+<hr/>
+
+<h3>POST DATA</h3>
+<pre style="border: inset 2px; height: 500px; overflow: auto; font-size: 9pt;">
+</pre>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+</html>
+

@@ -1,0 +1,122 @@
+/**
+ * 類似住所検索結果
+ *----------------------------------------------------------*/
+
+/* 与信NG */
+.orderstatus_close_ng,
+.orderstatus_close_ng td,
+.orderstatus_close_ng td a {
+	color: white;
+	background-color: #3165ff;
+}
+
+/* キャンセル */
+.orderstatus_close_cancel,
+.orderstatus_close_cancel td {
+	color: black;
+	background-color: #00ff00;
+}
+
+/* キャンセル申請 */
+.orderstatus_request_cancel,
+.orderstatus_request_cancel td {
+	color: black;
+	background-color: #00ff00;
+}
+
+/* キャンセル(債権返却後) */
+.orderstatus_close_saiken,
+.orderstatus_close_saiken td {
+	color: black;
+	background-color: yellowgreen;
+}
+
+/* キャンセル（債権返却前） */
+.orderstatus_request_saiken,
+.orderstatus_request_saiken td {
+	color: black;
+	background-color: yellowgreen;
+}
+
+/* 支払済み(期限内) */
+.orderstatus_receipted_normal,
+.orderstatus_receipted_normal td {
+	color: black;
+	background-color: #ceffff;
+}
+
+/* 支払済み(期限超過) */
+.orderstatus_receipted_damaged,
+.orderstatus_receipted_damaged td {
+	color: black;
+	background-color: #ce9aff;
+}
+
+/* 支払済み(期限内:過剰入金) */
+.orderstatus_receipted_normal_excesspayment,
+.orderstatus_receipted_normal_excesspayment td {
+	color: black;
+	background-color: #00ffff;
+}
+
+/* 支払済み(期限超過:過剰入金) */
+.orderstatus_receipted_damaged_excesspayment,
+.orderstatus_receipted_damaged_excesspayment td {
+	color: black;
+	background-color: #00ffff;
+}
+
+/* 未入金 */
+.orderstatus_noreceipt_normal,
+.orderstatus_noreceipt_normal td {
+	color: black;
+	background-color: #ffcf9c;
+}
+
+/* 不払い */
+.orderstatus_noreceipt_damaged,
+.orderstatus_noreceipt_damaged td {
+	color: black;
+	background-color: #ff9ace;
+}
+
+/* テスト注文*/
+.orderstatus_close_test,
+.orderstatus_close_test td {
+    color: black;
+    background-color: #eeeeee;
+}
+
+/* 貸し倒れ */
+.orderstatus_close_damaged,
+.orderstatus_close_damaged td {
+    color: black;
+    background-color: darkgray;
+}
+
+/* 一部入金 */
+.orderstatus_receipt_part,
+.orderstatus_receipt_part td {
+    color: black;
+    background-color: #ffff33;
+}
+
+/* 立替精算戻し */
+.orderstatus_close_payback,
+.orderstatus_close_payback td {
+    color: black;
+    background-color: darkgray;
+}
+/* クレジット決済 */
+.orderstatus_credit,
+  .orderstatus_credit td {
+    color: white;
+    background-color: #a96a27;
+}
+
+/* 特殊店舗 */
+td.sp_ent_flg,
+td.sp_ent_flg a {
+	background-color: #8cbc1c !important;
+	color: black !important;
+}

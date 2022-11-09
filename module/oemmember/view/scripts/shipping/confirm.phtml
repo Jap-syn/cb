@@ -1,0 +1,259 @@
+<?php
+
+use oemmember\Application;
+use oemmember\classes\DuplicateRegistrationConfig;
+use Zend\Json\Json;
+use models\Table\TableOrderItems;
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+use Coral\Coral\View\Helper\CoralViewHelperValueFormat;
+
+$viewHelper = new CoralViewHelperValueFormat();
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+<?php
+// コマンドバー使用
+$hasList = !empty($this->order_list) ? true : false;
+$commandBar = new CoralViewCommandBar(
+    // title
+    '入力内容を確認して、登録を実行してください',
+    // buttons
+    array(
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'confirmed',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/save',
+                CoralViewCommandBarButton::OPTION_TEXT => 'この内容で登録',
+                CoralViewCommandBarButton::OPTION_TITLE => '現在の内容で問題ない場合はここをクリックして登録を完了させてください'
+            )
+        ),
+        new CoralViewCommandBarButton(
+            array(
+                CoralViewCommandBarButton::OPTION_ID => 'rollback',
+                CoralViewCommandBarButton::OPTION_HREF => 'shipping/regist/mode/rollback',
+                CoralViewCommandBarButton::OPTION_TEXT => '登録内容を修正',
+                CoralViewCommandBarButton::OPTION_TITLE => '登録内容を修正するにはここをクリックして前の画面に戻ります'
+            )
+        )
+    )
+);
+// コマンドバーのレンダリング
+echo $commandBar->render();
+?>
+<div class="error_journal_container" id="validate_journal_area" style="display: none">
+<h4>伝票番号</h4>
+<ul class="error_journal_table"></ul>
+</div>
+</br>
+<center>
+<table class="regist_table" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+        <th>注文ID</th>
+        <th>配送会社名</th>
+        <th>配送伝票番号</th>
+        <th>注文日</th>
+        <th>購入者</th>
+        <th>電話番号</th>
+        <th>請求総額</th>
+        <th>配送先住所</th>
+        <th>任意注文番号</th>
+        <th>NG非表示化</th>
+    </thead>
+    <tbody>
+<?php foreach($this->postData as $post) {
+    //重複した配送伝票番号の部分を強調する
+            if(trim(nvl($post->Deli_JournalNumber)) != '') {
+            $db = Application::getInstance()->dbAdapter;
+            $orderItem = new TableOrderItems( $db );
+            $jounalNumber = $orderItem->getJournalNumber($post->Deli_JournalNumber, $post->Deli_DeliveryMethod, Application::getInstance()->authManager->getUserInfo()->EnterpriseId);
+            if(trim(nvl($jounalNumber)) != '') { ?>
+                <tr class="caution_area">
+            <?php } elseif('1' == $this->journalCaution) {
+                $duplicationCount = 0;
+                if (!empty($this->duplication)) {
+                    $duplicationCount = count($this->duplication);
+                }
+                for($d = 0; $d < $duplicationCount; $d++) {
+                    if($post->OrderSeq == $this->duplication[$d]) { ?>
+                        <tr class="csv_caution">
+                    <?php }
+                    }?>
+            <?php } else { ?>
+                <tr>
+            <?php }?>
+    <?php } else { ?>
+        <tr>
+    <?php } ?>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->OrderId ); ?>
+            </td>
+            <td>
+                <?php
+                    if (isset($post->CreditNgHiddenFlg)) {
+                        echo $post->Deli_DeliveryMathod;
+                    } else {
+                        foreach($this->deliv_masters as $master) {
+                            if( $master['DeliMethodId'] == $post->Deli_DeliveryMethod ) {
+                                echo $viewHelper->ValueFormat( $master['DeliMethodName'] );
+                                break;
+                            }
+                        }
+                    }
+                ?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->Deli_JournalNumber ); ?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->ReceiptOrderDate );/*, 'date' ); */?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->NameKj ); ?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->Phone ); ?>
+            </td>
+            <td>
+                \ <?php echo $viewHelper->ValueFormat( $post->UseAmount );/*, 'number', '#,##0' );*/ ?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->UnitingAddress ); ?>
+            </td>
+            <td>
+                <?php echo $viewHelper->ValueFormat( $post->Ent_OrderId ); ?>
+            </td>
+            <td>
+                <?php echo (isset($post->CreditNgHiddenFlg)) ? 'レ' : ''; ?>
+            </td>
+        </tr>
+<?php } ?>
+<?php $config = new DuplicateRegistrationConfig(); ?>
+        <tr>
+            <td colspan="10" class="submit_area">
+                <button type="button" id="regist_button" <?php if(!$config->shipping && ($this->caution == '1' || '1' == $this->journalCaution)) echo 'disabled="disabled"'; ?>>この内容で登録</button>
+                <button type="button" id="rollback_button">登録内容を修正</button></br>
+            <div class="error_journal_check">
+        <?php if('1' == $this->caution || '1' == $this->journalCaution) { ?>
+            (重複を無視する)<input type='checkbox' id='JournalNumberCheck' name='JournalNumberCheck'<?php if($config->shipping) echo ' checked="checked"'; ?> onclick="buttonSetting()" />
+        <?php } ?>
+</div>
+            </td>
+
+        </tr>
+
+    </tbody>
+</table>
+</center>
+</div>
+
+<?php
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+<script>
+Event.observe( window, "load", function() {
+    <?php if('1' == $this->caution || '1' == $this->journalCaution) { ?>
+        var entarea = $("validate_journal_area");
+        Element.hide( entarea );
+
+        var enttitle = entarea.getElementsByTagName("h4")[0];
+        var entroot = document.getElementsByClassName("error_journal_table", entarea)[0];
+        var inner = "";
+        var duplicationpast = "<li>過去に登録された配送伝票番号と重複しています。</li>";
+        var duplicationcsv = "<li>登録する配送伝票番号が重複しています。</li>";
+        <?php if('1' == $this->caution) { ?>
+        inner = inner + duplicationpast;
+        <?php }?>
+        <?php if('1' == $this->journalCaution) { ?>
+        inner = inner + duplicationcsv;
+        <?php }?>
+        entroot.innerHTML = inner;
+        enttitle.innerHTML = "登録内容に重複があります。このまま登録する場合は、登録ボタン下にある「重複を無視する」チェックボックスをチェックしてください";
+
+        Element.show( entarea );
+        setTimeout( function() {
+            bytefx.scroll( entarea, 70 );
+        }, 0 );
+    <?php }?>
+});
+
+Event.observe( window, "load", function(evt) {
+    Event.observe( $("regist_button"), "click", function(evt) {
+        window.location.href = "{0}shipping/save".format( document.getElementsByTagName("base")[0].href );
+    }.bindAsEventListener( $("regist_button") ) );
+
+    Event.observe( $("rollback_button"), "click", function(evt) {
+        window.location.href = "{0}shipping/regist/mode/rollback".format( document.getElementsByTagName("base")[0].href );
+    }.bindAsEventListener( $("rollback_button") ) );
+
+    buttonSetting();
+}.bindAsEventListener( window ) );
+
+//登録ボタン制御
+function buttonSetting(){
+    // 重複登録無視チェック状態を取得
+    var
+        j_id = 'JournalNumberCheck',
+        <?php if($this->caution == 1 || $this->journalCaution == 1) { ?>
+        allow_dup_regist = ($(j_id) || { checked : false }).checked;
+        <?php } else { ?>
+        allow_dup_regist = true;
+        <?php } ?>
+
+    // チェック状態を保存
+    var
+        url = '{0}ajax/dupconfig/mode/set/key/shipping/value/{1}'.format(
+            document.getElementsByTagName('base')[0].href,
+            allow_dup_regist
+        ),
+        terminate = function() {
+            ($(j_id) || { chacked : false }).checked = allow_dup_regist;
+            $('regist_button').disabled = !allow_dup_regist;
+            ($('confirmed') || { href : null }).href =
+                allow_dup_regist ?
+                    '{0}shipping/save'.format(document.getElementsByTagName('base')[0].href) :
+                    'javascript:void(0)';
+            ($('confirmed') || { onclick : null }).onclick =
+                allow_dup_regist ? null : function () { return false; };
+        }
+
+    <?php if($this->caution == 1 || $this->journalCaition == 1) { ?>
+    new Ajax.Request(url, {
+        'method' : 'post',
+        onComplete : function(xhr) {
+            try {
+                var config = xhr.responseText.parseJSON();
+                allow_dup_regist = !!(config || { shipping : false }).shipping;
+            } catch(e) {}
+            terminate();
+        }
+    });
+    <?php } else { ?>
+    terminate();
+    <?php } ?>
+}
+</script>
+</html>

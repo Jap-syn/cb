@@ -1,0 +1,66 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/payeasyerror/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">Payeasy入金エラーリスト</h3>
+    <form name="sform" method="post" action="payeasyerror/list">
+        <!--  <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0"> -->
+        <table style="font-size: 12px;">
+          	<tr>
+                <td class="l_data">発生日&nbsp;</td><td><input style="text-align: left;" type="text" size="10" name="RegistDateF" id="RegistDateF" value="<?php echo f_e($this->condition['RegistDateF']); ?>">&nbsp;～&nbsp;<input style="text-align: left;" type="text" size="10" name="RegistDateT" id="RegistDateT" value="<?php echo f_e($this->condition['RegistDateT']);?>">&nbsp;</td>
+                <td class="l_data">エラー種別&nbsp;</td><td><?php echo $this->errorCodeTag; ?>&nbsp;</td>
+                <td class="l_data">注文ID&nbsp;</td><td><input style="text-align: left;" type="text" size="10" name="OrderId" id="OrderId" value="<?php echo f_e($this->condition['OrderId']); ?>">&nbsp;</td>
+                <td class="l_data">事業者ID&nbsp;</td><td><input style="text-align: left;" type="text" size="10" name="LoginId" id="LoginId" value="<?php echo f_e($this->condition['LoginId']); ?>">&nbsp;</td>
+          	</tr>
+          	<tr>
+                <td colspan="8" class="r_data"><input style="margin-left: 50px;" id="search" type="submit" value="　検　索　"></td>
+          	</tr>
+        </table>
+    </form>
+
+    <table style="clear:both; table-layout: fixed;" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+            <tr>
+                <th width="110px;">発生日時</th>
+                <th width="80px;">注文ID</th>
+                <th width="140px;">事業者名</th>
+                <th width="140px;">請求先氏名</th>
+                <th width="60px;">入金金額</th>
+                <th width="240px;">エラー内容</th>
+            </tr>
+            <?php
+                // count関数対策
+                $listCount = 0;
+                if (!empty($this->list)) {
+                    $listCount = count($this->list);
+                }
+                for ($i = 0; $i < $listCount; $i++) { ?>
+                <tr>
+                    <td class="c_data"><?php echo f_e($this->list[$i]['RegistDate']); ?></td>
+                    <td class="l_data">
+                        <a target="_blank" href="rworder/detail/oseq/<?php echo $this->list[$i]["OrderSeq"]; ?>"><?php echo $this->list[$i]["OrderId"]; ?></a>
+                    </td>
+                    <td class="l_data"><?php echo f_e($this->list[$i]['EnterpriseNameKj']); ?></td>
+                    <td class="l_data">
+                        <a target="_blank" href="customerinquiry/detail/custid/<?php echo $this->list[$i]["CustomerId"]; ?>"><?php echo f_e($this->list[$i]["NameKj"]); ?></a>
+                    </td>
+                    <td class="l_data" style="text-align: right;"><?php echo f_nf($this->list[$i]['PaymentAmount'], '#,##0'). '　'; ?></td>
+                    <td class="l_data"><?php echo f_e($this->list[$i]['Note']); ?></td>
+                </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

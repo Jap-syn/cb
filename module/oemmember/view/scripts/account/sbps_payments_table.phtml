@@ -1,0 +1,92 @@
+<?php
+$numPayments1 = sizeof($this->payments);
+$numSbpsPayments = sizeof($this->sitePaymentsData);
+$number = ($numPayments1 + $numSbpsPayments)*45 > 450 ? ($numPayments1 + $numSbpsPayments)*45 : 450;
+$number2 = ($numPayments1 + $numSbpsPayments)*40 > 407 ? ($numPayments1 + $numSbpsPayments)*40 : 407;
+?>
+<style>
+.sbps-payment-table-header {
+    background-color: #7F9E40;
+    color: white;
+}
+.sbps-payment-table td {
+    padding: 2px 6px;
+}
+.border-b {
+    border-bottom: solid 1px dimgray;
+}
+.border-r {
+    border-right: solid 1px dimgray;
+}
+.base_ui_modaldialog_container {
+    height:  <?php echo $number2;?>px !important;
+}
+.base_ui_modaldialog {
+    height:  <?php echo $number;?>px !important;
+}
+</style>
+<table class="sbps-payment-table" cellpadding="0" cellspacing="0" style="width: 100%;">
+    <tr>
+        <td>サイトID</td>
+        <td colspan="6"><?php echo $this->site['SiteId']; ?></td>
+    </tr>
+    <tr>
+        <td>サイト名</td>
+        <td colspan="6"><?php echo $this->site['SiteNameKj']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="7">&nbsp;</td>
+    </tr>
+    <tr class="sbps-payment-table-header">
+        <td  style="background-color: white;">&nbsp;</td>
+        <td colspan="3" style="text-align: center; border-top: solid 1px dimgray;border-left: solid 1px dimgray;border-bottom: solid 1px dimgray;" class="border-r">内容</td>
+        <td class="border-r" style="text-align: center; border-top: solid 1px dimgray;border-bottom: solid 1px dimgray;">決済手数料</td>
+        <td class="border-r" style="text-align: center; border-top: solid 1px dimgray;border-bottom: solid 1px dimgray;">請求手数料(税抜)</td>
+        <td class="border-r" style="text-align: center; border-top: solid 1px dimgray;border-bottom: solid 1px dimgray;">同梱請求手数料(税抜)</td>
+    </tr>
+    <?php
+        $i = 0;
+        $numPayments = sizeof($this->payments);
+        foreach($this->payments as $payment) {
+            $i++;
+        ?>
+    <tr>
+        <?php if ($i == 1) { ?>
+            <td rowspan="<?php echo $numPayments ?>" class="sbps-payment-table-header border-b" style="text-align: center; border-right: solid 1px dimgray;border-left : solid 1px dimgray; border-top: solid 1px dimgray"><?php echo $payment['PaymentGroupName'];?></td>
+        <?php } ?>
+        <td class="<?php if ($i === $numPayments) { ?>border-b<?php } ?>"><input type="checkbox" disabled <?php if($payment['UseFlg'] == 1){echo 'checked';} ?> /> <?php echo $payment['PaymentName'];?></td>
+        <td class="<?php if ($i === $numPayments) { ?>border-b<?php } ?>"><?php echo $payment['UseStartDate'];?></td>
+        <td class="border-r <?php if ($i === $numPayments) { ?>border-b<?php } ?>"><?php if (!empty($payment['UseStartDate'])) echo 'より開始';?></td>
+        <td class="border-r <?php if ($i === $numPayments) { ?>border-b<?php } ?>"><?php echo $site['SettlementFeeRate'] . '%'; ?></td>
+        <td class="border-r <?php if ($i === $numPayments) { ?>border-b<?php } ?>"><?php echo $site['ClaimFeeBS'] . '円'; ?></td>
+        <td class="border-r <?php if ($i === $numPayments) { ?>border-b<?php } ?>"><?php echo $site['ClaimFeeDK'] . '円'; ?></td>
+    </tr>
+    <?php } ?>
+
+    <?php
+    if ($this->site['PaymentAfterArrivalFlg'] == 1) {
+        $numSbpsPayments = sizeof($this->sitePaymentsData);
+        foreach ($this->sitePaymentsData as $idx => $sbpsPayment) {
+            $contractorId = $sbpsPayment['ContractorId'];
+            $numUseDay = (int) $sbpsPayment['NumUseDay'];
+            $useStartDate = $sbpsPayment['UseStartDate'];
+            $useEndDate = ($this->minClaimDate && $numUseDay > 0) ? date('Y-m-d', strtotime($this->minClaimDate. '+'. $numUseDay. ' days') ) : '';
+            $validFlg = $sbpsPayment['ValidFlg'];
+            $settlementFeeRate = $sbpsPayment['SettlementFeeRate'];
+            $claimFeeBS = $sbpsPayment['ClaimFeeBS'];
+            $claimFeeDK = $sbpsPayment['ClaimFeeDK'];
+        ?>
+        <tr>
+            <?php if ($idx == 0) { ?>
+                <td rowspan="<?php echo $numSbpsPayments ?>" class="sbps-payment-table-header border-b" style="text-align: center; border-right: solid 1px dimgray;border-left : solid 1px dimgray;">届いてから</td>
+            <?php } ?>
+            <td class="<?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>"><input type="checkbox" disabled checked/> <?php echo $this->sbpsPayments[$sbpsPayment['PaymentId']]['PaymentName'] ?></td>
+            <td class="<?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>"><?php echo date('Y-m-d', strtotime($useStartDate)); ?></td>
+            <td class="border-r <?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>">より開始</td>
+            <td class="border-r <?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>"><?php echo $settlementFeeRate ? $settlementFeeRate . '%' : ''; ?></td>
+            <td class="border-r <?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>"><?php echo $claimFeeBS . '円'; ?></td>
+            <td class="border-r <?php if ($idx + 1 === $numSbpsPayments) { ?>border-b<?php } ?>"><?php echo $claimFeeDK . '円'; ?></td>
+        </tr>
+    <?php }
+    }?>
+</table>

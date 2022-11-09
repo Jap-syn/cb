@@ -1,0 +1,64 @@
+<?php
+use Coral\Coral\View\CoralViewCommandBar;
+use Coral\Coral\View\CommandBar\CoralViewCommandBarButton;
+
+// HTMLヘッダ
+echo $this->render( 'oemmember/document_header.php' );
+
+
+?>
+</head>
+<body>
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+?>
+
+<div class="main_contents">
+
+<?php
+// コマンドバー使用
+$hasList = !empty($this->order_list) ? true : false;
+$commandBar = new CoralViewCommandBar(
+	// title
+	"指定の取引データは存在しません",
+	// buttons
+	array(
+		new CoralViewCommandBarButton(
+			array(
+				CoralViewCommandBarButton::OPTION_ID => 'backTo',
+				CoralViewCommandBarButton::OPTION_HREF => '#',
+				CoralViewCommandBarButton::OPTION_TEXT => '検索結果一覧へ戻る',
+				CoralViewCommandBarButton::OPTION_TITLE => '検索結果一覧へ戻ります'
+			)
+		)
+	)
+);
+
+// コマンドバーのレンダリング
+echo $commandBar->render();
+
+?>
+</div>
+<?php
+// 再検索用フォームをレンダリング
+echo $this->render('oemmember/search/search_back_form.php');
+
+// フッタメニュー
+echo $this->render( 'oemmember/footer_menu.php' );
+
+// 共通ページフッタ
+echo $this->render( 'oemmember/page_footer.php' );
+?>
+</body>
+
+</html>
+

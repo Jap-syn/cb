@@ -1,0 +1,60 @@
+<?php
+use Zend\Json\Json;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$startTime = false;
+if(isset($this->tranProp) && isset($this->tranProp['startTime'])) {
+  $startTime = $this->tranProp['startTime'];
+}
+?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  setTimeout(function() {
+    $('submit-button').disabled = true;
+    $('progress-form').submit();
+  }, 1000);
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">
+      JNB口座インポート中
+      (対象OEM先：<?php echo f_e(sprintf('[%d] %s', $this->data['OemId'], $this->data['OemNameKj'])); ?>)
+    </h3>
+    <form id="progress-form" action="jnbgrp/save" method="post">
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="r_label">状況</td>
+            <td class="l_data">
+              残り：<?php echo f_nf($this->remain, '#,##0'); ?> 件
+              （累積エラー：<?php echo f_nf($this->totalError, '#,##0'); ?> 件）
+            <?php if($startTime) { ?>
+              <br />
+              経過時間：<?php echo f_nf(strtotime(date('Y-m-d H:i:s')) - $startTime, '#,##0'); ?> 秒
+            <?php } ?>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="submit-area">
+        <input name="transaction" type="hidden" value="<?php echo f_e(base64_encode(Json::encode($this->tranProp))); ?>" />
+        <button id="submit-button" type="submit">続ける</button>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

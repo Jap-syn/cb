@@ -1,0 +1,129 @@
+[
+	{
+		"name": "EnterpriseId",
+		"required": true,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "ApiUserId",
+		"required": true,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "OrderId",
+		"required": true,
+		"maxLength": 12,
+		"ordinal": -1
+	},
+	{
+		"name": "ReceiptOrderDate",
+		"required": true,
+		"maxLength": -1,
+		"ordinal": 1
+	},
+	{
+		"name": "SiteId",
+		"required": true,
+		"maxLength": -1,
+		"ordinal": 20
+	},
+	{
+		"name": "Ent_OrderId",
+		"required": false,
+		"maxLength": 100,
+		"ordinal": 21
+	},
+	{
+		"name": "Ent_Note",
+		"required": false,
+		"maxLength": 4000,
+		"ordinal": 22
+	},
+	{
+		"name": "UseAmount",
+		"required": true,
+		"maxLength": 18,
+		"ordinal": 19
+	},
+	{
+		"name": "ServiceTargetClass",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "ServiceExpectedDate",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": 24
+	},
+	{
+		"name": "Oem_OrderId",
+		"required": false,
+		"maxLength": 100,
+		"ordinal": 30
+	},
+	{
+		"name": "T_OrderAutoCreditJudgeClass",
+		"required": false,
+		"maxLength": 1,
+		"ordinal": 31
+	},
+	{
+		"name": "AnotherDeliFlg",
+		"required": true,
+		"maxLength": 1,
+		"ordinal": -9
+	},
+	{
+		"name": "ItemCarriage",
+		"required": false,
+		"maxLength": 9,
+		"ordinal": 17
+	},
+	{
+		"name": "ItemCharge",
+		"required": false,
+		"maxLength": 9,
+		"ordinal": 18
+	},
+	{
+		"name": "ItemOutsideTaxs",
+		"required": false,
+		"maxLength": 9,
+		"ordinal": 23
+	},
+	{
+		"name": "RTOrderStatus",
+		"required": false,
+		"maxLength": 1,
+		"ordinal": -1
+	},
+	{
+		"name": "SeparateShipment",
+		"required": false,
+		"maxLength": 1,
+		"ordinal": 29
+	},
+	{
+		"name": "ClaimSendingClass",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "UpdateId",
+		"required": false,
+		"maxLength": -1,
+		"ordinal": -1
+	},
+	{
+		"name": "CreditTransferRequestFlg",
+		"required": false,
+		"maxLength": 1,
+		"ordinal": -1
+	}
+
+]

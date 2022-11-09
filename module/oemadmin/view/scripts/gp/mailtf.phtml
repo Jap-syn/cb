@@ -1,0 +1,78 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemadmin/document_header.php');
+?>
+<style type="text/css">
+<!--
+textarea {
+	font-size: 12px;
+	height: 300px;
+	width: 100%;
+}
+#updated {
+    margin-top: 10px;
+    border: 1px crimson solid;
+    border-radius: 3px;
+    padding: 10px;
+    background-color: lightyellow;
+}
+.hidden {
+    display: none;
+}
+-->
+</style>
+<script type="text/javascript">
+<!--
+	function navi()
+	{
+		var selected = $('cls').selectedIndex;
+		var dm = $('cls').options[selected].value;
+
+		var h = '<?php echo $this->baseUrl; ?>/gp/mailtf/cls/' + dm;
+
+		location.href = h;
+	}
+-->
+</script>
+</head>
+<body>
+<!-- start contents -->
+<div id="contents">
+  <?php echo $this->render('oemadmin/page_header.php'); ?>
+  <?php echo $this->render('oemadmin/gp/page_menu.php'); ?>
+    <div class="title"><span>メールテンプレート設定</span></div>
+<div id="updated"<?php if($this->updated == '') echo 'class="hidden"'; ?> align="center"><?php echo $this->updated; ?></div>
+<form name="form" method="post" action="gp/mailup">
+<input type="hidden" name="Id" id="Id" value="<?php echo $this->data['Id']; ?>" />
+<div align="center">
+  <table class="datatable" width="900" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <td colspan="2" class="l_data"><?php echo $this->clsTag; ?></td>
+    <tr>
+      <td class="r_label">From - 名称</td>
+      <td class="l_data"><input size="80" type="text" name="FromTitle" id="FromTitle" value="<?php echo $this->data['FromTitle']; ?>" />
+    </tr>
+    <tr>
+      <td class="r_label">From - アドレス</td>
+      <td class="l_data"><input size="80" type="text" name="FromAddress" id="FromAddress" value="<?php echo $this->data['FromAddress']; ?>" />
+    </tr>
+    <tr>
+      <td class="r_label">表題</td>
+      <td class="l_data"><input size="80" type="text" name="Subject" id="Subject" value="<?php echo $this->data['Subject']; ?>" />
+    </tr>
+    <tr>
+      <td class="r_label">本文</td>
+      <td class="l_data">
+        <textarea name="Body" id="Body"><?php echo $this->data['Body']; ?></textarea>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+  <div class="btncontents"><input type="submit" class="default_btn" value="　設　定　" /></div>
+</div>
+</form>
+  <?php echo $this->render('oemadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

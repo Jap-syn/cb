@@ -1,0 +1,83 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/oemmonthly/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">OEM精算明細（請求書兼納品書）</h3>
+    <table style="font-size: 12px;" width="862" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td class="l_data">
+              <?php echo $this->dataInformation; ?>
+            </td>
+            <td class="r_data">
+                <a class="download_link" href="javascript:void(0)" onclick="window.open( 'oemmonthly/download/oemid/<?php echo $this->oemInfo['OemId']; ?>/eid/<?php echo $this->entInfo['EnterpriseId']; ?>/fd/<?php echo f_e($this->fd); ?>' );">↓明細一式ダウンロード</a>
+                <a class="download_link" href="<?php echo 'oemmonthly/ddecisionTransfer/oemid/'.f_e($this->oemInfo['OemId']).'/eid/'.f_e($this->entInfo['EnterpriseId']).'/fd/'.f_e($this->fd); ?>">↓CSVダウンロード</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>対象期間</th>
+            <th>お取引<br />件数</th>
+            <th>ご利用<br />総額</th>
+            <th>決済手数料<br />合計</th>
+            <th>請求手数料<br />合計</th>
+            <th>OEM手数料</th>
+            <th>代理店手数料</th>
+            <th>印紙代<br />合計</th>
+            <th>月額<br />固定費</th>
+            <th>OEM<br />固定費</th>
+            <th>代理店<br />固定費</th>
+            <th>前回繰越<br />(固定費)</th>
+            <th>CNL<br />返金分</th>
+            <th>振込<br />手数料</th>
+            <th>精算<br />調整額</th>
+            <th>請求金額</th>
+            <th>支払総額</th>
+          </tr>
+          <?php 
+            // count関数対策
+            $listCount = 0;
+            if (!empty($this->list)) {
+                $listCount = count($this->list);
+            }
+            for ($i = 0 ; $i < $listCount ; $i++) { ?>
+          <tr>
+            <td class="c_data under"><?php echo f_e( $this->list[$i]['SpanFrom'] ); ?>～<?php echo f_e( $this->list[$i]['SpanTo'] ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['OrderCount'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['UseAmount'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( intval( $this->list[$i]['CB_SettlementFee'] ) + intval( $this->list[$i]['OM_SettlementFee'] ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( intval( $this->list[$i]['CB_ClaimFeeBS'] ) + intval( $this->list[$i]['CB_ClaimFeeDK'] ) + intval( $this->list[$i]['OM_ClaimFeeBS'] ) + intval( $this->list[$i]['OM_ClaimFeeDK'] ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( intval( $this->list[$i]['OM_SettlementFee'] ) + intval( $this->list[$i]['OM_ClaimFeeBS'] ) + intval( $this->list[$i]['OM_ClaimFeeDK'] ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['AgencyFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_StampFeeTotal'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_MonthlyFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['OM_EntMonthlyFee'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( intval( $this->list[$i]['PC_MonthlyFee'] ) - intval( $this->list[$i]['CB_EntMonthlyFee'] ) - intval( $this->list[$i]['OM_EntMonthlyFee'] ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_CarryOver'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_CalcelAmount'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_TransferCommission'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_AdjustmentAmount'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['PC_DecisionPayment'], 0 ), '#,##0' ); ?></td>
+            <td class="r_data"><?php echo f_nf( nvl( $this->list[$i]['FixedTransferAmount'], 0 ), '#,##0' ); ?></td>
+          </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

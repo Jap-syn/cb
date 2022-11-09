@@ -1,0 +1,16 @@
+.order_items td {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+h3 {
+	margin-bottom: 4px;
+}
+
+.order_items {
+	width: 80%;
+}
+
+form.action_form {
+	display: inline;
+}

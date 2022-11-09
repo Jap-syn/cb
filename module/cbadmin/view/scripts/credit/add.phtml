@@ -1,0 +1,433 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+	window.printable_count = 0;
+
+	// 20180405 Add 条件追加
+	// サブミット前 入力チェック
+	Event.observe($('condition_list_edit_form'), 'submit', function(evt) {
+		var msg = '', cannot_update = false;
+		// 必須チェックエラーSEQ
+		var msgseq = '';
+		// ドメインチェックエラーSEQ
+		var domseq = '';
+		// 事業者IDチェックエラーSEQ
+		var entseq = '';
+		// 電話番号チェックエラーSEQ
+		var telseq = '';
+		// 金額チェックエラーSEQ
+		var monseq = '';
+		// エラー件数
+		var cnt = 0;
+		for (var i = 0; i < 4; i++) {
+			var seq     = "hidseq_"     + i;
+			var cstring = "form[" + document.add_form[seq].value + "][Cstring]";
+			// 既存チェック
+			if (document.add_form[seq].value != "") {
+				// 必須入力チェック
+				if (document.add_form[cstring].value == "") {
+					cnt += 1;
+					if (msgseq.length > 0) {
+						msgseq = msgseq + ", " + document.add_form[seq].value;
+					} else {
+						msgseq = "Seq : " + document.add_form[seq].value;
+					}
+				}
+				// 入力がある場合
+				 else {
+					var category = "form[" + document.add_form[seq].value + "][Category]";
+					// フォーマットチェック（ドメイン）
+					if (document.add_form[category].value == "4"){
+						var tmp = document.add_form[cstring].value.match(/^[!-~]+$/);
+						// 半角英数記号チェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (domseq.length > 0) {
+								domseq = domseq + ", " + document.add_form[seq].value;
+							} else {
+								domseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+					}
+					// フォーマットチェック（事業者ID）
+					else if (document.add_form[category].value == "5"){
+						var tmp = document.add_form[cstring].value.match(/^[a-zA-Z0-9]+$/);
+						// 半角英数チェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (entseq.length > 0) {
+								entseq = entseq + ", " + document.add_form[seq].value;
+							} else {
+								entseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+						// 桁数チェック(10桁）
+						else if (document.add_form[cstring].value.length != 10) {
+							cnt += 1;
+							if (entseq.length > 0) {
+								entseq = entseq + ", " + document.add_form[seq].value;
+							} else {
+								entseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+					}
+					// フォーマットチェック（電話番号）
+					else if (document.add_form[category].value == "8"){
+						var tmp = document.add_form[cstring].value.match(/^[0-9０-９－\\-]+$/);
+						// 半全角数値およびハイフンチェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (telseq.length > 0) {
+								telseq = telseq + ", " + document.add_form[seq].value;
+							} else {
+								telseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+						// 桁数チェック(13桁以内）
+						else if (document.add_form[cstring].value.length > 13) {
+							cnt += 1;
+							if (telseq.length > 0) {
+								telseq = telseq + ", " + document.add_form[seq].value;
+							} else {
+								telseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+					}
+					// フォーマットチェック（金額）
+					else if (document.add_form[category].value == "9"){
+						var tmp = document.add_form[cstring].value.match(/^[0-9]+$/);
+						// 半角数字チェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (monseq.length > 0) {
+
+								monseq = monseq + ", " + document.add_form[seq].value;
+							} else {
+								monseq = "Seq : " + document.add_form[seq].value;
+							}
+						}
+					}
+				}
+			}
+			// 新規入力チェック
+			else {
+				var cstring = "cstring_" + i;
+				// 入力がなかったらチェックしない
+				if (document.add_form[cstring].value != "") {
+					var category = "category_" + i;
+					// フォーマットチェック（ドメイン）
+					if (document.add_form[category].value == "4"){
+						var tmp = document.add_form[cstring].value.match(/^[!-~]+$/);
+						// 半角英数記号チェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (domseq.length > 0) {
+								domseq = domseq + ", " + (i + 1) + "行目";
+							} else {
+								domseq = (i + 1) + "行目";
+							}
+						}
+					}
+
+					// フォーマットチェック（事業者ID）
+					else if (document.add_form[category].value == "5"){
+						var tmp = document.add_form[cstring].value.match(/^[a-zA-Z0-9]+$/);
+						// 半角英数チェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (entseq.length > 0) {
+								entseq = entseq + ", " +  + (i + 1) + "行目";
+							} else {
+								entseq = (i + 1) + "行目";
+							}
+						}
+						// 桁数チェック(10桁）
+						else if (document.add_form[cstring].value.length != 10) {
+							cnt += 1;
+							if (entseq.length > 0) {
+								entseq = entseq + ", " + (i + 1) + "行目";
+							} else {
+								entseq = (i + 1) + "行目";
+							}
+						}
+					}
+					// フォーマットチェック（電話番号）
+					else if (document.add_form[category].value == "8"){
+						var tmp = document.add_form[cstring].value.match(/^[0-9０-９－\\-]+$/);
+						// 半全角数値およびハイフンチェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (telseq.length > 0) {
+								telseq = telseq + ", " + (i + 1) + "行目";
+							} else {
+								telseq = (i + 1) + "行目";
+							}
+						}
+						// 桁数チェック(13桁以内）
+						else if (document.add_form[cstring].value.length > 13) {
+							cnt += 1;
+							if (telseq.length > 0) {
+								telseq = telseq + ", " + (i + 1) + "行目";
+							} else {
+								telseq = (i + 1) + "行目";
+							}
+						}
+					}
+					// フォーマットチェック（金額）
+					else if (document.add_form[category].value == "9"){
+						var tmp = document.add_form[cstring].value.match(/^[0-9]+$/);
+						// 半全角数値およびハイフンチェック
+						if (tmp != document.add_form[cstring].value){
+							cnt += 1;
+							if (monseq.length > 0) {
+								monseq = monseq + ", " + (i + 1) + "行目";
+							} else {
+								monseq = (i + 1) + "行目";
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if(cnt > 0) {
+			if (msgseq != '') {
+				msg = msg + "'条件文字列'は必須入力です。\n"
+				msg = msg + msgseq + "\n";
+			}
+			if (domseq != '') {
+				msg = msg + "'条件文字列'は英数字記号のみで入力する必要があります。\n"
+				msg = msg + domseq + "\n";
+			}
+			if (entseq != '') {
+				msg = msg + "'条件文字列'は英数字10桁で入力する必要があります。\n"
+				msg = msg + entseq + "\n";
+			}
+			if (telseq != '') {
+				msg = msg + "'条件文字列'が電話番号として正しくありません。\n"
+				msg = msg + telseq + "\n";
+			}
+			if (monseq != '') {
+				msg = msg + "'条件文字列'は数字のみで入力する必要があります。\n"
+				msg = msg + monseq + "\n";
+			}
+
+			alert(msg);
+			cannot_update = true;
+		}
+		if(!msg.length) return;
+		if(cannot_update || !window.confirm(msg)) {
+			// サブミットをキャンセル
+			evt.preventDefault ? evt.preventDefault() : evt.returnValue = false;
+		}
+	}.bindAsEventListener($('condition_list_edit_form')));
+
+});
+
+</script>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/credit/page_menu.php'); ?>
+
+  <!-- start contents -->
+ <?php $data = $this->expressions; ?>
+  <div id="contents">
+    <?php if ( f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+      <h3 class="contents_title">与信追加条件一覧</h3>
+    <?php } else { ?>
+      <h3 class="contents_title">「<?php echo f_e($this->LoginId); ?>_<?php echo f_e($this->EnterpriseNameKj); ?>」の与信追加条件一覧</h3>
+    <?php } ?>
+    <div id="message" align="center"><?php echo $this->message; ?></div>
+    <?php if (f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) { ?>
+    <form id="condition_list_edit_form" name="add_form" method="post" action="credit/saveadd/seq/<?php echo f_e($this->pdata['Seq']); ?>/category/<?php echo f_e($this->pdata['Category']); ?>">
+    <?php } else { ?>
+    <form id="condition_list_edit_form" name="add_form" method="post" action="credit/saveadd/eid/<?php echo f_e($this->EnterpriseId); ?>/seq/<?php echo f_e($this->pdata['Seq']); ?>/category/<?php echo f_e($this->pdata['Category']); ?>">
+    <?php } ?>
+      <table  id="credit_condition_list" width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th style="width:60px">Seq</th>
+            <th style="width:120px">項目種別</th>
+            <th style="width:70px">検索方法</th>
+            <th style="width:220px">条件文字列</th>
+            <th style="width:220px">コメント</th>
+            <th style="width:70px">ポイント</th>
+            <th style="width:40px">有効</th>
+          </tr>
+
+            <tr>
+                <td class="r_data">
+                    </br>
+                    <?php echo f_e($this->pdata['Seq']); ?></br>　
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->category); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->pattern); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->pdata['Cstring']); ?>
+                </td>
+                <td class="l_data">
+                    <?php echo f_e($this->pdata['Comment']); ?>
+                </td>
+                <td class="c_data">
+                    <?php echo f_e($this->pdata['Point']); ?>
+                </td>
+                <td class="c_data">
+                    <?php if(f_e($this->pdata['ValidFlg']) == 1){ echo "有効"; } else { echo "無効"; }  ?>
+                </td>
+
+            </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php foreach ((array)$this->result as $i => $data) {  ?>
+            <?php
+
+            $seq = $data['Seq'];
+            $data_for_hash = array();
+            foreach($data as $key => $value) {
+                if(in_array($key, array('Seq', 'Category', 'SearchPattern', 'Cstring'))) {
+                    $data_for_hash[$key] = $value;
+                }
+            }
+            ksort($data_for_hash);
+            ?>
+
+            <tr id="row_<?php echo f_e($seq); ?>" class="<?php echo f_e(($i % 2 == 0) ? 'odd' : 'even'); ?>" title="<?php echo f_df($data['RegistDate'], 'Y年 n月 d日'); ?> 登録">
+                <td class="r_data">
+                    <?php echo f_e($seq); ?>
+                    <input id="seq_<?php echo f_e($seq); ?>" name="form[<?php echo f_e($seq); ?>][Seq]" type="hidden" value="<?php echo f_e($data['Seq']); ?>" />
+                    <input id="row_hash_<?php echo f_e($seq); ?>" name="form[<?php echo f_e($seq); ?>][_row_hash]" type="hidden" value="<?php echo f_e(base64_encode(serialize($data_for_hash))); ?>" />
+                    <input type="hidden" name="seq_<?php echo f_e($i); ?>" id="hidseq_<?php echo f_e($i); ?>" value="<?php echo f_e($seq); ?>" />
+                </td>
+
+                <td class="l_data">
+                    <?php foreach($this->categoryName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq, $key); ?>
+                        <?php if(((f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) && f_e($value['Class2']) <> "") || (f_e($this->EnterpriseId) != -1 && f_e($value['Class2']) <> "" && f_e($value['Class2']) <> "事ID")) { ?>
+                            <label for="category_<?php echo f_e($id); ?>" class="chk_label category_label category_<?php echo f_e($seq); ?><?php if($key == $data['Category']-1) echo ' selected'; ?>">
+                            <input id="category_<?php echo f_e($id); ?>" name="form[<?php echo f_e($seq); ?>][Category]" type="radio" value="<?php echo f_e($key)+1; ?>" class="chk"<?php if(($key+1) == $data['Category']) echo ' checked="checked"'; ?> onclick="change_category_selection('<?php echo f_e($seq); ?>')" />
+
+                            <?php echo f_e($value['Class2']); ?>
+                            </label>
+                        <?php } ?>
+                    <?php } ?>
+                    <input type="hidden" name="category_<?php echo f_e($i); ?>" value="<?php echo f_e($data['Category']); ?>" />
+                </td>
+
+                <td class="l_data">
+                    <?php foreach($this->patternName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq, $key); ?>
+                        <label for="pattern_<?php echo f_e($id); ?>" class="chk_label pattern_label pattern_<?php echo f_e($seq); ?><?php if($key == $data['SearchPattern']) echo ' selected'; ?>">
+                        <input id="pattern_<?php echo f_e($id); ?>" name="form[<?php echo f_e($seq); ?>][SearchPattern]" type="radio" value="<?php echo f_e($key); ?>" class="chk"<?php if(($key) == $data['SearchPattern']) echo ' checked="checked"'; ?> onclick="change_pattern_selection('<?php echo f_e($seq); ?>')" />
+
+                        <?php echo f_e($value['Class2']); ?>
+                        </label>
+                    <?php } ?>
+                    <input type="hidden" name="searchpattern_<?php echo f_e($i); ?>" value="<?php echo f_e($data['SearchPattern']); ?>" />
+                </td>
+
+                <td class="l_data">
+                    <input class="large_item" id="cstring_<?php echo f_e($seq); ?>" name="form[<?php echo f_e($seq); ?>][Cstring]" type="text" value="<?php echo f_e($data['Cstring']); ?>" maxlength = 4000  />
+                    <input type="hidden" name="cstring_<?php echo f_e($i); ?>" value="form[<?php echo f_e($seq); ?>][Cstring]" />
+                    </td>
+                <td class="c_data">
+                </td>
+                <td class="c_data">
+                </td>
+                <td class="c_data" style="padding: 0px">
+                    <input type="checkbox" id="delete_<?php echo f_e($seq); ?>" name="form[<?php echo f_e($seq); ?>][delete]"  value ="1" <?php if($data['ValidFlg'] == 1) echo 'checked'; ?> />
+                    <input type="hidden" name="validflg_<?php echo f_e($i); ?>" value="<?php echo f_e($data['ValidFlg']); ?>" />
+                </td>
+            </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+		<?php
+			// count関数対策
+			$resultCount = 0;
+			if (!empty($this->result)) {
+				$resultCount = count($this->result);
+			}
+			if ($resultCount < 4) { ?>
+			<?php
+			for ($i = $resultCount; $i <= 3; $i++) { ?>
+            <tr id="row_add_<?php echo f_e($i); ?>" class="<?php echo f_e(($i % 2 == 0) ? 'odd' : 'even'); ?>">
+                <td class="r_data">
+                    <input type="hidden" name="seq_<?php echo f_e($i); ?>" id="hidseq_<?php echo f_e($i); ?>" value="" />
+                </td>
+
+                <td class="l_data">
+                    <?php foreach($this->categoryName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq, $key); ?>
+                        <?php if(((f_e($this->EnterpriseId) == -1 || f_e($this->EnterpriseId) == '' ) && f_e($value['Class2']) <> "") || (f_e($this->EnterpriseId) != -1 && f_e($value['Class2']) <> "" && f_e($value['Class2']) <> "事ID")) { ?>
+                            <label for="category_add_<?php echo f_e($id); ?>" class="chk_label category_label category_add<?php echo f_e($i); ?><?php if($key == 0) echo ' selected'; ?>">
+                            <input id="category_add_<?php echo f_e($id); ?>" name="category_<?php echo f_e($i); ?>" type="radio" value="<?php echo f_e($key)+1; ?>" class="chk"<?php if(($key+1) == 1) echo ' checked="checked"'; ?> onclick="change_category_selection('<?php echo f_e($i); ?>')" />
+
+                            <?php echo f_e($value['Class2']); ?>
+                            </label>
+                        <?php } ?>
+                    <?php } ?>
+                </td>
+
+                <td class="l_data">
+                    <?php foreach($this->patternName as $key => $value) { ?>
+                        <?php $id = sprintf('%s_%s', $seq, $key); ?>
+                        <label for="pattern_add_<?php echo f_e($id); ?>" class="chk_label pattern_label pattern_add<?php echo f_e($i); ?><?php if($key == 0) echo ' selected'; ?>">
+                        <input id="pattern_add_<?php echo f_e($id); ?>" name="searchpattern_<?php echo f_e($i); ?>" type="radio" value="<?php echo f_e($key); ?>" class="chk"<?php if(($key) == 0) echo ' checked="checked"'; ?> onclick="change_pattern_selection('<?php echo f_e($i); ?>')" />
+
+                        <?php echo f_e($value['Class2']); ?>
+                        </label>
+                    <?php } ?>
+                </td>
+
+                <td class="l_data">
+                    <input class="large_item" id="cstring_add_<?php echo f_e($i); ?>" name="cstring_<?php echo f_e($i); ?>" type="text" value="" maxlength = 4000  />
+                </td>
+                <td class="c_data">
+                </td>
+                <td class="c_data">
+                </td>
+                <td class="c_data" style="padding: 0px">
+                    <input type="checkbox" id="delete_add_<?php echo f_e($i); ?>" name="validflg_<?php echo f_e($i); ?>"  value ="1" />
+                </td>
+            </tr>
+          <tr class="border">
+            <td colspan="8">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+            <?php } ?>
+        <?php } ?>
+        </tbody>
+      </table>
+     <!-- ページナビゲーション -->
+             <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+          <tr align="center">
+            <td>
+                <input type="submit" value="この内容で更新" />
+                <input type="button" id="btnClose" value="閉じる" onclick="window.close();" />
+            </td>
+          </tr>
+        </table>
+    </form>
+    </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

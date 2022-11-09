@@ -1,0 +1,28 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/externaldemand/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>外部督促出力ファイルの取り込み(SMS)　エラー</h3>
+<h4><font color="red"><?php echo $this->error; ?></font></h4>
+<table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <thead>
+  </thead>
+  <tbody>
+  <tr>
+    <td colspan="8" class="c_data"><input type="button" value="ファイル取り込みへ戻る" onclick="location.href='externaldemand/regist'" /></td>
+  </tr>
+  </tbody>
+</table>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

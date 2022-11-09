@@ -1,0 +1,497 @@
+<?php
+use models\Table\TableJnbAccount;
+
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+
+$usageMap = TableJnbAccount::getStatusMap();
+$usageClassMap = array(
+  '0' => 'blank',
+  '1' => 'claiming',
+  '-1' => 'closed'
+);
+$relDays = $this->releaseInterval;
+?>
+<style type="text/css">
+/*-- common --*/
+#contents table.datatable,
+#contents table.formtable {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+#contents table.formtable td.no-next-account {
+  background-color: #f00;
+  color: #fff;
+  font-weight: bold;
+}
+.datatable thead th {
+  line-height: 1.4;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.datatable td.next-account {
+  background-color: gold !important;
+  font-weight: bold !important;
+}
+
+/*-- even line --*/
+.datatable tr.even td {
+  background-color: #f8f8f8;
+}
+
+/*-- rollovered row --*/
+.datatable tr:hover td,
+.datatable tr.even:hover td {
+  background-color: azure;
+}
+
+/*-- blank account --*/
+ .datatable td.blank {
+  background-color: azure;
+}
+.datatable tr.even td.blank {
+  background-color: #e0ffff;
+}
+.datatable tr:hover td.blank,
+.datatable tr.even:hover td.blank {
+  background-color: paleturquoise;
+}
+
+/*-- claiming account --*/
+.datatable td.claiming {
+  background-color: lemonchiffon;
+}
+.datatable tr.even td.claiming {
+  background-color: #fff6ba;
+}
+.datatable tr:hover td.claiming,
+.datatable tr.even:hover td.claiming {
+  background-color: yellow;
+}
+
+/*-- closed account --*/
+.datatable td.closed {
+  background-color: lavenderblush;
+}
+.datatable tr.even td.closed {
+  background-color: mistyrose;
+}
+.datatable tr:hover td.closed,
+.datatable tr.even:hover td.closed {
+  background-color: pink;
+}
+
+/*-- misc --*/
+.nav-left {
+  float: left;
+  display: inline-block;
+  width: 100px;
+  height: 21px;
+  text-align: left;
+}
+.nav-right {
+  float: right;
+  display: inline-block;
+  width: 100px;
+  height: 21px;
+  text-align: right;
+}
+.clear-float {
+  float: none;
+  clear: both;
+  font-size: 0;
+  display: block;
+  line-height: 0;
+  height: 0;
+}
+.submit-area > div {
+  margin: 0 -20px;
+}
+h4.category-title > .filter-box,
+.submit-area > div.filter-box {
+  text-align: left;
+  line-height: 1.8;
+  margin-left: 0;
+  margin-top: 4px;
+}
+h4.category-title > .filter-box label,
+.submit-area > div.filter-box label {
+  margin: 0 8px;
+}
+h4.category-title > .filter-box {
+  font-weight: normal;
+  float: right;
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 0px;
+  margin-right: 4px;
+}
+.acc-seq-col {/*SEQ*/
+  width: 60px;
+}
+.acc-num-col {/*店 - 口座番号*/
+  width: 85px;
+}
+.acc-holder-col {/*ワンタイム口座名*/
+  width: 230px;
+}
+.acc-status-col {/*状態*/
+  width: 56px;
+}
+.acc-date-col {/*最終更新*/
+  width: 130px;
+}
+th.order-info,
+td.order-info {
+  width: 285px;
+}
+.order-info a {
+  display: inline-block;
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+}
+.order-info .notify-info {
+  display: block;
+  font-size: 11px;
+  line-height: 13px;
+}
+
+#scroll-to-top a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+#contents h3.contents_title {
+  padding: 5px 10px;
+}
+#contents h3.contents_title .more-info,
+h4.category-title .more-info {
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1;
+}
+#contents h3.contents_title .more-info {
+  float: right;
+  margin-right: -5px;
+  margin-top: 4px;
+}
+h4.category-title .more-info {
+  margin-left: 12px;
+}
+
+.group-nav span {
+  color: gray;
+}
+</style>
+<script type="text/javascript">
+var
+  getFilters = function() {
+    return document.getElementsByClassName('filter-item').map(function(ele) {
+      if(/input/i.test(ele.tagName) && /checkbox/i.test(ele.type)) {
+        return ele.checked ? ele.value : null;
+      } else {
+        return null;
+      }
+    }).compact().sort();
+  },
+  filterEquals = function(a, b) {
+    var
+      full = document.getElementsByClassName('filter-item').map(function(ele) {
+        return (/input/i.test(ele.tagName) && /checkbox/i.test(ele.type)) ? ele.value : null;
+      }).compact().sort();
+    return (a && a.length ? a : full).join(',') == (b && b.length ? b : full).join(',');
+  },
+  updateLink = function() {
+    var params = getFilters();
+    document.getElementsByClassName('nav-link').each(function(a) {
+      var base = a.href.replace(/(\/filter\/[^\/]*)?$/, '');
+      a.href = params.length ? base + '/filter/' + params.join(',') : base;
+    });
+  },
+  reload = function() {
+    var
+      params = getFilters(),
+      curFilters = location.href.match(/\/filter\/([^\/]*)/) && RegExp.$1.split(/,/).sort() || [],
+      url = location.href.replace(/(\/filter\/[^\/]*)?$/, '') + (params.length ? '/filter/' + params.join(',') : '');
+    if(!filterEquals(params, curFilters)) {
+      url = url.replace(/\/page\/\d*/, '');
+    }
+    if(url != location.href) location.href = url;
+  },
+  initialized = false,
+  showScrollToTop = function() {
+    if (!base) { return; }
+    if (!base.UI) { return; }
+    var
+      b = base.UI.currentBrowser(),
+      base = (b == base.UI.browserTypes.opera ? document.body : document.documentElement),
+      scrollable = base.clientHeight < base.scrollHeight,
+      target = $('scroll-to-top'),
+      func = scrollable ? (function() {
+        if(!initialized) return Element.show;
+        return function(ele) {
+          if(!Element.visible(ele)) {
+            bytefx.fade(ele, 0, 100, 3, function() { console.log('test'); Element.show(ele); });
+          }
+        };
+      })() : (function() {
+        if(!initialized) return Element.hide;
+        return function(ele) {
+          if(Element.visible(ele)) {
+            bytefx.fade(ele, 100, 0, 3, function() { console.log('test'); Element.hide(ele); });
+          }
+        };
+      })();
+    func(target);
+  };
+Event.observe(window, 'load', function() {
+  document.getElementsByClassName('filter-item')
+    .map(function(ele) { return ele.id; })
+    .each(function(id) {
+      Event.observe($(id), 'click', updateLink);
+    });
+  Event.observe(window, 'resize', showScrollToTop);
+  updateLink();
+  showScrollToTop();
+  initialized = true;
+});
+</script>
+</head>
+<body>
+<div id="top-of-page"></div>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/jnbgrp/page_menu.php'); ?>
+  <?php
+  $group = $this->group;
+  $filters = $this->filters;
+  ?>
+  <!-- start contents -->
+  <div id="contents">
+  <?php if(!$group) { ?>
+    <h3 class="contents_title">
+      口座グループ詳細 - 登録口座なし
+    </h3>
+    <p>指定の口座グループはありません。</p>
+  <?php } else { ?>
+    <h3 class="contents_title">
+      口座グループ：<?php echo f_e($group['AccountGroupId']); ?> の詳細
+    </h3>
+    <?php if($group['ReturnedFlg']) { ?>
+    <div class="page_info_message">
+      この口座グループは返却済みです
+    </div>
+    <?php } ?>
+    <div class="submit-area" style="text-align: right">
+      <a href="jnb/detail/oid/<?php echo f_e($group['OemId']); ?>">JNB登録内容詳細へ戻る</a>
+    </div>
+    <h4 class="category-title">
+      口座グループ詳細
+    <?php if(!$group['ReturnedFlg']) { ?>
+      <div class="filter-box group-nav">
+      <?php if($this->prevGroup) { ?>
+        <a href="jnbgrp/detail/gid/<?php echo f_e($this->prevGroup['AccountGroupId']); ?>" title="<?php echo f_e(sprintf('%s / %s', $this->prevGroup['ManageKey'], $this->prevGroup['ManageKeyLabel'])); ?>">&laquo; 前のグループ</a>
+      <?php } else { ?>
+        <span>&laquo; 前のグループ</span>
+      <?php } ?>
+      <span>｜</span>
+      <?php if($this->nextGroup) { ?>
+        <a href="jnbgrp/detail/gid/<?php echo f_e($this->nextGroup['AccountGroupId']); ?>" title="<?php echo f_e(sprintf('%s / %s', $this->nextGroup['ManageKey'], $this->nextGroup['ManageKeyLabel'])); ?>">次のグループ &raquo;</a>
+      <?php } else { ?>
+        <span>次のグループ &raquo;</span>
+      <?php } ?>
+      </div>
+      <div class="clear-float"></div>
+    <?php } ?>
+    </h4>
+    <table class="formtable" cellpadding="1" cellspacing="1" width="862">
+      <tbody>
+        <tr>
+          <td class="r_label">管理グループキー</td>
+          <td class="l_data"><?php echo f_e($group['ManageKey']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">表示名</td>
+          <td class="l_data"><?php echo f_e($group['ManageKeyLabel']); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">登録日時</td>
+          <td class="l_data"><?php echo f_df($group['RegistDate'], 'Y年 n月 j日 H時i分'); ?></td>
+        </tr>
+        <tr>
+          <td class="r_label">登録口座数</td>
+          <td class="l_data"><?php echo f_nf($group['TotalAccounts'], '#,##0'); ?> 件</td>
+        </tr>
+      <?php if($group['ReturnedFlg']) { ?>
+        <tr>
+          <td class="r_label">返却日時</td>
+          <td class="l_data"><?php echo f_df($group['ReturnedDate'], 'Y年 n月 j日 H時i分'); ?></td>
+        </tr>
+      <?php } ?>
+        <tr>
+          <td class="r_label">次回割り当て予定口座</td>
+        <?php if($this->nextAccount) { ?>
+          <td class="l_data">
+            <a href="jnb/history/accseq/<?php echo f_e($this->nextAccount['AccountSeq']); ?>" target="_blank">
+              <?php
+              echo f_e(sprintf('[%s] %s-%s', $this->nextAccount['AccountSeq'], $this->nextAccount['BranchCode'], $this->nextAccount['AccountNumber']));
+              ?>
+            </a>
+          </td>
+        <?php } else { ?>
+          <td class="l_data no-next-account">
+            (割り当て可能な口座がありません)
+          </td>
+        <?php } ?>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 class="category-title">口座一覧
+      <span class="more-info">
+      <!-- count関数対策 -->
+    <?php if(!empty($this->list)) { ?>
+      (<?php echo sprintf('%s', f_nf($this->total, '#,##0')); ?> 件中
+      <?php echo f_nf($this->ipp * ($this->page - 1) + 1, '#,##0'); ?>～
+      <!-- count関数対策 -->
+      <?php echo f_nf($this->ipp * ($this->page - 1) + count($this->list), '#,##0'); ?>
+      件目を表示、<?php echo f_nf($this->page, '#,##0'); ?> / <?php echo f_nf($this->maxPage, '#,##0'); ?> ページ)
+    <?php } else { ?>
+      (0 件)
+    <?php } ?>
+      </span>
+
+      <div class="filter-box">
+        <span>フィルタ：</span>
+      <?php $index = 0; ?>
+      <?php foreach($usageMap as $sts => $label) { ?>
+        <label for="filter-<?php echo f_e($index); ?>"><input id="filter-<?php echo f_e($index); ?>" class="filter-item" type="checkbox" value="<?php echo f_e($sts); ?>"<?php if(in_array($sts, $filters)) echo ' checked="checked"'; ?> /><?php echo f_e($label); ?></label>
+        <?php $index++; ?>
+      <?php } ?>
+        <a href="javascript:void(0)" onclick="reload()">この設定で更新</a>
+      </div>
+
+      <div class="clear-float">&nbsp;</div>
+    </h4>
+    <!-- count関数対策 -->
+  <?php if(!empty($this->list) && $this->maxPage > 1) { ?>
+    <div class="submit-area" style="margin-top: 0;margin-bottom: 0; border-bottom:none 0"><!-- submit-area begin -->
+      <div>
+        <div class="nav-left">
+        <?php if($this->page > 1) { ?>
+          <a class="nav-link" href="jnbgrp/detail/gid/<?php echo f_e($group['AccountGroupId']); ?>/page/<?php echo f_e($this->page - 1); ?>">&laquo; 前のページ</a>
+        <?php } ?>
+        </div>
+
+        <div class="nav-right">
+        <?php if($this->page < $this->maxPage) { ?>
+          <a class="nav-link" href="jnbgrp/detail/gid/<?php echo f_e($group['AccountGroupId']); ?>/page/<?php echo f_e($this->page + 1); ?>">次のページ &raquo;</a>
+        <?php } ?>
+        </div>
+
+        <div class="clear-float">&nbsp;</div>
+      </div>
+    </div><!-- submit-area end -->
+  <?php } ?>
+    <table class="datatable" cellpadding="1" cellspacing="1" width="862">
+      <thead>
+        <tr>
+          <th class="acc-seq-col">SEQ</th>
+          <th class="acc-num-col">店 - 口座番号</th>
+          <th class="acc-holder-col">ワンタイム口座名</th>
+          <th class="acc-status-col" style="width: 56px">状態</th>
+          <th class="acc-date-col">最終更新</th>
+          <th class="order-info">注文</th>
+        </tr>
+      </thead>
+      <tbody>
+    <?php foreach($this->list as $i => $data) { ?>
+
+        <?php $errInfo = explode(',', $data['CsvError']); $lineNum = array_shift($errInfo); $errMsg = join(',', $errInfo); ?>
+        <?php $is_next_acc = $data['AccountSeq'] == $this->nextAccount['AccountSeq']; ?>
+        <tr class="<?php echo $i % 2 == 0 ? 'odd' : 'even'; ?>">
+          <td class="r_data<?php if($is_next_acc) echo ' next-account'; ?>"<?php if($is_next_acc) echo ' title="次回割り当て予定"'; ?>>
+            <a href="jnb/history/accseq/<?php echo f_e($data['AccountSeq']); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e($data['AccountSeq']); ?>
+            </a>
+          </td>
+          <td class="c_data">
+            <a href="jnb/history/account/<?php echo f_e(sprintf('%s-%s', $data['BranchCode'], $data['AccountNumber'])); ?>" target="_blank" title="この口座の履歴を表示">
+              <?php echo f_e(sprintf('%s - %s', $data['BranchCode'], $data['AccountNumber'])); ?>
+            </a>
+          </td>
+          <td class="l_data"><?php echo f_e($data['AccountHolder']); ?></td>
+          <td class="c_data <?php echo f_e($usageClassMap[$data['Status']]); ?>">
+            <?php echo f_e($usageMap[$data['Status']]); ?>
+          </td>
+          <td class="l_data">
+            <?php echo f_df($data['LastStatusChanged'], 'Y-m-d H:i:s'); ?>
+          <?php if($data['Status'] == TableJnbAccount::ACCOUNT_STATUS_CLOSED) { ?>
+            <div>(<?php echo f_df(date('Y-m-d', strtotime($data['LastStatusChanged']) + (86400 * $relDays)), 'Y-m-d'); ?> 開放予定)</div>
+          <?php } ?>
+          </td>
+          <td class="l_data order-info">
+          <?php if(isset($data['OrderSeq'])) { ?>
+            <?php
+            $txt = sprintf('%s：%s', $data['OrderId'], $data['NameKj']);
+            $sts = '';
+            if($data['Cnl_Status']) {
+              $sts = 'キャンセル';
+            } else
+            if($data['DataStatus'] == 91) {
+              switch($data['CloseReason']) {
+                case 3:   $sts = '与信NG';            break;
+                case 4:   $sts = '損害確定';          break;
+                default:  $sts = '入金済み';          break;
+              }
+            } else {
+              switch($data['DataStatus']) {
+                case 31:  $sts = '伝票番号登録待ち';  break;
+                case 41:  $sts = '請求書印刷待ち';    break;
+                case 51:  $sts = '入金確認待ち';      break;
+                case 61:  $sts = '一部入金';          break;
+                default:  $sts = '与信中';            break;
+              }
+            }
+            $txt = sprintf('%s / %s', $sts, $txt);
+            ?>
+            <a href="rworder/detail/oseq/<?php echo f_e($data['OrderSeq']); ?>" target="_blank" title="<?php echo f_e($txt); ?>">
+              <?php echo f_e($txt); ?>
+            </a>
+          <?php } else { ?>
+            &nbsp;
+          <?php } ?>
+          <?php if($data['WaitManualReceiptCount'] + $data['WaitReceiptCount'] > 0) { ?>
+            <div class="notify-info">
+            <?php if($data['WaitManualReceiptCount'] > 0) { ?>
+              入金確定待ち (<?php echo f_e($data['WaitManualReceiptCount']); ?>件)
+              <a target="_blank" href="jnbrcpt/index" style="display: inline; margin-left: 1em">⇒ 手動入金画面へ</a>
+            <?php } else if($data['WaitReceiptCount'] > 0) { ?>
+              入金処理待ち (<?php echo f_e($data['WaitReceiptCount']); ?> 件)
+            <?php } ?>
+            </div>
+          <?php } ?>
+          </td>
+        </tr>
+    <?php } ?>
+      </tbody>
+    </table>
+    <div id="scroll-to-top" class="submit-area">
+      <a href="javascript:void(0)" onclick="bytefx.scroll($('top-of-page'), 15)">ページの先頭へ</a>
+    </div>
+  <?php } ?>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

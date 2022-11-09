@@ -1,0 +1,135 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+/* general */
+body {
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
+    font-family: migu-1p-regular, sans-serif;
+}
+
+/* header */
+#header {
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    width: 100%;
+}
+
+#header1 {
+    display: inline-block;
+    margin-top: 20px;
+    margin-left: 50px;
+    font-size: 14px;
+    line-height: 25px;
+    vertical-align: top;
+    width: 50%;
+}
+
+#header2 {
+    display: inline-block;
+    margin-top: 5px;
+    text-align: right;
+    font-size: 12px;
+    line-height: 20px;
+    width: 43%;
+}
+
+#greet {
+    display: block;
+    margin-left: 50px;
+    line-height: 25px;
+    font-size: 12px;
+    vertical-align: top;
+    width: 50%;
+}
+
+#title {
+    font-size: 18px;
+    text-align: center;
+}
+
+#datatable {
+	margin: 15px auto 0px auto;
+    font-size: 12px;
+}
+
+th {
+    text-align: center;
+    padding: 0px 0px 0px 0px;
+    border: solid 1px;
+    background-color: #CC99FF;
+}
+
+td.r_data {
+    text-align: right;
+    padding: 5px 5px 3px 0px;
+    border: solid 1px;
+}
+
+td.r_data2 {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    border-top: double 3px;
+    border-right: solid 1px;
+    border-left: solid 1px;
+    border-bottom: solid 1px;
+}
+
+td.c_data {
+    text-align: center;
+    padding: 0px 0px 0px 0px;
+    border: solid 1px;
+}
+
+td.c_data2 {
+    text-align: center;
+    padding: 0px 0px 0px 0px;
+    border-top: double 3px;
+    border-right: solid 1px;
+    border-left: solid 1px;
+    border-bottom: solid 1px;
+}
+
+td.l_data {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    border: solid 1px;
+}
+
+td.l_data2 {
+    text-align: left;
+    padding: 0px 0px 0px 5px;
+    border-top: double 3px;
+    border-right: solid 1px;
+    border-left: solid 1px;
+    border-bottom: solid 1px;
+}
+
+td.sitename {
+    background-color: #E9E64A;
+}
+
+td.r_sum {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    border: solid 1px;
+    background-color: #D8E4BC;
+}
+
+td.r_sum2 {
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+    border: solid 1px;
+    background-color: #B7DEE8;
+}
+
+#footer {
+    display: block;
+    margin-top: 10px;
+    margin-left: 250px;
+    font-size: 11px;
+}

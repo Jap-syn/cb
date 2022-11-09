@@ -1,0 +1,168 @@
+<?php
+// HTMLヘッダ
+echo $this->render('document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('page_header.php'); ?>
+  <?php echo $this->render('page_menu.php'); ?>
+  
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">売上統計</h3>
+    <form name="form" method="post" action="statistics/sales">
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="4" class="l_data">
+              立替確定日範囲　(YYYY-MM-DD)　：　
+              <input type="text" name="f" id="f" value="<?php echo f_e($this->f); ?>" />～
+              <input type="text" name="t" id="t" value="<?php echo f_e($this->t); ?>" />
+              <input style="margin: 0px 20px; " type="submit" value="　表　示　" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td style="font-size: 18px; font-weight: bold;" class="l_data">売　上</td>
+            <td style="font-size: 18px; font-weight: bold;" colspan="3" class="l_data">\<?php echo $this->valueFormat($this->list1['Uriage'], 'number', '#,##0'); ?></td>
+          </tr>
+        </tbody>
+      </table>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <td colspan="4" class="l_data">【内訳】</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="r_label">決済手数料</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['SettlementFee'], 'number', '#,##0'); ?></td>
+            <td class="l_data">対象期間中に立替確定が行われた注文の決済手数料合計</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="r_label">請求手数料</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['ClaimFee'], 'number', '#,##0'); ?></td>
+            <td class="l_data">対象期間中に立替確定が行われた注文の請求手数料合計</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="r_label">月額固定費</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['MonthlyFee'], 'number', '#,##0'); ?></td>
+            <td class="l_data">対象期間中に立替確定が行われた月額固定費合計</td>
+          </tr>
+          <tr>
+            <td colspan="4" class="l_data">【付属データ】</td>
+          </tr>
+          <tr>
+            <td rowspan="3" class="r_label">注文</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['Cnt']); ?></td>
+            <td class="l_data">該当注文の件数</td>
+          </tr>
+          <tr>
+            <td class="r_label">立替総額</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['ChargeAmount'], 'number', '#,##0'); ?></td>
+            <td class="l_data">事業者に対して支払った立替金額合計</td>
+          </tr>
+          <tr>
+            <td class="r_label">平均単価</td>
+            <td class="r_data">\<?php echo f_e($this->list1['TankaAverage']); ?></td>
+            <td class="l_data">売上÷注文件数</td>
+          </tr>
+          <tr>
+            <td rowspan="3" class="r_label">入金済</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['NyukinCnt']); ?></td>
+            <td class="l_data">該当注文のうち、入金済みになっている注文の件数</td>
+          </tr>
+          <tr>
+            <td class="r_label">金額</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['NyukinAmount'], 'number', '#,##0'); ?></td>
+            <td class="l_data">上記、利用額合計</td>
+          </tr>
+          <tr>
+            <td class="r_label">入金率（件数）</td>
+            <td class="r_data"><?php echo f_e($this->list1['NyukinRate']); ?>　%</td>
+            <td class="l_data">入金済件数÷注文件数</td>
+          </tr>
+          <tr>
+            <td rowspan="3" class="r_label">未収金</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['MisyuCnt']); ?></td>
+            <td class="l_data">該当注文のうち、入金済みになっていない注文の件数</td>
+          </tr>
+          <tr>
+            <td class="r_label">金額</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['MisyuAmount'], 'number', '#,##0'); ?></td>
+            <td class="l_data">上記、利用額合計</td>
+          </tr>
+          <tr>
+            <td class="r_label">未収率（件数）</td>
+            <td class="r_data"><?php echo f_e($this->list1['MisyuRate']); ?>　%</td>
+            <td class="l_data">未収件数÷注文件数</td>
+          </tr>
+          <tr>
+            <td rowspan="2" class="r_label">キャンセル</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['CancelCount']); ?></td>
+            <td class="l_data">該当取引のうち、キャンセルされたもの</td>
+          </tr>
+          <tr>
+            <td class="r_label">率</td>
+            <td class="r_data"><?php echo f_e($this->list1['CancelRate']); ?>　%</td>
+            <td class="l_data">キャンセル件数÷注文件数</td>
+          </tr>
+          <tr>
+            <td rowspan="3" class="r_label">再請求</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['Sai1Cnt']); ?></td>
+            <td class="l_data">該当注文のうち、最終請求が再請求になっている注文の件数</td>
+          </tr>
+          <tr>
+            <td class="r_label">金額</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['Sai1Amount'], 'number', '#,##0'); ?></td>
+            <td class="l_data">上記の金額</td>
+          </tr>
+          <tr>
+            <td class="r_label">再請求率（件数）</td>
+            <td class="r_data"><?php echo f_e($this->list1['Sai1Rate']); ?>　%</td>
+            <td class="l_data">再請求件数÷注文件数</td>
+          </tr>
+          <tr>
+            <td rowspan="3" class="r_label">再々請求</td>
+            <td class="r_label">件数</td>
+            <td class="r_data"><?php echo f_e($this->list1['Sai2Cnt']); ?></td>
+            <td class="l_data">該当注文のうち、最終請求が再々請求になっている注文の件数</td>
+          </tr>
+          <tr>
+            <td class="r_label">金額</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['Sai2Amount'], 'number', '#,##0'); ?></td>
+            <td class="l_data">上記の金額</td>
+          </tr>
+          <tr>
+            <td class="r_label">再々請求率（件数）</td>
+            <td class="r_data"><?php echo f_e($this->list1['Sai2Rate']); ?>　%</td>
+            <td class="l_data">再々請求件数÷注文件数</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="r_label">振込手数料</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['TransferCommission'], 'number', '#,##0'); ?></td>
+            <td class="l_data">対象期間中に発生した振込手数料合計</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="r_label">印紙代</td>
+            <td class="r_data">\<?php echo $this->valueFormat($this->list1['StampFee'], 'number', '#,##0'); ?></td>
+            <td class="l_data">該当注文のうち、印紙代が発生したもの</td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+  
+  <?php echo $this->render('page_footer.php'); ?>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<?php
+// HTMLヘッダ
+echo $this->render('oemmember/document_header.php');
+// 共通ページヘッダ
+echo $this->render( 'oemmember/page_header.php' );
+// ヘッダのメニュー
+echo $this->render( 'oemmember/header_menu.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmember/system_message.php' );
+
+// ページタイトル
+echo $this->render( 'oemmember/page_title.php' );
+
+?>
+    <style>
+        hr {
+           border-width: 1px 0px 0px 0px; /* 太さ */
+           border-style: dotted; /* 線種 */
+           border-color: silver; /* 線色 */
+           height: 3px; /* 高さ */
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <!-- start contents -->
+        <div id="contents">
+    <?php  if ($this->combinedStatus) { ?>
+            <h4>以下注文情報の取りまとめ指示を取り消します。</h4>
+    <?php } else { ?>
+            <h4>以下の注文情報の請求書を<?php  if($this->separate) { ?><font color="red">個別に</font><?php }?>発行します。</h4>
+    <?php } ?>
+            <table width="1000" class="search_items" border="1" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="column_header">注文ID</th>
+                        <th class="column_header">注文日</th>
+                        <th class="column_header">任意注文番号</th>
+                        <th class="column_header">氏名</th>
+                        <th class="column_header">住所</th>
+                        <th class="column_header">電話番号</th>
+                    <?php  if ($this->combinedStatus) { ?>
+                        <th class="column_header">エラー理由</th>
+                    <?php }?>
+                    </tr>
+                </thead>
+                <tbody>
+            <?php $ordercustomersCount = 0; if (!empty($this->ordercustomers)) { $ordercustomersCount = count($this->ordercustomers); }
+            for ($i = 0 ; $i < $ordercustomersCount ; $i++) { ?>
+                    <tr>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["OrderId"]); ?></td>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["ReceiptOrderDate"]); ?></td>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["Ent_OrderId"]); ?></td>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["NameKj"]); ?></a></td>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["UnitingAddress"]); ?></td>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["Phone"]); ?></td>
+                    <?php  if ($this->combinedStatus) { ?>
+                        <td class="column_data"><?php echo f_e($this->ordercustomers[$i]["ErrorMsg"]); ?></td>
+                    <?php }?>
+                    </tr>
+            <?php } ?>
+                </tbody>
+            </table>
+            <br/>
+            <table class="regist_button">
+                <tbody>
+                    <tr align="center">
+                        <td>
+                            <form id="saveForm" action="merge/save" method="post">
+                                <button type="button" id="doSave" name="doSave">実行する</button>
+                                <button type="button" id="cancelSave" name="cancelSave" >修正する</button>
+                                <input name="hash" value="<?php echo f_e($this->encoded_data); ?>" type="hidden" />
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+        </div>
+        <!-- end contents -->
+    </div>
+    <?php
+    // フッタメニュー
+    echo $this->render( 'oemmember/footer_menu.php' );
+
+    // 共通ページフッタ
+    echo $this->render( 'oemmember/page_footer.php' );
+    ?>
+    <script>
+        Event.observe(window, "load", function() {
+            Event.observe($("doSave"), "click", function() {
+                $("saveForm").submit();
+                return false;
+            });
+
+            Event.observe($("cancelSave"), "click", function() {
+                $("saveForm").action = $("saveForm").action.replace(/\/save$/, "/back");
+                $("saveForm").submit();
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

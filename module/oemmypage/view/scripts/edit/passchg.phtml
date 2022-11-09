@@ -1,0 +1,72 @@
+<?php
+// HTMLヘッダ
+echo $this->render( 'oemmypage/document_header.php' );
+
+// アプリケーション名割り当て
+$this->applicationTitle = '顧客マイページ';
+
+$fd = $this->data;
+?>
+</head>
+<body>
+<div id="wrapper">
+<?php
+// 共通ページヘッダ
+echo $this->render( 'oemmypage/page_header.php' );
+
+// システムメッセージ
+echo $this->render( 'oemmypage/system_message.php' );
+
+?>
+<!-- start contents -->
+    <div id="contents">
+        <div style="clear: both;" id="my_title">パスワード変更</div>
+        <?php
+            echo $this->render( 'oemmypage/menu.php' );
+        ?>
+        <?php if( !empty( $this->error ) ) { ?>
+        <div id="errmsg">
+            <?php foreach( $this->error as $error ) echo f_e( $error ) . '<br />';  ?>
+        </div>
+        <?php } ?>
+        <form name="form" method="post" action="edit/passchgconfirm">
+        <table class="datatable" width="600" cellpadding="1" cellspacing="1" border="0">
+            <tbody>
+                <tr>
+                    <td class="member_info">会員ID（メールアドレス）<br /><br /></td>
+                    <td class="data"><?php echo f_e( $fd['MailAddress'] ); ?>
+                    <input name="form[MailAddress]" type="hidden" id="MailAddress" value="<?php echo f_e( $fd['MailAddress'] ); ?>" /></td>
+                </tr>
+                <tr>
+                    <td class="member_info">現在のパスワード<br /><br /></td>
+                    <td class="data"><input size="40" style="height:20px" name="form[LoginPasswd]" type="password" id="LoginPasswd" value="" />
+                </tr>
+                <tr>
+                    <td class="member_info2">
+                        新しいパスワード<br />
+                        <span id="biko_normal_12">&nbsp;&nbsp;※半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上<br />&nbsp;&nbsp;（英数記号混同）</span>
+                    </td>
+                    <td class="data"><input size="40" style="height:20px" name="form[NewLoginPasswd]" type="password" id="NewLoginPasswd" value="" />
+                </tr>
+                <tr>
+                    <td class="member_info2">
+                        新しいパスワード（確認）<br />
+                        <span id="biko_normal_12">&nbsp;&nbsp;※半角英数記号<?php echo f_e($this->passwdCount); ?>文字以上<br />&nbsp;&nbsp;（英数記号混同）</span>
+                    </td>
+                    <td class="data"><input size="40" style="height:20px" name="form[NewLoginPasswd2]" type="password" id="NewLoginPasswd2" value="" />
+                </tr>
+                <tr class="data">
+                    <td colspan="2" align="center"><br /><input id="red_btn" type="submit" value="変更" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+<!-- end contents -->
+<?php
+// 共通ページフッタ
+echo $this->render( 'oemmypage/page_footer.php' );
+?>
+
+</div>
+</body>
+</html>

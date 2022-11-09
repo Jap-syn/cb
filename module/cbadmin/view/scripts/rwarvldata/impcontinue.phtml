@@ -1,0 +1,37 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+$info = $this->total_counts;
+?>
+<?php echo $this->render('cbadmin/rwarvldata/styles.php'); ?>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+    setTimeout(function() {
+        $('imp-form').submit();
+    }, 0);
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">インポート処理中</h3>
+    <div style="margin: 5px 25px">
+        <?php echo f_e(sprintf('%s / %s 件', f_nf($info['imported'], '#,##0'), f_nf($info['total'], '#,##0'))); ?>のインポートが完了しました。
+        (<?php echo f_nf($info['processed'], '#,##0'); ?> 件処理済み、残り：<?php echo f_nf($info['rest'], '#,##0'); ?> 件)
+    </div>
+    <form id="imp-form" action="rwarvldata/import" method="post">
+      <input type="hidden" name="imp" value="<?php echo f_e($this->imp_data); ?>" />
+      <input type="hidden" name="total_counts[imported]" value="<?php echo f_e($info['imported']); ?>" />
+      <input type="hidden" name="total_counts[processed]" value="<?php echo f_e($info['processed']); ?>" />
+      <input type="hidden" name="total_counts[total]" value="<?php echo f_e($info['total']); ?>" />
+    </form>
+  </div>
+  <!-- end contents -->
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

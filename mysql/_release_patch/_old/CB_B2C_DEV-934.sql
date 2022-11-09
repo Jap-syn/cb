@@ -1,0 +1,1 @@
+INSERT INTO T_SystemProperty(Module, Category, Name, PropValue, Description, RegistDate, RegistId, UpdateDate, UpdateId, ValidFlg) VALUES( '[DEFAULT]','systeminfo', 'PaymentDelayDays', '10', '過去2年間の同顧客からの〇日以上遅れ注文', NOW(), 9, NOW(), 9, '1');

@@ -1,0 +1,67 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/gp/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title"><?php echo $this->caption; ?></h3>
+    <div id="message" align="center"><?php echo $this->updated; ?></div>
+    <form name="form" method="post" action="gp/gpmstru">
+      <input type="hidden" name="cls" id="cls" value="<?php echo f_e($this->cls); ?>" />
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>コード</th>
+            <th>見出し</th>
+            <th>有効</th>
+          </tr>
+          <?php $i = 0; foreach ($this->list as $row) { ?>
+          <tr class="data">
+            <td class="r_data">
+              <input type="hidden" name="KeyCode<?php echo $i; ?>" id="KeyCode<?php echo $i; ?>" value="<?php echo $row['KeyCode']; ?>" />
+              <?php echo $row['KeyCode']; ?>
+            </td>
+            <td class="l_data">
+              <input type="text" size="40" name="KeyContent<?php echo $i; ?>" id="KeyContent<?php echo $i; ?>" value="<?php echo f_e($row['KeyContent']) ?>" />
+            </td>
+            <td class="c_data">
+              <input type="checkbox" name="ValidFlg<?php echo $i; ?>" id="ValidFlg<?php echo $i; ?>" <?php if($row['ValidFlg'] == 1) echo 'checked'; ?> />
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="3">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <?php $i++; } ?>
+          <tr class="data">
+            <td class="c_data">新規</td>
+            <td class="l_data"><input type="text" size="40" name="KeyContent" id="KeyContent" /></td>
+            <td class="c_data"><input type="checkbox" name="ValidFlg" id="ValidFlg" checked /></td>
+          </tr>
+          <tr class="border">
+            <td colspan="3">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" class="c_data">
+              <input type="submit" value="　この内容で更新　">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

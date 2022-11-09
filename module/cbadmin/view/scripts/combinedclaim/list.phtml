@@ -1,0 +1,74 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+  <style>
+  table.datatable tr.disabled,
+  table.datatable tr.disabled td {
+	background-color: silver;
+  }
+  .page_nav .pager a.command,
+  .page_nav .pager a.command:link,
+  .page_nav .pager a.command:hover,
+  .page_nav .pager a.command:active,
+  .page_nav .pager a.command:visited {
+	color: blue;
+	border: solid 1px silver;
+	padding: 4px 12px;
+  }
+  .page_nav .pager a.command:hover {
+	color : blue;
+	background-color: azure;
+	border-color: blue;
+  }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/combinedclaim/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">請求取りまとめ事業者一覧</h3>
+      <table width="862" class="datatable" cellpadding="1" cellspacing="1" border="0">
+        <tbody>
+          <tr>
+            <th>事業者ID</th>
+            <th>ログインID</th>
+            <th>事業者名</th>
+            <th>請求取りまとめモード</th>
+            <th>担当者名</th>
+            <th>担当部署</th>
+            <th>連絡先</th>
+            <th>&nbsp;</th>
+          </tr>
+          <?php foreach ($this->list as $row) { //$row = $this->list[$i]; ?>
+          <tr class="data">
+            <td class="r_data"><?php echo f_e($row['EnterpriseId']); ?></td>
+            <td class="c_data"><?php echo f_e($row['LoginId']); ?></td>
+            <td class="l_data"><a href="enterprise/detail/eid/<?php echo f_e($row['EnterpriseId']); ?>"><?php echo f_e($row['EnterpriseNameKj']); ?></a></td>
+            <td class="l_data"><?php echo f_e($row['CombinedClaimModeCap']); ?></td>
+            <td class="l_data"><?php echo f_e($row['CpNameKj']) . '<br />(' . f_e($row['CpNameKn']) . ')'; ?></td>
+            <td class="l_data"><?php echo f_e($row['DivisionName']); ?></td>
+            <td class="l_data"><?php echo f_e($row['ContactPhoneNumber']); ?></td>
+            <td class="c_data">
+              <a href="combinedclaim/edit/eid/<?php echo f_e($row['EnterpriseId']); ?>">編集</a><br />
+              <a href="combinedclaim/orderlist/eid/<?php echo f_e($row['EnterpriseId']); ?>/mode/<?php echo f_e($row['CombinedClaimMode']); ?>">注文一覧</a>
+            </td>
+          </tr>
+          <tr class="border">
+            <td colspan="9">
+              <img src="../images/spacer_gray.gif" height="1" width="1">
+            </td>
+          </tr>
+        <?php } ?>
+        </tbody>
+      </table>
+    </div>
+    <!-- end contents -->
+
+    <?php echo $this->render('cbadmin/page_footer.php'); ?>
+  </div>
+</body>
+</html>

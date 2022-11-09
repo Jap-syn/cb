@@ -1,0 +1,132 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style type="text/css">
+label.box-label {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+label.box-label .del-chk {
+  margin: 6px 0 0 0;
+}
+#contents .main-form td input.text {
+  border: solid 1px silver;
+  padding: 1px 2px;
+}
+#contents .main-form td.text-container input.text {
+  width: 95%;
+}
+#contents .main-form tr,
+#contents .main-form tr td {
+  height: 24px;
+  line-height: 24px;
+}
+</style>
+<script type="text/javascript">
+Event.observe(window, 'load', function() {
+  Event.observe($('add-new'), 'click', function() {
+    ['new-code', 'new-name'].each(function(id) {
+      $(id).disabled = !$('add-new').checked;
+    });
+  });
+  Event.observe($('submit-button'), 'click', function() {
+    $('smbcpa-form').submit();
+  });
+  function make(ele) {
+    return function() {
+      bytefx.fade(ele, 100, 0, 0.5, function() {
+        Element.hide(ele);
+      });
+    };
+  }
+  document.getElementsByClassName('messages').each(function(ele) {
+    setTimeout(make(ele), 15 * 1000);
+  });
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/smbcpa/page_menu_simple.php'); ?>
+
+  <!-- start contents -->
+  <div id="contents">
+    <h3 class="contents_title">SMBCバーチャル口座支店マスター管理</h3>
+    <!-- count関数対策 -->
+  <?php if(!empty($this->errors)) { ?>
+    <div class="page_error_message messages">
+    <?php foreach(array_reverse($this->errors) as $key => $msg) { ?>
+      <div><?php echo f_e(sprintf('%s：%s', $key, $msg)); ?></div>
+    <?php } ?>
+    </div>
+  <?php } ?>
+  <!-- count関数対策 -->
+  <?php if(!empty($this->infos)) { ?>
+    <div class="page_info_message messages">
+    <?php foreach(array_reverse($this->infos) as $key => $msg) { ?>
+      <div><?php echo f_e(sprintf('%s：%s', $key, $msg)); ?></div>
+    <?php } ?>
+    </div>
+  <?php } ?>
+    <form id="smbcpa-form" class="main-form" action="smbcpa/brup" method="post">
+      <table class="formtable" cellpadding="1" cellspacing="1" border="0">
+        <thead>
+          <tr>
+            <th style="width: 80px">支店コード</th>
+            <th>支店名</th>
+            <th style="width: 60px">削除</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach($this->master as $code => $info) { ?>
+          <tr>
+            <td class="r_data"><?php echo f_e($code); ?></td>
+            <td class="l_data text-container">
+              <input name="br[<?php echo f_e($code); ?>][name]" value="<?php echo f_e($info['name']); ?>" class="text" />
+            </td>
+            <td class="c_data">
+            <?php if($info['protected']) { ?>
+              &nbsp;
+            <?php } else { ?>
+              <label for="del-<?php echo f_e($code); ?>" class="box-label">
+                <input type="checkbox" id="del-<?php echo f_e($code); ?>" name="br[<?php echo f_e($code); ?>][delete]" class="del-chk" value="1" />
+              </label>
+            <?php } ?>
+            </td>
+          </tr>
+        <?php } ?>
+          <tr>
+            <td class="l_label" colspan="2">新規追加</td>
+            <th>追加</th>
+          </tr>
+          <tr>
+            <td class="r_data">
+              <input id="new-code" name="br[new][code]" size="6" maxlength="3" class="text" disabled="disabled" />
+            </td>
+            <td class="l_data text-container">
+              <input id="new-name" name="br[new][name]" class="text" disabled="disabled" />
+            </td>
+            <td class="c_data">
+              <label for="add-new" class="box-label">
+                <input type="checkbox" id="add-new" name="br[new][add]" class="del-chk" value="1" />
+              </label>
+            </td>
+        </tbody>
+      </table>
+
+      <div class="submit-area">
+        <button id="submit-button" type="button">更新</button>
+      </div>
+    </form>
+  </div>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+
+</div>
+<!-- end wrapper -->
+</body>
+</html>

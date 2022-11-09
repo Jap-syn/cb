@@ -1,0 +1,80 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/enterpriseoperator/page_menu.php'); ?>
+
+<!-- start contents -->
+<div id="contents">
+<h3>加盟店オペレーター登録</h3>
+<form name="form" method="post" action="enterpriseoperator/confirm/eid/<?php echo f_e($this->eid); ?>">
+
+  <input name="data[ValidFlg]" type="hidden" id="ValidFlg" value="1" />
+  <table class="datatable" width="860" cellpadding="1" cellspacing="1" border="0">
+  <tbody>
+    <tr>
+      <td class="label">ログインID<font color="red">*</font></td>
+      <td class="data">
+        <?php if ($this->edit) { ?>
+          <input name="data[LoginId]" type="hidden" id="LoginId" value="<?php echo $this->fd["LoginId"]; ?>" /><?php echo $this->fd["LoginId"]; ?>
+          <input name="data[EnterpriseOpId]" type="hidden" value="<?php echo $this->fd['EnterpriseOpId']; ?>" />
+        <?php } else { ?>
+          <input name="data[LoginId]" type="text" id="LoginId" value="<?php echo $this->fd["LoginId"]; ?>" />
+        <?php } ?>
+        <?php echo $this->error["LoginId"]; ?>
+          <input name="data[EnterpriseId]" type="hidden" value="<?php echo $this->fd['EnterpriseId']; ?>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="label">氏名<font color="red">*</font></td>
+      <td class="data">
+        <input name="data[NameKj]" type="text" id="NameKj" value="<?php echo $this->fd["NameKj"]; ?>" />
+        <?php echo $this->error["NameKj"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">氏名カナ</td>
+      <td class="data">
+        <input name="data[NameKn]" type="text" id="NameKn" value="<?php echo $this->fd["NameKn"]; ?>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="label">所属</td>
+      <td class="data">
+        <input name="data[Division]" type="text" id="Division" value="<?php echo $this->fd["Division"]; ?>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="label">権限<font color="red">*</font></td>
+      <td class="data">
+      <?php echo $this->roleCodeTag; ?>
+      <?php echo $this->error["RoleCode"]; ?>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">無効設定</td>
+      <td class="l_data">
+        <input type="checkbox" name="data[InvalidFlg]" <?php echo ($this->fd['InvalidFlg']) ? ' checked="checked"' : ''; ?> />
+        このオペレーターを無効にする
+      </td>
+    </tr>
+    <tr align="center">
+      <td class="data" colspan="2">　</td>
+    </tr>
+    <tr align="center">
+      <td colspan="2">
+        <input type="submit" value="　確　定　" />
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>
+</div>
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+</html>

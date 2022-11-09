@@ -1,0 +1,113 @@
+<?php
+// HTMLヘッダ
+echo $this->render('cbadmin/document_header.php');
+?>
+<style>
+table.datatable th {
+  white-space: nowrap;
+}
+
+  a.download_link {
+    padding: 8px;
+    padding-left: 25px;
+    background-image: url('../images/icon_download_s.gif');
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    font-size: 12px;
+  }
+  a.download_link,
+  a.download_link:link,
+  a.download_link:hover,
+  a.download_link:active,
+  a.download_link:visited {
+    border: solid 1px silver;
+    background-color: transparent;
+    color: royalblue;
+  }
+  a.download_link:hover {
+    background-color: azure;
+    border-color: gray;
+    color: blue;
+  }
+
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <?php echo $this->render('cbadmin/page_header.php'); ?>
+  <?php echo $this->render('cbadmin/customerinquiry/page_menu.php'); ?>
+
+  <!-- start contents -->
+  <form name="form" id="form" method="post" action="customerinquiry/detail" target="_blank">
+    <input name="mcid" id="mcid" type="hidden" value="" />
+    <input name="ecid" id="ecid" type="hidden" value="" />
+    <input name="srchparams" type="hidden" value="<?php echo f_e($this->srchparams); ?>" />
+  <div id="contents">
+    <h3 class="contents_title">顧客一覧</h3>
+    <div style="margin: 5px 25px;">
+    <h4>
+      該当件数　<?php echo ($this->list) ? $this->list->count() : 0; ?> 件
+    </h4>
+    <table style="margin: 0px; clear:both; width:862; " width="862" id="search_result" class="datatable" cellpadding="1" cellspacing="1" border="0">
+      <tbody>
+          <tr>
+            <th width="20">No</th>
+            <th width="80">顧客区分</th>
+            <th width="60">加盟店ID</th>
+            <th width="90">顧客名</th>
+            <th width="70">郵便番号</th>
+            <th width="280">住所</th>
+            <th width="100">電話番号</th>
+            <th width="160">メールアドレス</th>
+          </tr>
+          <?php $i = 1;?>
+          <?php foreach ($this->list as $row) { ?>
+          <tr class="data ent-row oem-<?php echo f_e(nvl($row['OemId'], 0)); ?>">
+            <td class="c_data"><?php echo f_e($i); ?></td>
+            <td class="l_data"><?php echo f_e($row['class']); ?></td>
+            <td class="l_data"><?php echo f_e($row['EnterpriseId']); ?></td>
+            <td class="l_data">
+                <a href="" onClick="showDetail(<?php echo (($row['class']=="管理顧客") ? f_e($row['ManCustId']) : -1) . ', ' . (($row['class']=="加盟店顧客") ? f_e($row['ManCustId']) : -1); ?>); return false;">
+                <?php echo f_e($row['NameKj']); ?>
+                </a>
+            </td>
+            <td class="l_data"><?php echo f_e($row['PostalCode']) ?></td>
+            <td class="l_data"><?php echo f_e($row['UnitingAddress']); ?></td>
+            <td class="l_data"><?php echo f_e($row['Phone']); ?></td>
+            <td class="l_data" ><?php echo f_e($row['MailAddress']); ?></td>
+          </tr>
+          <?php $i++;} ?>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  </form>
+  <!-- end contents -->
+
+  <?php echo $this->render('cbadmin/page_footer.php'); ?>
+</div>
+</body>
+<script>
+// 結果テーブルをスクロール可能にする
+// new base.UI.TableEx(document.getElementById("search_result"), { height : 500 } );
+
+/*
+ * 関連顧客表示
+ */
+function showDetail(mcid, ecid) {
+    $('mcid').disabled = true;
+    $('ecid').disabled = true;
+
+    if (mcid != -1) {
+        $('mcid').value = mcid;
+        $('mcid').disabled = false;
+    }
+    if (ecid != -1) {
+        $('ecid').value = ecid;
+        $('ecid').disabled = false;
+    }
+
+    $('form').submit();
+}
+</script>
+</html>
